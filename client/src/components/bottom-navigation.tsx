@@ -30,8 +30,8 @@ export default function BottomNavigation() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-tactical-gray-light border-t border-tactical-gray-lighter z-50 md:hidden">
-      <div className="flex justify-around items-center py-2">
+    <nav className="fixed bottom-0 left-0 right-0 bg-surface-elevated border-t border-border-subtle z-50 md:hidden shadow-strong">
+      <div className="flex justify-around items-center py-3">
         {navItems.map((item) => {
           const isActive = location === item.path;
           const IconComponent = item.icon;
@@ -40,14 +40,14 @@ export default function BottomNavigation() {
             <Link 
               key={item.path} 
               href={item.path}
-              className={`flex flex-col items-center justify-center p-2 rounded-none transition-colors ${
+              className={`flex flex-col items-center justify-center p-3 rounded-lg transition-all duration-200 ${
                 isActive 
-                  ? "text-military-green" 
-                  : "text-gray-400 hover:text-gray-300"
+                  ? "text-military-green bg-surface-overlay" 
+                  : "text-muted hover:text-secondary hover:bg-surface-overlay"
               }`}
             >
-              <IconComponent size={20} />
-              <span className="text-xs mt-1 font-medium">{item.label}</span>
+              <IconComponent size={22} />
+              <span className="text-xs mt-1 font-semibold">{item.label}</span>
             </Link>
           );
         })}

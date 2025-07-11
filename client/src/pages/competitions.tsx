@@ -47,21 +47,21 @@ export default function Competitions() {
     <div className="min-h-screen bg-tactical-gray">
       <Navigation />
       
-      <main className="container mx-auto px-4 py-6">
-        <div className="flex items-start justify-between mb-8 gap-4">
+      <main className="container mx-auto px-4 py-8">
+        <div className="flex items-start justify-between mb-12 gap-4">
           <div className="flex-1">
-            <h1 className="text-3xl font-bold text-white mb-2">Competitions</h1>
-            <p className="text-gray-300">Join competitions and compete with teams</p>
+            <h1 className="text-4xl font-bold text-heading mb-3 tracking-tight">Competitions</h1>
+            <p className="text-body text-lg">Join competitions and compete with teams</p>
           </div>
-          <div className="flex flex-col items-end space-y-2 flex-shrink-0">
+          <div className="flex flex-col items-end space-y-3 flex-shrink-0">
             {user && (user.points || 0) < 1000 && (
-              <div className="text-xs text-gray-400 text-right max-w-[140px]">
+              <div className="text-xs text-muted text-right max-w-[140px] bg-surface-overlay px-2 py-1 rounded">
                 Need {1000 - (user.points || 0)} more points
               </div>
             )}
             <Button 
               size="sm"
-              className="bg-military-green hover:bg-military-green-light text-white disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              className="btn-primary"
               disabled={!user || (user.points || 0) < 1000}
               onClick={() => {
                 if ((user.points || 0) < 1000) {
@@ -79,45 +79,47 @@ export default function Competitions() {
                 }
               }}
             >
-              <Plus className="mr-1 h-3 w-3" />
+              <Plus className="mr-2 h-4 w-4" />
               Create
             </Button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {competitions.length === 0 ? (
-            <div className="col-span-full text-center py-16">
-              <Trophy className="mx-auto h-16 w-16 text-gray-500 mb-4" />
-              <h2 className="text-xl font-bold text-white mb-2">No Competitions Yet</h2>
-              <p className="text-gray-400 mb-4">Create your first competition to get started</p>
-              {user && (user.points || 0) < 1000 && (
-                <div className="text-sm text-gray-400 mb-4">
-                  Need {1000 - (user.points || 0)} more points to create competitions
-                </div>
-              )}
-              <Button 
-                className="bg-military-green hover:bg-military-green-light text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={!user || (user.points || 0) < 1000}
-                onClick={() => {
-                  if ((user.points || 0) < 1000) {
-                    toast({
-                      title: "Insufficient Points",
-                      description: "You need at least 1000 points to create a competition. Keep participating to earn more points!",
-                      variant: "destructive",
-                    });
-                  } else {
-                    // TODO: Add competition creation modal/functionality
-                    toast({
-                      title: "Feature Coming Soon",
-                      description: "Competition creation will be available soon!",
-                    });
-                  }
-                }}
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Create Competition
-              </Button>
+            <div className="col-span-full text-center py-20">
+              <div className="card-modern max-w-md mx-auto">
+                <Trophy className="mx-auto h-20 w-20 text-muted mb-6" />
+                <h2 className="text-2xl font-bold text-heading mb-4">No Competitions Yet</h2>
+                <p className="text-body mb-6">Create your first competition to get started</p>
+                {user && (user.points || 0) < 1000 && (
+                  <div className="text-sm text-muted mb-6 bg-surface-overlay px-3 py-2 rounded-lg">
+                    Need {1000 - (user.points || 0)} more points to create competitions
+                  </div>
+                )}
+                <Button 
+                  className="btn-primary"
+                  disabled={!user || (user.points || 0) < 1000}
+                  onClick={() => {
+                    if ((user.points || 0) < 1000) {
+                      toast({
+                        title: "Insufficient Points",
+                        description: "You need at least 1000 points to create a competition. Keep participating to earn more points!",
+                        variant: "destructive",
+                      });
+                    } else {
+                      // TODO: Add competition creation modal/functionality
+                      toast({
+                        title: "Feature Coming Soon",
+                        description: "Competition creation will be available soon!",
+                      });
+                    }
+                  }}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create Competition
+                </Button>
+              </div>
             </div>
           ) : (
             competitions.map((competition: any) => (

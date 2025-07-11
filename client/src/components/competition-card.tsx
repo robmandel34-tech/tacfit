@@ -22,42 +22,53 @@ interface CompetitionCardProps {
 
 export default function CompetitionCard({ competition, onInvite, onJoin }: CompetitionCardProps) {
   return (
-    <Card className="bg-tactical-gray-light border-tactical-gray">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-white">{competition.name}</CardTitle>
-          <Badge variant={competition.isActive ? "default" : "secondary"}>
+    <Card className="card-modern hover-lift fade-in group">
+      <CardHeader className="pb-4">
+        <div className="flex items-start justify-between">
+          <CardTitle className="text-heading text-xl mb-2 group-hover:text-military-green transition-colors">
+            {competition.name}
+          </CardTitle>
+          <Badge 
+            variant={competition.isActive ? "default" : "secondary"}
+            className={`${competition.isActive 
+              ? 'bg-success-green text-white' 
+              : 'bg-surface-overlay text-secondary'} font-medium`}
+          >
             {competition.isActive ? "Active" : "Upcoming"}
           </Badge>
         </div>
       </CardHeader>
-      <CardContent>
-        <p className="text-gray-300 mb-4">{competition.description}</p>
+      <CardContent className="pt-0">
+        <p className="text-body mb-6 leading-relaxed">{competition.description}</p>
         
-        <div className="space-y-3">
-          <div className="flex items-center text-sm text-gray-400">
-            <Calendar className="mr-2 h-4 w-4" />
-            <span>
+        <div className="space-y-4">
+          <div className="flex items-center text-sm text-muted">
+            <Calendar className="mr-3 h-4 w-4 text-steel-blue" />
+            <span className="font-medium">
               {new Date(competition.startDate).toLocaleDateString()} - {new Date(competition.endDate).toLocaleDateString()}
             </span>
           </div>
           
-          <div className="flex items-center text-sm text-gray-400">
-            <Users className="mr-2 h-4 w-4" />
-            <span>Max {competition.maxTeams} teams</span>
+          <div className="flex items-center text-sm text-muted">
+            <Users className="mr-3 h-4 w-4 text-steel-blue" />
+            <span className="font-medium">Max {competition.maxTeams} teams</span>
           </div>
           
           {competition.requiredActivities && competition.requiredActivities.length > 0 && (
             <>
-              <Separator className="bg-tactical-gray" />
-              <div className="space-y-2">
-                <div className="flex items-center text-sm text-gray-300">
-                  <Activity className="mr-2 h-4 w-4" />
-                  <span className="font-medium">Required Activities:</span>
+              <Separator className="bg-border-subtle my-4" />
+              <div className="space-y-3">
+                <div className="flex items-center text-sm text-secondary">
+                  <Activity className="mr-3 h-4 w-4 text-military-green" />
+                  <span className="font-semibold">Required Activities:</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {competition.requiredActivities.map((activity, index) => (
-                    <Badge key={index} variant="outline" className="text-xs capitalize">
+                    <Badge 
+                      key={index} 
+                      variant="outline" 
+                      className="text-xs capitalize bg-surface-overlay border-border-subtle text-secondary hover:bg-military-green hover:text-white transition-colors"
+                    >
                       {activity}
                     </Badge>
                   ))}
@@ -68,17 +79,17 @@ export default function CompetitionCard({ competition, onInvite, onJoin }: Compe
           
           {competition.targetGoals && competition.targetGoals.length > 0 && (
             <>
-              <Separator className="bg-tactical-gray" />
-              <div className="space-y-2">
-                <div className="flex items-center text-sm text-gray-300">
-                  <Target className="mr-2 h-4 w-4" />
-                  <span className="font-medium">Team Goals:</span>
+              <Separator className="bg-border-subtle my-4" />
+              <div className="space-y-3">
+                <div className="flex items-center text-sm text-secondary">
+                  <Target className="mr-3 h-4 w-4 text-combat-orange" />
+                  <span className="font-semibold">Team Goals:</span>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-2">
                   {competition.targetGoals.map((goal, index) => (
-                    <div key={index} className="flex items-center text-xs text-gray-400">
-                      <CheckCircle className="mr-2 h-3 w-3" />
-                      <span>{goal}</span>
+                    <div key={index} className="flex items-center text-sm text-muted bg-surface-overlay rounded-lg p-2">
+                      <CheckCircle className="mr-3 h-4 w-4 text-success flex-shrink-0" />
+                      <span className="font-medium">{goal}</span>
                     </div>
                   ))}
                 </div>
@@ -87,11 +98,11 @@ export default function CompetitionCard({ competition, onInvite, onJoin }: Compe
           )}
         </div>
         
-        <div className="mt-4 pt-4 border-t border-tactical-gray">
-          <div className="flex gap-2">
+        <div className="mt-6 pt-4 border-t border-border-subtle">
+          <div className="flex gap-3">
             <Button 
               onClick={() => onJoin?.(competition.id)}
-              className="flex-1 bg-military-green hover:bg-military-green-light text-white sharp-button"
+              className="flex-1 btn-primary"
             >
               <Trophy className="mr-2 h-4 w-4" />
               {competition.isActive ? "Join Now" : "Register Interest"}
@@ -100,7 +111,7 @@ export default function CompetitionCard({ competition, onInvite, onJoin }: Compe
               <Button 
                 onClick={() => onInvite(competition.id, competition.name)}
                 variant="outline"
-                className="sharp-button border-military-green text-military-green hover:bg-military-green hover:text-white"
+                className="btn-secondary border-military-green text-military-green hover:bg-military-green hover:text-white"
               >
                 <Share2 className="h-4 w-4" />
               </Button>

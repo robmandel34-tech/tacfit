@@ -156,9 +156,9 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
               <SelectTrigger className="bg-tactical-gray-lighter border-tactical-gray text-white">
                 <SelectValue placeholder="Select activity type" />
               </SelectTrigger>
-              <SelectContent className="bg-tactical-gray-light border-tactical-gray">
+              <SelectContent className="bg-tactical-gray-light border-tactical-gray text-white">
                 {availableActivityTypes.map((activityType) => (
-                  <SelectItem key={activityType} value={activityType}>
+                  <SelectItem key={activityType} value={activityType} className="text-white hover:bg-tactical-gray focus:bg-tactical-gray">
                     {activityTypeNames[activityType] || activityType}
                   </SelectItem>
                 ))}

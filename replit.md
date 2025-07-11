@@ -20,6 +20,7 @@ Preferred communication style: Simple, everyday language.
 - **FIXED**: Like button now shows green when liked, grey when not liked
 - **FIXED**: Flag button shows solid red when flagged and maintains state
 - **FIXED**: Comment count updates in real-time when adding comments
+- **FIXED**: Activity submission dropdown text color now visible with white text and proper hover states
 - **ENHANCED**: All text elements now have proper contrast on dark backgrounds
 
 ### Authentication & Navigation Fixes (July 2025)
@@ -66,6 +67,9 @@ Preferred communication style: Simple, everyday language.
 - **NEW**: Database schema updated to support competition-specific activities and targets
 - **UPDATED**: Competition durations shortened to 2-4 weeks for more realistic timeframes
 - **UPDATED**: Target goals adjusted proportionally to match shorter competition periods
+- **NEW**: Activity submission dropdown filtering - only shows required activities for current competition
+- **NEW**: Dynamic activity type filtering based on competition requirements (e.g., Cardio, Strength, Flexibility only)
+- **ENHANCED**: Activity submission modal now queries user's team and competition to display relevant activities
 
 ### Progress Map Feature (July 2025)
 - **NEW**: Added topographical progress map to Competition Status page

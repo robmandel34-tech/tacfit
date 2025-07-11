@@ -86,7 +86,7 @@ export default function ActivityFeed() {
           <p className="text-gray-300">See what your team and competitors are up to</p>
         </div>
 
-        <div className="max-w-2xl mx-auto space-y-6">
+        <div className="w-full max-w-2xl mx-auto">
           {activities.length === 0 ? (
             <div className="text-center py-16">
               <div className="bg-tactical-gray-light p-8 rounded-lg border border-tactical-gray-lighter">
@@ -96,61 +96,62 @@ export default function ActivityFeed() {
               </div>
             </div>
           ) : (
-            activities.map((activity: any) => (
-              <div key={activity.id} className="bg-tactical-gray-light border border-tactical-gray-lighter rounded-lg p-6 w-full">
-                <div className="flex flex-col w-full">
-                  {/* Header row with user info */}
-                  <div className="flex items-center space-x-3 mb-4">
-                    <div className="w-10 h-10 bg-military-green rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-white font-bold text-xs">
-                        {getInitials(activity.user?.username || "U")}
-                      </span>
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-white font-semibold text-sm">{activity.user?.username || "Unknown"}</span>
-                        <Badge variant="outline" className="text-xs border-gray-600 text-gray-300 bg-transparent">
-                          {getActivityIcon(activity.type)} {activity.type}
-                        </Badge>
-                        <span className="text-gray-400 text-xs">
-                          {new Date(activity.createdAt).toLocaleDateString()}
-                        </span>
+            <div className="space-y-6">
+              {activities.map((activity: any) => (
+                <div key={activity.id} className="bg-tactical-gray-light border border-tactical-gray-lighter rounded-lg overflow-hidden">
+                  <div className="p-6">
+                    <div className="mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-military-green rounded-full flex items-center justify-center shrink-0">
+                          <span className="text-white font-bold text-xs">
+                            {getInitials(activity.user?.username || "U")}
+                          </span>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-white font-semibold text-sm">{activity.user?.username || "Unknown"}</span>
+                            <span className="text-xs border border-gray-600 text-gray-300 bg-transparent px-2 py-1 rounded">
+                              {getActivityIcon(activity.type)} {activity.type}
+                            </span>
+                            <span className="text-gray-400 text-xs">
+                              {new Date(activity.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  
-                  {/* Content */}
-                  <div className="w-full">
-                    {activity.evidenceUrl && (
-                      <div className="mb-4">
-                        <img 
-                          src={activity.evidenceUrl} 
-                          alt="Activity evidence" 
-                          className="w-full max-w-lg h-48 object-cover rounded-lg border border-gray-600"
-                        />
-                      </div>
-                    )}
                     
-                    <p className="text-gray-300 text-sm mb-4">{activity.description}</p>
+                    <div className="mb-4">
+                      {activity.evidenceUrl && (
+                        <div className="mb-4">
+                          <img 
+                            src={activity.evidenceUrl} 
+                            alt="Activity evidence" 
+                            className="w-full max-w-lg h-48 object-cover rounded-lg border border-gray-600"
+                          />
+                        </div>
+                      )}
+                      
+                      <p className="text-gray-300 text-sm">{activity.description}</p>
+                    </div>
                     
-                    {/* Actions */}
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center gap-4 pt-2 border-t border-gray-600">
                       <button
                         onClick={() => likeActivity.mutate(activity.id)}
-                        className="flex items-center space-x-2 text-gray-400 hover:text-military-green transition-colors text-sm"
+                        className="flex items-center gap-2 text-gray-400 hover:text-military-green transition-colors text-sm py-2"
                       >
                         <ThumbsUp className="h-4 w-4" />
                         <span>{activity.likesCount || 0}</span>
                       </button>
                       
-                      <button className="flex items-center space-x-2 text-gray-400 hover:text-blue-400 transition-colors text-sm">
+                      <button className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors text-sm py-2">
                         <MessageCircle className="h-4 w-4" />
                         <span>{activity.commentsCount || 0}</span>
                       </button>
                       
                       <button
                         onClick={() => flagActivity.mutate(activity.id)}
-                        className="flex items-center space-x-2 text-gray-400 hover:text-red-400 transition-colors text-sm"
+                        className="flex items-center gap-2 text-gray-400 hover:text-red-400 transition-colors text-sm py-2"
                       >
                         <Flag className="h-4 w-4" />
                         <span>Flag</span>
@@ -158,8 +159,8 @@ export default function ActivityFeed() {
                     </div>
                   </div>
                 </div>
-              </div>
-            ))
+              ))}
+            </div>
           )}
         </div>
       </main>

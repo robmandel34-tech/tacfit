@@ -64,6 +64,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User routes
+  app.get("/api/users", async (req, res) => {
+    try {
+      const users = await storage.getUsers();
+      // Return minimal user info for privacy
+      const publicUsers = users.map(user => ({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        avatar: user.avatar,
+        points: user.points || 0,
+        competitionsEntered: user.competitionsEntered || 0
+      }));
+      res.json(publicUsers);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching users" });
+    }
+  });
+
   app.get("/api/users/:id", async (req, res) => {
     try {
       const user = await storage.getUser(parseInt(req.params.id));

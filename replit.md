@@ -33,6 +33,11 @@ Preferred communication style: Simple, everyday language.
 - **NEW**: Users can now view all teams, member counts, and open slots before joining
 - **NEW**: Dedicated "Join Here" buttons for each open team slot
 - **NEW**: Option to create new teams when joining competitions
+- **NEW**: Find Friends modal with comprehensive user search functionality
+- **NEW**: Search users by username or email with live filtering
+- **NEW**: Send friend requests with status tracking (pending, accepted, rejected)
+- **NEW**: Accept/reject friend requests with real-time updates
+- **NEW**: Display user points and competition history in search results
 
 ### Progress Map Feature (July 2025)
 - **NEW**: Added topographical progress map to Competition Status page

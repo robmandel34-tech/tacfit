@@ -11,10 +11,11 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Target, Users, Calendar, UserPlus, MessageCircle, Send, Clock, Check, X, Bell, Camera, Upload } from "lucide-react";
+import { Trophy, Target, Users, Calendar, UserPlus, MessageCircle, Send, Clock, Check, X, Bell, Camera, Upload, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import DirectMessageModal from "@/components/direct-message-modal";
+import FindFriendsModal from "@/components/find-friends-modal";
 
 export default function Profile() {
   const { user, isLoading } = useAuthRequired();
@@ -26,6 +27,7 @@ export default function Profile() {
   const [isFriendsModalOpen, setIsFriendsModalOpen] = useState(false);
   const [isDMModalOpen, setIsDMModalOpen] = useState(false);
   const [isRequestsModalOpen, setIsRequestsModalOpen] = useState(false);
+  const [isFindFriendsModalOpen, setIsFindFriendsModalOpen] = useState(false);
   const [selectedFriend, setSelectedFriend] = useState<any>(null);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isUploadingCover, setIsUploadingCover] = useState(false);
@@ -403,13 +405,26 @@ export default function Profile() {
                     
                     {isOwnProfile && (
                       <div className="space-y-2">
+                        <div className="flex gap-2">
+                          <Dialog open={isFriendsModalOpen} onOpenChange={setIsFriendsModalOpen}>
+                            <DialogTrigger asChild>
+                              <Button className="flex-1 bg-steel-blue hover:bg-blue-600">
+                                <Users className="mr-2 h-4 w-4" />
+                                Friends ({friends.filter((f: any) => f.status === "accepted").length})
+                              </Button>
+                            </DialogTrigger>
+                          </Dialog>
+                          
+                          <Button 
+                            onClick={() => setIsFindFriendsModalOpen(true)}
+                            className="flex-1 bg-military-green hover:bg-military-green-light"
+                          >
+                            <Search className="mr-2 h-4 w-4" />
+                            Find Friends
+                          </Button>
+                        </div>
+                        
                         <Dialog open={isFriendsModalOpen} onOpenChange={setIsFriendsModalOpen}>
-                          <DialogTrigger asChild>
-                            <Button className="w-full bg-steel-blue hover:bg-blue-600">
-                              <Users className="mr-2 h-4 w-4" />
-                              Friends ({friends.filter((f: any) => f.status === "accepted").length})
-                            </Button>
-                          </DialogTrigger>
                           <DialogContent className="bg-tactical-gray-light border-tactical-gray max-w-md">
                             <DialogHeader>
                               <DialogTitle className="text-white">Your Friends</DialogTitle>
@@ -600,6 +615,12 @@ export default function Profile() {
           friend={selectedFriend}
         />
       )}
+
+      {/* Find Friends Modal */}
+      <FindFriendsModal
+        isOpen={isFindFriendsModalOpen}
+        onClose={() => setIsFindFriendsModalOpen(false)}
+      />
     </div>
   );
 }

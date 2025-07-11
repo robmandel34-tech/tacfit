@@ -23,6 +23,9 @@ Preferred communication style: Simple, everyday language.
 - **NEW**: Profile customization with uploadable profile pictures and cover photos
 - **NEW**: Clickable camera icons on profile and cover photos for easy uploading
 - **NEW**: Real-time profile photo updates with loading states and error handling
+- **FIXED**: Profile pictures now display throughout the app (navigation, activity cards, chat, team pages)
+- **FIXED**: File upload size limit increased to 10MB with proper error handling
+- **FIXED**: User context updates immediately when profile pictures are uploaded
 
 ### Progress Map Feature (July 2025)
 - **NEW**: Added topographical progress map to Competition Status page

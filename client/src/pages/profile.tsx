@@ -123,7 +123,8 @@ export default function Profile() {
       });
       
       if (!response.ok) {
-        throw new Error("Failed to upload avatar");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to upload avatar");
       }
       
       return response.json();
@@ -138,10 +139,16 @@ export default function Profile() {
       updateUser({ avatar: data.avatar });
       setIsUploadingAvatar(false);
     },
-    onError: () => {
+    onError: (error) => {
+      let errorMessage = "Failed to upload profile picture. Please try again.";
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
       toast({
-        title: "Error",
-        description: "Failed to upload profile picture. Please try again.",
+        title: "Upload Failed",
+        description: errorMessage,
         variant: "destructive",
       });
       setIsUploadingAvatar(false);
@@ -161,7 +168,8 @@ export default function Profile() {
       });
       
       if (!response.ok) {
-        throw new Error("Failed to upload cover photo");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to upload cover photo");
       }
       
       return response.json();
@@ -176,10 +184,16 @@ export default function Profile() {
       updateUser({ coverPhoto: data.coverPhoto });
       setIsUploadingCover(false);
     },
-    onError: () => {
+    onError: (error) => {
+      let errorMessage = "Failed to upload cover photo. Please try again.";
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
       toast({
-        title: "Error",
-        description: "Failed to upload cover photo. Please try again.",
+        title: "Upload Failed",
+        description: errorMessage,
         variant: "destructive",
       });
       setIsUploadingCover(false);

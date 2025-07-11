@@ -16,7 +16,7 @@ import fs from "fs";
 
 const upload = multer({ 
   dest: 'uploads/',
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -1037,85 +1037,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Upload profile picture
-  app.post("/api/users/:id/avatar", upload.single("avatar"), async (req, res) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const file = req.file;
-      
-      if (!file) {
-        return res.status(400).json({ message: "No file uploaded" });
+  app.post("/api/users/:id/avatar", (req, res) => {
+    upload.single("avatar")(req, res, async (err) => {
+      if (err) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(400).json({ message: "File too large. Maximum size is 10MB." });
+        }
+        return res.status(500).json({ message: "Upload failed: " + err.message });
       }
       
-      // Validate file type
-      if (!file.mimetype.startsWith('image/')) {
-        return res.status(400).json({ message: "Only image files are allowed" });
+      try {
+        const userId = parseInt(req.params.id);
+        const file = req.file;
+        
+        if (!file) {
+          return res.status(400).json({ message: "No file uploaded" });
+        }
+        
+        // Validate file type
+        if (!file.mimetype.startsWith('image/')) {
+          return res.status(400).json({ message: "Only image files are allowed" });
+        }
+        
+        // Move file to permanent location with proper extension
+        const fileExtension = path.extname(file.originalname);
+        const fileName = `avatar_${userId}_${Date.now()}${fileExtension}`;
+        const filePath = path.join('uploads', fileName);
+        
+        fs.renameSync(file.path, filePath);
+        
+        // Update user with avatar URL
+        const user = await storage.updateUser(userId, {
+          avatar: fileName
+        });
+        
+        if (!user) {
+          return res.status(404).json({ message: "User not found" });
+        }
+        
+        res.json({ 
+          message: "Profile picture uploaded successfully", 
+          avatar: fileName,
+          user 
+        });
+      } catch (error) {
+        res.status(500).json({ message: "Error uploading profile picture" });
       }
-      
-      // Move file to permanent location with proper extension
-      const fileExtension = path.extname(file.originalname);
-      const fileName = `avatar_${userId}_${Date.now()}${fileExtension}`;
-      const filePath = path.join('uploads', fileName);
-      
-      fs.renameSync(file.path, filePath);
-      
-      // Update user with avatar URL
-      const user = await storage.updateUser(userId, {
-        avatar: fileName
-      });
-      
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      
-      res.json({ 
-        message: "Profile picture uploaded successfully", 
-        avatar: fileName,
-        user 
-      });
-    } catch (error) {
-      res.status(500).json({ message: "Error uploading profile picture" });
-    }
+    });
   });
 
   // Upload cover photo
-  app.post("/api/users/:id/cover", upload.single("coverPhoto"), async (req, res) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const file = req.file;
-      
-      if (!file) {
-        return res.status(400).json({ message: "No file uploaded" });
+  app.post("/api/users/:id/cover", (req, res) => {
+    upload.single("coverPhoto")(req, res, async (err) => {
+      if (err) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(400).json({ message: "File too large. Maximum size is 10MB." });
+        }
+        return res.status(500).json({ message: "Upload failed: " + err.message });
       }
       
-      // Validate file type
-      if (!file.mimetype.startsWith('image/')) {
-        return res.status(400).json({ message: "Only image files are allowed" });
+      try {
+        const userId = parseInt(req.params.id);
+        const file = req.file;
+        
+        if (!file) {
+          return res.status(400).json({ message: "No file uploaded" });
+        }
+        
+        // Validate file type
+        if (!file.mimetype.startsWith('image/')) {
+          return res.status(400).json({ message: "Only image files are allowed" });
+        }
+        
+        // Move file to permanent location with proper extension
+        const fileExtension = path.extname(file.originalname);
+        const fileName = `cover_${userId}_${Date.now()}${fileExtension}`;
+        const filePath = path.join('uploads', fileName);
+        
+        fs.renameSync(file.path, filePath);
+        
+        // Update user with cover photo URL
+        const user = await storage.updateUser(userId, {
+          coverPhoto: fileName
+        });
+        
+        if (!user) {
+          return res.status(404).json({ message: "User not found" });
+        }
+        
+        res.json({ 
+          message: "Cover photo uploaded successfully", 
+          coverPhoto: fileName,
+          user 
+        });
+      } catch (error) {
+        res.status(500).json({ message: "Error uploading cover photo" });
       }
-      
-      // Move file to permanent location with proper extension
-      const fileExtension = path.extname(file.originalname);
-      const fileName = `cover_${userId}_${Date.now()}${fileExtension}`;
-      const filePath = path.join('uploads', fileName);
-      
-      fs.renameSync(file.path, filePath);
-      
-      // Update user with cover photo URL
-      const user = await storage.updateUser(userId, {
-        coverPhoto: fileName
-      });
-      
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      
-      res.json({ 
-        message: "Cover photo uploaded successfully", 
-        coverPhoto: fileName,
-        user 
-      });
-    } catch (error) {
-      res.status(500).json({ message: "Error uploading cover photo" });
-    }
+    });
   });
 
   // Serve uploaded files

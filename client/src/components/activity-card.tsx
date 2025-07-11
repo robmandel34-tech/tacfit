@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ThumbsUp, MessageCircle, Flag } from "lucide-react";
 import { useLocation } from "wouter";
+import { useAuth } from "@/hooks/use-auth";
+import { useMutation } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
 
 interface ActivityCardProps {
   activity: {
@@ -24,6 +27,7 @@ interface ActivityCardProps {
 
 export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardProps) {
   const [, navigate] = useLocation();
+  const { user } = useAuth();
   
   const getInitials = (username: string) => {
     return username.split(' ').map(word => word[0]).join('').toUpperCase() || username.slice(0, 2).toUpperCase();
@@ -45,6 +49,61 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
         return '⚽';
       default:
         return '🏋️';
+    }
+  };
+
+  const likeActivity = useMutation({
+    mutationFn: async (activityId: number) => {
+      if (!user) throw new Error('Must be logged in to like activities');
+      
+      const response = await fetch(`/api/activities/${activityId}/like`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: user.id }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to like activity');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
+    },
+  });
+
+  const flagActivity = useMutation({
+    mutationFn: async (activityId: number) => {
+      const response = await fetch(`/api/activities/${activityId}/flag`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to flag activity');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
+    },
+  });
+
+  const handleLike = () => {
+    if (onLike) {
+      onLike(activity.id);
+    } else {
+      likeActivity.mutate(activity.id);
+    }
+  };
+
+  const handleFlag = () => {
+    if (onFlag) {
+      onFlag(activity.id);
+    } else {
+      flagActivity.mutate(activity.id);
     }
   };
 
@@ -98,35 +157,29 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
             
             <p className="text-gray-300 text-sm mb-4">{activity.description}</p>
             
-            <div className="flex items-center gap-6">
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => onLike?.(activity.id)}
-                className="text-gray-400 hover:text-military-green transition-colors p-2"
+            <div className="flex items-center gap-4 pt-3 border-t border-gray-600">
+              <button
+                onClick={handleLike}
+                disabled={likeActivity.isPending}
+                className="flex items-center gap-2 text-gray-400 hover:text-military-green transition-colors text-sm"
               >
-                <ThumbsUp className="mr-2 h-4 w-4" />
-                {activity.likesCount}
-              </Button>
+                <ThumbsUp className="h-4 w-4" />
+                <span>{activity.likesCount}</span>
+              </button>
               
-              <Button
-                size="sm"
-                variant="ghost"
-                className="text-gray-400 hover:text-blue-400 transition-colors p-2"
-              >
-                <MessageCircle className="mr-2 h-4 w-4" />
-                {activity.commentsCount}
-              </Button>
+              <button className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors text-sm">
+                <MessageCircle className="h-4 w-4" />
+                <span>{activity.commentsCount}</span>
+              </button>
               
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => onFlag?.(activity.id)}
-                className="text-gray-400 hover:text-red-400 transition-colors p-2"
+              <button
+                onClick={handleFlag}
+                disabled={flagActivity.isPending}
+                className="flex items-center gap-2 text-gray-400 hover:text-red-400 transition-colors text-sm"
               >
-                <Flag className="mr-2 h-4 w-4" />
-                Flag
-              </Button>
+                <Flag className="h-4 w-4" />
+                <span>Flag</span>
+              </button>
             </div>
           </div>
         </div>

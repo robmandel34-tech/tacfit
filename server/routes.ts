@@ -833,6 +833,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Activity flag routes
+  app.post("/api/activities/:id/flag", async (req, res) => {
+    try {
+      const activityId = parseInt(req.params.id);
+      const updatedActivity = await storage.updateActivity(activityId, { isFlagged: true });
+      res.json({ success: true, activity: updatedActivity });
+    } catch (error) {
+      res.status(500).json({ message: "Error flagging activity" });
+    }
+  });
+
   // Chat routes
   app.get("/api/chat", async (req, res) => {
     try {

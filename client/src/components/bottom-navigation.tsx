@@ -30,15 +30,17 @@ export default function BottomNavigation() {
           const IconComponent = item.icon;
           
           return (
-            <Link key={item.path} href={item.path}>
-              <a className={`flex flex-col items-center justify-center p-2 rounded-none transition-colors ${
+            <Link 
+              key={item.path} 
+              href={item.path}
+              className={`flex flex-col items-center justify-center p-2 rounded-none transition-colors ${
                 isActive 
                   ? "text-military-green" 
                   : "text-gray-400 hover:text-gray-300"
-              }`}>
-                <IconComponent size={20} />
-                <span className="text-xs mt-1 font-medium">{item.label}</span>
-              </a>
+              }`}
+            >
+              <IconComponent size={20} />
+              <span className="text-xs mt-1 font-medium">{item.label}</span>
             </Link>
           );
         })}

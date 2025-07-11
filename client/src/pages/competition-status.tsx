@@ -59,8 +59,8 @@ export default function CompetitionStatus() {
       queryClient.invalidateQueries({ queryKey: [`/api/team-members/${user?.id}`] });
       queryClient.invalidateQueries({ queryKey: ["/api/competitions"] });
       
-      // Navigate back to dashboard
-      navigate("/dashboard");
+      // Navigate back to home/dashboard
+      navigate("/");
     },
     onError: (error: any) => {
       toast({
@@ -105,30 +105,30 @@ export default function CompetitionStatus() {
                   <Trophy className="mr-2 h-5 w-5" />
                   {competition.name}
                 </CardTitle>
-                <div className="flex items-center space-x-2">
-                  <Badge variant={competition.isActive ? "default" : "secondary"}>
-                    {competition.isActive ? "Active" : "Upcoming"}
-                  </Badge>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => leaveCompetitionMutation.mutate()}
-                    disabled={leaveCompetitionMutation.isPending}
-                    className="border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    {leaveCompetitionMutation.isPending ? "Leaving..." : "Leave Competition"}
-                  </Button>
-                </div>
+                <Badge variant={competition.isActive ? "default" : "secondary"}>
+                  {competition.isActive ? "Active" : "Upcoming"}
+                </Badge>
               </div>
             </CardHeader>
             <CardContent>
               <p className="text-gray-300 mb-4">{competition.description}</p>
-              <div className="flex items-center text-sm text-gray-400">
-                <Calendar className="mr-2 h-4 w-4" />
-                <span>
-                  {new Date(competition.startDate).toLocaleDateString()} - {new Date(competition.endDate).toLocaleDateString()}
-                </span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center text-sm text-gray-400">
+                  <Calendar className="mr-2 h-4 w-4" />
+                  <span>
+                    {new Date(competition.startDate).toLocaleDateString()} - {new Date(competition.endDate).toLocaleDateString()}
+                  </span>
+                </div>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => leaveCompetitionMutation.mutate()}
+                  disabled={leaveCompetitionMutation.isPending}
+                  className="bg-red-600 hover:bg-red-700 text-white sharp-button"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  {leaveCompetitionMutation.isPending ? "Leaving..." : "Leave Competition"}
+                </Button>
               </div>
             </CardContent>
           </Card>

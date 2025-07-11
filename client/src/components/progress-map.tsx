@@ -68,13 +68,13 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
             {/* Route path */}
             <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
               <path d="M5,75 Q15,70 25,65 Q35,60 45,70 Q55,80 65,65 Q75,50 85,55 Q92,60 95,65" 
-                    stroke="rgba(255,255,255,0.8)" 
-                    strokeWidth="4" 
+                    stroke="rgba(255,255,255,0.9)" 
+                    strokeWidth="1.5" 
                     fill="none"
-                    strokeDasharray="8,4" />
+                    strokeDasharray="4,2" />
               <path d="M5,75 Q15,70 25,65 Q35,60 45,70 Q55,80 65,65 Q75,50 85,55 Q92,60 95,65" 
-                    stroke="rgba(255,255,255,0.3)" 
-                    strokeWidth="8" 
+                    stroke="rgba(255,255,255,0.2)" 
+                    strokeWidth="3" 
                     fill="none" />
             </svg>
 
@@ -98,10 +98,13 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
 
             {/* Team markers */}
             {teamsWithProgress.map((team, index) => {
-              // Calculate position along the curved path
+              // Calculate position along the curved path using the exact path equation
               const progress = team.progress / 100;
-              const pathX = 5 + progress * 90;
-              const pathY = 75 - Math.sin(progress * Math.PI * 1.5) * 15 + (index % 2 === 0 ? -5 : 5);
+              const t = progress;
+              
+              // Bezier curve calculation matching the SVG path
+              const pathX = 5 + (90 * t) + Math.sin(t * Math.PI * 2) * 10;
+              const pathY = 75 - (20 * t) + Math.sin(t * Math.PI * 3) * 8;
               
               return (
                 <div
@@ -115,31 +118,42 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
                 >
                   {/* Team marker */}
                   <div className="relative group">
-                    <div className={`w-12 h-12 rounded-full border-4 border-white shadow-2xl flex items-center justify-center ${
-                      index === 0 ? 'bg-yellow-500' : 
-                      index === 1 ? 'bg-gray-400' : 
-                      index === 2 ? 'bg-amber-600' : 
-                      'bg-military-green'
+                    {/* Team picture or default icon */}
+                    <div className="w-8 h-8 rounded-full border-2 border-white shadow-lg overflow-hidden bg-tactical-gray">
+                      {team.pictureUrl ? (
+                        <img 
+                          src={team.pictureUrl} 
+                          alt={team.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className={`w-full h-full flex items-center justify-center ${
+                          index === 0 ? 'bg-yellow-500' : 
+                          index === 1 ? 'bg-gray-400' : 
+                          index === 2 ? 'bg-amber-600' : 
+                          'bg-military-green'
+                        }`}>
+                          <span className="text-white font-bold text-xs">{team.rank}</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Rank indicator */}
+                    <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-full border border-white flex items-center justify-center text-xs font-bold ${
+                      index === 0 ? 'bg-yellow-500 text-black' : 
+                      index === 1 ? 'bg-gray-400 text-black' : 
+                      index === 2 ? 'bg-amber-600 text-black' : 
+                      'bg-military-green text-white'
                     }`}>
-                      <span className="text-white font-bold text-lg drop-shadow-lg">{team.rank}</span>
+                      {team.rank}
                     </div>
-                    
-                    {/* Team flag */}
-                    <div className="absolute -top-3 -right-2 w-8 h-5 bg-military-green rounded-sm shadow-xl border border-white">
-                      <div className="w-full h-full bg-gradient-to-r from-military-green to-military-green-light rounded-sm" />
-                    </div>
-                    
-                    {/* Team pulse effect for first place */}
-                    {index === 0 && (
-                      <div className="absolute inset-0 rounded-full bg-yellow-500 animate-ping opacity-20" />
-                    )}
                     
                     {/* Team info tooltip */}
-                    <div className="absolute bottom-full mb-3 left-1/2 transform -translate-x-1/2 bg-black/95 text-white px-4 py-3 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 shadow-2xl border border-white/20">
-                      <div className="font-semibold text-base text-yellow-400">{team.name}</div>
-                      <div className="text-military-green font-bold text-lg">{team.points} points</div>
+                    <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-black/90 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 shadow-xl border border-white/20">
+                      <div className="font-semibold text-sm">{team.name}</div>
+                      <div className="text-military-green font-bold">{team.points} points</div>
                       {team.motto && <div className="text-gray-300 italic text-xs mt-1">"{team.motto}"</div>}
-                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-black/95" />
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-black/90" />
                     </div>
                   </div>
                 </div>

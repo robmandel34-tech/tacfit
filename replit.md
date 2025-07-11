@@ -117,6 +117,9 @@ Preferred communication style: Simple, everyday language.
 - **FIXED**: Activity type badge text color in Latest Intel section now shows gray text instead of black
 - **ENHANCED**: Team photo, name, and motto updates now refresh throughout the entire app
 - **ENHANCED**: Comprehensive cache invalidation for team changes updates progress map and all team displays
+- **ENHANCED**: Progress map now uses high-quality wilderness terrain imagery instead of SVG graphics
+- **ENHANCED**: Progress map route path styling improved with better visibility, glowing effects, and drop shadows
+- **ENHANCED**: Topographical features enhanced with better contrast and visibility against real terrain background
 
 ### Competition Status Features (July 2025)
 - New Competition Status page with comprehensive competition overview

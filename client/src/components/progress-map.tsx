@@ -57,29 +57,37 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
         <div className="relative">
           {/* Map Background */}
           <div className="relative h-96 rounded-lg overflow-hidden">
-            {/* Satellite Terrain Background */}
+            {/* High-Quality Wilderness Terrain Background */}
             <div 
               className="w-full h-full bg-cover bg-center"
               style={{
-                backgroundImage: `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><defs><pattern id="forest" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse"><rect width="30" height="30" fill="%23234a34"/><circle cx="8" cy="8" r="5" fill="%23305c42"/><circle cx="22" cy="12" r="4" fill="%23305c42"/><circle cx="12" cy="22" r="6" fill="%23305c42"/><circle cx="25" cy="25" r="3" fill="%23305c42"/></pattern><filter id="terrain"><feTurbulence baseFrequency="0.03" numOctaves="3"/><feColorMatrix values="0 0 0 0 0.1 0 0 0 0 0.25 0 0 0 0 0.15 0 0 0 1 0"/></filter></defs><rect width="400" height="300" fill="url(%23forest)"/><rect width="400" height="300" fill="%23234a34" opacity="0.8" filter="url(%23terrain)"/><ellipse cx="100" cy="120" rx="40" ry="25" fill="%23305c42" opacity="0.6"/><ellipse cx="280" cy="180" rx="35" ry="30" fill="%23305c42" opacity="0.7"/><ellipse cx="200" cy="80" rx="45" ry="20" fill="%23305c42" opacity="0.5"/><ellipse cx="320" cy="100" rx="30" ry="35" fill="%23305c42" opacity="0.6"/><path d="M0,200 Q100,180 200,200 Q300,220 400,200" stroke="%23142618" stroke-width="4" fill="none" opacity="0.4"/><path d="M0,150 Q100,130 200,150 Q300,170 400,150" stroke="%23142618" stroke-width="3" fill="none" opacity="0.3"/></svg>')`,
-                filter: 'brightness(0.8) contrast(1.2)'
+                backgroundImage: `url('/alaska-wilderness-hq.jpg')`,
+                filter: 'brightness(0.7) contrast(1.1) saturate(1.2)'
               }}
             />
             
-            {/* Overlay for better visibility */}
-            <div className="absolute inset-0 bg-black/30" />
+            {/* Enhanced overlay for better visibility and contrast */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/50" />
 
-            {/* Route path */}
+            {/* Enhanced route path with better visibility */}
             <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
+              {/* Background stroke for better visibility */}
               <path d="M5,75 Q15,70 25,65 Q35,60 45,70 Q55,80 65,65 Q75,50 85,55 Q92,60 95,65" 
-                    stroke="rgba(255,255,255,0.9)" 
-                    strokeWidth="1.5" 
-                    fill="none"
-                    strokeDasharray="4,2" />
-              <path d="M5,75 Q15,70 25,65 Q35,60 45,70 Q55,80 65,65 Q75,50 85,55 Q92,60 95,65" 
-                    stroke="rgba(255,255,255,0.2)" 
-                    strokeWidth="3" 
+                    stroke="rgba(0,0,0,0.6)" 
+                    strokeWidth="4" 
                     fill="none" />
+              {/* Main route path */}
+              <path d="M5,75 Q15,70 25,65 Q35,60 45,70 Q55,80 65,65 Q75,50 85,55 Q92,60 95,65" 
+                    stroke="rgba(255,255,255,0.95)" 
+                    strokeWidth="2" 
+                    fill="none"
+                    strokeDasharray="6,3" />
+              {/* Glowing effect */}
+              <path d="M5,75 Q15,70 25,65 Q35,60 45,70 Q55,80 65,65 Q75,50 85,55 Q92,60 95,65" 
+                    stroke="rgba(134,239,172,0.8)" 
+                    strokeWidth="1" 
+                    fill="none"
+                    strokeDasharray="6,3" />
             </svg>
 
             {/* Topographical features */}
@@ -93,10 +101,10 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
                   transform: 'translate(-50%, -50%)'
                 }}
               >
-                <div className={`p-2 rounded-full bg-black/20 ${feature.color}`}>
-                  <feature.icon className="h-4 w-4" />
+                <div className={`p-2 rounded-full bg-black/60 border-2 border-white/30 ${feature.color}`}>
+                  <feature.icon className="h-4 w-4 drop-shadow-lg" />
                 </div>
-                <span className="text-xs text-white mt-1 font-medium">{feature.name}</span>
+                <span className="text-xs text-white mt-1 font-medium drop-shadow-lg bg-black/40 px-2 py-1 rounded">{feature.name}</span>
               </div>
             ))}
 

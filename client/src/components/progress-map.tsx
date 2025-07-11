@@ -57,16 +57,17 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
         <div className="relative">
           {/* Map Background */}
           <div className="relative h-96 rounded-lg overflow-hidden">
-            {/* Alaska Wilderness Satellite Image */}
-            <img 
-              src="https://cdn.pixabay.com/photo/2017/11/20/07/26/alaska-2964658_1280.jpg" 
-              alt="Alaska Wilderness" 
-              className="w-full h-full object-cover"
-              style={{ filter: 'brightness(0.7) contrast(1.1)' }}
+            {/* Satellite Terrain Background */}
+            <div 
+              className="w-full h-full bg-cover bg-center"
+              style={{
+                backgroundImage: `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><defs><pattern id="forest" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse"><rect width="30" height="30" fill="%23234a34"/><circle cx="8" cy="8" r="5" fill="%23305c42"/><circle cx="22" cy="12" r="4" fill="%23305c42"/><circle cx="12" cy="22" r="6" fill="%23305c42"/><circle cx="25" cy="25" r="3" fill="%23305c42"/></pattern><filter id="terrain"><feTurbulence baseFrequency="0.03" numOctaves="3"/><feColorMatrix values="0 0 0 0 0.1 0 0 0 0 0.25 0 0 0 0 0.15 0 0 0 1 0"/></filter></defs><rect width="400" height="300" fill="url(%23forest)"/><rect width="400" height="300" fill="%23234a34" opacity="0.8" filter="url(%23terrain)"/><ellipse cx="100" cy="120" rx="40" ry="25" fill="%23305c42" opacity="0.6"/><ellipse cx="280" cy="180" rx="35" ry="30" fill="%23305c42" opacity="0.7"/><ellipse cx="200" cy="80" rx="45" ry="20" fill="%23305c42" opacity="0.5"/><ellipse cx="320" cy="100" rx="30" ry="35" fill="%23305c42" opacity="0.6"/><path d="M0,200 Q100,180 200,200 Q300,220 400,200" stroke="%23142618" stroke-width="4" fill="none" opacity="0.4"/><path d="M0,150 Q100,130 200,150 Q300,170 400,150" stroke="%23142618" stroke-width="3" fill="none" opacity="0.3"/></svg>')`,
+                filter: 'brightness(0.8) contrast(1.2)'
+              }}
             />
             
             {/* Overlay for better visibility */}
-            <div className="absolute inset-0 bg-black/20" />
+            <div className="absolute inset-0 bg-black/30" />
 
             {/* Route path */}
             <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">

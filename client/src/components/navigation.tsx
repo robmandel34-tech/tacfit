@@ -1,11 +1,11 @@
 import { useAuth } from "@/hooks/use-auth";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useRouter } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Shield, Trophy, MessageCircle, Users, Activity } from "lucide-react";
 
 export default function Navigation() {
   const { user, logout } = useAuth();
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
 
   if (!user) return null;
 
@@ -54,7 +54,7 @@ export default function Navigation() {
               <Button 
                 variant="ghost" 
                 className="flex items-center space-x-2 bg-tactical-gray-lighter hover:bg-tactical-gray-lightest px-3 py-2 rounded-lg"
-                onClick={() => {}}
+                onClick={() => navigate('/profile')}
               >
                 <div className="w-8 h-8 bg-military-green rounded-full flex items-center justify-center">
                   <span className="text-white font-bold text-sm">{getInitials(user.username)}</span>

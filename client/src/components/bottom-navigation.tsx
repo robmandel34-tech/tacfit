@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
-import { Home, Trophy, Users, Activity, MessageCircle } from "lucide-react";
+import { Home, Trophy, Users } from "lucide-react";
 
 export default function BottomNavigation() {
   const { user } = useAuth();
@@ -18,10 +18,8 @@ export default function BottomNavigation() {
 
   const navItems = [
     { path: "/", icon: Home, label: "Home" },
-    { path: "/competitions", icon: Trophy, label: "Missions" },
-    { path: "/team", icon: Users, label: "Squad" },
-    { path: "/activity-feed", icon: Activity, label: "Intel" },
-    { path: "/profile", icon: MessageCircle, label: "Comms" }
+    { path: "/competition-status", icon: Trophy, label: "Competition" },
+    { path: "/team", icon: Users, label: "Team" }
   ];
 
   return (

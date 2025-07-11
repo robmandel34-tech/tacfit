@@ -60,14 +60,16 @@ export async function seedDatabase() {
       name: "Steel Wolves",
       competitionId: comp1.id,
       captainId: user1.id,
-      points: 450
+      points: 450,
+      motto: "Strength Through Unity"
     });
     
     const team2 = await storage.createTeam({
       name: "Iron Eagles",
       competitionId: comp1.id,
       captainId: user2.id,
-      points: 320
+      points: 320,
+      motto: "Soar Higher, Push Harder"
     });
 
     // Add team members

@@ -31,6 +31,8 @@ export const teams = pgTable("teams", {
   competitionId: integer("competition_id").references(() => competitions.id),
   captainId: integer("captain_id").references(() => users.id),
   points: integer("points").default(0),
+  motto: text("motto"),
+  pictureUrl: text("picture_url"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

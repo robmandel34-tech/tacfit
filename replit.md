@@ -10,13 +10,38 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### Dashboard Logic Updates (July 2025)
-- Implemented conditional UI based on user competition participation
-- Submit Activity and Team Chat buttons now only appear for users who have joined competitions
-- Added 1000 points threshold requirement for creating competitions
-- Updated intel box to show recent activity posts from all current competitions
-- Enhanced activity display with activity type badges and points earned
-- Added user team membership checking functionality
+### Single Competition/Team Restriction (July 2025)
+- **BREAKING CHANGE**: Users can now only be part of one competition + team at a time
+- Updated database schema to support single team membership per user
+- Modified team joining logic to prevent multiple competition participation
+- Enhanced bottom navigation to only show for users with active team membership
+
+### Navigation System Overhaul (July 2025)
+- Redesigned bottom navigation with 3 focused tabs: Home, Competition, Team
+- Removed Profile tab from bottom nav (accessible via user avatar clicks)
+- Added Competition Status page showing team leaderboards and all competition activities
+- Updated Team page to display team motto, picture, members, and team-specific activities
+- Navigation only appears for users actively participating in competitions
+
+### Team Management Enhancement (July 2025)
+- Added team motto and team picture fields to database schema
+- Enhanced team display with member avatars, roles, and individual point totals
+- Team captain identification with crown icon
+- Team-specific activity feed showing only team member submissions
+- Improved team member management with user details and points
+
+### Competition Status Features (July 2025)
+- New Competition Status page with comprehensive competition overview
+- Team leaderboard with ranking, points, and team mottos
+- All competition activities feed with user attribution
+- Real-time competition progress tracking
+- Enhanced competition header with date ranges and status badges
+
+### Database Schema Updates (July 2025)
+- Added `motto` and `pictureUrl` fields to teams table
+- Enhanced API routes for team-specific and competition-specific data retrieval
+- New endpoints: `/api/teams/competition/:id`, `/api/team-members/team/:id`, `/api/activities/team/:id`
+- Updated seed data to include team mottos for testing
 
 ### UI/UX Improvements (July 2025)
 - Updated design with sharper edges and cleaner aesthetic

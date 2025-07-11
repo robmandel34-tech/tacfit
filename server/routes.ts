@@ -189,6 +189,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get teams by competition
+  app.get("/api/teams/competition/:competitionId", async (req, res) => {
+    try {
+      const competitionId = parseInt(req.params.competitionId);
+      const teams = await storage.getTeamsByCompetition(competitionId);
+      res.json(teams);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching teams" });
+    }
+  });
+
   // Team member routes
   app.get("/api/teams/:id/members", async (req, res) => {
     try {
@@ -200,7 +211,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const user = await storage.getUser(member.userId!);
           return {
             ...member,
-            user: user ? { id: user.id, username: user.username, avatar: user.avatar } : null
+            user: user ? { id: user.id, username: user.username, avatar: user.avatar, points: user.points } : null
+          };
+        })
+      );
+      
+      res.json(membersWithUsers);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching team members" });
+    }
+  });
+
+  // Get team members by team ID
+  app.get("/api/team-members/team/:teamId", async (req, res) => {
+    try {
+      const teamId = parseInt(req.params.teamId);
+      const members = await storage.getTeamMembers(teamId);
+      
+      // Get user details for each member
+      const membersWithUsers = await Promise.all(
+        members.map(async (member) => {
+          const user = await storage.getUser(member.userId!);
+          return {
+            ...member,
+            user: user ? { id: user.id, username: user.username, avatar: user.avatar, points: user.points } : null
           };
         })
       );
@@ -300,6 +334,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         activities = await storage.getActivities();
       }
+      
+      // Get user details for each activity
+      const activitiesWithUsers = await Promise.all(
+        activities.map(async (activity) => {
+          const user = await storage.getUser(activity.userId!);
+          const likes = await storage.getActivityLikes(activity.id);
+          const comments = await storage.getActivityComments(activity.id);
+          
+          return {
+            ...activity,
+            user: user ? { id: user.id, username: user.username, avatar: user.avatar } : null,
+            likesCount: likes.length,
+            commentsCount: comments.length
+          };
+        })
+      );
+      
+      res.json(activitiesWithUsers);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching activities" });
+    }
+  });
+
+  // Get activities by competition ID
+  app.get("/api/activities/competition/:competitionId", async (req, res) => {
+    try {
+      const competitionId = parseInt(req.params.competitionId);
+      const activities = await storage.getActivitiesByCompetition(competitionId);
+      
+      // Get user details for each activity
+      const activitiesWithUsers = await Promise.all(
+        activities.map(async (activity) => {
+          const user = await storage.getUser(activity.userId!);
+          const likes = await storage.getActivityLikes(activity.id);
+          const comments = await storage.getActivityComments(activity.id);
+          
+          return {
+            ...activity,
+            user: user ? { id: user.id, username: user.username, avatar: user.avatar } : null,
+            likesCount: likes.length,
+            commentsCount: comments.length
+          };
+        })
+      );
+      
+      res.json(activitiesWithUsers);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching activities" });
+    }
+  });
+
+  // Get activities by team ID
+  app.get("/api/activities/team/:teamId", async (req, res) => {
+    try {
+      const teamId = parseInt(req.params.teamId);
+      const activities = await storage.getActivitiesByTeam(teamId);
       
       // Get user details for each activity
       const activitiesWithUsers = await Promise.all(

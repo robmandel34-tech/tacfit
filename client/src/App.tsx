@@ -8,6 +8,7 @@ import Dashboard from "@/pages/dashboard";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
 import Competitions from "@/pages/competitions";
+import CompetitionStatus from "@/pages/competition-status";
 import Team from "@/pages/team";
 import ActivityFeed from "@/pages/activity-feed";
 import Profile from "@/pages/profile";
@@ -23,6 +24,7 @@ function Router() {
         <Route path="/login" component={Login} />
         <Route path="/register" component={Register} />
         <Route path="/competitions" component={Competitions} />
+        <Route path="/competition-status" component={CompetitionStatus} />
         <Route path="/team" component={Team} />
         <Route path="/activity-feed" component={ActivityFeed} />
         <Route path="/profile" component={Profile} />

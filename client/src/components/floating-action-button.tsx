@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Target } from "lucide-react";
 import ActivitySubmissionModal from "@/components/activity-submission-modal";
 
 export default function FloatingActionButton() {
@@ -13,7 +13,7 @@ export default function FloatingActionButton() {
         className="fixed bottom-24 right-6 w-14 h-14 rounded-full bg-military-green/90 hover:bg-military-green-light/90 shadow-2xl z-50 border-2 border-white/50 transition-all duration-300 hover:scale-110 backdrop-blur-sm"
         size="icon"
       >
-        <Plus className="h-6 w-6 text-white" />
+        <Target className="h-6 w-6 text-white" />
       </Button>
 
       <ActivitySubmissionModal

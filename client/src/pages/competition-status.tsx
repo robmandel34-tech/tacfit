@@ -2,6 +2,7 @@ import { useAuthRequired } from "@/lib/auth";
 import { useQuery } from "@tanstack/react-query";
 import Navigation from "@/components/navigation";
 import ActivityCard from "@/components/activity-card";
+import ProgressMap from "@/components/progress-map";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Users, Target, Calendar } from "lucide-react";
@@ -82,6 +83,13 @@ export default function CompetitionStatus() {
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {/* Progress Map */}
+        {competition && teams.length > 0 && (
+          <div className="mb-6">
+            <ProgressMap teams={teams} competitionName={competition.name} />
+          </div>
         )}
 
         {/* Team Leaderboard */}

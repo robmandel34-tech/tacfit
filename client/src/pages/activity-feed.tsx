@@ -121,25 +121,25 @@ export default function ActivityFeed() {
                   <div className="p-6">
                     {/* User header */}
                     <div className="mb-4">
-                      <div className="flex items-center space-x-3 mb-3">
+                      <div className="flex items-start space-x-3">
                         <div className="w-10 h-10 bg-military-green rounded-full flex items-center justify-center flex-shrink-0">
                           <span className="text-white font-bold text-xs">
                             {getInitials(activity.user?.username || "U")}
                           </span>
                         </div>
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center space-x-2 mb-2">
                             <span className="text-white font-semibold text-sm">{activity.user?.username || "Unknown"}</span>
                             <span className="text-gray-400 text-xs">
                               {new Date(activity.createdAt).toLocaleDateString()}
                             </span>
                           </div>
+                          <div>
+                            <span className="text-xs border border-gray-600 text-gray-300 bg-transparent px-2 py-1 rounded">
+                              {getActivityIcon(activity.type)} {activity.type}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="ml-13">
-                        <span className="text-xs border border-gray-600 text-gray-300 bg-transparent px-2 py-1 rounded">
-                          {getActivityIcon(activity.type)} {activity.type}
-                        </span>
                       </div>
                     </div>
                     

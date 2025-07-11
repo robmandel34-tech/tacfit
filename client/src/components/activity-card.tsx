@@ -187,7 +187,7 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
                 disabled={likeActivity.isPending}
                 className={`flex items-center gap-2 transition-colors text-sm ${
                   userLikeStatus 
-                    ? 'text-military-green' 
+                    ? 'text-military-green hover:text-military-green' 
                     : 'text-gray-400 hover:text-military-green'
                 }`}
               >

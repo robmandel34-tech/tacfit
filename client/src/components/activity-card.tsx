@@ -185,13 +185,17 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
               <button
                 onClick={handleLike}
                 disabled={likeActivity.isPending}
-                className={`flex items-center gap-2 transition-colors text-sm ${
-                  userLikeStatus 
-                    ? 'text-military-green hover:text-military-green' 
-                    : 'text-gray-400 hover:text-military-green'
-                }`}
+                className="flex items-center gap-2 transition-colors text-sm text-gray-400 hover:text-military-green"
+                style={{
+                  color: userLikeStatus ? '#7cb342' : undefined
+                }}
               >
-                <ThumbsUp className={`h-4 w-4 ${userLikeStatus ? 'fill-current' : ''}`} />
+                <ThumbsUp 
+                  className="h-4 w-4" 
+                  style={{
+                    fill: userLikeStatus ? '#7cb342' : 'none'
+                  }}
+                />
                 <span>{currentLikeCount}</span>
               </button>
               

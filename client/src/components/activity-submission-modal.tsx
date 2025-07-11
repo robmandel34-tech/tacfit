@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,36 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   const [description, setDescription] = useState("");
   const [quantity, setQuantity] = useState("");
   const [file, setFile] = useState<File | null>(null);
+
+  // Get user's current team membership
+  const { data: userTeamMember } = useQuery({
+    queryKey: [`/api/team-members/${user?.id}`],
+    enabled: !!user,
+  });
+
+  // Get current team details to find competition
+  const { data: currentTeam } = useQuery({
+    queryKey: [`/api/teams/${userTeamMember?.[0]?.teamId}`],
+    enabled: !!userTeamMember?.[0]?.teamId,
+  });
+
+  // Get competition details to find required activities
+  const { data: competition } = useQuery({
+    queryKey: [`/api/competitions/${currentTeam?.competitionId}`],
+    enabled: !!currentTeam?.competitionId,
+  });
+
+  // Activity type display names
+  const activityTypeNames: Record<string, string> = {
+    cardio: "Cardio",
+    strength: "Strength Training",
+    flexibility: "Flexibility",
+    sports: "Sports",
+    other: "Other"
+  };
+
+  // Get required activities for current competition or fallback to all types
+  const availableActivityTypes = competition?.requiredActivities || ["cardio", "strength", "flexibility", "sports", "other"];
 
   const submitActivity = useMutation({
     mutationFn: async (data: FormData) => {
@@ -127,11 +157,11 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                 <SelectValue placeholder="Select activity type" />
               </SelectTrigger>
               <SelectContent className="bg-tactical-gray-light border-tactical-gray">
-                <SelectItem value="cardio">Cardio</SelectItem>
-                <SelectItem value="strength">Strength Training</SelectItem>
-                <SelectItem value="flexibility">Flexibility</SelectItem>
-                <SelectItem value="sports">Sports</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                {availableActivityTypes.map((activityType) => (
+                  <SelectItem key={activityType} value={activityType}>
+                    {activityTypeNames[activityType] || activityType}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

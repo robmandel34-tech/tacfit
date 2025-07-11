@@ -29,6 +29,10 @@ Preferred communication style: Simple, everyday language.
 - **FIXED**: Competition creation buttons now properly validate user points (1000 required)
 - **FIXED**: Profile picture uploads now refresh all cached data to update images everywhere
 - **FIXED**: Competition joining is now free for all users (1000 point requirement only applies to creating competitions)
+- **NEW**: Interactive team selection modal for joining competitions
+- **NEW**: Users can now view all teams, member counts, and open slots before joining
+- **NEW**: Dedicated "Join Here" buttons for each open team slot
+- **NEW**: Option to create new teams when joining competitions
 
 ### Progress Map Feature (July 2025)
 - **NEW**: Added topographical progress map to Competition Status page

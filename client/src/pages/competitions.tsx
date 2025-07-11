@@ -6,12 +6,14 @@ import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/navigation";
 import CompetitionCard from "@/components/competition-card";
 import InviteFriendsModal from "@/components/invite-friends-modal";
+import TeamSelectionModal from "@/components/team-selection-modal";
 import { Button } from "@/components/ui/button";
 import { Trophy, Plus } from "lucide-react";
 
 export default function Competitions() {
   const { user, isLoading } = useAuthRequired();
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [teamSelectionModalOpen, setTeamSelectionModalOpen] = useState(false);
   const [selectedCompetition, setSelectedCompetition] = useState<{ id: number; name: string } | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -21,36 +23,16 @@ export default function Competitions() {
     enabled: !!user,
   });
 
-  const joinCompetitionMutation = useMutation({
-    mutationFn: async (competitionId: number) => {
-      const response = await apiRequest("POST", `/api/competitions/${competitionId}/join`, {
-        userId: user?.id
-      });
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success!",
-        description: "You've joined the competition and been assigned to a team.",
-      });
-      queryClient.invalidateQueries({ queryKey: [`/api/team-members/${user?.id}`] });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to join competition",
-        variant: "destructive",
-      });
-    },
-  });
+  // Remove the old automatic joining logic
 
   const handleInvite = (competitionId: number, competitionName: string) => {
     setSelectedCompetition({ id: competitionId, name: competitionName });
     setInviteModalOpen(true);
   };
 
-  const handleJoin = (competitionId: number) => {
-    joinCompetitionMutation.mutate(competitionId);
+  const handleJoin = (competitionId: number, competitionName: string) => {
+    setSelectedCompetition({ id: competitionId, name: competitionName });
+    setTeamSelectionModalOpen(true);
   };
 
   if (isLoading) {
@@ -142,7 +124,7 @@ export default function Competitions() {
                 key={competition.id}
                 competition={competition}
                 onInvite={handleInvite}
-                onJoin={handleJoin}
+                onJoin={(id) => handleJoin(id, competition.name)}
               />
             ))
           )}
@@ -153,6 +135,16 @@ export default function Competitions() {
           <InviteFriendsModal
             isOpen={inviteModalOpen}
             onClose={() => setInviteModalOpen(false)}
+            competitionId={selectedCompetition.id}
+            competitionName={selectedCompetition.name}
+          />
+        )}
+
+        {/* Team Selection Modal */}
+        {selectedCompetition && (
+          <TeamSelectionModal
+            isOpen={teamSelectionModalOpen}
+            onClose={() => setTeamSelectionModalOpen(false)}
             competitionId={selectedCompetition.id}
             competitionName={selectedCompetition.name}
           />

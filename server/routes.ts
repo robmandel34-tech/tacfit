@@ -145,8 +145,111 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Join competition endpoint
-  app.post("/api/competitions/:id/join", async (req, res) => {
+  // Get teams with member details for a competition
+  app.get("/api/competitions/:id/teams-with-members", async (req, res) => {
+    try {
+      const competitionId = parseInt(req.params.id);
+      const teams = await storage.getTeamsByCompetition(competitionId);
+      
+      const teamsWithMembers = await Promise.all(
+        teams.map(async (team) => {
+          const members = await storage.getTeamMembers(team.id);
+          const membersWithUsers = await Promise.all(
+            members.map(async (member) => {
+              const user = await storage.getUser(member.userId!);
+              return {
+                ...member,
+                user: user ? { 
+                  id: user.id, 
+                  username: user.username, 
+                  avatar: user.avatar 
+                } : null
+              };
+            })
+          );
+          
+          return {
+            ...team,
+            memberCount: members.length,
+            members: membersWithUsers
+          };
+        })
+      );
+      
+      res.json(teamsWithMembers);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching teams with members" });
+    }
+  });
+
+  // Join specific team endpoint
+  app.post("/api/teams/:id/join", async (req, res) => {
+    try {
+      const teamId = parseInt(req.params.id);
+      const { userId } = req.body;
+      
+      if (!userId) {
+        return res.status(400).json({ message: "User ID required" });
+      }
+
+      // Get user
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Get team
+      const team = await storage.getTeam(teamId);
+      if (!team) {
+        return res.status(404).json({ message: "Team not found" });
+      }
+
+      // Check if user is already in any team
+      const allTeams = await storage.getTeams();
+      let currentlyInCompetition = false;
+      
+      for (const existingTeam of allTeams) {
+        const member = await storage.getTeamMember(existingTeam.id, userId);
+        if (member) {
+          currentlyInCompetition = true;
+          break;
+        }
+      }
+      
+      if (currentlyInCompetition) {
+        return res.status(400).json({ message: "You are already in a competition. Leave your current competition first." });
+      }
+
+      // Check if team is full
+      const teamMembers = await storage.getTeamMembers(teamId);
+      if (teamMembers.length >= 5) {
+        return res.status(400).json({ message: "Team is full" });
+      }
+
+      // Add user to team
+      await storage.addTeamMember({
+        teamId: teamId,
+        userId: userId,
+        role: "member"
+      });
+
+      // Update user's competition count
+      await storage.updateUser(userId, {
+        competitionsEntered: (user.competitionsEntered || 0) + 1
+      });
+
+      res.json({ 
+        message: "Successfully joined team", 
+        team: team 
+      });
+    } catch (error) {
+      console.error("Error joining team:", error);
+      res.status(500).json({ message: "Error joining team" });
+    }
+  });
+
+  // Create new team for competition
+  app.post("/api/competitions/:id/create-team", async (req, res) => {
     try {
       const competitionId = parseInt(req.params.id);
       const { userId } = req.body;
@@ -161,83 +264,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Check if user is already in a competition
-      const existingMembership = await storage.getUserTeam(userId, competitionId);
-      if (existingMembership) {
-        return res.status(400).json({ message: "User already in this competition" });
-      }
-
       // Get competition
       const competition = await storage.getCompetition(competitionId);
       if (!competition || !competition.isActive) {
         return res.status(400).json({ message: "Competition not available" });
       }
 
-      // Check if user is currently in any competition
+      // Check if user is already in any team
       const allTeams = await storage.getTeams();
       let currentlyInCompetition = false;
       
-      for (const team of allTeams) {
-        const member = await storage.getTeamMember(team.id, userId);
+      for (const existingTeam of allTeams) {
+        const member = await storage.getTeamMember(existingTeam.id, userId);
         if (member) {
           currentlyInCompetition = true;
           break;
         }
       }
       
-      // If user is currently in a competition, they can't join another
       if (currentlyInCompetition) {
         return res.status(400).json({ message: "You are already in a competition. Leave your current competition first." });
       }
-      
-      // Joining competitions is free for all users
-      // Only creating competitions requires 1000 points
 
-      // Get existing teams for the competition
+      // Check if competition is full
       const existingTeams = await storage.getTeamsByCompetition(competitionId);
-      let targetTeam = null;
-
-      // Find a team with less than 5 members
-      for (const team of existingTeams) {
-        const members = await storage.getTeamMembers(team.id);
-        if (members.length < 5) {
-          targetTeam = team;
-          break;
-        }
+      if (existingTeams.length >= (competition.maxTeams || 10)) {
+        return res.status(400).json({ message: "Competition is full" });
       }
 
-      // If no team has space, create a new team
-      if (!targetTeam) {
-        if (existingTeams.length >= (competition.maxTeams || 10)) {
-          return res.status(400).json({ message: "Competition is full" });
-        }
+      // Generate team name
+      const teamNames = [
+        "Alpha Squad", "Bravo Team", "Charlie Unit", "Delta Force", 
+        "Echo Battalion", "Foxtrot Division", "Golf Company", "Hotel Platoon",
+        "India Squad", "Juliet Team", "Kilo Warriors", "Lima Force",
+        "Mike Battalion", "November Squad", "Oscar Team", "Papa Unit"
+      ];
+      const availableNames = teamNames.filter(name => 
+        !existingTeams.some(team => team.name === name)
+      );
+      
+      const teamName = availableNames[Math.floor(Math.random() * availableNames.length)] || 
+                      `Team ${existingTeams.length + 1}`;
 
-        const teamNames = [
-          "Alpha Squad", "Bravo Team", "Charlie Unit", "Delta Force", 
-          "Echo Battalion", "Foxtrot Division", "Golf Company", "Hotel Platoon",
-          "India Squad", "Juliet Team"
-        ];
-        const availableNames = teamNames.filter(name => 
-          !existingTeams.some(team => team.name === name)
-        );
-        
-        const teamName = availableNames[Math.floor(Math.random() * availableNames.length)] || 
-                        `Team ${existingTeams.length + 1}`;
+      // Create new team
+      const newTeam = await storage.createTeam({
+        name: teamName,
+        competitionId: competitionId,
+        captainId: userId,
+        points: 0,
+        motto: "Ready for Action"
+      });
 
-        targetTeam = await storage.createTeam({
-          name: teamName,
-          competitionId: competitionId,
-          captainId: userId,
-          points: 0,
-          motto: "Ready for Action"
-        });
-      }
-
-      // Add user to team
+      // Add user as captain
       await storage.addTeamMember({
-        teamId: targetTeam.id,
+        teamId: newTeam.id,
         userId: userId,
-        role: targetTeam.captainId === userId ? "captain" : "member"
+        role: "captain"
       });
 
       // Update user's competition count
@@ -246,12 +328,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       res.json({ 
-        message: "Successfully joined competition", 
-        team: targetTeam 
+        message: "Successfully created team", 
+        team: newTeam 
       });
     } catch (error) {
-      console.error("Error joining competition:", error);
-      res.status(500).json({ message: "Error joining competition" });
+      console.error("Error creating team:", error);
+      res.status(500).json({ message: "Error creating team" });
     }
   });
 

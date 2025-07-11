@@ -2,8 +2,11 @@ import {
   User, InsertUser, Competition, InsertCompetition, Team, InsertTeam, 
   TeamMember, InsertTeamMember, Activity, InsertActivity, ActivityComment, 
   InsertActivityComment, ActivityLike, ChatMessage, InsertChatMessage, 
-  Friendship, InsertFriendship, CompetitionHistory
+  Friendship, InsertFriendship, CompetitionHistory, users, competitions, teams, 
+  teamMembers, activities, activityComments, activityLikes, chatMessages, 
+  friendships, competitionHistory
 } from "@shared/schema";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // User operations

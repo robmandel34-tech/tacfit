@@ -1,0 +1,279 @@
+import { 
+  User, InsertUser, Competition, InsertCompetition, Team, InsertTeam, 
+  TeamMember, InsertTeamMember, Activity, InsertActivity, ActivityComment, 
+  InsertActivityComment, ActivityLike, ChatMessage, InsertChatMessage, 
+  Friendship, InsertFriendship, CompetitionHistory, users, competitions, teams, 
+  teamMembers, activities, activityComments, activityLikes, chatMessages, 
+  friendships, competitionHistory
+} from "@shared/schema";
+import { db } from "./db";
+import { eq, and } from "drizzle-orm";
+import { IStorage } from "./storage";
+
+export class DatabaseStorage implements IStorage {
+  // User operations
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values({ ...insertUser, points: insertUser.points || 0 })
+      .returning();
+    return user;
+  }
+
+  async updateUser(id: number, updates: Partial<User>): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set(updates)
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
+  }
+
+  // Competition operations
+  async getCompetitions(): Promise<Competition[]> {
+    return await db.select().from(competitions);
+  }
+
+  async getCompetition(id: number): Promise<Competition | undefined> {
+    const [competition] = await db.select().from(competitions).where(eq(competitions.id, id));
+    return competition || undefined;
+  }
+
+  async createCompetition(insertCompetition: InsertCompetition): Promise<Competition> {
+    const [competition] = await db
+      .insert(competitions)
+      .values(insertCompetition)
+      .returning();
+    return competition;
+  }
+
+  async updateCompetition(id: number, updates: Partial<Competition>): Promise<Competition | undefined> {
+    const [competition] = await db
+      .update(competitions)
+      .set(updates)
+      .where(eq(competitions.id, id))
+      .returning();
+    return competition || undefined;
+  }
+
+  // Team operations
+  async getTeams(): Promise<Team[]> {
+    return await db.select().from(teams);
+  }
+
+  async getTeam(id: number): Promise<Team | undefined> {
+    const [team] = await db.select().from(teams).where(eq(teams.id, id));
+    return team || undefined;
+  }
+
+  async getTeamsByCompetition(competitionId: number): Promise<Team[]> {
+    return await db.select().from(teams).where(eq(teams.competitionId, competitionId));
+  }
+
+  async createTeam(insertTeam: InsertTeam): Promise<Team> {
+    const [team] = await db
+      .insert(teams)
+      .values(insertTeam)
+      .returning();
+    return team;
+  }
+
+  async updateTeam(id: number, updates: Partial<Team>): Promise<Team | undefined> {
+    const [team] = await db
+      .update(teams)
+      .set(updates)
+      .where(eq(teams.id, id))
+      .returning();
+    return team || undefined;
+  }
+
+  // Team member operations
+  async getTeamMembers(teamId: number): Promise<TeamMember[]> {
+    return await db.select().from(teamMembers).where(eq(teamMembers.teamId, teamId));
+  }
+
+  async getTeamMember(teamId: number, userId: number): Promise<TeamMember | undefined> {
+    const [member] = await db
+      .select()
+      .from(teamMembers)
+      .where(and(eq(teamMembers.teamId, teamId), eq(teamMembers.userId, userId)));
+    return member || undefined;
+  }
+
+  async getUserTeam(userId: number, competitionId: number): Promise<TeamMember | undefined> {
+    const [result] = await db
+      .select({ teamMember: teamMembers })
+      .from(teamMembers)
+      .innerJoin(teams, eq(teamMembers.teamId, teams.id))
+      .where(and(eq(teamMembers.userId, userId), eq(teams.competitionId, competitionId)));
+    return result?.teamMember || undefined;
+  }
+
+  async addTeamMember(insertMember: InsertTeamMember): Promise<TeamMember> {
+    const [member] = await db
+      .insert(teamMembers)
+      .values(insertMember)
+      .returning();
+    return member;
+  }
+
+  async removeTeamMember(teamId: number, userId: number): Promise<boolean> {
+    const result = await db
+      .delete(teamMembers)
+      .where(and(eq(teamMembers.teamId, teamId), eq(teamMembers.userId, userId)));
+    return result.rowCount > 0;
+  }
+
+  // Activity operations
+  async getActivities(): Promise<Activity[]> {
+    return await db.select().from(activities);
+  }
+
+  async getActivity(id: number): Promise<Activity | undefined> {
+    const [activity] = await db.select().from(activities).where(eq(activities.id, id));
+    return activity || undefined;
+  }
+
+  async getActivitiesByCompetition(competitionId: number): Promise<Activity[]> {
+    return await db.select().from(activities).where(eq(activities.competitionId, competitionId));
+  }
+
+  async getActivitiesByTeam(teamId: number): Promise<Activity[]> {
+    return await db.select().from(activities).where(eq(activities.teamId, teamId));
+  }
+
+  async getActivitiesByUser(userId: number): Promise<Activity[]> {
+    return await db.select().from(activities).where(eq(activities.userId, userId));
+  }
+
+  async createActivity(insertActivity: InsertActivity): Promise<Activity> {
+    const [activity] = await db
+      .insert(activities)
+      .values(insertActivity)
+      .returning();
+    return activity;
+  }
+
+  async updateActivity(id: number, updates: Partial<Activity>): Promise<Activity | undefined> {
+    const [activity] = await db
+      .update(activities)
+      .set(updates)
+      .where(eq(activities.id, id))
+      .returning();
+    return activity || undefined;
+  }
+
+  // Activity comment operations
+  async getActivityComments(activityId: number): Promise<ActivityComment[]> {
+    return await db.select().from(activityComments).where(eq(activityComments.activityId, activityId));
+  }
+
+  async createActivityComment(insertComment: InsertActivityComment): Promise<ActivityComment> {
+    const [comment] = await db
+      .insert(activityComments)
+      .values(insertComment)
+      .returning();
+    return comment;
+  }
+
+  // Activity like operations
+  async getActivityLikes(activityId: number): Promise<ActivityLike[]> {
+    return await db.select().from(activityLikes).where(eq(activityLikes.activityId, activityId));
+  }
+
+  async toggleActivityLike(activityId: number, userId: number): Promise<boolean> {
+    const [existingLike] = await db
+      .select()
+      .from(activityLikes)
+      .where(and(eq(activityLikes.activityId, activityId), eq(activityLikes.userId, userId)));
+
+    if (existingLike) {
+      await db
+        .delete(activityLikes)
+        .where(and(eq(activityLikes.activityId, activityId), eq(activityLikes.userId, userId)));
+      return false;
+    } else {
+      await db
+        .insert(activityLikes)
+        .values({ activityId, userId });
+      return true;
+    }
+  }
+
+  // Chat operations
+  async getChatMessages(teamId?: number, competitionId?: number): Promise<ChatMessage[]> {
+    let query = db.select().from(chatMessages);
+    
+    if (teamId) {
+      query = query.where(eq(chatMessages.teamId, teamId));
+    } else if (competitionId) {
+      query = query.where(eq(chatMessages.competitionId, competitionId));
+    }
+    
+    return await query;
+  }
+
+  async createChatMessage(insertMessage: InsertChatMessage): Promise<ChatMessage> {
+    const [message] = await db
+      .insert(chatMessages)
+      .values(insertMessage)
+      .returning();
+    return message;
+  }
+
+  // Friend operations
+  async getFriendships(userId: number): Promise<Friendship[]> {
+    return await db
+      .select()
+      .from(friendships)
+      .where(eq(friendships.userId, userId));
+  }
+
+  async createFriendship(insertFriendship: InsertFriendship): Promise<Friendship> {
+    const [friendship] = await db
+      .insert(friendships)
+      .values(insertFriendship)
+      .returning();
+    return friendship;
+  }
+
+  async updateFriendship(id: number, status: string): Promise<Friendship | undefined> {
+    const [friendship] = await db
+      .update(friendships)
+      .set({ status })
+      .where(eq(friendships.id, id))
+      .returning();
+    return friendship || undefined;
+  }
+
+  // Competition history operations
+  async getCompetitionHistory(userId: number): Promise<CompetitionHistory[]> {
+    return await db
+      .select()
+      .from(competitionHistory)
+      .where(eq(competitionHistory.userId, userId));
+  }
+
+  async createCompetitionHistory(insertHistory: Omit<CompetitionHistory, 'id'>): Promise<CompetitionHistory> {
+    const [history] = await db
+      .insert(competitionHistory)
+      .values(insertHistory)
+      .returning();
+    return history;
+  }
+}

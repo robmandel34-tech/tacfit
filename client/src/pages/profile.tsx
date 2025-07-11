@@ -260,7 +260,7 @@ export default function Profile() {
           <div className="lg:col-span-1">
             <Card className="bg-tactical-gray-light border-tactical-gray overflow-hidden">
               {/* Cover Photo Section */}
-              <div className="relative h-32 bg-gradient-to-r from-military-green to-steel-blue">
+              <div className="relative h-40 bg-gradient-to-r from-military-green to-steel-blue">
                 {displayUser.coverPhoto ? (
                   <img
                     src={`/uploads/${displayUser.coverPhoto}`}
@@ -300,7 +300,7 @@ export default function Profile() {
               </CardHeader>
               <CardContent>
                 <div className="text-center">
-                  <div className="relative inline-block -mt-16 mb-4">
+                  <div className="relative inline-block -mt-20 mb-4">
                     <div className="relative">
                       {displayUser.avatar ? (
                         <img
@@ -346,7 +346,7 @@ export default function Profile() {
                       <Trophy className="text-combat-orange h-5 w-5" />
                       <span className="text-combat-orange font-bold text-lg">{displayUser.points}</span>
                     </div>
-                    <p className="text-gray-400 text-sm">Total Points</p>
+                    <p className="text-gray-300 text-sm">Total Points</p>
                   </div>
 
                   {/* Friend Actions */}

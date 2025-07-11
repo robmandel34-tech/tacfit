@@ -117,70 +117,67 @@ export default function ActivityFeed() {
           ) : (
             <div className="space-y-6">
               {activities?.map((activity: any) => (
-                <div key={`${activity.id}-${forceRefresh}`} className="bg-tactical-gray-light border border-tactical-gray-lighter rounded-lg">
-                  <div className="p-6">
-                    {/* User header */}
-                    <div className="mb-4">
-                      <div className="flex items-start space-x-3">
-                        <div className="w-10 h-10 bg-military-green rounded-full flex items-center justify-center flex-shrink-0">
-                          <span className="text-white font-bold text-xs">
-                            {getInitials(activity.user?.username || "U")}
-                          </span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <span className="text-white font-semibold text-sm">{activity.user?.username || "Unknown"}</span>
-                            <span className="text-gray-400 text-xs">
-                              {new Date(activity.createdAt).toLocaleDateString()}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-xs border border-gray-600 text-gray-300 bg-transparent px-2 py-1 rounded">
-                              {getActivityIcon(activity.type)} {activity.type}
-                            </span>
-                          </div>
-                        </div>
+                <div key={`${activity.id}-${forceRefresh}`} className="bg-tactical-gray-light border border-tactical-gray-lighter rounded-lg p-6">
+                  
+                  {/* User Info Row */}
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 bg-military-green rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold text-xs">
+                        {getInitials(activity.user?.username || "U")}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-white font-semibold text-sm">{activity.user?.username || "Unknown"}</span>
+                      <span className="text-gray-400 text-xs ml-2">
+                        {new Date(activity.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Activity Type Badge */}
+                  <div className="mb-4">
+                    <span className="text-xs border border-gray-600 text-gray-300 bg-transparent px-2 py-1 rounded">
+                      {getActivityIcon(activity.type)} {activity.type}
+                    </span>
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="mb-4">
+                    {activity.evidenceUrl && (
+                      <div className="mb-4">
+                        <img 
+                          src={activity.evidenceUrl} 
+                          alt="Activity evidence" 
+                          className="w-full max-w-lg h-48 object-cover rounded-lg border border-gray-600"
+                        />
                       </div>
-                    </div>
+                    )}
                     
-                    {/* Content */}
-                    <div className="mb-4">
-                      {activity.evidenceUrl && (
-                        <div className="mb-4">
-                          <img 
-                            src={activity.evidenceUrl} 
-                            alt="Activity evidence" 
-                            className="w-full max-w-lg h-48 object-cover rounded-lg border border-gray-600"
-                          />
-                        </div>
-                      )}
-                      
-                      <p className="text-gray-300 text-sm">{activity.description}</p>
-                    </div>
+                    <p className="text-gray-300 text-sm">{activity.description}</p>
+                  </div>
+                  
+                  {/* Actions */}
+                  <div className="flex items-center gap-6 pt-3 border-t border-gray-600">
+                    <button
+                      onClick={() => likeActivity.mutate(activity.id)}
+                      className="flex items-center gap-2 text-gray-400 hover:text-military-green transition-colors text-sm"
+                    >
+                      <ThumbsUp className="h-4 w-4" />
+                      <span>{activity.likesCount || 0}</span>
+                    </button>
                     
-                    {/* Actions */}
-                    <div className="flex items-center space-x-6 pt-3 border-t border-gray-600">
-                      <button
-                        onClick={() => likeActivity.mutate(activity.id)}
-                        className="flex items-center space-x-2 text-gray-400 hover:text-military-green transition-colors text-sm"
-                      >
-                        <ThumbsUp className="h-4 w-4" />
-                        <span>{activity.likesCount || 0}</span>
-                      </button>
-                      
-                      <button className="flex items-center space-x-2 text-gray-400 hover:text-blue-400 transition-colors text-sm">
-                        <MessageCircle className="h-4 w-4" />
-                        <span>{activity.commentsCount || 0}</span>
-                      </button>
-                      
-                      <button
-                        onClick={() => flagActivity.mutate(activity.id)}
-                        className="flex items-center space-x-2 text-gray-400 hover:text-red-400 transition-colors text-sm"
-                      >
-                        <Flag className="h-4 w-4" />
-                        <span>Flag</span>
-                      </button>
-                    </div>
+                    <button className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors text-sm">
+                      <MessageCircle className="h-4 w-4" />
+                      <span>{activity.commentsCount || 0}</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => flagActivity.mutate(activity.id)}
+                      className="flex items-center gap-2 text-gray-400 hover:text-red-400 transition-colors text-sm"
+                    >
+                      <Flag className="h-4 w-4" />
+                      <span>Flag</span>
+                    </button>
                   </div>
                 </div>
               ))}

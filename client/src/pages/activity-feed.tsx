@@ -1,61 +1,67 @@
-import { useAuthRequired } from "@/lib/auth";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/use-auth";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import Navigation from "@/components/navigation";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ThumbsUp, MessageCircle, Flag, Camera } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Camera, ThumbsUp, MessageCircle, Flag } from "lucide-react";
+import { queryClient } from "@/lib/queryClient";
+import ActivitySubmissionModal from "@/components/activity-submission-modal";
 
 export default function ActivityFeed() {
-  const { user, isLoading } = useAuthRequired();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const [location] = useLocation();
+  const [forceRefresh, setForceRefresh] = useState(0);
+  
+  // Force refresh when navigating to this page
+  useEffect(() => {
+    setForceRefresh(prev => prev + 1);
+  }, [location]);
 
-  const { data: activities = [] } = useQuery({
-    queryKey: ["/api/activities"],
-    enabled: !!user,
+  if (!user) {
+    return <div>Please log in to view the activity feed.</div>;
+  }
+
+  const { data: activities, isLoading } = useQuery({
+    queryKey: ['/api/activities', forceRefresh],
   });
 
   const likeActivity = useMutation({
     mutationFn: async (activityId: number) => {
       const response = await fetch(`/api/activities/${activityId}/like`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user?.id }),
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
+      if (!response.ok) {
+        throw new Error('Failed to like activity');
+      }
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
+      queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
     },
   });
 
   const flagActivity = useMutation({
     mutationFn: async (activityId: number) => {
-      const response = await fetch(`/api/activities/${activityId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isFlagged: true }),
+      const response = await fetch(`/api/activities/${activityId}/flag`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
+      if (!response.ok) {
+        throw new Error('Failed to flag activity');
+      }
       return response.json();
     },
     onSuccess: () => {
-      toast({
-        title: "Activity flagged",
-        description: "Thank you for reporting this activity.",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
+      queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
     },
   });
 
-  if (isLoading) {
-    return <div className="min-h-screen bg-tactical-gray flex items-center justify-center">
-      <div className="text-white">Loading...</div>
-    </div>;
-  }
-
-  if (!user) return null;
+  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
 
   const getInitials = (username: string) => {
     return username.split(' ').map(word => word[0]).join('').toUpperCase() || username.slice(0, 2).toUpperCase();
@@ -66,7 +72,7 @@ export default function ActivityFeed() {
       case 'cardio':
         return '🏃';
       case 'strength':
-        return '💪';
+        return '🏋️';
       case 'flexibility':
         return '🧘';
       case 'sports':
@@ -76,8 +82,21 @@ export default function ActivityFeed() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-tactical-gray">
+        <Navigation />
+        <main className="container mx-auto px-4 py-6">
+          <div className="text-center py-16">
+            <div className="text-white">Loading activities...</div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-tactical-gray pb-20 md:pb-0">
+    <div className="min-h-screen bg-tactical-gray">
       <Navigation />
       
       <main className="container mx-auto px-4 py-6">
@@ -87,7 +106,7 @@ export default function ActivityFeed() {
         </div>
 
         <div className="w-full max-w-2xl mx-auto">
-          {activities.length === 0 ? (
+          {activities?.length === 0 ? (
             <div className="text-center py-16">
               <div className="bg-tactical-gray-light p-8 rounded-lg border border-tactical-gray-lighter">
                 <Camera className="mx-auto h-16 w-16 text-gray-400 mb-4" />
@@ -97,36 +116,34 @@ export default function ActivityFeed() {
             </div>
           ) : (
             <div className="space-y-6">
-              {activities.map((activity: any) => (
-                <article key={activity.id} className="bg-tactical-gray-light border border-tactical-gray-lighter rounded-lg overflow-hidden w-full">
+              {activities?.map((activity: any) => (
+                <div key={`${activity.id}-${forceRefresh}`} className="bg-tactical-gray-light border border-tactical-gray-lighter rounded-lg">
                   <div className="p-6">
-                    {/* User header - fixed layout */}
-                    <header className="mb-4">
-                      <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 bg-military-green rounded-full flex items-center justify-center shrink-0">
+                    {/* User header */}
+                    <div className="mb-4">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <div className="w-10 h-10 bg-military-green rounded-full flex items-center justify-center flex-shrink-0">
                           <span className="text-white font-bold text-xs">
                             {getInitials(activity.user?.username || "U")}
                           </span>
                         </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-col gap-1">
-                            <div className="flex items-center gap-2">
-                              <span className="text-white font-semibold text-sm">{activity.user?.username || "Unknown"}</span>
-                              <span className="text-gray-400 text-xs">
-                                {new Date(activity.createdAt).toLocaleDateString()}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs border border-gray-600 text-gray-300 bg-transparent px-2 py-1 rounded">
-                                {getActivityIcon(activity.type)} {activity.type}
-                              </span>
-                            </div>
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2">
+                            <span className="text-white font-semibold text-sm">{activity.user?.username || "Unknown"}</span>
+                            <span className="text-gray-400 text-xs">
+                              {new Date(activity.createdAt).toLocaleDateString()}
+                            </span>
                           </div>
                         </div>
                       </div>
-                    </header>
+                      <div className="ml-13">
+                        <span className="text-xs border border-gray-600 text-gray-300 bg-transparent px-2 py-1 rounded">
+                          {getActivityIcon(activity.type)} {activity.type}
+                        </span>
+                      </div>
+                    </div>
                     
-                    {/* Content section */}
+                    {/* Content */}
                     <div className="mb-4">
                       {activity.evidenceUrl && (
                         <div className="mb-4">
@@ -138,39 +155,44 @@ export default function ActivityFeed() {
                         </div>
                       )}
                       
-                      <p className="text-gray-300 text-sm leading-relaxed">{activity.description}</p>
+                      <p className="text-gray-300 text-sm">{activity.description}</p>
                     </div>
                     
-                    {/* Actions footer */}
-                    <footer className="flex items-center gap-6 pt-3 border-t border-gray-600">
+                    {/* Actions */}
+                    <div className="flex items-center space-x-6 pt-3 border-t border-gray-600">
                       <button
                         onClick={() => likeActivity.mutate(activity.id)}
-                        className="flex items-center gap-2 text-gray-400 hover:text-military-green transition-colors text-sm py-1"
+                        className="flex items-center space-x-2 text-gray-400 hover:text-military-green transition-colors text-sm"
                       >
                         <ThumbsUp className="h-4 w-4" />
                         <span>{activity.likesCount || 0}</span>
                       </button>
                       
-                      <button className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors text-sm py-1">
+                      <button className="flex items-center space-x-2 text-gray-400 hover:text-blue-400 transition-colors text-sm">
                         <MessageCircle className="h-4 w-4" />
                         <span>{activity.commentsCount || 0}</span>
                       </button>
                       
                       <button
                         onClick={() => flagActivity.mutate(activity.id)}
-                        className="flex items-center gap-2 text-gray-400 hover:text-red-400 transition-colors text-sm py-1"
+                        className="flex items-center space-x-2 text-gray-400 hover:text-red-400 transition-colors text-sm"
                       >
                         <Flag className="h-4 w-4" />
                         <span>Flag</span>
                       </button>
-                    </footer>
+                    </div>
                   </div>
-                </article>
+                </div>
               ))}
             </div>
           )}
         </div>
       </main>
+
+      <ActivitySubmissionModal 
+        isOpen={isSubmitModalOpen} 
+        onClose={() => setIsSubmitModalOpen(false)} 
+      />
     </div>
   );
 }

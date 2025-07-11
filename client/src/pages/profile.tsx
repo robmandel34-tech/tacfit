@@ -44,10 +44,10 @@ export default function Profile() {
     enabled: !!targetUserId,
   });
 
-  // Get friends for the profile user
+  // Get friends for the current user to check relationships
   const { data: friends = [] } = useQuery({
-    queryKey: ["/api/friends", targetUserId],
-    enabled: !!targetUserId,
+    queryKey: ["/api/friends", user?.id],
+    enabled: !!user?.id,
   });
 
   // Friend request mutation
@@ -64,9 +64,8 @@ export default function Profile() {
         title: "Friend request sent",
         description: "Your friend request has been sent successfully.",
       });
-      // Refresh both users' friends lists to update the UI
+      // Refresh the current user's friends list to update the UI
       queryClient.invalidateQueries({ queryKey: ["/api/friends", user?.id] });
-      queryClient.invalidateQueries({ queryKey: ["/api/friends", targetUserId] });
     },
     onError: () => {
       toast({

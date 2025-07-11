@@ -171,7 +171,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Competition not available" });
       }
 
-      // Check if user has enough points or if it's their first competition
+      // Check if user is currently in any competition
+      const allTeams = await storage.getTeams();
+      let currentlyInCompetition = false;
+      
+      for (const team of allTeams) {
+        const member = await storage.getTeamMember(team.id, userId);
+        if (member) {
+          currentlyInCompetition = true;
+          break;
+        }
+      }
+      
+      // If user is currently in a competition, they can't join another
+      if (currentlyInCompetition) {
+        return res.status(400).json({ message: "You are already in a competition. Leave your current competition first." });
+      }
+      
+      // Check if user has enough points (first competition is free)
       if ((user.competitionsEntered || 0) > 0 && (user.points || 0) < 1000) {
         return res.status(403).json({ message: "Need at least 1000 points to join additional competitions" });
       }

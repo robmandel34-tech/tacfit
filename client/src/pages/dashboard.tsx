@@ -1,13 +1,17 @@
 import { useAuthRequired } from "@/lib/auth";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Navigation from "@/components/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Crosshair, Flame, UserPlus, Trophy, Dumbbell, Users } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function Dashboard() {
   const { user, isLoading } = useAuthRequired();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: competitions = [] } = useQuery({
     queryKey: ["/api/competitions"],
@@ -22,6 +26,32 @@ export default function Dashboard() {
   const { data: userTeamMembership } = useQuery({
     queryKey: [`/api/team-members/${user?.id}`],
     enabled: !!user?.id,
+  });
+
+  // Join competition mutation
+  const joinCompetitionMutation = useMutation({
+    mutationFn: async (competitionId: number) => {
+      return apiRequest("POST", `/api/competitions/${competitionId}/join`, {
+        userId: user?.id
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Joined Competition",
+        description: "You have successfully joined the competition and been assigned to a team",
+      });
+      
+      // Invalidate and refetch relevant queries
+      queryClient.invalidateQueries({ queryKey: [`/api/team-members/${user?.id}`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to join competition",
+        variant: "destructive",
+      });
+    },
   });
 
   if (isLoading) {
@@ -137,8 +167,10 @@ export default function Dashboard() {
                           <Button 
                             className="bg-military-green hover:bg-military-green-light text-white"
                             size="sm"
+                            onClick={() => joinCompetitionMutation.mutate(competition.id)}
+                            disabled={joinCompetitionMutation.isPending || hasJoinedCompetition}
                           >
-                            Join Mission
+                            {joinCompetitionMutation.isPending ? "Joining..." : hasJoinedCompetition ? "Already Joined" : "Join Mission"}
                           </Button>
                         </div>
                       </div>

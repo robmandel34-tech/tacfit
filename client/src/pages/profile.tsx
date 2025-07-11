@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Target, Users, Calendar, UserPlus, MessageCircle, Send, Clock, Check, X, Bell, Camera, Upload, Search } from "lucide-react";
+import { Trophy, Target, Users, Calendar, UserPlus, MessageCircle, Send, Clock, Check, X, Bell, Camera, Upload, Search, Edit2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import DirectMessageModal from "@/components/direct-message-modal";
@@ -31,6 +31,8 @@ export default function Profile() {
   const [selectedFriend, setSelectedFriend] = useState<any>(null);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const [isEditingMotto, setIsEditingMotto] = useState(false);
+  const [mottoText, setMottoText] = useState("");
 
   const isOwnProfile = !userId || userId === user?.id?.toString();
   const targetUserId = isOwnProfile ? user?.id : parseInt(userId!);
@@ -211,6 +213,39 @@ export default function Profile() {
     },
   });
 
+  // Update user motto mutation
+  const updateUserMotto = useMutation({
+    mutationFn: async (motto: string) => {
+      const response = await fetch(`/api/users/${displayUser.id}/motto`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ motto }),
+      });
+
+      if (!response.ok) throw new Error("Failed to update motto");
+      return response.json();
+    },
+    onSuccess: (updatedUser) => {
+      toast({
+        title: "Motto updated!",
+        description: "Your personal motto has been updated successfully.",
+      });
+      // Update the user context if it's the current user
+      if (isOwnProfile && updateUser) {
+        updateUser(updatedUser);
+      }
+      queryClient.invalidateQueries({ queryKey: [`/api/users/${displayUser.id}`] });
+      setIsEditingMotto(false);
+    },
+    onError: () => {
+      toast({
+        title: "Update failed",
+        description: "Failed to update motto. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Handle file selection for avatar
   const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -225,6 +260,24 @@ export default function Profile() {
     if (file) {
       uploadCover.mutate(file);
     }
+  };
+
+  // Handle motto editing
+  const handleMottoEdit = () => {
+    setMottoText(displayUser.motto || "");
+    setIsEditingMotto(true);
+  };
+
+  const handleMottoSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (mottoText.trim()) {
+      updateUserMotto.mutate(mottoText.trim());
+    }
+  };
+
+  const handleMottoCancel = () => {
+    setIsEditingMotto(false);
+    setMottoText("");
   };
 
   const displayUser = profileUser || user;
@@ -336,7 +389,60 @@ export default function Profile() {
                     </div>
                   </div>
                   <h2 className="text-white font-bold text-xl mb-2">{displayUser.username}</h2>
-                  <p className="text-gray-400 text-sm mb-4">{displayUser.email}</p>
+                  <p className="text-gray-400 text-sm mb-2">{displayUser.email}</p>
+                  
+                  {/* User Motto */}
+                  <div className="mb-4">
+                    {isEditingMotto ? (
+                      <form onSubmit={handleMottoSubmit} className="flex items-center space-x-2">
+                        <Input
+                          value={mottoText}
+                          onChange={(e) => setMottoText(e.target.value)}
+                          placeholder="Enter your motto..."
+                          className="flex-1 bg-tactical-gray text-white placeholder-gray-400 border-tactical-gray"
+                          maxLength={100}
+                          autoFocus
+                        />
+                        <Button
+                          type="submit"
+                          size="sm"
+                          className="bg-military-green hover:bg-military-green-light text-white"
+                          disabled={updateUserMotto.isPending || !mottoText.trim()}
+                        >
+                          {updateUserMotto.isPending ? (
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          ) : (
+                            <Check className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          onClick={handleMottoCancel}
+                          className="text-gray-400 hover:text-white"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </form>
+                    ) : (
+                      <div className="flex items-center justify-center">
+                        <p className="text-gray-300 text-sm italic">
+                          {displayUser.motto ? `"${displayUser.motto}"` : "No motto set"}
+                        </p>
+                        {isOwnProfile && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleMottoEdit}
+                            className="text-gray-400 hover:text-white ml-2"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                   
                   <div className="bg-tactical-gray-lighter rounded-lg p-4 mb-4">
                     <div className="flex items-center justify-center space-x-2 mb-2">

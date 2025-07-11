@@ -105,6 +105,11 @@ Preferred communication style: Simple, everyday language.
 - **NEW**: API endpoint for updating team names (PATCH /api/teams/:id/name)
 - **NEW**: Duplicate team name prevention within the same competition
 - **NEW**: Character limits and validation for team names (50 characters max)
+- **NEW**: User motto functionality with database schema updates and profile editing interface
+- **NEW**: Personal motto editing on user profiles with inline editing UI
+- **NEW**: API endpoint for updating user mottos (PATCH /api/users/:id/motto)
+- **NEW**: User mottos displayed on team member pages below profile information
+- **NEW**: Character limits and validation for user mottos (100 characters max)
 
 ### Competition Status Features (July 2025)
 - New Competition Status page with comprehensive competition overview

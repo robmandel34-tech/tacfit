@@ -448,7 +448,7 @@ export default function Team() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {teamMembers.map((member: any) => (
                 <div key={member.id} className="bg-tactical-gray p-4 rounded-sm">
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-start space-x-3">
                     <Avatar 
                       className="h-12 w-12 cursor-pointer hover:ring-2 hover:ring-military-green transition-all"
                       onClick={() => navigate(`/profile/${member.user?.id}`)}
@@ -472,6 +472,11 @@ export default function Team() {
                       </div>
                       <p className="text-sm text-gray-400 capitalize">{member.role}</p>
                       <p className="text-sm text-military-green">{member.user?.points || 0} points</p>
+                      {member.user?.motto && (
+                        <p className="text-xs text-gray-300 italic mt-1">
+                          "{member.user.motto}"
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>

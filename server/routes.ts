@@ -111,6 +111,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update user motto
+  app.patch("/api/users/:id/motto", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { motto } = req.body;
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Update user motto
+      const updatedUser = await storage.updateUser(userId, { motto });
+      
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Failed to update user motto" });
+      }
+      
+      const { password, ...userWithoutPassword } = updatedUser;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error("User motto update error:", error);
+      res.status(500).json({ message: "Error updating user motto" });
+    }
+  });
+
   // Competition routes
   app.get("/api/competitions", async (req, res) => {
     try {
@@ -521,7 +547,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const user = await storage.getUser(member.userId!);
           return {
             ...member,
-            user: user ? { id: user.id, username: user.username, avatar: user.avatar, points: user.points } : null
+            user: user ? { id: user.id, username: user.username, avatar: user.avatar, points: user.points, motto: user.motto } : null
           };
         })
       );
@@ -544,7 +570,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const user = await storage.getUser(member.userId!);
           return {
             ...member,
-            user: user ? { id: user.id, username: user.username, avatar: user.avatar, points: user.points } : null
+            user: user ? { id: user.id, username: user.username, avatar: user.avatar, points: user.points, motto: user.motto } : null
           };
         })
       );

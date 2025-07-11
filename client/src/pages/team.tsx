@@ -311,7 +311,7 @@ export default function Team() {
       <main className="container mx-auto px-4 py-6">
         {/* Team Header */}
         {team && (
-          <Card className="mb-6 sharp-card bg-tactical-gray-light border-tactical-gray">
+          <Card className="mb-6 tile-card-elevated">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center flex-1">
@@ -475,14 +475,14 @@ export default function Team() {
         )}
 
         {/* Team Members */}
-        <Card className="mb-6 sharp-card bg-tactical-gray-light border-tactical-gray">
+        <Card className="mb-6 tile-card">
           <CardHeader>
             <CardTitle className="text-white">Team Members</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {teamMembers.map((member: any) => (
-                <div key={member.id} className="bg-tactical-gray p-4 rounded-sm">
+                <div key={member.id} className="content-tile p-4">
                   <div className="flex items-start space-x-3">
                     <Avatar 
                       className="h-12 w-12 cursor-pointer hover:ring-2 hover:ring-military-green transition-all"
@@ -521,7 +521,7 @@ export default function Team() {
         </Card>
 
         {/* Team Chat */}
-        <Card className="mb-6 sharp-card bg-tactical-gray-light border-tactical-gray">
+        <Card className="mb-6 tile-card">
           <CardHeader>
             <CardTitle className="text-white flex items-center">
               <MessageCircle className="mr-2 h-5 w-5" />

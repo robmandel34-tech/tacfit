@@ -134,7 +134,7 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
   };
 
   return (
-    <Card className="bg-tactical-gray-light border-tactical-gray-lighter">
+    <Card className="tile-card">
       <CardContent className="p-6">
         <div className="flex gap-4">
           <div 

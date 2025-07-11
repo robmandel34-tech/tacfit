@@ -216,7 +216,7 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
                 {teamsWithProgress.map((team) => (
                   <div 
                     key={team.id} 
-                    className="bg-tactical-gray rounded-lg p-4 border border-tactical-gray cursor-pointer hover:bg-tactical-gray-light transition-colors"
+                    className="inner-tile p-4 cursor-pointer"
                     onClick={() => navigate(`/team/${team.id}`)}
                   >
                     <div className="flex items-center justify-between mb-2">

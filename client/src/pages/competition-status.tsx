@@ -98,7 +98,7 @@ export default function CompetitionStatus() {
       <main className="container mx-auto px-4 py-6">
         {/* Competition Header */}
         {competition && (
-          <Card className="mb-6 sharp-card bg-tactical-gray-light border-tactical-gray">
+          <Card className="mb-6 tile-card-elevated">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-white flex items-center">

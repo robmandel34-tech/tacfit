@@ -74,7 +74,7 @@ export default function Dashboard() {
       <main className="container mx-auto px-4 py-6">
         {/* Hero Section */}
         <div className="mb-8">
-          <div className="bg-gradient-to-r from-military-green-dark to-military-green rounded-xl p-6 text-white">
+          <div className="bg-gradient-to-r from-military-green-dark to-military-green tile-card-elevated p-6 text-white">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold mb-2">Mission Control</h1>
@@ -90,7 +90,7 @@ export default function Dashboard() {
         {/* Active Competition Banner */}
         {activeCompetitions.length > 0 && (
           <div className="mb-8">
-            <div className="bg-tactical-gray-light border border-combat-orange rounded-lg p-4">
+            <div className="inner-tile border border-combat-orange p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 bg-combat-orange rounded-lg flex items-center justify-center">
@@ -116,7 +116,7 @@ export default function Dashboard() {
           {/* Right Column - Quick Actions & Activity */}
           <div className="space-y-6">
             {/* Quick Actions */}
-            <Card className="bg-tactical-gray-light border-tactical-gray">
+            <Card className="tile-card">
               <CardHeader>
                 <CardTitle className="text-xl font-bold text-white">Quick Actions</CardTitle>
               </CardHeader>
@@ -138,7 +138,7 @@ export default function Dashboard() {
             </Card>
 
             {/* Recent Activity */}
-            <Card className="bg-tactical-gray-light border-tactical-gray">
+            <Card className="tile-card">
               <CardHeader>
                 <CardTitle className="text-xl font-bold text-white">Latest Intel</CardTitle>
                 <p className="text-gray-400 text-sm">Recent activity from all active competitions</p>
@@ -153,7 +153,7 @@ export default function Dashboard() {
                     </div>
                   ) : (
                     recentActivities.map((activity: any) => (
-                      <div key={activity.id} className="bg-tactical-gray-lighter rounded-lg p-4">
+                      <div key={activity.id} className="content-tile p-4">
                         <div className="flex items-start space-x-3">
                           <div className="w-10 h-10 bg-military-green rounded-full flex items-center justify-center flex-shrink-0">
                             <span className="text-white font-bold text-sm">

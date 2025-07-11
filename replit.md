@@ -10,6 +10,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### Progress Map Feature (July 2025)
+- **NEW**: Added topographical progress map to Competition Status page
+- Teams positioned along real Alaska wilderness satellite imagery based on points
+- Interactive team markers with ranking colors (gold, silver, bronze, military green)
+- Hover tooltips showing team name, points, and motto
+- Visual route path with tactical waypoints (Base Camp, ridges, peaks, Victory Point)
+- Enhanced team markers with pulse effects for leaders and military-style flags
+- Real Alaska wilderness background image from Pixabay (public domain)
+
 ### Single Competition/Team Restriction (July 2025)
 - **BREAKING CHANGE**: Users can now only be part of one competition + team at a time
 - Updated database schema to support single team membership per user

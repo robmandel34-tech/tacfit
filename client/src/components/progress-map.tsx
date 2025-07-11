@@ -53,33 +53,28 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
       <CardContent>
         <div className="relative">
           {/* Map Background */}
-          <div className="relative h-96 bg-gradient-to-r from-green-800 via-amber-700 to-slate-600 rounded-lg overflow-hidden">
-            {/* Topographical contour lines */}
-            <svg className="absolute inset-0 w-full h-full opacity-20" viewBox="0 0 400 200">
-              <defs>
-                <pattern id="contour" x="0" y="0" width="40" height="20" patternUnits="userSpaceOnUse">
-                  <path d="M0,10 Q10,5 20,10 T40,10" stroke="white" strokeWidth="0.5" fill="none" />
-                </pattern>
-              </defs>
-              <rect width="100%" height="100%" fill="url(#contour)" />
-              
-              {/* Mountain silhouettes */}
-              <path d="M0,150 Q50,120 100,140 T200,130 Q250,110 300,125 T400,120 L400,200 L0,200 Z" 
-                    fill="rgba(0,0,0,0.1)" />
-              <path d="M0,160 Q80,140 160,155 T320,150 L400,155 L400,200 L0,200 Z" 
-                    fill="rgba(0,0,0,0.05)" />
-            </svg>
+          <div className="relative h-96 rounded-lg overflow-hidden">
+            {/* Alaska Wilderness Satellite Image */}
+            <img 
+              src="https://cdn.pixabay.com/photo/2017/11/20/07/26/alaska-2964658_1280.jpg" 
+              alt="Alaska Wilderness" 
+              className="w-full h-full object-cover"
+              style={{ filter: 'brightness(0.7) contrast(1.1)' }}
+            />
+            
+            {/* Overlay for better visibility */}
+            <div className="absolute inset-0 bg-black/20" />
 
             {/* Route path */}
             <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
               <path d="M5,75 Q15,70 25,65 Q35,60 45,70 Q55,80 65,65 Q75,50 85,55 Q92,60 95,65" 
-                    stroke="rgba(255,255,255,0.4)" 
-                    strokeWidth="3" 
+                    stroke="rgba(255,255,255,0.8)" 
+                    strokeWidth="4" 
                     fill="none"
                     strokeDasharray="8,4" />
               <path d="M5,75 Q15,70 25,65 Q35,60 45,70 Q55,80 65,65 Q75,50 85,55 Q92,60 95,65" 
-                    stroke="rgba(255,255,255,0.2)" 
-                    strokeWidth="6" 
+                    stroke="rgba(255,255,255,0.3)" 
+                    strokeWidth="8" 
                     fill="none" />
             </svg>
 
@@ -120,26 +115,31 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
                 >
                   {/* Team marker */}
                   <div className="relative group">
-                    <div className={`w-10 h-10 rounded-full border-4 border-white shadow-lg flex items-center justify-center ${
+                    <div className={`w-12 h-12 rounded-full border-4 border-white shadow-2xl flex items-center justify-center ${
                       index === 0 ? 'bg-yellow-500' : 
                       index === 1 ? 'bg-gray-400' : 
                       index === 2 ? 'bg-amber-600' : 
                       'bg-military-green'
                     }`}>
-                      <span className="text-white font-bold text-sm">{team.rank}</span>
+                      <span className="text-white font-bold text-lg drop-shadow-lg">{team.rank}</span>
                     </div>
                     
                     {/* Team flag */}
-                    <div className="absolute -top-2 -right-1 w-6 h-4 bg-military-green rounded-sm shadow-md">
+                    <div className="absolute -top-3 -right-2 w-8 h-5 bg-military-green rounded-sm shadow-xl border border-white">
                       <div className="w-full h-full bg-gradient-to-r from-military-green to-military-green-light rounded-sm" />
                     </div>
                     
+                    {/* Team pulse effect for first place */}
+                    {index === 0 && (
+                      <div className="absolute inset-0 rounded-full bg-yellow-500 animate-ping opacity-20" />
+                    )}
+                    
                     {/* Team info tooltip */}
-                    <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-black/90 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
-                      <div className="font-semibold text-sm">{team.name}</div>
-                      <div className="text-military-green font-bold">{team.points} points</div>
+                    <div className="absolute bottom-full mb-3 left-1/2 transform -translate-x-1/2 bg-black/95 text-white px-4 py-3 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 shadow-2xl border border-white/20">
+                      <div className="font-semibold text-base text-yellow-400">{team.name}</div>
+                      <div className="text-military-green font-bold text-lg">{team.points} points</div>
                       {team.motto && <div className="text-gray-300 italic text-xs mt-1">"{team.motto}"</div>}
-                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-black/90" />
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-black/95" />
                     </div>
                   </div>
                 </div>

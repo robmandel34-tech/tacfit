@@ -10,6 +10,18 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### UI Text Visibility Fixes (July 2025)
+- **FIXED**: Text color visibility issues throughout the application
+- **FIXED**: Points display in navigation bar now shows white text instead of black
+- **FIXED**: Navigation menu items now use proper light text colors (text-gray-300)
+- **FIXED**: Login/register form labels now visible with light gray text
+- **FIXED**: Profile icon white rectangle removed from top navigation
+- **FIXED**: Activity card like/comment/flag buttons with proper color states
+- **FIXED**: Like button now shows green when liked, grey when not liked
+- **FIXED**: Flag button shows solid red when flagged and maintains state
+- **FIXED**: Comment count updates in real-time when adding comments
+- **ENHANCED**: All text elements now have proper contrast on dark backgrounds
+
 ### Authentication & Navigation Fixes (July 2025)
 - **FIXED**: Stale user session authentication bug after database reseeds
 - **FIXED**: User session validation now checks if user exists in database

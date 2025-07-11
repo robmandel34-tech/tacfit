@@ -25,25 +25,25 @@ export default function Navigation() {
             <nav className="hidden md:flex space-x-8">
               <Link 
                 href="/"
-                className={`${location === '/' ? 'text-primary font-semibold' : 'text-secondary'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay`}
+                className={`${location === '/' ? 'text-primary font-semibold' : 'text-gray-300'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay`}
               >
                 Dashboard
               </Link>
               <Link 
                 href="/competitions"
-                className={`${location === '/competitions' ? 'text-primary font-semibold' : 'text-secondary'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay`}
+                className={`${location === '/competitions' ? 'text-primary font-semibold' : 'text-gray-300'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay`}
               >
                 Competitions
               </Link>
               <Link 
                 href="/team"
-                className={`${location === '/team' ? 'text-primary font-semibold' : 'text-secondary'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay`}
+                className={`${location === '/team' ? 'text-primary font-semibold' : 'text-gray-300'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay`}
               >
                 Teams
               </Link>
               <Link 
                 href="/activity-feed"
-                className={`${location === '/activity-feed' ? 'text-primary font-semibold' : 'text-secondary'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay`}
+                className={`${location === '/activity-feed' ? 'text-primary font-semibold' : 'text-gray-300'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay`}
               >
                 Activity Feed
               </Link>
@@ -52,7 +52,7 @@ export default function Navigation() {
           <div className="flex items-center space-x-4">
             <div className="hidden md:flex items-center space-x-2 bg-surface-overlay px-4 py-2 rounded-full border border-border-subtle">
               <Trophy className="text-combat-orange text-lg" />
-              <span className="text-sm font-semibold text-secondary">{user.points || 0} PTS</span>
+              <span className="text-sm font-semibold text-white">{user.points || 0} PTS</span>
             </div>
             <div className="relative">
               <button 
@@ -70,7 +70,7 @@ export default function Navigation() {
                     <span className="text-white font-bold text-sm">{getInitials(user.username)}</span>
                   </div>
                 )}
-                <span className="hidden md:block text-primary font-semibold">{user.username}</span>
+                <span className="hidden md:block text-white font-semibold">{user.username}</span>
               </button>
             </div>
             <Button 

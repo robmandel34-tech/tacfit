@@ -73,12 +73,38 @@
   * {
     @apply border-border;
   }
-
+  
   body {
     @apply font-sans antialiased;
     background: linear-gradient(135deg, var(--tactical-gray) 0%, hsl(220, 13%, 11%) 100%);
     color: var(--text-primary);
     min-height: 100vh;
+  }
+}
+
+@layer components {
+  .card-modern {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border-radius: 0.5rem;
+  }
+  
+  .text-heading {
+    color: var(--text-primary);
+  }
+  
+  .text-body {
+    color: var(--text-secondary);
+  }
+  
+  .text-muted {
+    color: var(--text-muted);
+  }
+  
+  .shadow-soft {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   }
 }
 

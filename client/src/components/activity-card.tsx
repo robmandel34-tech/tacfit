@@ -49,21 +49,21 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
   };
 
   return (
-    <Card className="card-modern">
+    <Card className="bg-tactical-gray-light border-tactical-gray-lighter">
       <CardContent className="p-6">
         <div className="flex items-start space-x-4">
           <div 
-            className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity border-2 border-border-subtle"
+            className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
             onClick={handleProfileClick}
           >
             {activity.user.avatar ? (
               <img
                 src={`/uploads/${activity.user.avatar}`}
                 alt="Profile picture"
-                className="w-14 h-14 rounded-full object-cover"
+                className="w-12 h-12 rounded-full object-cover"
               />
             ) : (
-              <div className="w-14 h-14 bg-military-green rounded-full flex items-center justify-center hover:bg-military-green-light transition-colors">
+              <div className="w-12 h-12 bg-military-green rounded-full flex items-center justify-center hover:bg-military-green-light transition-colors">
                 <span className="text-white font-bold text-sm">
                   {getInitials(activity.user.username)}
                 </span>
@@ -73,15 +73,15 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
           <div className="flex-1">
             <div className="flex items-center space-x-3 mb-3">
               <span 
-                className="text-heading font-semibold cursor-pointer hover:text-military-green transition-colors"
+                className="text-white font-semibold cursor-pointer hover:text-military-green transition-colors"
                 onClick={handleProfileClick}
               >
                 {activity.user.username}
               </span>
-              <Badge variant="outline" className="text-xs bg-surface-overlay border-border-subtle">
+              <Badge variant="outline" className="text-xs border-gray-600 text-gray-300">
                 {getActivityIcon(activity.type)} {activity.type}
               </Badge>
-              <span className="text-muted text-sm">
+              <span className="text-gray-400 text-sm">
                 {new Date(activity.createdAt).toLocaleDateString()}
               </span>
             </div>
@@ -91,19 +91,19 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
                 <img 
                   src={activity.evidenceUrl} 
                   alt="Activity evidence" 
-                  className="w-full max-w-md h-48 object-cover rounded-lg border border-border-subtle shadow-soft"
+                  className="w-full max-w-md h-48 object-cover rounded-lg border border-gray-600"
                 />
               </div>
             )}
             
-            <p className="text-body text-sm mb-4">{activity.description}</p>
+            <p className="text-gray-300 text-sm mb-4">{activity.description}</p>
             
             <div className="flex items-center space-x-6">
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={() => onLike?.(activity.id)}
-                className="text-muted hover:text-military-green transition-colors duration-200 p-2"
+                className="text-gray-400 hover:text-military-green transition-colors p-2"
               >
                 <ThumbsUp className="mr-2 h-4 w-4" />
                 {activity.likesCount}
@@ -112,7 +112,7 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
               <Button
                 size="sm"
                 variant="ghost"
-                className="text-muted hover:text-secondary transition-colors duration-200 p-2"
+                className="text-gray-400 hover:text-blue-400 transition-colors p-2"
               >
                 <MessageCircle className="mr-2 h-4 w-4" />
                 {activity.commentsCount}
@@ -122,7 +122,7 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
                 size="sm"
                 variant="ghost"
                 onClick={() => onFlag?.(activity.id)}
-                className="text-muted hover:text-red-400 transition-colors duration-200 p-2"
+                className="text-gray-400 hover:text-red-400 transition-colors p-2"
               >
                 <Flag className="mr-2 h-4 w-4" />
                 Flag

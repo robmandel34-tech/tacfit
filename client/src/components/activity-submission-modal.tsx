@@ -52,11 +52,11 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   };
 
   const activityMeasurements: Record<string, string> = {
-    cardio: "minutes, miles, steps",
-    strength: "minutes, reps, sets",
-    flexibility: "minutes, poses held",
-    sports: "minutes, games played",
-    other: "minutes, quantity"
+    cardio: "minutes",
+    strength: "reps",
+    flexibility: "minutes",
+    sports: "minutes",
+    other: "quantity"
   };
 
   // Get required activities for current competition or fallback to all types
@@ -194,7 +194,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
               Quantity
               {type && (
                 <span className="text-sm text-gray-400 ml-2">
-                  (e.g., {activityMeasurements[type] || "quantity"})
+                  (in {activityMeasurements[type] || "quantity"})
                 </span>
               )}
             </Label>
@@ -205,8 +205,8 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
               className="bg-tactical-gray-lighter border-tactical-gray text-white"
               placeholder={
                 type 
-                  ? `e.g., ${activityMeasurements[type]?.split(', ')[0]} or ${activityMeasurements[type]?.split(', ')[1] || activityMeasurements[type]?.split(', ')[0]}`
-                  : "e.g., 30 minutes, 50 push-ups, 3 miles"
+                  ? `e.g., 30 ${activityMeasurements[type]}`
+                  : "e.g., 30 minutes"
               }
               required
             />

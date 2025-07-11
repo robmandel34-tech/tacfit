@@ -567,7 +567,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/activities", upload.single('evidence'), async (req, res) => {
     try {
-      const activityData = insertActivitySchema.parse(req.body);
+      console.log("Activity submission request body:", req.body);
+      console.log("Activity submission file:", req.file);
+      
+      // Get user's current team for activity submission
+      const userId = parseInt(req.body.userId);
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Find user's current team
+      const userTeams = await storage.getTeams();
+      let userTeam = null;
+      for (const team of userTeams) {
+        const members = await storage.getTeamMembers(team.id);
+        if (members.some(member => member.userId === userId)) {
+          userTeam = team;
+          break;
+        }
+      }
+      
+      const activityData = {
+        userId: userId,
+        competitionId: userTeam?.competitionId,
+        teamId: userTeam?.id,
+        type: req.body.type,
+        description: req.body.description,
+        quantity: req.body.quantity,
+        points: 10 // default points
+      };
+      
+      console.log("Processed activity data:", activityData);
+      
+      const validatedData = insertActivitySchema.parse(activityData);
       
       // Handle file upload
       if (req.file) {
@@ -576,11 +609,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const filePath = path.join('uploads', fileName);
         
         fs.renameSync(req.file.path, filePath);
-        activityData.evidenceUrl = `/uploads/${fileName}`;
-        activityData.evidenceType = req.file.mimetype.startsWith('video/') ? 'video' : 'photo';
+        validatedData.evidenceUrl = `/uploads/${fileName}`;
+        validatedData.evidenceType = req.file.mimetype.startsWith('video/') ? 'video' : 'photo';
       }
       
-      const activity = await storage.createActivity(activityData);
+      const activity = await storage.createActivity(validatedData);
       
       // Update user and team points
       await storage.updateUser(activity.userId!, { 
@@ -598,7 +631,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(activity);
     } catch (error) {
-      res.status(400).json({ message: "Invalid activity data" });
+      console.error("Activity submission error:", error);
+      res.status(400).json({ 
+        message: "Invalid activity data", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
     }
   });
 

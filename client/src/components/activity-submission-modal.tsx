@@ -46,10 +46,11 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
       onClose();
       resetForm();
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error("Activity submission error:", error);
       toast({
         title: "Submission failed",
-        description: "There was an error submitting your activity.",
+        description: error.message || "There was an error submitting your activity.",
         variant: "destructive",
       });
     },
@@ -66,6 +67,16 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     e.preventDefault();
     
     if (!user) return;
+    
+    // Validate required fields
+    if (!type || !description || !quantity) {
+      toast({
+        title: "Missing fields",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const formData = new FormData();
     formData.append("userId", user.id.toString());

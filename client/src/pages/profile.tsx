@@ -422,8 +422,8 @@ export default function Profile() {
                 )}
               </div>
               
-              <CardContent className="pt-6">
-                <div className="text-center">
+              <CardContent className="pt-6 px-4 flex flex-col items-center">
+                <div className="text-center w-full max-w-sm mx-auto">
                   <div className="relative inline-block -mt-16 mb-4">
                     <div className="relative">
                       {displayUser.avatar ? (
@@ -576,7 +576,7 @@ export default function Profile() {
                   </div>
 
                   {/* Friend Actions */}
-                  <div className="space-y-2">
+                  <div className="space-y-2 w-full">
                     {!isOwnProfile && (
                       <>
                         {/* Check relationship status and show appropriate button */}
@@ -630,8 +630,8 @@ export default function Profile() {
                     )}
                     
                     {isOwnProfile && (
-                      <div className="space-y-2">
-                        <div className="flex gap-2">
+                      <div className="space-y-2 w-full">
+                        <div className="flex gap-2 w-full">
                           <Dialog open={isFriendsModalOpen} onOpenChange={setIsFriendsModalOpen}>
                             <DialogTrigger asChild>
                               <Button className="flex-1 bg-steel-blue hover:bg-blue-600">

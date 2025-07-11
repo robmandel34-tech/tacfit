@@ -27,11 +27,31 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
   const [, setLocation] = useLocation();
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-    setIsLoading(false);
+    const validateUser = async () => {
+      const savedUser = localStorage.getItem("user");
+      if (savedUser) {
+        try {
+          const userData = JSON.parse(savedUser);
+          // Validate the user still exists in the database
+          const response = await fetch(`/api/users/${userData.id}`);
+          if (response.ok) {
+            const currentUser = await response.json();
+            setUser(currentUser);
+          } else {
+            // User no longer exists, clear localStorage
+            localStorage.removeItem("user");
+            setUser(null);
+          }
+        } catch (error) {
+          // Invalid user data, clear localStorage
+          localStorage.removeItem("user");
+          setUser(null);
+        }
+      }
+      setIsLoading(false);
+    };
+
+    validateUser();
   }, []);
 
   const login = async (email: string, password: string) => {

@@ -1,16 +1,21 @@
 import { useAuthRequired } from "@/lib/auth";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import Navigation from "@/components/navigation";
 import ActivityCard from "@/components/activity-card";
 import ProgressMap from "@/components/progress-map";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Users, Target, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Trophy, Users, Target, Calendar, LogOut } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function CompetitionStatus() {
   const { user, isLoading } = useAuthRequired();
   const [, navigate] = useLocation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Get user's current team membership
   const { data: userTeamMember } = useQuery({
@@ -34,6 +39,36 @@ export default function CompetitionStatus() {
   const { data: activities = [] } = useQuery({
     queryKey: [`/api/activities/competition/${userTeamMember?.[0]?.team?.competitionId}`],
     enabled: !!userTeamMember?.[0]?.team?.competitionId,
+  });
+
+  // Leave competition mutation
+  const leaveCompetitionMutation = useMutation({
+    mutationFn: async () => {
+      const teamMemberId = userTeamMember?.[0]?.id;
+      if (!teamMemberId) throw new Error("No team membership found");
+      
+      return apiRequest("DELETE", `/api/team-members/${teamMemberId}`, {});
+    },
+    onSuccess: () => {
+      toast({
+        title: "Left Competition",
+        description: "You have successfully left the competition and team",
+      });
+      
+      // Invalidate and refetch relevant queries
+      queryClient.invalidateQueries({ queryKey: [`/api/team-members/${user?.id}`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions"] });
+      
+      // Navigate back to dashboard
+      navigate("/dashboard");
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to leave competition",
+        variant: "destructive",
+      });
+    },
   });
 
   if (isLoading) {
@@ -70,9 +105,21 @@ export default function CompetitionStatus() {
                   <Trophy className="mr-2 h-5 w-5" />
                   {competition.name}
                 </CardTitle>
-                <Badge variant={competition.isActive ? "default" : "secondary"}>
-                  {competition.isActive ? "Active" : "Upcoming"}
-                </Badge>
+                <div className="flex items-center space-x-2">
+                  <Badge variant={competition.isActive ? "default" : "secondary"}>
+                    {competition.isActive ? "Active" : "Upcoming"}
+                  </Badge>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => leaveCompetitionMutation.mutate()}
+                    disabled={leaveCompetitionMutation.isPending}
+                    className="border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    {leaveCompetitionMutation.isPending ? "Leaving..." : "Leave Competition"}
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent>

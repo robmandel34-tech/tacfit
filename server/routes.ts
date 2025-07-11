@@ -412,6 +412,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Leave competition (remove team member by membership ID)
+  app.delete("/api/team-members/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.sendStatus(401);
+    }
+
+    try {
+      const membershipId = parseInt(req.params.id);
+      
+      // Get all user team memberships to find the one to remove
+      const teams = await storage.getTeams();
+      let memberToRemove = null;
+      
+      for (const team of teams) {
+        const member = await storage.getTeamMember(team.id, req.user.id);
+        if (member && member.id === membershipId) {
+          memberToRemove = member;
+          break;
+        }
+      }
+      
+      if (!memberToRemove) {
+        return res.status(404).json({ message: "Team membership not found" });
+      }
+
+      // Verify the user owns this team membership
+      if (memberToRemove.userId !== req.user.id) {
+        return res.status(403).json({ message: "Not authorized to remove this team membership" });
+      }
+
+      const success = await storage.removeTeamMember(memberToRemove.teamId, memberToRemove.userId);
+      
+      if (success) {
+        res.json({ success: true, message: "Successfully left competition" });
+      } else {
+        res.status(500).json({ message: "Failed to leave competition" });
+      }
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Activity routes
   app.get("/api/activities", async (req, res) => {
     try {

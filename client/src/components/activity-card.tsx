@@ -31,6 +31,7 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
   const [, navigate] = useLocation();
   const { user } = useAuth();
   const [showComments, setShowComments] = useState(false);
+  const [isFlagged, setIsFlagged] = useState(false);
   
   // Get current likes for this activity
   const { data: activityLikes } = useQuery({
@@ -92,8 +93,8 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
     },
     onSuccess: (data) => {
       // Update queries to reflect the new like status
-      queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
       queryClient.invalidateQueries({ queryKey: [`/api/activities/${activity.id}/likes`] });
+      // Don't invalidate main activities query to preserve flag state
     },
   });
 
@@ -111,7 +112,8 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
+      setIsFlagged(true);
+      // Don't invalidate activities query to preserve flag state
     },
   });
 
@@ -210,9 +212,18 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
               <button
                 onClick={handleFlag}
                 disabled={flagActivity.isPending}
-                className="flex items-center gap-2 text-gray-400 hover:text-red-400 transition-colors text-sm"
+                className="flex items-center gap-2 transition-colors text-sm"
+                style={{
+                  color: isFlagged ? '#ef4444' : undefined
+                }}
               >
-                <Flag className="h-4 w-4" />
+                <Flag 
+                  className="h-4 w-4" 
+                  style={{
+                    fill: isFlagged ? '#ef4444' : 'none',
+                    color: isFlagged ? '#ef4444' : '#9ca3af'
+                  }}
+                />
                 <span>Flag</span>
               </button>
             </div>

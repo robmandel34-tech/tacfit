@@ -48,19 +48,20 @@ export default function Competitions() {
       <Navigation />
       
       <main className="container mx-auto px-4 py-6">
-        <div className="flex items-start justify-between mb-8">
-          <div>
+        <div className="flex items-start justify-between mb-8 gap-4">
+          <div className="flex-1">
             <h1 className="text-3xl font-bold text-white mb-2">Competitions</h1>
             <p className="text-gray-300">Join competitions and compete with teams</p>
           </div>
-          <div className="flex flex-col items-end space-y-3">
+          <div className="flex flex-col items-end space-y-2 flex-shrink-0">
             {user && (user.points || 0) < 1000 && (
-              <div className="text-sm text-gray-400 text-right">
-                Need {1000 - (user.points || 0)} more points to create competitions
+              <div className="text-xs text-gray-400 text-right max-w-[140px]">
+                Need {1000 - (user.points || 0)} more points
               </div>
             )}
             <Button 
-              className="bg-military-green hover:bg-military-green-light text-white disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+              size="sm"
+              className="bg-military-green hover:bg-military-green-light text-white disabled:opacity-50 disabled:cursor-not-allowed text-sm"
               disabled={!user || (user.points || 0) < 1000}
               onClick={() => {
                 if ((user.points || 0) < 1000) {
@@ -78,8 +79,8 @@ export default function Competitions() {
                 }
               }}
             >
-              <Plus className="mr-2 h-4 w-4" />
-              Create Competition
+              <Plus className="mr-1 h-3 w-3" />
+              Create
             </Button>
           </div>
         </div>

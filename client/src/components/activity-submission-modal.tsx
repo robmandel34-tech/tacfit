@@ -42,13 +42,21 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     enabled: !!currentTeam?.competitionId,
   });
 
-  // Activity type display names
+  // Activity type display names and measurement units
   const activityTypeNames: Record<string, string> = {
     cardio: "Cardio",
     strength: "Strength Training",
     flexibility: "Flexibility",
     sports: "Sports",
     other: "Other"
+  };
+
+  const activityMeasurements: Record<string, string> = {
+    cardio: "minutes, miles, steps",
+    strength: "minutes, reps, sets",
+    flexibility: "minutes, poses held",
+    sports: "minutes, games played",
+    other: "minutes, quantity"
   };
 
   // Get required activities for current competition or fallback to all types
@@ -182,13 +190,24 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
           </div>
           
           <div>
-            <Label className="text-gray-300 font-medium mb-2">Quantity</Label>
+            <Label className="text-gray-300 font-medium mb-2">
+              Quantity
+              {type && (
+                <span className="text-sm text-gray-400 ml-2">
+                  (e.g., {activityMeasurements[type] || "quantity"})
+                </span>
+              )}
+            </Label>
             <Input
               type="text"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
               className="bg-tactical-gray-lighter border-tactical-gray text-white"
-              placeholder="e.g., 30 minutes, 50 push-ups, 3 miles"
+              placeholder={
+                type 
+                  ? `e.g., ${activityMeasurements[type]?.split(', ')[0]} or ${activityMeasurements[type]?.split(', ')[1] || activityMeasurements[type]?.split(', ')[0]}`
+                  : "e.g., 30 minutes, 50 push-ups, 3 miles"
+              }
               required
             />
           </div>

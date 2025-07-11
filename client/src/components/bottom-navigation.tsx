@@ -13,13 +13,20 @@ export default function BottomNavigation() {
     enabled: !!user,
   });
 
-  // Only show bottom nav if user is in a competition and team
-  if (!user || !userTeamMember || userTeamMember.length === 0) return null;
+  // Only show bottom nav if user is logged in
+  if (!user) return null;
 
-  const navItems = [
+  // Show different nav items based on whether user is in a competition
+  const hasActiveMembership = userTeamMember && userTeamMember.length > 0;
+  
+  const navItems = hasActiveMembership ? [
     { path: "/", icon: Home, label: "Home" },
     { path: "/competition-status", icon: Trophy, label: "Competition" },
     { path: "/team", icon: Users, label: "Team" }
+  ] : [
+    { path: "/", icon: Home, label: "Home" },
+    { path: "/competitions", icon: Trophy, label: "Competitions" },
+    { path: "/activity-feed", icon: Users, label: "Activity" }
   ];
 
   return (

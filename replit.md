@@ -38,6 +38,10 @@ Preferred communication style: Simple, everyday language.
 - **NEW**: Send friend requests with status tracking (pending, accepted, rejected)
 - **NEW**: Accept/reject friend requests with real-time updates
 - **NEW**: Display user points and competition history in search results
+- **NEW**: Competition-specific activity requirements (3 activity types per competition)
+- **NEW**: Team target goals displayed on competition cards (e.g., "100,000 steps as a team")
+- **NEW**: Enhanced competition cards show required activities and measurable goals
+- **NEW**: Database schema updated to support competition-specific activities and targets
 
 ### Progress Map Feature (July 2025)
 - **NEW**: Added topographical progress map to Competition Status page

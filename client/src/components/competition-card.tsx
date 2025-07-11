@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Calendar, Users, Target, Share2 } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Trophy, Calendar, Users, Target, Share2, Activity, CheckCircle } from "lucide-react";
 
 interface CompetitionCardProps {
   competition: {
@@ -12,6 +13,8 @@ interface CompetitionCardProps {
     endDate: string;
     maxTeams: number;
     isActive: boolean;
+    requiredActivities?: string[];
+    targetGoals?: string[];
   };
   onInvite?: (competitionId: number, competitionName: string) => void;
   onJoin?: (competitionId: number) => void;
@@ -44,10 +47,44 @@ export default function CompetitionCard({ competition, onInvite, onJoin }: Compe
             <span>Max {competition.maxTeams} teams</span>
           </div>
           
-          <div className="flex items-center text-sm text-gray-400">
-            <Target className="mr-2 h-4 w-4" />
-            <span>Competitive challenge</span>
-          </div>
+          {competition.requiredActivities && competition.requiredActivities.length > 0 && (
+            <>
+              <Separator className="bg-tactical-gray" />
+              <div className="space-y-2">
+                <div className="flex items-center text-sm text-gray-300">
+                  <Activity className="mr-2 h-4 w-4" />
+                  <span className="font-medium">Required Activities:</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {competition.requiredActivities.map((activity, index) => (
+                    <Badge key={index} variant="outline" className="text-xs capitalize">
+                      {activity}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+          
+          {competition.targetGoals && competition.targetGoals.length > 0 && (
+            <>
+              <Separator className="bg-tactical-gray" />
+              <div className="space-y-2">
+                <div className="flex items-center text-sm text-gray-300">
+                  <Target className="mr-2 h-4 w-4" />
+                  <span className="font-medium">Team Goals:</span>
+                </div>
+                <div className="space-y-1">
+                  {competition.targetGoals.map((goal, index) => (
+                    <div key={index} className="flex items-center text-xs text-gray-400">
+                      <CheckCircle className="mr-2 h-3 w-3" />
+                      <span>{goal}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </div>
         
         <div className="mt-4 pt-4 border-t border-tactical-gray">

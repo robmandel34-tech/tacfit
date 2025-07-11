@@ -23,6 +23,8 @@ export const competitions = pgTable("competitions", {
   maxTeams: integer("max_teams").default(10),
   createdBy: integer("created_by").references(() => users.id),
   isActive: boolean("is_active").default(true),
+  requiredActivities: text("required_activities").array().default([]),
+  targetGoals: text("target_goals").array().default([]),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

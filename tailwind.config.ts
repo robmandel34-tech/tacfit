@@ -61,6 +61,19 @@ export default {
           border: "var(--sidebar-border)",
           ring: "var(--sidebar-ring)",
         },
+        // Military theme colors
+        "military-green": "var(--military-green)",
+        "military-green-light": "var(--military-green-light)",
+        "military-green-dark": "var(--military-green-dark)",
+        "tactical-gray": "var(--tactical-gray)",
+        "tactical-gray-light": "var(--tactical-gray-light)",
+        "tactical-gray-lighter": "var(--tactical-gray-lighter)",
+        "tactical-gray-lightest": "var(--tactical-gray-lightest)",
+        "combat-orange": "var(--combat-orange)",
+        "steel-blue": "var(--steel-blue)",
+        "success-green": "var(--success-green)",
+        "warning-amber": "var(--warning-amber)",
+        "danger-red": "var(--danger-red)",
       },
       keyframes: {
         "accordion-down": {

@@ -37,8 +37,8 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
 
   // Generate topographical features along the route
   const features = [
-    { position: 5, icon: Flag, name: "Base Camp", color: "text-green-600" },
-    { position: 95, icon: Trophy, name: "Victory Point", color: "text-yellow-600" }
+    { position: 10, icon: Flag, name: "Base Camp", color: "text-green-600", x: 10, y: 85 },
+    { position: 90, icon: Trophy, name: "Victory Point", color: "text-yellow-600", x: 90, y: 15 }
   ];
 
   return (
@@ -65,25 +65,31 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
             {/* Enhanced overlay for better visibility and contrast */}
             <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/50" />
 
-            {/* Enhanced route path with better visibility */}
+            {/* Sleek diagonal route path from bottom left to top right */}
             <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
               {/* Background stroke for better visibility */}
-              <path d="M5,75 Q15,70 25,65 Q35,60 45,70 Q55,80 65,65 Q75,50 85,55 Q92,60 95,65" 
-                    stroke="rgba(0,0,0,0.6)" 
-                    strokeWidth="4" 
+              <path d="M10,85 Q25,75 40,65 Q55,50 70,35 Q80,25 90,15" 
+                    stroke="rgba(0,0,0,0.7)" 
+                    strokeWidth="5" 
                     fill="none" />
-              {/* Main route path */}
-              <path d="M5,75 Q15,70 25,65 Q35,60 45,70 Q55,80 65,65 Q75,50 85,55 Q92,60 95,65" 
-                    stroke="rgba(255,255,255,0.95)" 
-                    strokeWidth="2" 
+              {/* Main route path - sleek and smooth */}
+              <path d="M10,85 Q25,75 40,65 Q55,50 70,35 Q80,25 90,15" 
+                    stroke="rgba(255,255,255,0.98)" 
+                    strokeWidth="3" 
                     fill="none"
-                    strokeDasharray="6,3" />
-              {/* Glowing effect */}
-              <path d="M5,75 Q15,70 25,65 Q35,60 45,70 Q55,80 65,65 Q75,50 85,55 Q92,60 95,65" 
-                    stroke="rgba(134,239,172,0.8)" 
-                    strokeWidth="1" 
+                    strokeLinecap="round" />
+              {/* Inner glowing effect */}
+              <path d="M10,85 Q25,75 40,65 Q55,50 70,35 Q80,25 90,15" 
+                    stroke="rgba(134,239,172,0.9)" 
+                    strokeWidth="1.5" 
                     fill="none"
-                    strokeDasharray="6,3" />
+                    strokeLinecap="round" />
+              {/* Subtle outer glow */}
+              <path d="M10,85 Q25,75 40,65 Q55,50 70,35 Q80,25 90,15" 
+                    stroke="rgba(134,239,172,0.3)" 
+                    strokeWidth="8" 
+                    fill="none"
+                    strokeLinecap="round" />
             </svg>
 
             {/* Topographical features */}
@@ -92,8 +98,8 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
                 key={index}
                 className="absolute flex flex-col items-center"
                 style={{
-                  left: `${feature.position}%`,
-                  top: `${60 + Math.sin(index * 0.8) * 15}%`,
+                  left: `${feature.x}%`,
+                  top: `${feature.y}%`,
                   transform: 'translate(-50%, -50%)'
                 }}
               >
@@ -106,13 +112,16 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
 
             {/* Team markers */}
             {teamsWithProgress.map((team, index) => {
-              // Calculate position along the curved path using the exact path equation
-              const progress = team.progress / 100;
-              const t = progress;
+              // Calculate position along the diagonal route path
+              const progress = Math.min(team.progress / 85, 1); // Normalize to 0-1
               
-              // Bezier curve calculation matching the SVG path
-              const pathX = 5 + (90 * t) + Math.sin(t * Math.PI * 2) * 10;
-              const pathY = 75 - (20 * t) + Math.sin(t * Math.PI * 3) * 8;
+              // Smooth diagonal path from bottom left (10,85) to top right (90,15)
+              const startX = 10, startY = 85;
+              const endX = 90, endY = 15;
+              
+              // Calculate position with subtle curve for natural movement
+              const pathX = startX + (endX - startX) * progress + Math.sin(progress * Math.PI) * 3;
+              const pathY = startY + (endY - startY) * progress + Math.cos(progress * Math.PI) * 2;
               
               return (
                 <div

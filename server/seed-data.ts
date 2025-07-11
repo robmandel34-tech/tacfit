@@ -4,8 +4,8 @@ import { storage } from "./storage";
 export async function seedDatabase() {
   try {
     // Check if data already exists
-    const existingUsers = await storage.getUser(1);
-    if (existingUsers) {
+    const existingUsers = await storage.getUsers();
+    if (existingUsers && existingUsers.length > 0) {
       console.log("Database already seeded");
       return;
     }

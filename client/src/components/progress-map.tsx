@@ -212,6 +212,7 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
               </div>
 
               {/* Team leaderboard */}
+              <div className="mt-6 space-y-3">
                 {teamsWithProgress.map((team) => (
                   <div 
                     key={team.id} 

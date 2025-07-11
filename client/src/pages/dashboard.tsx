@@ -24,6 +24,11 @@ export default function Dashboard() {
     enabled: !!user,
   });
 
+  const { data: userTeamMembership } = useQuery({
+    queryKey: ["/api/team-members", user?.id],
+    enabled: !!user,
+  });
+
   if (isLoading) {
     return <div className="min-h-screen bg-tactical-gray flex items-center justify-center">
       <div className="text-white">Loading...</div>
@@ -34,6 +39,8 @@ export default function Dashboard() {
 
   const activeCompetitions = competitions.filter((comp: any) => comp.isActive);
   const recentActivities = activities.slice(0, 3);
+  const hasJoinedCompetition = userTeamMembership && userTeamMembership.length > 0;
+  const canCreateCompetition = user?.points >= 1000; // Points threshold for creating competitions
 
   return (
     <div className="min-h-screen bg-tactical-gray">
@@ -87,10 +94,17 @@ export default function Dashboard() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-xl font-bold text-white">Available Missions</CardTitle>
-                  <Button className="bg-military-green hover:bg-military-green-light text-white">
-                    <Trophy className="mr-2 h-4 w-4" />
-                    Create Mission
-                  </Button>
+                  {canCreateCompetition && (
+                    <Button className="bg-military-green hover:bg-military-green-light text-white">
+                      <Trophy className="mr-2 h-4 w-4" />
+                      Create Mission
+                    </Button>
+                  )}
+                  {!canCreateCompetition && (
+                    <div className="text-gray-400 text-sm">
+                      Need 1000+ points to create missions
+                    </div>
+                  )}
                 </div>
               </CardHeader>
               <CardContent>
@@ -149,26 +163,35 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <Button 
-                    className="w-full bg-military-green hover:bg-military-green-light text-white"
-                    onClick={() => setIsActivityModalOpen(true)}
-                  >
-                    <Camera className="mr-2 h-4 w-4" />
-                    Submit Activity
-                  </Button>
-                  <Button 
-                    className="w-full bg-steel-blue hover:bg-blue-600 text-white"
-                    onClick={() => setIsChatModalOpen(true)}
-                  >
-                    <MessageCircle className="mr-2 h-4 w-4" />
-                    Team Chat
-                  </Button>
+                  {hasJoinedCompetition && (
+                    <>
+                      <Button 
+                        className="w-full bg-military-green hover:bg-military-green-light text-white"
+                        onClick={() => setIsActivityModalOpen(true)}
+                      >
+                        <Camera className="mr-2 h-4 w-4" />
+                        Submit Activity
+                      </Button>
+                      <Button 
+                        className="w-full bg-steel-blue hover:bg-blue-600 text-white"
+                        onClick={() => setIsChatModalOpen(true)}
+                      >
+                        <MessageCircle className="mr-2 h-4 w-4" />
+                        Team Chat
+                      </Button>
+                    </>
+                  )}
                   <Button 
                     className="w-full bg-tactical-gray-lighter hover:bg-tactical-gray-lightest text-white"
                   >
                     <UserPlus className="mr-2 h-4 w-4" />
                     Find Friends
                   </Button>
+                  {!hasJoinedCompetition && (
+                    <div className="text-center py-4 text-gray-400">
+                      <p className="text-sm">Join a competition to unlock activity submission and team chat</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -177,6 +200,7 @@ export default function Dashboard() {
             <Card className="bg-tactical-gray-light border-tactical-gray">
               <CardHeader>
                 <CardTitle className="text-xl font-bold text-white">Latest Intel</CardTitle>
+                <p className="text-gray-400 text-sm">Recent activity from all active competitions</p>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -184,7 +208,7 @@ export default function Dashboard() {
                     <div className="text-center py-8 text-gray-300">
                       <Users className="mx-auto h-12 w-12 text-gray-500 mb-4" />
                       <p>No recent activity</p>
-                      <p className="text-sm text-gray-400">Submit your first activity to get started</p>
+                      <p className="text-sm text-gray-400">Activity from all competitions will appear here</p>
                     </div>
                   ) : (
                     recentActivities.map((activity: any) => (
@@ -201,8 +225,18 @@ export default function Dashboard() {
                               <span className="text-gray-400 text-xs">
                                 {new Date(activity.createdAt).toLocaleDateString()}
                               </span>
+                              <Badge variant="outline" className="text-xs">
+                                {activity.type || "General"}
+                              </Badge>
                             </div>
                             <p className="text-gray-300 text-sm">{activity.description}</p>
+                            {activity.points && (
+                              <div className="flex items-center mt-2">
+                                <span className="text-combat-orange text-xs font-bold">
+                                  +{activity.points} points
+                                </span>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>

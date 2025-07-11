@@ -114,8 +114,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/competitions", async (req, res) => {
     try {
-      const competitionData = insertCompetitionSchema.parse(req.body);
-      const competition = await storage.createCompetition(competitionData);
+      const { createdBy, ...competitionData } = req.body;
+      
+      if (!createdBy) {
+        return res.status(401).json({ message: "User ID required" });
+      }
+
+      // Get user to check points
+      const user = await storage.getUser(createdBy);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Check if user has enough points to create a competition (1000 points threshold)
+      if ((user.points || 0) < 1000) {
+        return res.status(403).json({ message: "Need at least 1000 points to create a competition" });
+      }
+
+      const parsedData = insertCompetitionSchema.parse(competitionData);
+      const competition = await storage.createCompetition({
+        ...parsedData,
+        createdBy: user.id
+      });
       res.json(competition);
     } catch (error) {
       res.status(400).json({ message: "Invalid competition data" });
@@ -220,6 +240,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(member);
     } catch (error) {
       res.status(400).json({ message: "Invalid member data" });
+    }
+  });
+
+  // Get user team memberships
+  app.get("/api/team-members/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const teams = await storage.getTeams();
+      const userMemberships = [];
+      
+      for (const team of teams) {
+        const member = await storage.getTeamMember(team.id, userId);
+        if (member) {
+          userMemberships.push({
+            ...member,
+            team: team
+          });
+        }
+      }
+      
+      res.json(userMemberships);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching user memberships" });
     }
   });
 

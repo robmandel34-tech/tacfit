@@ -10,6 +10,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### Dashboard Logic Updates (July 2025)
+- Implemented conditional UI based on user competition participation
+- Submit Activity and Team Chat buttons now only appear for users who have joined competitions
+- Added 1000 points threshold requirement for creating competitions
+- Updated intel box to show recent activity posts from all current competitions
+- Enhanced activity display with activity type badges and points earned
+- Added user team membership checking functionality
+
 ### UI/UX Improvements (July 2025)
 - Updated design with sharper edges and cleaner aesthetic
 - Reduced border radius from 0.5rem to 0.125rem for more tactical appearance

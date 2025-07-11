@@ -115,6 +115,8 @@ Preferred communication style: Simple, everyday language.
 - **NEW**: Enhanced profile page centering for all elements (name, motto, stats, content)
 - **NEW**: PATCH endpoint for partial user updates (/api/users/:id PATCH)
 - **FIXED**: Activity type badge text color in Latest Intel section now shows gray text instead of black
+- **ENHANCED**: Team photo, name, and motto updates now refresh throughout the entire app
+- **ENHANCED**: Comprehensive cache invalidation for team changes updates progress map and all team displays
 
 ### Competition Status Features (July 2025)
 - New Competition Status page with comprehensive competition overview

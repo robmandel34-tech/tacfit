@@ -112,7 +112,20 @@ export default function Team() {
         title: "Photo updated!",
         description: "Your team photo has been updated successfully.",
       });
+      // Invalidate all team-related queries to update team photo everywhere
       queryClient.invalidateQueries({ queryKey: [`/api/teams/${team?.id}`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/teams"] });
+      queryClient.invalidateQueries({ predicate: (query) => 
+        query.queryKey[0]?.toString().includes("/api/teams") 
+      });
+      // Invalidate competition queries that include team data
+      queryClient.invalidateQueries({ predicate: (query) => 
+        query.queryKey[0]?.toString().includes("/api/competitions") 
+      });
+      // Invalidate team member queries
+      queryClient.invalidateQueries({ predicate: (query) => 
+        query.queryKey[0]?.toString().includes("/api/team-members") 
+      });
       setIsUploadingPhoto(false);
     },
     onError: () => {
@@ -142,7 +155,16 @@ export default function Team() {
         title: "Motto updated!",
         description: "Your team motto has been updated successfully.",
       });
+      // Invalidate all team-related queries to update team motto everywhere
       queryClient.invalidateQueries({ queryKey: [`/api/teams/${team?.id}`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/teams"] });
+      queryClient.invalidateQueries({ predicate: (query) => 
+        query.queryKey[0]?.toString().includes("/api/teams") 
+      });
+      // Invalidate competition queries that include team data
+      queryClient.invalidateQueries({ predicate: (query) => 
+        query.queryKey[0]?.toString().includes("/api/competitions") 
+      });
       setIsEditingMotto(false);
     },
     onError: () => {
@@ -174,7 +196,20 @@ export default function Team() {
         title: "Team name updated!",
         description: "Your team name has been updated successfully.",
       });
+      // Invalidate all team-related queries to update team name everywhere
       queryClient.invalidateQueries({ queryKey: [`/api/teams/${team?.id}`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/teams"] });
+      queryClient.invalidateQueries({ predicate: (query) => 
+        query.queryKey[0]?.toString().includes("/api/teams") 
+      });
+      // Invalidate competition queries that include team data
+      queryClient.invalidateQueries({ predicate: (query) => 
+        query.queryKey[0]?.toString().includes("/api/competitions") 
+      });
+      // Invalidate team member queries
+      queryClient.invalidateQueries({ predicate: (query) => 
+        query.queryKey[0]?.toString().includes("/api/team-members") 
+      });
       setIsEditingName(false);
     },
     onError: (error: Error) => {

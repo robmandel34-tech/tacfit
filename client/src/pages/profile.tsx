@@ -234,7 +234,17 @@ export default function Profile() {
       if (isOwnProfile && updateUser) {
         updateUser(updatedUser);
       }
-      queryClient.invalidateQueries({ queryKey: [`/api/users/${displayUser.id}`] });
+      // Update the query cache directly with the new user data
+      queryClient.setQueryData(["/api/users", displayUser.id], updatedUser);
+      // Invalidate all user-related queries to update motto everywhere
+      queryClient.invalidateQueries({ queryKey: ["/api/team-members"] });
+      queryClient.invalidateQueries({ predicate: (query) => 
+        query.queryKey[0]?.toString().includes("/api/team-members") 
+      });
+      // Also invalidate the team members query for the specific team
+      queryClient.invalidateQueries({ predicate: (query) => 
+        query.queryKey[0]?.toString().includes("/api/team-members/team/") 
+      });
       setIsEditingMotto(false);
     },
     onError: () => {

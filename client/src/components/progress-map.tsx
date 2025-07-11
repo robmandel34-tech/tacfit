@@ -42,72 +42,81 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
   ];
 
   return (
-    <Card className="w-full bg-tactical-gray-light border-tactical-gray rounded-xl shadow-lg" style={{
-      boxShadow: '0 4px 12px rgba(0,0,0,0.15), 0 2px 6px rgba(0,0,0,0.1)'
-    }}>
-      <CardHeader>
-        <CardTitle className="text-white flex items-center gap-2">
-          <MapPin className="h-5 w-5" />
-          {competitionName} - Team Progress Map
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="relative">
-          {/* Map Background */}
-          <div className="relative h-96 rounded-xl overflow-visible shadow-lg" style={{
-            boxShadow: '0 8px 16px rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.1)'
-          }}>
-            <div className="absolute inset-0 rounded-xl overflow-hidden">
-              {/* High-Quality Wilderness Terrain Background */}
-              <div 
-                className="w-full h-full bg-cover bg-center"
-                style={{
-                  backgroundImage: `url('/user-terrain-image.jpeg')`,
-                  filter: 'brightness(1.3) contrast(1.1) saturate(1.2)'
-                }}
-              />
-              
-              {/* Enhanced overlay for better visibility and contrast */}
-              <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/50" />
+    <div className="w-full">
+      {/* Competition Title - Centered above everything */}
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold text-white">{competitionName}</h2>
+      </div>
+      
+      {/* Tab-like header for Team Progress Map */}
+      <div className="relative">
+        <div className="flex justify-center mb-0">
+          <div className="bg-tactical-gray-light border-tactical-gray border-t border-l border-r rounded-t-xl px-6 py-3 shadow-lg">
+            <h3 className="text-lg font-semibold text-white">Team Progress Map</h3>
+          </div>
+        </div>
+        
+        {/* Map Container */}
+        <Card className="w-full bg-tactical-gray-light border-tactical-gray rounded-xl rounded-tl-none shadow-lg" style={{
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15), 0 2px 6px rgba(0,0,0,0.1)'
+        }}>
+          <CardContent className="p-6">
+            <div className="relative">
+              {/* Map Background */}
+              <div className="relative h-96 rounded-xl overflow-visible shadow-lg" style={{
+                boxShadow: '0 8px 16px rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.1)'
+              }}>
+                <div className="absolute inset-0 rounded-xl overflow-hidden">
+                  {/* High-Quality Wilderness Terrain Background */}
+                  <div 
+                    className="w-full h-full bg-cover bg-center"
+                    style={{
+                      backgroundImage: `url('/user-terrain-image.jpeg')`,
+                      filter: 'brightness(1.3) contrast(1.1) saturate(1.2)'
+                    }}
+                  />
+                  
+                  {/* Enhanced overlay for better visibility and contrast */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/50" />
 
-              {/* Weaving diagonal route path from bottom left to top right */}
-              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
-                {/* Background stroke for better visibility */}
-                <path d="M10,85 Q20,75 30,80 Q40,85 50,70 Q60,55 70,60 Q80,65 90,15" 
-                      stroke="rgba(0,0,0,0.6)" 
-                      strokeWidth="3" 
-                      fill="none" />
-                {/* Main route path - thin with dashes */}
-                <path d="M10,85 Q20,75 30,80 Q40,85 50,70 Q60,55 70,60 Q80,65 90,15" 
-                      stroke="rgba(255,255,255,0.95)" 
-                      strokeWidth="1.5" 
-                      fill="none"
-                      strokeDasharray="6,3" />
-                {/* Inner glowing effect */}
-                <path d="M10,85 Q20,75 30,80 Q40,85 50,70 Q60,55 70,60 Q80,65 90,15" 
-                      stroke="rgba(134,239,172,0.8)" 
-                      strokeWidth="1" 
-                      fill="none"
-                      strokeDasharray="6,3" />
-              </svg>
+                  {/* Weaving diagonal route path from bottom left to top right */}
+                  <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
+                    {/* Background stroke for better visibility */}
+                    <path d="M10,85 Q20,75 30,80 Q40,85 50,70 Q60,55 70,60 Q80,65 90,15" 
+                          stroke="rgba(0,0,0,0.6)" 
+                          strokeWidth="3" 
+                          fill="none" />
+                    {/* Main route path - thin with dashes */}
+                    <path d="M10,85 Q20,75 30,80 Q40,85 50,70 Q60,55 70,60 Q80,65 90,15" 
+                          stroke="rgba(255,255,255,0.95)" 
+                          strokeWidth="1.5" 
+                          fill="none"
+                          strokeDasharray="6,3" />
+                    {/* Inner glowing effect */}
+                    <path d="M10,85 Q20,75 30,80 Q40,85 50,70 Q60,55 70,60 Q80,65 90,15" 
+                          stroke="rgba(134,239,172,0.8)" 
+                          strokeWidth="1" 
+                          fill="none"
+                          strokeDasharray="6,3" />
+                  </svg>
 
-              {/* Topographical features */}
-              {features.map((feature, index) => (
-                <div
-                  key={index}
-                  className="absolute flex flex-col items-center"
-                  style={{
-                    left: `${feature.x}%`,
-                    top: `${feature.y}%`,
-                    transform: 'translate(-50%, -50%)'
-                  }}
-                >
-                  <div className={`p-2 rounded-full bg-black/60 border-2 border-white/30 ${feature.color}`}>
-                    <feature.icon className="h-4 w-4 drop-shadow-lg" />
-                  </div>
-                  <span className="text-xs text-white mt-1 font-medium drop-shadow-lg bg-black/40 px-2 py-1 rounded">{feature.name}</span>
-                </div>
-              ))}
+                  {/* Topographical features */}
+                  {features.map((feature, index) => (
+                    <div
+                      key={index}
+                      className="absolute flex flex-col items-center"
+                      style={{
+                        left: `${feature.x}%`,
+                        top: `${feature.y}%`,
+                        transform: 'translate(-50%, -50%)'
+                      }}
+                    >
+                      <div className={`p-2 rounded-full bg-black/60 border-2 border-white/30 ${feature.color}`}>
+                        <feature.icon className="h-4 w-4 drop-shadow-lg" />
+                      </div>
+                      <span className="text-xs text-white mt-1 font-medium drop-shadow-lg bg-black/40 px-2 py-1 rounded">{feature.name}</span>
+                    </div>
+                  ))}
 
               {/* Team markers */}
               {teamsWithProgress.map((team, index) => {
@@ -194,54 +203,55 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
                         <div className="text-military-green font-bold">{team.points} points</div>
                         {team.motto && <div className="text-gray-300 italic text-xs mt-1">"{team.motto}"</div>}
                         <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-black/90" />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Team leaderboard */}
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {teamsWithProgress.map((team) => (
-              <div 
-                key={team.id} 
-                className="bg-tactical-gray rounded-lg p-4 border border-tactical-gray cursor-pointer hover:bg-tactical-gray-light transition-colors"
-                onClick={() => navigate(`/team/${team.id}`)}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="bg-military-green text-white border-military-green">
-                      #{team.rank}
-                    </Badge>
-                    <h3 className="font-semibold text-white">{team.name}</h3>
-                  </div>
-                  <div className="text-military-green font-bold">{team.points} pts</div>
+                  );
+                })}
                 </div>
-                
-                {/* Progress bar */}
-                <div className="w-full bg-gray-700 rounded-full h-2 mb-2">
-                  <div 
-                    className="bg-military-green h-2 rounded-full transition-all duration-1000"
-                    style={{ width: `${(team.progress / 85) * 100}%` }}
-                  />
-                </div>
-                
-                <div className="text-sm text-gray-400">
-                  {Math.round(team.progress)}% complete
-                </div>
-                
-                {team.motto && (
-                  <div className="text-xs text-gray-500 italic mt-1">
-                    "{team.motto}"
-                  </div>
-                )}
               </div>
-            ))}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+
+              {/* Team leaderboard */}
+                {teamsWithProgress.map((team) => (
+                  <div 
+                    key={team.id} 
+                    className="bg-tactical-gray rounded-lg p-4 border border-tactical-gray cursor-pointer hover:bg-tactical-gray-light transition-colors"
+                    onClick={() => navigate(`/team/${team.id}`)}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-military-green text-white border-military-green">
+                          #{team.rank}
+                        </Badge>
+                        <h3 className="font-semibold text-white">{team.name}</h3>
+                      </div>
+                      <div className="text-military-green font-bold">{team.points} pts</div>
+                    </div>
+                    
+                    {/* Progress bar */}
+                    <div className="w-full bg-gray-700 rounded-full h-2 mb-2">
+                      <div 
+                        className="bg-military-green h-2 rounded-full transition-all duration-1000"
+                        style={{ width: `${(team.progress / 85) * 100}%` }}
+                      />
+                    </div>
+                    
+                    <div className="text-sm text-gray-400">
+                      {Math.round(team.progress)}% complete
+                    </div>
+                    
+                    {team.motto && (
+                      <div className="text-xs text-gray-500 italic mt-1">
+                        "{team.motto}"
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 }

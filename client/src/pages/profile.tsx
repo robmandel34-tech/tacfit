@@ -33,6 +33,8 @@ export default function Profile() {
   const [isUploadingCover, setIsUploadingCover] = useState(false);
   const [isEditingMotto, setIsEditingMotto] = useState(false);
   const [mottoText, setMottoText] = useState("");
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [nameText, setNameText] = useState("");
 
   const isOwnProfile = !userId || userId === user?.id?.toString();
   const targetUserId = isOwnProfile ? user?.id : parseInt(userId!);
@@ -290,6 +292,68 @@ export default function Profile() {
     setMottoText("");
   };
 
+  // Handle name editing
+  const handleNameEdit = () => {
+    setNameText(displayUser.username || "");
+    setIsEditingName(true);
+  };
+
+  const handleNameSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (nameText.trim()) {
+      updateUserName.mutate(nameText.trim());
+    }
+  };
+
+  const handleNameCancel = () => {
+    setIsEditingName(false);
+    setNameText("");
+  };
+
+  // Update user name mutation
+  const updateUserName = useMutation({
+    mutationFn: async (newName: string) => {
+      const response = await fetch(`/api/users/${displayUser.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username: newName }),
+      });
+
+      if (!response.ok) throw new Error("Failed to update name");
+      return response.json();
+    },
+    onSuccess: (updatedUser) => {
+      toast({
+        title: "Name updated!",
+        description: "Your name has been updated successfully.",
+      });
+      // Update the user context if it's the current user
+      if (isOwnProfile && updateUser) {
+        updateUser(updatedUser);
+      }
+      // Update the query cache directly with the new user data
+      queryClient.setQueryData(["/api/users", displayUser.id], updatedUser);
+      // Invalidate all user-related queries to update name everywhere
+      queryClient.invalidateQueries({ queryKey: ["/api/team-members"] });
+      queryClient.invalidateQueries({ predicate: (query) => 
+        query.queryKey[0]?.toString().includes("/api/team-members") 
+      });
+      queryClient.invalidateQueries({ predicate: (query) => 
+        query.queryKey[0]?.toString().includes("/api/activities") 
+      });
+      setIsEditingName(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update name",
+        variant: "destructive",
+      });
+    },
+  });
+
   const displayUser = profileUser || user;
 
   if (isLoading) {
@@ -398,18 +462,67 @@ export default function Profile() {
                       )}
                     </div>
                   </div>
-                  <h2 className="text-white font-bold text-xl mb-2">{displayUser.username}</h2>
-                  <p className="text-gray-400 text-sm mb-2">{displayUser.email}</p>
+                  {/* User Name */}
+                  <div className="mb-2">
+                    {isEditingName ? (
+                      <form onSubmit={handleNameSubmit} className="flex items-center justify-center space-x-2">
+                        <Input
+                          value={nameText}
+                          onChange={(e) => setNameText(e.target.value)}
+                          placeholder="Enter your name..."
+                          className="flex-1 max-w-xs bg-tactical-gray text-white placeholder-gray-400 border-tactical-gray text-center"
+                          maxLength={50}
+                          autoFocus
+                        />
+                        <Button
+                          type="submit"
+                          size="sm"
+                          className="bg-military-green hover:bg-military-green-light text-white"
+                          disabled={updateUserName.isPending || !nameText.trim()}
+                        >
+                          {updateUserName.isPending ? (
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          ) : (
+                            <Check className="h-4 w-4 text-white" />
+                          )}
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          onClick={handleNameCancel}
+                          className="text-gray-400 hover:text-white"
+                        >
+                          <X className="h-4 w-4 text-gray-400" />
+                        </Button>
+                      </form>
+                    ) : (
+                      <div className="flex items-center justify-center space-x-2">
+                        <h2 className="text-white font-bold text-xl">{displayUser.username}</h2>
+                        {isOwnProfile && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleNameEdit}
+                            className="text-gray-400 hover:text-white"
+                          >
+                            <Edit2 className="h-4 w-4 text-gray-400" />
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-gray-400 text-sm mb-2 text-center">{displayUser.email}</p>
                   
                   {/* User Motto */}
                   <div className="mb-4">
                     {isEditingMotto ? (
-                      <form onSubmit={handleMottoSubmit} className="flex items-center space-x-2">
+                      <form onSubmit={handleMottoSubmit} className="flex items-center justify-center space-x-2">
                         <Input
                           value={mottoText}
                           onChange={(e) => setMottoText(e.target.value)}
                           placeholder="Enter your motto..."
-                          className="flex-1 bg-tactical-gray text-white placeholder-gray-400 border-tactical-gray"
+                          className="flex-1 max-w-xs bg-tactical-gray text-white placeholder-gray-400 border-tactical-gray text-center"
                           maxLength={100}
                           autoFocus
                         />
@@ -436,8 +549,8 @@ export default function Profile() {
                         </Button>
                       </form>
                     ) : (
-                      <div className="flex items-center justify-center">
-                        <p className="text-gray-300 text-sm italic">
+                      <div className="flex items-center justify-center space-x-2">
+                        <p className="text-gray-300 text-sm italic text-center">
                           {displayUser.motto ? `"${displayUser.motto}"` : "No motto set"}
                         </p>
                         {isOwnProfile && (
@@ -445,7 +558,7 @@ export default function Profile() {
                             variant="ghost"
                             size="sm"
                             onClick={handleMottoEdit}
-                            className="text-gray-400 hover:text-white ml-2"
+                            className="text-gray-400 hover:text-white"
                           >
                             <Edit2 className="h-4 w-4 text-gray-400" />
                           </Button>
@@ -454,12 +567,12 @@ export default function Profile() {
                     )}
                   </div>
                   
-                  <div className="bg-tactical-gray-lighter rounded-lg p-4 mb-4">
+                  <div className="bg-tactical-gray-lighter rounded-lg p-4 mb-4 text-center">
                     <div className="flex items-center justify-center space-x-2 mb-2">
                       <Trophy className="h-5 w-5" style={{ color: '#fb923c' }} />
                       <span className="font-bold text-lg" style={{ color: '#fb923c' }}>{displayUser.points}</span>
                     </div>
-                    <p className="text-gray-300 text-sm">Total Points</p>
+                    <p className="text-gray-300 text-sm text-center">Total Points</p>
                   </div>
 
                   {/* Friend Actions */}

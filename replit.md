@@ -110,6 +110,10 @@ Preferred communication style: Simple, everyday language.
 - **NEW**: API endpoint for updating user mottos (PATCH /api/users/:id/motto)
 - **NEW**: User mottos displayed on team member pages below profile information
 - **NEW**: Character limits and validation for user mottos (100 characters max)
+- **NEW**: User name editing functionality with inline editing UI
+- **NEW**: Real-time name updates with proper cache invalidation
+- **NEW**: Enhanced profile page centering for all elements (name, motto, stats, content)
+- **NEW**: PATCH endpoint for partial user updates (/api/users/:id PATCH)
 
 ### Competition Status Features (July 2025)
 - New Competition Status page with comprehensive competition overview

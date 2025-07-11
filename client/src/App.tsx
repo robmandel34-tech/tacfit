@@ -10,6 +10,7 @@ import Register from "@/pages/register";
 import Competitions from "@/pages/competitions";
 import CompetitionStatus from "@/pages/competition-status";
 import Team from "@/pages/team";
+import TeamPublic from "@/pages/team-public";
 import ActivityFeed from "@/pages/activity-feed";
 import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
@@ -27,6 +28,7 @@ function Router() {
         <Route path="/competitions" component={Competitions} />
         <Route path="/competition-status" component={CompetitionStatus} />
         <Route path="/team" component={Team} />
+        <Route path="/team/:teamId" component={TeamPublic} />
         <Route path="/activity-feed" component={ActivityFeed} />
         <Route path="/profile" component={Profile} />
         <Route path="/profile/:userId" component={Profile} />

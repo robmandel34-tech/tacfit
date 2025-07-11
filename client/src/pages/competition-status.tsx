@@ -1,5 +1,6 @@
 import { useAuthRequired } from "@/lib/auth";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import Navigation from "@/components/navigation";
 import ActivityCard from "@/components/activity-card";
 import ProgressMap from "@/components/progress-map";
@@ -9,6 +10,7 @@ import { Trophy, Users, Target, Calendar } from "lucide-react";
 
 export default function CompetitionStatus() {
   const { user, isLoading } = useAuthRequired();
+  const [, navigate] = useLocation();
 
   // Get user's current team membership
   const { data: userTeamMember } = useQuery({
@@ -103,7 +105,11 @@ export default function CompetitionStatus() {
           <CardContent>
             <div className="space-y-3">
               {teams.sort((a: any, b: any) => b.points - a.points).map((team: any, index: number) => (
-                <div key={team.id} className="flex items-center justify-between p-3 bg-tactical-gray rounded-sm">
+                <div 
+                  key={team.id} 
+                  className="flex items-center justify-between p-3 bg-tactical-gray rounded-sm cursor-pointer hover:bg-tactical-gray-light transition-colors"
+                  onClick={() => navigate(`/team/${team.id}`)}
+                >
                   <div className="flex items-center">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3 ${
                       index === 0 ? 'bg-yellow-500 text-black' :

@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, MapPin, Mountain, Flag } from "lucide-react";
@@ -17,6 +18,8 @@ interface ProgressMapProps {
 }
 
 export default function ProgressMap({ teams, competitionName }: ProgressMapProps) {
+  const [, navigate] = useLocation();
+  
   // Sort teams by points to determine their position on the route
   const sortedTeams = useMemo(() => {
     return [...teams].sort((a, b) => b.points - a.points);
@@ -117,9 +120,9 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
                   }}
                 >
                   {/* Team marker */}
-                  <div className="relative group">
+                  <div className="relative group cursor-pointer" onClick={() => navigate(`/team/${team.id}`)}>
                     {/* Team picture or default icon */}
-                    <div className="w-8 h-8 rounded-full border-2 border-white shadow-lg overflow-hidden bg-tactical-gray">
+                    <div className="w-8 h-8 rounded-full border-2 border-white shadow-lg overflow-hidden bg-tactical-gray hover:ring-2 hover:ring-military-green transition-all">
                       {team.pictureUrl ? (
                         <img 
                           src={team.pictureUrl} 
@@ -164,7 +167,11 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
           {/* Team leaderboard */}
           <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {teamsWithProgress.map((team) => (
-              <div key={team.id} className="bg-tactical-gray rounded-lg p-4 border border-tactical-gray">
+              <div 
+                key={team.id} 
+                className="bg-tactical-gray rounded-lg p-4 border border-tactical-gray cursor-pointer hover:bg-tactical-gray-light transition-colors"
+                onClick={() => navigate(`/team/${team.id}`)}
+              >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <Badge variant="outline" className="bg-military-green text-white border-military-green">

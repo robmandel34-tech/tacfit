@@ -4,13 +4,13 @@ import { useState } from "react";
 import { useParams } from "wouter";
 import Navigation from "@/components/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Trophy, Target, Users, Calendar, UserPlus, MessageCircle, Send, Clock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Trophy, Target, Users, Calendar, UserPlus, MessageCircle, Send, Clock, Check, X, Bell } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import DirectMessageModal from "@/components/direct-message-modal";
@@ -23,6 +23,7 @@ export default function Profile() {
   const [message, setMessage] = useState("");
   const [isFriendsModalOpen, setIsFriendsModalOpen] = useState(false);
   const [isDMModalOpen, setIsDMModalOpen] = useState(false);
+  const [isRequestsModalOpen, setIsRequestsModalOpen] = useState(false);
   const [selectedFriend, setSelectedFriend] = useState<any>(null);
 
   const isOwnProfile = !userId || userId === user?.id?.toString();
@@ -50,6 +51,12 @@ export default function Profile() {
     enabled: !!user?.id,
   });
 
+  // Get incoming friend requests for the current user
+  const { data: incomingRequests = [] } = useQuery({
+    queryKey: ["/api/friends", user?.id, "requests"],
+    enabled: !!user?.id && isOwnProfile,
+  });
+
   // Friend request mutation
   const sendFriendRequest = useMutation({
     mutationFn: async () => {
@@ -71,6 +78,29 @@ export default function Profile() {
       toast({
         title: "Error",
         description: "Failed to send friend request. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Accept/Deny friend request mutation
+  const handleFriendRequest = useMutation({
+    mutationFn: async ({ requestId, status }: { requestId: number; status: string }) => {
+      return apiRequest("PUT", `/api/friends/${requestId}`, { status });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Friend request updated",
+        description: "The friend request has been updated successfully.",
+      });
+      // Refresh both friends and incoming requests
+      queryClient.invalidateQueries({ queryKey: ["/api/friends", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/friends", user?.id, "requests"] });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update friend request. Please try again.",
         variant: "destructive",
       });
     },
@@ -184,36 +214,36 @@ export default function Profile() {
                     )}
                     
                     {isOwnProfile && (
-                      <Dialog open={isFriendsModalOpen} onOpenChange={setIsFriendsModalOpen}>
-                        <DialogTrigger asChild>
-                          <Button className="w-full bg-steel-blue hover:bg-blue-600">
-                            <Users className="mr-2 h-4 w-4" />
-                            Friends ({friends.length})
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="bg-tactical-gray-light border-tactical-gray max-w-md">
-                          <DialogHeader>
-                            <DialogTitle className="text-white">Your Friends</DialogTitle>
-                          </DialogHeader>
-                          <ScrollArea className="max-h-96">
-                            <div className="space-y-3">
-                              {friends.length === 0 ? (
-                                <p className="text-gray-400 text-center py-8">No friends yet</p>
-                              ) : (
-                                friends.map((friendship: any) => (
-                                  <div key={friendship.id} className="flex items-center justify-between p-3 bg-tactical-gray rounded-lg">
-                                    <div className="flex items-center space-x-3">
-                                      <Avatar className="h-10 w-10">
-                                        <AvatarFallback className="bg-military-green text-white">
-                                          {friendship.friend?.username?.charAt(0).toUpperCase()}
-                                        </AvatarFallback>
-                                      </Avatar>
-                                      <div>
-                                        <p className="text-white font-medium">{friendship.friend?.username}</p>
-                                        <p className="text-gray-400 text-sm capitalize">{friendship.status}</p>
+                      <div className="space-y-2">
+                        <Dialog open={isFriendsModalOpen} onOpenChange={setIsFriendsModalOpen}>
+                          <DialogTrigger asChild>
+                            <Button className="w-full bg-steel-blue hover:bg-blue-600">
+                              <Users className="mr-2 h-4 w-4" />
+                              Friends ({friends.filter((f: any) => f.status === "accepted").length})
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="bg-tactical-gray-light border-tactical-gray max-w-md">
+                            <DialogHeader>
+                              <DialogTitle className="text-white">Your Friends</DialogTitle>
+                            </DialogHeader>
+                            <ScrollArea className="max-h-96">
+                              <div className="space-y-3">
+                                {friends.filter((f: any) => f.status === "accepted").length === 0 ? (
+                                  <p className="text-gray-400 text-center py-8">No friends yet</p>
+                                ) : (
+                                  friends.filter((f: any) => f.status === "accepted").map((friendship: any) => (
+                                    <div key={friendship.id} className="flex items-center justify-between p-3 bg-tactical-gray rounded-lg">
+                                      <div className="flex items-center space-x-3">
+                                        <Avatar className="h-10 w-10">
+                                          <AvatarFallback className="bg-military-green text-white">
+                                            {friendship.friend?.username?.charAt(0).toUpperCase()}
+                                          </AvatarFallback>
+                                        </Avatar>
+                                        <div>
+                                          <p className="text-white font-medium">{friendship.friend?.username}</p>
+                                          <p className="text-gray-400 text-sm capitalize">{friendship.status}</p>
+                                        </div>
                                       </div>
-                                    </div>
-                                    {friendship.status === "accepted" && (
                                       <Button
                                         size="sm"
                                         variant="ghost"
@@ -225,14 +255,79 @@ export default function Profile() {
                                       >
                                         <MessageCircle className="h-4 w-4" />
                                       </Button>
-                                    )}
-                                  </div>
-                                ))
-                              )}
-                            </div>
-                          </ScrollArea>
-                        </DialogContent>
-                      </Dialog>
+                                    </div>
+                                  ))
+                                )}
+                              </div>
+                            </ScrollArea>
+                          </DialogContent>
+                        </Dialog>
+                        
+                        {/* Friend Requests Button */}
+                        {incomingRequests.length > 0 && (
+                          <Dialog open={isRequestsModalOpen} onOpenChange={setIsRequestsModalOpen}>
+                            <DialogTrigger asChild>
+                              <Button className="w-full bg-combat-orange hover:bg-orange-600 relative">
+                                <Bell className="mr-2 h-4 w-4" />
+                                Friend Requests ({incomingRequests.length})
+                                {incomingRequests.length > 0 && (
+                                  <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1 py-0">
+                                    {incomingRequests.length}
+                                  </Badge>
+                                )}
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="bg-tactical-gray-light border-tactical-gray max-w-md">
+                              <DialogHeader>
+                                <DialogTitle className="text-white">Friend Requests</DialogTitle>
+                              </DialogHeader>
+                              <ScrollArea className="max-h-96">
+                                <div className="space-y-3">
+                                  {incomingRequests.map((request: any) => (
+                                    <div key={request.id} className="flex items-center justify-between p-3 bg-tactical-gray rounded-lg">
+                                      <div className="flex items-center space-x-3">
+                                        <Avatar className="h-10 w-10">
+                                          <AvatarFallback className="bg-military-green text-white">
+                                            {request.requester?.username?.charAt(0).toUpperCase()}
+                                          </AvatarFallback>
+                                        </Avatar>
+                                        <div>
+                                          <p className="text-white font-medium">{request.requester?.username}</p>
+                                          <p className="text-gray-400 text-sm">wants to be friends</p>
+                                        </div>
+                                      </div>
+                                      <div className="flex space-x-2">
+                                        <Button
+                                          size="sm"
+                                          className="bg-military-green hover:bg-military-green-light"
+                                          onClick={() => handleFriendRequest.mutate({ 
+                                            requestId: request.id, 
+                                            status: "accepted" 
+                                          })}
+                                          disabled={handleFriendRequest.isPending}
+                                        >
+                                          <Check className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="destructive"
+                                          onClick={() => handleFriendRequest.mutate({ 
+                                            requestId: request.id, 
+                                            status: "rejected" 
+                                          })}
+                                          disabled={handleFriendRequest.isPending}
+                                        >
+                                          <X className="h-4 w-4" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </ScrollArea>
+                            </DialogContent>
+                          </Dialog>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>

@@ -6,8 +6,10 @@ import {
   insertUserSchema, insertCompetitionSchema, insertTeamSchema, 
   insertTeamMemberSchema, insertActivitySchema, insertActivityCommentSchema,
   insertChatMessageSchema, insertFriendshipSchema, insertCompetitionInvitationSchema,
-  insertCompetitionEntrySchema
+  insertCompetitionEntrySchema, friendships
 } from "@shared/schema";
+import { db } from "./db";
+import { and, eq } from "drizzle-orm";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -831,6 +833,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(friendship);
     } catch (error) {
       res.status(500).json({ message: "Error updating friendship" });
+    }
+  });
+
+  // Get incoming friend requests for a user
+  app.get("/api/friends/:userId/requests", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      
+      // Get all friendships where this user is the recipient (friendId)
+      const allFriendships = await db.select().from(friendships).where(
+        and(
+          eq(friendships.friendId, userId),
+          eq(friendships.status, "pending")
+        )
+      );
+      
+      // Get user details for each requester
+      const requestsWithUsers = await Promise.all(
+        allFriendships.map(async (friendship) => {
+          const requester = await storage.getUser(friendship.userId!);
+          return {
+            ...friendship,
+            requester: requester ? { 
+              id: requester.id, 
+              username: requester.username, 
+              avatar: requester.avatar 
+            } : null
+          };
+        })
+      );
+      
+      res.json(requestsWithUsers);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching friend requests" });
     }
   });
 

@@ -1036,6 +1036,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Upload profile picture
+  app.post("/api/users/:id/avatar", upload.single("avatar"), async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const file = req.file;
+      
+      if (!file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+      
+      // Validate file type
+      if (!file.mimetype.startsWith('image/')) {
+        return res.status(400).json({ message: "Only image files are allowed" });
+      }
+      
+      // Move file to permanent location with proper extension
+      const fileExtension = path.extname(file.originalname);
+      const fileName = `avatar_${userId}_${Date.now()}${fileExtension}`;
+      const filePath = path.join('uploads', fileName);
+      
+      fs.renameSync(file.path, filePath);
+      
+      // Update user with avatar URL
+      const user = await storage.updateUser(userId, {
+        avatar: fileName
+      });
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json({ 
+        message: "Profile picture uploaded successfully", 
+        avatar: fileName,
+        user 
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Error uploading profile picture" });
+    }
+  });
+
+  // Upload cover photo
+  app.post("/api/users/:id/cover", upload.single("coverPhoto"), async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const file = req.file;
+      
+      if (!file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+      
+      // Validate file type
+      if (!file.mimetype.startsWith('image/')) {
+        return res.status(400).json({ message: "Only image files are allowed" });
+      }
+      
+      // Move file to permanent location with proper extension
+      const fileExtension = path.extname(file.originalname);
+      const fileName = `cover_${userId}_${Date.now()}${fileExtension}`;
+      const filePath = path.join('uploads', fileName);
+      
+      fs.renameSync(file.path, filePath);
+      
+      // Update user with cover photo URL
+      const user = await storage.updateUser(userId, {
+        coverPhoto: fileName
+      });
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json({ 
+        message: "Cover photo uploaded successfully", 
+        coverPhoto: fileName,
+        user 
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Error uploading cover photo" });
+    }
+  });
+
   // Serve uploaded files
   app.use('/uploads', express.static('uploads'));
 

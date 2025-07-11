@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Target, Users, Calendar, UserPlus, MessageCircle, Send, Clock, Check, X, Bell } from "lucide-react";
+import { Trophy, Target, Users, Calendar, UserPlus, MessageCircle, Send, Clock, Check, X, Bell, Camera, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import DirectMessageModal from "@/components/direct-message-modal";
@@ -25,6 +25,8 @@ export default function Profile() {
   const [isDMModalOpen, setIsDMModalOpen] = useState(false);
   const [isRequestsModalOpen, setIsRequestsModalOpen] = useState(false);
   const [selectedFriend, setSelectedFriend] = useState<any>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
 
   const isOwnProfile = !userId || userId === user?.id?.toString();
   const targetUserId = isOwnProfile ? user?.id : parseInt(userId!);
@@ -106,6 +108,94 @@ export default function Profile() {
     },
   });
 
+  // Profile picture upload mutation
+  const uploadAvatar = useMutation({
+    mutationFn: async (file: File) => {
+      setIsUploadingAvatar(true);
+      const formData = new FormData();
+      formData.append("avatar", file);
+      
+      const response = await fetch(`/api/users/${user?.id}/avatar`, {
+        method: "POST",
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to upload avatar");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Profile picture updated",
+        description: "Your profile picture has been updated successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/users", user?.id] });
+      setIsUploadingAvatar(false);
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to upload profile picture. Please try again.",
+        variant: "destructive",
+      });
+      setIsUploadingAvatar(false);
+    },
+  });
+
+  // Cover photo upload mutation
+  const uploadCover = useMutation({
+    mutationFn: async (file: File) => {
+      setIsUploadingCover(true);
+      const formData = new FormData();
+      formData.append("coverPhoto", file);
+      
+      const response = await fetch(`/api/users/${user?.id}/cover`, {
+        method: "POST",
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to upload cover photo");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Cover photo updated",
+        description: "Your cover photo has been updated successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/users", user?.id] });
+      setIsUploadingCover(false);
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to upload cover photo. Please try again.",
+        variant: "destructive",
+      });
+      setIsUploadingCover(false);
+    },
+  });
+
+  // Handle file selection for avatar
+  const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      uploadAvatar.mutate(file);
+    }
+  };
+
+  // Handle file selection for cover photo
+  const handleCoverUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      uploadCover.mutate(file);
+    }
+  };
+
   const displayUser = profileUser || user;
 
   if (isLoading) {
@@ -137,16 +227,85 @@ export default function Profile() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Profile Info */}
           <div className="lg:col-span-1">
-            <Card className="bg-tactical-gray-light border-tactical-gray">
+            <Card className="bg-tactical-gray-light border-tactical-gray overflow-hidden">
+              {/* Cover Photo Section */}
+              <div className="relative h-32 bg-gradient-to-r from-military-green to-steel-blue">
+                {displayUser.coverPhoto ? (
+                  <img
+                    src={`/uploads/${displayUser.coverPhoto}`}
+                    alt="Cover photo"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-r from-military-green to-steel-blue flex items-center justify-center">
+                    <span className="text-white text-sm opacity-70">No cover photo</span>
+                  </div>
+                )}
+                {isOwnProfile && (
+                  <>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleCoverUpload}
+                      className="hidden"
+                      id="cover-upload"
+                    />
+                    <label
+                      htmlFor="cover-upload"
+                      className="absolute top-2 right-2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-2 rounded-full cursor-pointer transition-all"
+                    >
+                      {isUploadingCover ? (
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      ) : (
+                        <Camera className="w-4 h-4" />
+                      )}
+                    </label>
+                  </>
+                )}
+              </div>
+              
               <CardHeader>
                 <CardTitle className="text-white">Profile</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-center">
-                  <div className="w-20 h-20 bg-military-green rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-white font-bold text-2xl">
-                      {getInitials(displayUser.username)}
-                    </span>
+                  <div className="relative inline-block -mt-16 mb-4">
+                    <div className="relative">
+                      {displayUser.avatar ? (
+                        <img
+                          src={`/uploads/${displayUser.avatar}`}
+                          alt="Profile picture"
+                          className="w-20 h-20 rounded-full border-4 border-tactical-gray-light object-cover"
+                        />
+                      ) : (
+                        <div className="w-20 h-20 bg-military-green rounded-full flex items-center justify-center border-4 border-tactical-gray-light">
+                          <span className="text-white font-bold text-2xl">
+                            {getInitials(displayUser.username)}
+                          </span>
+                        </div>
+                      )}
+                      {isOwnProfile && (
+                        <>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleAvatarUpload}
+                            className="hidden"
+                            id="avatar-upload"
+                          />
+                          <label
+                            htmlFor="avatar-upload"
+                            className="absolute -bottom-1 -right-1 bg-steel-blue hover:bg-blue-600 text-white p-1.5 rounded-full cursor-pointer transition-all"
+                          >
+                            {isUploadingAvatar ? (
+                              <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                              <Camera className="w-3 h-3" />
+                            )}
+                          </label>
+                        </>
+                      )}
+                    </div>
                   </div>
                   <h2 className="text-white font-bold text-xl mb-2">{displayUser.username}</h2>
                   <p className="text-gray-400 text-sm mb-4">{displayUser.email}</p>

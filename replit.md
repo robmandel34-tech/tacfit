@@ -19,6 +19,10 @@ Preferred communication style: Simple, everyday language.
 - Profile pictures clickable in activity cards, team member displays, and chat messages
 - Dynamic profile URLs support viewing any user's profile via /profile/:userId route
 - Friend management with status tracking (pending, accepted, rejected)
+- **NEW**: Friend request notification system with approval/denial interface
+- **NEW**: Profile customization with uploadable profile pictures and cover photos
+- **NEW**: Clickable camera icons on profile and cover photos for easy uploading
+- **NEW**: Real-time profile photo updates with loading states and error handling
 
 ### Progress Map Feature (July 2025)
 - **NEW**: Added topographical progress map to Competition Status page
@@ -62,6 +66,8 @@ Preferred communication style: Simple, everyday language.
 - New endpoints: `/api/teams/competition/:id`, `/api/team-members/team/:id`, `/api/activities/team/:id`
 - **NEW**: Added friendship management endpoints: `/api/friends/:userId`, `/api/friends` (POST), `/api/friends/:id` (PUT)
 - **NEW**: Enhanced user profile endpoints to support dynamic user viewing
+- **NEW**: Added `coverPhoto` field to users table for profile cover photos
+- **NEW**: Added profile photo upload endpoints: `/api/users/:id/avatar`, `/api/users/:id/cover`
 - Updated seed data to include team mottos for testing
 
 ### UI/UX Improvements (July 2025)

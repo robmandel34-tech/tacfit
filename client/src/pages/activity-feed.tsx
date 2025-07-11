@@ -77,7 +77,7 @@ export default function ActivityFeed() {
   };
 
   return (
-    <div className="min-h-screen bg-tactical-gray">
+    <div className="min-h-screen bg-tactical-gray pb-20 md:pb-0">
       <Navigation />
       
       <main className="container mx-auto px-4 py-6">
@@ -98,29 +98,35 @@ export default function ActivityFeed() {
           ) : (
             <div className="space-y-6">
               {activities.map((activity: any) => (
-                <div key={activity.id} className="bg-tactical-gray-light border border-tactical-gray-lighter rounded-lg overflow-hidden">
+                <article key={activity.id} className="bg-tactical-gray-light border border-tactical-gray-lighter rounded-lg overflow-hidden w-full">
                   <div className="p-6">
-                    <div className="mb-4">
-                      <div className="flex items-center gap-3">
+                    {/* User header - fixed layout */}
+                    <header className="mb-4">
+                      <div className="flex items-start gap-3">
                         <div className="w-10 h-10 bg-military-green rounded-full flex items-center justify-center shrink-0">
                           <span className="text-white font-bold text-xs">
                             {getInitials(activity.user?.username || "U")}
                           </span>
                         </div>
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-white font-semibold text-sm">{activity.user?.username || "Unknown"}</span>
-                            <span className="text-xs border border-gray-600 text-gray-300 bg-transparent px-2 py-1 rounded">
-                              {getActivityIcon(activity.type)} {activity.type}
-                            </span>
-                            <span className="text-gray-400 text-xs">
-                              {new Date(activity.createdAt).toLocaleDateString()}
-                            </span>
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-white font-semibold text-sm">{activity.user?.username || "Unknown"}</span>
+                              <span className="text-gray-400 text-xs">
+                                {new Date(activity.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs border border-gray-600 text-gray-300 bg-transparent px-2 py-1 rounded">
+                                {getActivityIcon(activity.type)} {activity.type}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </header>
                     
+                    {/* Content section */}
                     <div className="mb-4">
                       {activity.evidenceUrl && (
                         <div className="mb-4">
@@ -132,33 +138,34 @@ export default function ActivityFeed() {
                         </div>
                       )}
                       
-                      <p className="text-gray-300 text-sm">{activity.description}</p>
+                      <p className="text-gray-300 text-sm leading-relaxed">{activity.description}</p>
                     </div>
                     
-                    <div className="flex items-center gap-4 pt-2 border-t border-gray-600">
+                    {/* Actions footer */}
+                    <footer className="flex items-center gap-6 pt-3 border-t border-gray-600">
                       <button
                         onClick={() => likeActivity.mutate(activity.id)}
-                        className="flex items-center gap-2 text-gray-400 hover:text-military-green transition-colors text-sm py-2"
+                        className="flex items-center gap-2 text-gray-400 hover:text-military-green transition-colors text-sm py-1"
                       >
                         <ThumbsUp className="h-4 w-4" />
                         <span>{activity.likesCount || 0}</span>
                       </button>
                       
-                      <button className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors text-sm py-2">
+                      <button className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors text-sm py-1">
                         <MessageCircle className="h-4 w-4" />
                         <span>{activity.commentsCount || 0}</span>
                       </button>
                       
                       <button
                         onClick={() => flagActivity.mutate(activity.id)}
-                        className="flex items-center gap-2 text-gray-400 hover:text-red-400 transition-colors text-sm py-2"
+                        className="flex items-center gap-2 text-gray-400 hover:text-red-400 transition-colors text-sm py-1"
                       >
                         <Flag className="h-4 w-4" />
                         <span>Flag</span>
                       </button>
-                    </div>
+                    </footer>
                   </div>
-                </div>
+                </article>
               ))}
             </div>
           )}

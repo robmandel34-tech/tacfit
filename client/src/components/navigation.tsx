@@ -55,24 +55,23 @@ export default function Navigation() {
               <span className="text-sm font-semibold text-secondary">{user.points || 0} PTS</span>
             </div>
             <div className="relative">
-              <Button 
-                variant="ghost" 
-                className="flex items-center space-x-3 bg-surface-overlay hover:bg-surface-elevated px-4 py-3 rounded-lg border border-border-subtle hover:border-military-green transition-all duration-200"
+              <button 
+                className="flex items-center space-x-3 hover:opacity-80 transition-opacity duration-200"
                 onClick={() => navigate('/profile')}
               >
                 {user.avatar ? (
                   <img
                     src={`/uploads/${user.avatar}`}
                     alt="Profile picture"
-                    className="w-10 h-10 rounded-full object-cover border-2 border-border-subtle"
+                    className="w-10 h-10 rounded-full object-cover"
                   />
                 ) : (
-                  <div className="w-10 h-10 bg-military-green rounded-full flex items-center justify-center border-2 border-border-subtle">
+                  <div className="w-10 h-10 bg-military-green rounded-full flex items-center justify-center">
                     <span className="text-white font-bold text-sm">{getInitials(user.username)}</span>
                   </div>
                 )}
                 <span className="hidden md:block text-primary font-semibold">{user.username}</span>
-              </Button>
+              </button>
             </div>
             <Button 
               variant="ghost" 

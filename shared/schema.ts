@@ -9,6 +9,7 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   points: integer("points").default(0),
   avatar: text("avatar"),
+  competitionsEntered: integer("competitions_entered").default(0),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -98,6 +99,28 @@ export const competitionHistory = pgTable("competition_history", {
   completedAt: timestamp("completed_at").defaultNow(),
 });
 
+export const competitionInvitations = pgTable("competition_invitations", {
+  id: serial("id").primaryKey(),
+  competitionId: integer("competition_id").references(() => competitions.id),
+  invitedBy: integer("invited_by").references(() => users.id),
+  phoneNumber: text("phone_number").notNull(),
+  inviteToken: text("invite_token").notNull().unique(),
+  status: text("status").default("pending"), // pending, accepted, expired
+  createdAt: timestamp("created_at").defaultNow(),
+  expiresAt: timestamp("expires_at").notNull(),
+});
+
+export const competitionEntries = pgTable("competition_entries", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  competitionId: integer("competition_id").references(() => competitions.id),
+  paymentType: text("payment_type").notNull(), // free, stripe, points
+  paymentStatus: text("payment_status").default("pending"), // pending, completed, failed
+  stripePaymentIntentId: text("stripe_payment_intent_id"),
+  pointsUsed: integer("points_used").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -139,6 +162,16 @@ export const insertFriendshipSchema = createInsertSchema(friendships).omit({
   createdAt: true,
 });
 
+export const insertCompetitionInvitationSchema = createInsertSchema(competitionInvitations).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertCompetitionEntrySchema = createInsertSchema(competitionEntries).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -158,3 +191,7 @@ export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type Friendship = typeof friendships.$inferSelect;
 export type InsertFriendship = z.infer<typeof insertFriendshipSchema>;
 export type CompetitionHistory = typeof competitionHistory.$inferSelect;
+export type CompetitionInvitation = typeof competitionInvitations.$inferSelect;
+export type InsertCompetitionInvitation = z.infer<typeof insertCompetitionInvitationSchema>;
+export type CompetitionEntry = typeof competitionEntries.$inferSelect;
+export type InsertCompetitionEntry = z.infer<typeof insertCompetitionEntrySchema>;

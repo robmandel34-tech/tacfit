@@ -5,7 +5,8 @@ import { storage } from "./storage";
 import { 
   insertUserSchema, insertCompetitionSchema, insertTeamSchema, 
   insertTeamMemberSchema, insertActivitySchema, insertActivityCommentSchema,
-  insertChatMessageSchema, insertFriendshipSchema 
+  insertChatMessageSchema, insertFriendshipSchema, insertCompetitionInvitationSchema,
+  insertCompetitionEntrySchema
 } from "@shared/schema";
 import multer from "multer";
 import path from "path";
@@ -515,6 +516,147 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(historyWithDetails);
     } catch (error) {
       res.status(500).json({ message: "Error fetching competition history" });
+    }
+  });
+
+  // Competition invitation routes
+  app.post("/api/competitions/:id/invite", async (req, res) => {
+    try {
+      const competitionId = parseInt(req.params.id);
+      const { phoneNumber, invitedBy } = req.body;
+      
+      // Generate unique invite token
+      const { nanoid } = await import('nanoid');
+      const inviteToken = nanoid(12);
+      
+      // Set expiration to 7 days from now
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 7);
+      
+      const invitation = await storage.createCompetitionInvitation({
+        competitionId,
+        invitedBy,
+        phoneNumber,
+        inviteToken,
+        expiresAt
+      });
+      
+      // Generate invite URL
+      const inviteUrl = `${req.protocol}://${req.get('host')}/invite/${inviteToken}`;
+      
+      res.json({
+        ...invitation,
+        inviteUrl
+      });
+    } catch (error) {
+      res.status(400).json({ message: "Error creating invitation" });
+    }
+  });
+
+  app.get("/api/invitations/:token", async (req, res) => {
+    try {
+      const invitation = await storage.getCompetitionInvitation(req.params.token);
+      
+      if (!invitation) {
+        return res.status(404).json({ message: "Invitation not found" });
+      }
+      
+      // Check if invitation has expired
+      if (new Date() > new Date(invitation.expiresAt)) {
+        return res.status(400).json({ message: "Invitation has expired" });
+      }
+      
+      // Get competition details
+      const competition = await storage.getCompetition(invitation.competitionId!);
+      
+      res.json({
+        ...invitation,
+        competition
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching invitation" });
+    }
+  });
+
+  app.post("/api/invitations/:token/accept", async (req, res) => {
+    try {
+      const { userId } = req.body;
+      const invitation = await storage.getCompetitionInvitation(req.params.token);
+      
+      if (!invitation) {
+        return res.status(404).json({ message: "Invitation not found" });
+      }
+      
+      if (invitation.status !== "pending") {
+        return res.status(400).json({ message: "Invitation already processed" });
+      }
+      
+      // Check if invitation has expired
+      if (new Date() > new Date(invitation.expiresAt)) {
+        return res.status(400).json({ message: "Invitation has expired" });
+      }
+      
+      // Check if user already has an entry for this competition
+      const existingEntry = await storage.getCompetitionEntry(userId, invitation.competitionId!);
+      if (existingEntry) {
+        return res.status(400).json({ message: "User already entered this competition" });
+      }
+      
+      // Get user to check if it's their first competition
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Create competition entry (first one is free)
+      const isFirstCompetition = (user.competitionsEntered || 0) === 0;
+      const entry = await storage.createCompetitionEntry({
+        userId,
+        competitionId: invitation.competitionId!,
+        paymentType: isFirstCompetition ? "free" : "pending",
+        paymentStatus: isFirstCompetition ? "completed" : "pending"
+      });
+      
+      // Update user's competition count
+      await storage.updateUser(userId, { 
+        competitionsEntered: (user.competitionsEntered || 0) + 1 
+      });
+      
+      // Mark invitation as accepted
+      await storage.updateCompetitionInvitation(invitation.id, { status: "accepted" });
+      
+      res.json({
+        entry,
+        requiresPayment: !isFirstCompetition
+      });
+    } catch (error) {
+      res.status(400).json({ message: "Error accepting invitation" });
+    }
+  });
+
+  // Competition entry routes
+  app.get("/api/competitions/:id/entry-status/:userId", async (req, res) => {
+    try {
+      const competitionId = parseInt(req.params.id);
+      const userId = parseInt(req.params.userId);
+      
+      const entry = await storage.getCompetitionEntry(userId, competitionId);
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const isFirstCompetition = (user.competitionsEntered || 0) === 0;
+      
+      res.json({
+        hasEntry: !!entry,
+        entry: entry || null,
+        isFirstCompetition,
+        requiresPayment: !isFirstCompetition
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Error checking entry status" });
     }
   });
 

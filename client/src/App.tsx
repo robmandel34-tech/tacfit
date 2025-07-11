@@ -12,6 +12,7 @@ import Team from "@/pages/team";
 import ActivityFeed from "@/pages/activity-feed";
 import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
+import Invitation from "@/pages/invitation";
 import BottomNavigation from "@/components/bottom-navigation";
 
 function Router() {
@@ -25,6 +26,7 @@ function Router() {
         <Route path="/team" component={Team} />
         <Route path="/activity-feed" component={ActivityFeed} />
         <Route path="/profile" component={Profile} />
+        <Route path="/invite/:token" component={Invitation} />
         <Route component={NotFound} />
       </Switch>
     </div>

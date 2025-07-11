@@ -2,7 +2,8 @@ import {
   User, InsertUser, Competition, InsertCompetition, Team, InsertTeam, 
   TeamMember, InsertTeamMember, Activity, InsertActivity, ActivityComment, 
   InsertActivityComment, ActivityLike, ChatMessage, InsertChatMessage, 
-  Friendship, InsertFriendship, CompetitionHistory
+  Friendship, InsertFriendship, CompetitionHistory, CompetitionInvitation,
+  InsertCompetitionInvitation, CompetitionEntry, InsertCompetitionEntry
 } from "@shared/schema";
 
 export interface IStorage {
@@ -62,6 +63,18 @@ export interface IStorage {
   // Competition history operations
   getCompetitionHistory(userId: number): Promise<CompetitionHistory[]>;
   createCompetitionHistory(history: Omit<CompetitionHistory, 'id'>): Promise<CompetitionHistory>;
+  
+  // Competition invitation operations
+  createCompetitionInvitation(invitation: InsertCompetitionInvitation): Promise<CompetitionInvitation>;
+  getCompetitionInvitation(token: string): Promise<CompetitionInvitation | undefined>;
+  updateCompetitionInvitation(id: number, updates: Partial<CompetitionInvitation>): Promise<CompetitionInvitation | undefined>;
+  getCompetitionInvitationsByUser(userId: number): Promise<CompetitionInvitation[]>;
+  
+  // Competition entry operations
+  createCompetitionEntry(entry: InsertCompetitionEntry): Promise<CompetitionEntry>;
+  getCompetitionEntry(userId: number, competitionId: number): Promise<CompetitionEntry | undefined>;
+  updateCompetitionEntry(id: number, updates: Partial<CompetitionEntry>): Promise<CompetitionEntry | undefined>;
+  getUserCompetitionEntries(userId: number): Promise<CompetitionEntry[]>;
 }
 
 import { DatabaseStorage } from "./database-storage";

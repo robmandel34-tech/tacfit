@@ -2,9 +2,11 @@ import {
   User, InsertUser, Competition, InsertCompetition, Team, InsertTeam, 
   TeamMember, InsertTeamMember, Activity, InsertActivity, ActivityComment, 
   InsertActivityComment, ActivityLike, ChatMessage, InsertChatMessage, 
-  Friendship, InsertFriendship, CompetitionHistory, users, competitions, teams, 
-  teamMembers, activities, activityComments, activityLikes, chatMessages, 
-  friendships, competitionHistory
+  Friendship, InsertFriendship, CompetitionHistory, CompetitionInvitation,
+  InsertCompetitionInvitation, CompetitionEntry, InsertCompetitionEntry,
+  users, competitions, teams, teamMembers, activities, activityComments, 
+  activityLikes, chatMessages, friendships, competitionHistory, 
+  competitionInvitations, competitionEntries
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and } from "drizzle-orm";
@@ -275,5 +277,74 @@ export class DatabaseStorage implements IStorage {
       .values(insertHistory)
       .returning();
     return history;
+  }
+
+  // Competition invitation operations
+  async createCompetitionInvitation(invitation: InsertCompetitionInvitation): Promise<CompetitionInvitation> {
+    const [invite] = await db
+      .insert(competitionInvitations)
+      .values(invitation)
+      .returning();
+    return invite;
+  }
+
+  async getCompetitionInvitation(token: string): Promise<CompetitionInvitation | undefined> {
+    const [invite] = await db
+      .select()
+      .from(competitionInvitations)
+      .where(eq(competitionInvitations.inviteToken, token));
+    return invite || undefined;
+  }
+
+  async updateCompetitionInvitation(id: number, updates: Partial<CompetitionInvitation>): Promise<CompetitionInvitation | undefined> {
+    const [invite] = await db
+      .update(competitionInvitations)
+      .set(updates)
+      .where(eq(competitionInvitations.id, id))
+      .returning();
+    return invite || undefined;
+  }
+
+  async getCompetitionInvitationsByUser(userId: number): Promise<CompetitionInvitation[]> {
+    return await db
+      .select()
+      .from(competitionInvitations)
+      .where(eq(competitionInvitations.invitedBy, userId));
+  }
+
+  // Competition entry operations
+  async createCompetitionEntry(entry: InsertCompetitionEntry): Promise<CompetitionEntry> {
+    const [entryRecord] = await db
+      .insert(competitionEntries)
+      .values(entry)
+      .returning();
+    return entryRecord;
+  }
+
+  async getCompetitionEntry(userId: number, competitionId: number): Promise<CompetitionEntry | undefined> {
+    const [entry] = await db
+      .select()
+      .from(competitionEntries)
+      .where(and(
+        eq(competitionEntries.userId, userId),
+        eq(competitionEntries.competitionId, competitionId)
+      ));
+    return entry || undefined;
+  }
+
+  async updateCompetitionEntry(id: number, updates: Partial<CompetitionEntry>): Promise<CompetitionEntry | undefined> {
+    const [entry] = await db
+      .update(competitionEntries)
+      .set(updates)
+      .where(eq(competitionEntries.id, id))
+      .returning();
+    return entry || undefined;
+  }
+
+  async getUserCompetitionEntries(userId: number): Promise<CompetitionEntry[]> {
+    return await db
+      .select()
+      .from(competitionEntries)
+      .where(eq(competitionEntries.userId, userId));
   }
 }

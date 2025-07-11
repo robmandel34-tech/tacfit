@@ -1,18 +1,26 @@
+import { useState } from "react";
 import { useAuthRequired } from "@/lib/auth";
 import { useQuery } from "@tanstack/react-query";
 import Navigation from "@/components/navigation";
+import CompetitionCard from "@/components/competition-card";
+import InviteFriendsModal from "@/components/invite-friends-modal";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Trophy, Plus, Users, Calendar, Target } from "lucide-react";
+import { Trophy, Plus } from "lucide-react";
 
 export default function Competitions() {
   const { user, isLoading } = useAuthRequired();
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [selectedCompetition, setSelectedCompetition] = useState<{ id: number; name: string } | null>(null);
 
   const { data: competitions = [] } = useQuery({
     queryKey: ["/api/competitions"],
     enabled: !!user,
   });
+
+  const handleInvite = (competitionId: number, competitionName: string) => {
+    setSelectedCompetition({ id: competitionId, name: competitionName });
+    setInviteModalOpen(true);
+  };
 
   if (isLoading) {
     return <div className="min-h-screen bg-tactical-gray flex items-center justify-center">
@@ -51,47 +59,24 @@ export default function Competitions() {
             </div>
           ) : (
             competitions.map((competition: any) => (
-              <Card key={competition.id} className="bg-tactical-gray-light border-tactical-gray">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-white">{competition.name}</CardTitle>
-                    <Badge variant={competition.isActive ? "default" : "secondary"}>
-                      {competition.isActive ? "Active" : "Upcoming"}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-300 mb-4">{competition.description}</p>
-                  
-                  <div className="space-y-3">
-                    <div className="flex items-center text-sm text-gray-400">
-                      <Calendar className="mr-2 h-4 w-4" />
-                      <span>
-                        {new Date(competition.startDate).toLocaleDateString()} - {new Date(competition.endDate).toLocaleDateString()}
-                      </span>
-                    </div>
-                    
-                    <div className="flex items-center text-sm text-gray-400">
-                      <Users className="mr-2 h-4 w-4" />
-                      <span>Max {competition.maxTeams} teams</span>
-                    </div>
-                    
-                    <div className="flex items-center text-sm text-gray-400">
-                      <Target className="mr-2 h-4 w-4" />
-                      <span>Competitive challenge</span>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-4 pt-4 border-t border-tactical-gray">
-                    <Button className="w-full bg-military-green hover:bg-military-green-light text-white">
-                      {competition.isActive ? "Join Now" : "Register Interest"}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <CompetitionCard
+                key={competition.id}
+                competition={competition}
+                onInvite={handleInvite}
+              />
             ))
           )}
         </div>
+
+        {/* Invitation Modal */}
+        {selectedCompetition && (
+          <InviteFriendsModal
+            isOpen={inviteModalOpen}
+            onClose={() => setInviteModalOpen(false)}
+            competitionId={selectedCompetition.id}
+            competitionName={selectedCompetition.name}
+          />
+        )}
       </main>
     </div>
   );

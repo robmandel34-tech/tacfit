@@ -136,6 +136,10 @@ Preferred communication style: Simple, everyday language.
 - Added responsive padding to prevent content overlap with bottom nav
 - Enhanced CSS with tactical styling utilities (sharp-card, sharp-button, etc.)
 - Bottom navigation appears only for users who have joined competitions and teams
+- **FIXED**: Profile page icon color visibility issues - all icons now properly colored
+- **FIXED**: Activity feed ordering - newest activities now appear at the top
+- **FIXED**: Profile page activity/competition counts update in real-time after new submissions
+- **FIXED**: Custom military theme colors properly configured in Tailwind for consistent styling
 
 ## System Architecture
 

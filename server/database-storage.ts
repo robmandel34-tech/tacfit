@@ -9,7 +9,7 @@ import {
   competitionInvitations, competitionEntries
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, or } from "drizzle-orm";
+import { eq, and, or, desc } from "drizzle-orm";
 import { IStorage } from "./storage";
 
 export class DatabaseStorage implements IStorage {
@@ -148,7 +148,7 @@ export class DatabaseStorage implements IStorage {
 
   // Activity operations
   async getActivities(): Promise<Activity[]> {
-    return await db.select().from(activities);
+    return await db.select().from(activities).orderBy(desc(activities.createdAt));
   }
 
   async getActivity(id: number): Promise<Activity | undefined> {
@@ -157,15 +157,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getActivitiesByCompetition(competitionId: number): Promise<Activity[]> {
-    return await db.select().from(activities).where(eq(activities.competitionId, competitionId));
+    return await db.select().from(activities).where(eq(activities.competitionId, competitionId)).orderBy(desc(activities.createdAt));
   }
 
   async getActivitiesByTeam(teamId: number): Promise<Activity[]> {
-    return await db.select().from(activities).where(eq(activities.teamId, teamId));
+    return await db.select().from(activities).where(eq(activities.teamId, teamId)).orderBy(desc(activities.createdAt));
   }
 
   async getActivitiesByUser(userId: number): Promise<Activity[]> {
-    return await db.select().from(activities).where(eq(activities.userId, userId));
+    return await db.select().from(activities).where(eq(activities.userId, userId)).orderBy(desc(activities.createdAt));
   }
 
   async createActivity(insertActivity: InsertActivity): Promise<Activity> {

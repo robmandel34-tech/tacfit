@@ -42,7 +42,21 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
         title: "Activity submitted!",
         description: "Your activity has been recorded successfully.",
       });
+      // Invalidate all activity-related queries
       queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
+      queryClient.invalidateQueries({ predicate: (query) => 
+        query.queryKey[0]?.toString().includes("/api/activities") 
+      });
+      // Invalidate user and team data to update counts
+      queryClient.invalidateQueries({ queryKey: ["/api/users", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/team-members"] });
+      queryClient.invalidateQueries({ predicate: (query) => 
+        query.queryKey[0]?.toString().includes("/api/team-members") 
+      });
+      // Invalidate competition data
+      queryClient.invalidateQueries({ predicate: (query) => 
+        query.queryKey[0]?.toString().includes("/api/competitions") 
+      });
       onClose();
       resetForm();
     },

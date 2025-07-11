@@ -1,4 +1,5 @@
 import { useAuthRequired } from "@/lib/auth";
+import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useParams } from "wouter";
@@ -17,6 +18,7 @@ import DirectMessageModal from "@/components/direct-message-modal";
 
 export default function Profile() {
   const { user, isLoading } = useAuthRequired();
+  const { updateUser } = useAuth();
   const { userId } = useParams();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -126,12 +128,14 @@ export default function Profile() {
       
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
         title: "Profile picture updated",
         description: "Your profile picture has been updated successfully.",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/users", user?.id] });
+      // Update user context with new avatar
+      updateUser({ avatar: data.avatar });
       setIsUploadingAvatar(false);
     },
     onError: () => {
@@ -162,12 +166,14 @@ export default function Profile() {
       
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
         title: "Cover photo updated",
         description: "Your cover photo has been updated successfully.",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/users", user?.id] });
+      // Update user context with new cover photo
+      updateUser({ coverPhoto: data.coverPhoto });
       setIsUploadingCover(false);
     },
     onError: () => {

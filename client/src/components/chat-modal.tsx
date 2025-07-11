@@ -105,10 +105,20 @@ export default function ChatModal({ isOpen, onClose, teamId, competitionId }: Ch
               ) : (
                 messages.map((msg: any) => (
                   <div key={msg.id} className="flex items-start space-x-3">
-                    <div className="w-8 h-8 bg-military-green rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-white font-bold text-xs">
-                        {getInitials(msg.user?.username || "U")}
-                      </span>
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">
+                      {msg.user?.avatar ? (
+                        <img
+                          src={`/uploads/${msg.user.avatar}`}
+                          alt="Profile picture"
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 bg-military-green rounded-full flex items-center justify-center">
+                          <span className="text-white font-bold text-xs">
+                            {getInitials(msg.user?.username || "U")}
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <div className="flex-1">
                       <div className="bg-tactical-gray-light rounded-lg p-2">

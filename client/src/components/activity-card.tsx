@@ -53,12 +53,22 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
       <CardContent className="p-4">
         <div className="flex items-start space-x-3">
           <div 
-            className="w-12 h-12 bg-military-green rounded-full flex items-center justify-center flex-shrink-0 cursor-pointer hover:bg-military-green-light transition-colors"
+            className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
             onClick={handleProfileClick}
           >
-            <span className="text-white font-bold text-sm">
-              {getInitials(activity.user.username)}
-            </span>
+            {activity.user.avatar ? (
+              <img
+                src={`/uploads/${activity.user.avatar}`}
+                alt="Profile picture"
+                className="w-12 h-12 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-12 h-12 bg-military-green rounded-full flex items-center justify-center hover:bg-military-green-light transition-colors">
+                <span className="text-white font-bold text-sm">
+                  {getInitials(activity.user.username)}
+                </span>
+              </div>
+            )}
           </div>
           <div className="flex-1">
             <div className="flex items-center space-x-2 mb-2">

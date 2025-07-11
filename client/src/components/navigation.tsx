@@ -60,9 +60,17 @@ export default function Navigation() {
                 className="flex items-center space-x-2 bg-tactical-gray-lighter hover:bg-tactical-gray-lightest px-3 py-2 rounded-lg"
                 onClick={() => navigate('/profile')}
               >
-                <div className="w-8 h-8 bg-military-green rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">{getInitials(user.username)}</span>
-                </div>
+                {user.avatar ? (
+                  <img
+                    src={`/uploads/${user.avatar}`}
+                    alt="Profile picture"
+                    className="w-8 h-8 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-8 h-8 bg-military-green rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">{getInitials(user.username)}</span>
+                  </div>
+                )}
                 <span className="hidden md:block text-white font-medium">{user.username}</span>
               </Button>
             </div>

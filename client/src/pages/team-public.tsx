@@ -119,7 +119,7 @@ export default function TeamPublic() {
                       className="h-12 w-12 cursor-pointer hover:ring-2 hover:ring-military-green transition-all"
                       onClick={() => navigate(`/profile/${member.user?.id}`)}
                     >
-                      <AvatarImage src={member.user?.avatar} />
+                      <AvatarImage src={member.user?.avatar ? `/uploads/${member.user.avatar}` : undefined} />
                       <AvatarFallback className="bg-military-green text-white">
                         {member.user?.username?.charAt(0).toUpperCase()}
                       </AvatarFallback>

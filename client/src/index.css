@@ -1,0 +1,177 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(20, 14.3%, 4.1%);
+  --muted: hsl(60, 4.8%, 95.9%);
+  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(20, 14.3%, 4.1%);
+  --border: hsl(20, 5.9%, 90%);
+  --input: hsl(20, 5.9%, 90%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(60, 4.8%, 95.9%);
+  --secondary-foreground: hsl(24, 9.8%, 10%);
+  --accent: hsl(60, 4.8%, 95.9%);
+  --accent-foreground: hsl(24, 9.8%, 10%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(60, 9.1%, 97.8%);
+  --ring: hsl(20, 14.3%, 4.1%);
+  --radius: 0.125rem;
+  
+  /* Military/Tactical Theme Colors */
+  --military-green: hsl(97, 51%, 27%);
+  --military-green-light: hsl(97, 51%, 37%);
+  --military-green-dark: hsl(97, 51%, 17%);
+  --tactical-gray: hsl(0, 0%, 10%);
+  --tactical-gray-light: hsl(0, 0%, 20%);
+  --tactical-gray-lighter: hsl(0, 0%, 30%);
+  --tactical-gray-lightest: hsl(0, 0%, 40%);
+  --combat-orange: hsl(15, 100%, 60%);
+  --steel-blue: hsl(210, 60%, 57%);
+}
+
+.dark {
+  --background: hsl(0, 0%, 10%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(0, 0%, 15%);
+  --muted-foreground: hsl(0, 0%, 65%);
+  --popover: hsl(0, 0%, 10%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(0, 0%, 20%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(0, 0%, 30%);
+  --input: hsl(0, 0%, 30%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(0, 0%, 15%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(0, 0%, 15%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(0, 0%, 84%);
+  --radius: 0.125rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased;
+    background-color: var(--tactical-gray);
+    color: hsl(0, 0%, 98%);
+  }
+}
+
+@layer utilities {
+  .military-green {
+    color: var(--military-green);
+  }
+  
+  .bg-military-green {
+    background-color: var(--military-green);
+  }
+  
+  .bg-military-green-light {
+    background-color: var(--military-green-light);
+  }
+  
+  .bg-military-green-dark {
+    background-color: var(--military-green-dark);
+  }
+  
+  .bg-tactical-gray {
+    background-color: var(--tactical-gray);
+  }
+  
+  .bg-tactical-gray-light {
+    background-color: var(--tactical-gray-light);
+  }
+  
+  .bg-tactical-gray-lighter {
+    background-color: var(--tactical-gray-lighter);
+  }
+  
+  .bg-tactical-gray-lightest {
+    background-color: var(--tactical-gray-lightest);
+  }
+  
+  .text-combat-orange {
+    color: var(--combat-orange);
+  }
+  
+  .bg-combat-orange {
+    background-color: var(--combat-orange);
+  }
+  
+  .text-steel-blue {
+    color: var(--steel-blue);
+  }
+  
+  .bg-steel-blue {
+    background-color: var(--steel-blue);
+  }
+  
+  .border-tactical-gray {
+    border-color: var(--tactical-gray-lighter);
+  }
+  
+  .hover\:bg-military-green-light:hover {
+    background-color: var(--military-green-light);
+  }
+  
+  .hover\:bg-tactical-gray-light:hover {
+    background-color: var(--tactical-gray-light);
+  }
+  
+  /* Sharp edges and clean design */
+  .sharp-card {
+    border-radius: 0.125rem;
+    border: 1px solid var(--tactical-gray-lighter);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+  
+  .sharp-button {
+    border-radius: 0.125rem;
+    border: 1px solid transparent;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    transition: all 0.15s ease-in-out;
+  }
+  
+  .sharp-input {
+    border-radius: 0.125rem;
+    border: 1px solid var(--tactical-gray-lighter);
+    box-shadow: inset 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+  
+  .sharp-modal {
+    border-radius: 0.125rem;
+    border: 1px solid var(--tactical-gray-lighter);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  .tactical-gradient {
+    background: linear-gradient(135deg, var(--military-green-dark) 0%, var(--military-green) 100%);
+  }
+  
+  .tactical-border {
+    border: 1px solid var(--tactical-gray-lighter);
+  }
+  
+  .tactical-shadow {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  }
+  
+  .tactical-focus {
+    outline: 2px solid var(--military-green);
+    outline-offset: 2px;
+  }
+}

@@ -947,13 +947,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Activity flag routes
+  app.get("/api/activities/:id/flags", async (req, res) => {
+    try {
+      const flags = await storage.getActivityFlags(parseInt(req.params.id));
+      res.json(flags);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching flags" });
+    }
+  });
+
   app.post("/api/activities/:id/flag", async (req, res) => {
     try {
-      const activityId = parseInt(req.params.id);
-      const updatedActivity = await storage.updateActivity(activityId, { isFlagged: true });
-      res.json({ success: true, activity: updatedActivity });
+      const { userId } = req.body;
+      const flagged = await storage.toggleActivityFlag(parseInt(req.params.id), userId);
+      res.json({ flagged });
     } catch (error) {
-      res.status(500).json({ message: "Error flagging activity" });
+      res.status(500).json({ message: "Error toggling flag" });
     }
   });
 

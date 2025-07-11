@@ -31,7 +31,6 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
   const [, navigate] = useLocation();
   const { user } = useAuth();
   const [showComments, setShowComments] = useState(false);
-  const [isFlagged, setIsFlagged] = useState(false);
   
   // Get current likes for this activity
   const { data: activityLikes } = useQuery({
@@ -45,12 +44,22 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
     enabled: !!user,
   });
 
+  // Get current flags for this activity
+  const { data: activityFlags } = useQuery({
+    queryKey: [`/api/activities/${activity.id}/flags`],
+    enabled: !!user,
+  });
+
   // Check if current user has liked this activity
   const userLikeStatus = activityLikes?.some((like: any) => like.userId === user?.id);
+  
+  // Check if current user has flagged this activity
+  const userFlagStatus = activityFlags?.some((flag: any) => flag.userId === user?.id);
   
   // Get current counts (use live data if available, fallback to activity prop)
   const currentLikeCount = activityLikes?.length ?? activity.likesCount;
   const currentCommentCount = activityComments?.length ?? activity.commentsCount;
+  const currentFlagCount = activityFlags?.length ?? 0;
   
   const getInitials = (username: string) => {
     return username.split(' ').map(word => word[0]).join('').toUpperCase() || username.slice(0, 2).toUpperCase();
@@ -100,11 +109,14 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
 
   const flagActivity = useMutation({
     mutationFn: async (activityId: number) => {
+      if (!user) throw new Error('Must be logged in to flag activities');
+      
       const response = await fetch(`/api/activities/${activityId}/flag`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ userId: user.id }),
       });
       if (!response.ok) {
         throw new Error('Failed to flag activity');
@@ -112,8 +124,8 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
       return response.json();
     },
     onSuccess: () => {
-      setIsFlagged(true);
-      // Don't invalidate activities query to preserve flag state
+      // Update queries to reflect the new flag status
+      queryClient.invalidateQueries({ queryKey: [`/api/activities/${activity.id}/flags`] });
     },
   });
 
@@ -212,19 +224,18 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
               <button
                 onClick={handleFlag}
                 disabled={flagActivity.isPending}
-                className="flex items-center gap-2 transition-colors text-sm"
+                className="flex items-center gap-2 transition-colors text-sm text-gray-400 hover:text-red-400"
                 style={{
-                  color: isFlagged ? '#ef4444' : undefined
+                  color: userFlagStatus ? '#ef4444' : undefined
                 }}
               >
                 <Flag 
                   className="h-4 w-4" 
                   style={{
-                    fill: isFlagged ? '#ef4444' : 'none',
-                    color: isFlagged ? '#ef4444' : '#9ca3af'
+                    fill: userFlagStatus ? '#ef4444' : 'none'
                   }}
                 />
-                <span>Flag</span>
+                <span className="text-gray-300">{currentFlagCount > 0 ? currentFlagCount : 'Flag'}</span>
               </button>
             </div>
           </div>

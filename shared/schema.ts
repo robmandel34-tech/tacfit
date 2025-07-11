@@ -78,6 +78,13 @@ export const activityLikes = pgTable("activity_likes", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const activityFlags = pgTable("activity_flags", {
+  id: serial("id").primaryKey(),
+  activityId: integer("activity_id").references(() => activities.id),
+  userId: integer("user_id").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const chatMessages = pgTable("chat_messages", {
   id: serial("id").primaryKey(),
   senderId: integer("sender_id").references(() => users.id),
@@ -160,6 +167,11 @@ export const insertActivityCommentSchema = createInsertSchema(activityComments).
   createdAt: true,
 });
 
+export const insertActivityFlagSchema = createInsertSchema(activityFlags).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({
   id: true,
   createdAt: true,
@@ -194,6 +206,8 @@ export type InsertActivity = z.infer<typeof insertActivitySchema>;
 export type ActivityComment = typeof activityComments.$inferSelect;
 export type InsertActivityComment = z.infer<typeof insertActivityCommentSchema>;
 export type ActivityLike = typeof activityLikes.$inferSelect;
+export type ActivityFlag = typeof activityFlags.$inferSelect;
+export type InsertActivityFlag = z.infer<typeof insertActivityFlagSchema>;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type Friendship = typeof friendships.$inferSelect;

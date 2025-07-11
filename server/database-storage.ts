@@ -1,12 +1,12 @@
 import { 
   User, InsertUser, Competition, InsertCompetition, Team, InsertTeam, 
   TeamMember, InsertTeamMember, Activity, InsertActivity, ActivityComment, 
-  InsertActivityComment, ActivityLike, ChatMessage, InsertChatMessage, 
-  Friendship, InsertFriendship, CompetitionHistory, CompetitionInvitation,
-  InsertCompetitionInvitation, CompetitionEntry, InsertCompetitionEntry,
-  users, competitions, teams, teamMembers, activities, activityComments, 
-  activityLikes, chatMessages, friendships, competitionHistory, 
-  competitionInvitations, competitionEntries
+  InsertActivityComment, ActivityLike, ActivityFlag, InsertActivityFlag, 
+  ChatMessage, InsertChatMessage, Friendship, InsertFriendship, CompetitionHistory, 
+  CompetitionInvitation, InsertCompetitionInvitation, CompetitionEntry, 
+  InsertCompetitionEntry, users, competitions, teams, teamMembers, activities, 
+  activityComments, activityLikes, activityFlags, chatMessages, friendships, 
+  competitionHistory, competitionInvitations, competitionEntries
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc } from "drizzle-orm";
@@ -217,6 +217,30 @@ export class DatabaseStorage implements IStorage {
     } else {
       await db
         .insert(activityLikes)
+        .values({ activityId, userId });
+      return true;
+    }
+  }
+
+  // Activity flag operations
+  async getActivityFlags(activityId: number): Promise<ActivityFlag[]> {
+    return await db.select().from(activityFlags).where(eq(activityFlags.activityId, activityId));
+  }
+
+  async toggleActivityFlag(activityId: number, userId: number): Promise<boolean> {
+    const [existingFlag] = await db
+      .select()
+      .from(activityFlags)
+      .where(and(eq(activityFlags.activityId, activityId), eq(activityFlags.userId, userId)));
+
+    if (existingFlag) {
+      await db
+        .delete(activityFlags)
+        .where(and(eq(activityFlags.activityId, activityId), eq(activityFlags.userId, userId)));
+      return false;
+    } else {
+      await db
+        .insert(activityFlags)
         .values({ activityId, userId });
       return true;
     }

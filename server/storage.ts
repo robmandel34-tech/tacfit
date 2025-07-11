@@ -52,6 +52,10 @@ export interface IStorage {
   getActivityLikes(activityId: number): Promise<ActivityLike[]>;
   toggleActivityLike(activityId: number, userId: number): Promise<boolean>;
   
+  // Activity flag operations
+  getActivityFlags(activityId: number): Promise<ActivityFlag[]>;
+  toggleActivityFlag(activityId: number, userId: number): Promise<boolean>;
+  
   // Chat operations
   getChatMessages(teamId?: number, competitionId?: number): Promise<ChatMessage[]>;
   getDirectMessages(userId1: number, userId2: number): Promise<ChatMessage[]>;

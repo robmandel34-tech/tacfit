@@ -19,6 +19,7 @@ export default function Team() {
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
   const [message, setMessage] = useState("");
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
   // Get user's current team membership
   const { data: userTeamMember } = useQuery({
@@ -88,10 +89,55 @@ export default function Team() {
     },
   });
 
+  // Upload team photo mutation
+  const uploadTeamPhoto = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append("photo", file);
+      
+      const response = await fetch(`/api/teams/${team?.id}/photo`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Failed to upload photo");
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Photo updated!",
+        description: "Your team photo has been updated successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: [`/api/teams/${team?.id}`] });
+      setIsUploadingPhoto(false);
+    },
+    onError: () => {
+      toast({
+        title: "Upload failed",
+        description: "Failed to update team photo. Please try again.",
+        variant: "destructive",
+      });
+      setIsUploadingPhoto(false);
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim()) return;
     sendMessage.mutate(message);
+  };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIsUploadingPhoto(true);
+      uploadTeamPhoto.mutate(file);
+    }
+  };
+
+  const triggerPhotoUpload = () => {
+    const fileInput = document.getElementById('team-photo-input') as HTMLInputElement;
+    fileInput?.click();
   };
 
   // Auto-refresh messages
@@ -149,22 +195,51 @@ export default function Team() {
             </CardHeader>
             <CardContent>
               {/* Team Picture */}
-              {team.pictureUrl ? (
-                <div className="mb-4">
-                  <img 
-                    src={team.pictureUrl} 
-                    alt={`${team.name} team photo`}
-                    className="w-full h-48 object-cover rounded-sm"
-                  />
-                </div>
-              ) : (
-                <div className="mb-4 w-full h-48 bg-tactical-gray rounded-sm flex items-center justify-center">
-                  <div className="text-center">
-                    <Camera className="mx-auto h-12 w-12 text-gray-500 mb-2" />
-                    <p className="text-gray-400">No team photo uploaded</p>
+              <div className="mb-4 relative">
+                {team.pictureUrl ? (
+                  <div 
+                    className="relative cursor-pointer group"
+                    onClick={triggerPhotoUpload}
+                  >
+                    <img 
+                      src={team.pictureUrl} 
+                      alt={`${team.name} team photo`}
+                      className="w-full h-48 object-cover rounded-sm"
+                    />
+                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="text-center">
+                        <Camera className="mx-auto h-8 w-8 text-white mb-2" />
+                        <p className="text-white text-sm">Click to update photo</p>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div 
+                    className="w-full h-48 bg-tactical-gray rounded-sm flex items-center justify-center cursor-pointer hover:bg-tactical-gray-lighter transition-colors"
+                    onClick={triggerPhotoUpload}
+                  >
+                    <div className="text-center">
+                      <Camera className="mx-auto h-12 w-12 text-gray-500 mb-2" />
+                      <p className="text-gray-400">Click to upload team photo</p>
+                    </div>
+                  </div>
+                )}
+                
+                {isUploadingPhoto && (
+                  <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <div className="text-white">Uploading...</div>
+                  </div>
+                )}
+              </div>
+              
+              {/* Hidden file input */}
+              <input
+                id="team-photo-input"
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoUpload}
+                className="hidden"
+              />
             </CardContent>
           </Card>
         )}

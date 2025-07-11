@@ -303,6 +303,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Upload team photo
+  app.post("/api/teams/:id/photo", upload.single('photo'), async (req, res) => {
+    try {
+      const teamId = parseInt(req.params.id);
+      const team = await storage.getTeam(teamId);
+      
+      if (!team) {
+        return res.status(404).json({ message: "Team not found" });
+      }
+      
+      if (!req.file) {
+        return res.status(400).json({ message: "No photo uploaded" });
+      }
+      
+      // Handle file upload
+      const fileExtension = path.extname(req.file.originalname);
+      const fileName = `team_${teamId}_${Date.now()}${fileExtension}`;
+      const filePath = path.join('uploads', fileName);
+      
+      fs.renameSync(req.file.path, filePath);
+      const pictureUrl = `/uploads/${fileName}`;
+      
+      // Update team with new photo URL
+      const updatedTeam = await storage.updateTeam(teamId, { pictureUrl });
+      
+      if (!updatedTeam) {
+        return res.status(500).json({ message: "Failed to update team photo" });
+      }
+      
+      res.json(updatedTeam);
+    } catch (error) {
+      console.error("Team photo upload error:", error);
+      res.status(500).json({ message: "Error uploading team photo" });
+    }
+  });
+
   // Get teams by competition
   app.get("/api/teams/competition/:competitionId", async (req, res) => {
     try {

@@ -823,6 +823,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Activity like routes
+  app.get("/api/activities/:id/likes", async (req, res) => {
+    try {
+      const likes = await storage.getActivityLikes(parseInt(req.params.id));
+      res.json(likes);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching likes" });
+    }
+  });
+
   app.post("/api/activities/:id/like", async (req, res) => {
     try {
       const { userId } = req.body;

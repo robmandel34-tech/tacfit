@@ -4,8 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { ThumbsUp, MessageCircle, Flag } from "lucide-react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
+import { useState } from "react";
+import ActivityCommentsModal from "./activity-comments-modal";
 
 interface ActivityCardProps {
   activity: {
@@ -28,6 +30,14 @@ interface ActivityCardProps {
 export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardProps) {
   const [, navigate] = useLocation();
   const { user } = useAuth();
+  const [showComments, setShowComments] = useState(false);
+  
+  // Get current like status for this user
+  const { data: userLikeStatus } = useQuery({
+    queryKey: [`/api/activities/${activity.id}/likes`, user?.id],
+    enabled: !!user,
+    select: (data: any[]) => data.some(like => like.userId === user?.id),
+  });
   
   const getInitials = (username: string) => {
     return username.split(' ').map(word => word[0]).join('').toUpperCase() || username.slice(0, 2).toUpperCase();
@@ -68,8 +78,10 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
       }
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Update queries to reflect the new like status
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/activities/${activity.id}/likes`] });
     },
   });
 
@@ -161,13 +173,20 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
               <button
                 onClick={handleLike}
                 disabled={likeActivity.isPending}
-                className="flex items-center gap-2 text-gray-400 hover:text-military-green transition-colors text-sm"
+                className={`flex items-center gap-2 transition-colors text-sm ${
+                  userLikeStatus 
+                    ? 'text-military-green' 
+                    : 'text-gray-400 hover:text-military-green'
+                }`}
               >
-                <ThumbsUp className="h-4 w-4" />
+                <ThumbsUp className={`h-4 w-4 ${userLikeStatus ? 'fill-current' : ''}`} />
                 <span>{activity.likesCount}</span>
               </button>
               
-              <button className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors text-sm">
+              <button 
+                onClick={() => setShowComments(true)}
+                className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors text-sm"
+              >
                 <MessageCircle className="h-4 w-4" />
                 <span>{activity.commentsCount}</span>
               </button>
@@ -184,6 +203,13 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
           </div>
         </div>
       </CardContent>
+      
+      <ActivityCommentsModal
+        isOpen={showComments}
+        onClose={() => setShowComments(false)}
+        activityId={activity.id}
+        activityTitle={activity.description}
+      />
     </Card>
   );
 }

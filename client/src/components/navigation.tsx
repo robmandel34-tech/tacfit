@@ -23,25 +23,29 @@ export default function Navigation() {
               <span className="text-xl font-bold text-white">TacFit</span>
             </div>
             <nav className="hidden md:flex space-x-6">
-              <Link href="/">
-                <a className={`${location === '/' ? 'text-white' : 'text-gray-300'} hover:text-military-green transition-colors font-medium`}>
-                  Dashboard
-                </a>
+              <Link 
+                href="/"
+                className={`${location === '/' ? 'text-white' : 'text-gray-300'} hover:text-military-green transition-colors font-medium`}
+              >
+                Dashboard
               </Link>
-              <Link href="/competitions">
-                <a className={`${location === '/competitions' ? 'text-white' : 'text-gray-300'} hover:text-military-green transition-colors font-medium`}>
-                  Competitions
-                </a>
+              <Link 
+                href="/competitions"
+                className={`${location === '/competitions' ? 'text-white' : 'text-gray-300'} hover:text-military-green transition-colors font-medium`}
+              >
+                Competitions
               </Link>
-              <Link href="/team">
-                <a className={`${location === '/team' ? 'text-white' : 'text-gray-300'} hover:text-military-green transition-colors font-medium`}>
-                  Teams
-                </a>
+              <Link 
+                href="/team"
+                className={`${location === '/team' ? 'text-white' : 'text-gray-300'} hover:text-military-green transition-colors font-medium`}
+              >
+                Teams
               </Link>
-              <Link href="/activity-feed">
-                <a className={`${location === '/activity-feed' ? 'text-white' : 'text-gray-300'} hover:text-military-green transition-colors font-medium`}>
-                  Activity Feed
-                </a>
+              <Link 
+                href="/activity-feed"
+                className={`${location === '/activity-feed' ? 'text-white' : 'text-gray-300'} hover:text-military-green transition-colors font-medium`}
+              >
+                Activity Feed
               </Link>
             </nav>
           </div>

@@ -414,10 +414,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Leave competition (remove team member by membership ID)
   app.delete("/api/team-members/:id", async (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.sendStatus(401);
-    }
-
     try {
       const membershipId = parseInt(req.params.id);
       
@@ -426,8 +422,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let memberToRemove = null;
       
       for (const team of teams) {
-        const member = await storage.getTeamMember(team.id, req.user.id);
-        if (member && member.id === membershipId) {
+        const teamMembers = await storage.getTeamMembers(team.id);
+        const member = teamMembers.find(m => m.id === membershipId);
+        if (member) {
           memberToRemove = member;
           break;
         }
@@ -437,9 +434,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Team membership not found" });
       }
 
-      // Verify the user owns this team membership
-      if (memberToRemove.userId !== req.user.id) {
-        return res.status(403).json({ message: "Not authorized to remove this team membership" });
+      if (!memberToRemove.teamId || !memberToRemove.userId) {
+        return res.status(400).json({ message: "Invalid team membership data" });
       }
 
       const success = await storage.removeTeamMember(memberToRemove.teamId, memberToRemove.userId);

@@ -51,9 +51,9 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
   return (
     <Card className="bg-tactical-gray-light border-tactical-gray-lighter">
       <CardContent className="p-6">
-        <div className="flex items-start space-x-4">
+        <div className="flex gap-4">
           <div 
-            className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+            className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
             onClick={handleProfileClick}
           >
             {activity.user.avatar ? (
@@ -70,8 +70,8 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
               </div>
             )}
           </div>
-          <div className="flex-1">
-            <div className="flex items-center space-x-3 mb-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-3 mb-3">
               <span 
                 className="text-white font-semibold cursor-pointer hover:text-military-green transition-colors"
                 onClick={handleProfileClick}
@@ -98,7 +98,7 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
             
             <p className="text-gray-300 text-sm mb-4">{activity.description}</p>
             
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center gap-6">
               <Button
                 size="sm"
                 variant="ghost"

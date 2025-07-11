@@ -11,18 +11,16 @@ export default function ActivityFeed() {
   const { user } = useAuth();
   const [location] = useLocation();
   const [forceRefresh, setForceRefresh] = useState(0);
+  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
   
   // Force refresh when navigating to this page
   useEffect(() => {
     setForceRefresh(prev => prev + 1);
   }, [location]);
 
-  if (!user) {
-    return <div>Please log in to view the activity feed.</div>;
-  }
-
   const { data: activities, isLoading } = useQuery({
     queryKey: ['/api/activities', forceRefresh],
+    enabled: !!user,
   });
 
   const likeActivity = useMutation({
@@ -61,8 +59,6 @@ export default function ActivityFeed() {
     },
   });
 
-  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
-
   const getInitials = (username: string) => {
     return username.split(' ').map(word => word[0]).join('').toUpperCase() || username.slice(0, 2).toUpperCase();
   };
@@ -81,6 +77,10 @@ export default function ActivityFeed() {
         return '🏋️';
     }
   };
+
+  if (!user) {
+    return <div>Please log in to view the activity feed.</div>;
+  }
 
   if (isLoading) {
     return (

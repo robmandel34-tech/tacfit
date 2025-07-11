@@ -80,69 +80,71 @@ export default function ActivityFeed() {
     <div className="min-h-screen bg-tactical-gray">
       <Navigation />
       
-      <main className="container mx-auto px-4 py-6">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Activity Feed</h1>
-          <p className="text-gray-300">See what your team and competitors are up to</p>
+      <main className="container mx-auto px-4 py-8">
+        <div className="mb-12">
+          <h1 className="text-4xl font-bold text-heading mb-3 tracking-tight">Activity Feed</h1>
+          <p className="text-body text-lg">See what your team and competitors are up to</p>
         </div>
 
-        <div className="max-w-2xl mx-auto space-y-6">
+        <div className="max-w-2xl mx-auto space-y-8">
           {activities.length === 0 ? (
-            <div className="text-center py-16">
-              <Camera className="mx-auto h-16 w-16 text-gray-500 mb-4" />
-              <h2 className="text-xl font-bold text-white mb-2">No Activities Yet</h2>
-              <p className="text-gray-400">Start by submitting your first activity!</p>
+            <div className="text-center py-20">
+              <div className="card-modern max-w-md mx-auto">
+                <Camera className="mx-auto h-20 w-20 text-muted mb-6" />
+                <h2 className="text-2xl font-bold text-heading mb-4">No Activities Yet</h2>
+                <p className="text-body">Start by submitting your first activity!</p>
+              </div>
             </div>
           ) : (
             activities.map((activity: any) => (
-              <Card key={activity.id} className="bg-tactical-gray-light border-tactical-gray">
-                <CardContent className="p-4">
-                  <div className="flex items-start space-x-3">
-                    <div className="w-12 h-12 bg-military-green rounded-full flex items-center justify-center flex-shrink-0">
+              <Card key={activity.id} className="card-modern">
+                <CardContent className="p-6">
+                  <div className="flex items-start space-x-4">
+                    <div className="w-14 h-14 bg-military-green rounded-full flex items-center justify-center flex-shrink-0 border-2 border-border-subtle">
                       <span className="text-white font-bold text-sm">
                         {getInitials(activity.user?.username || "U")}
                       </span>
                     </div>
                     <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <span className="text-white font-bold text-sm">{activity.user?.username || "Unknown"}</span>
-                        <Badge variant="outline" className="text-xs">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <span className="text-heading font-semibold">{activity.user?.username || "Unknown"}</span>
+                        <Badge variant="outline" className="text-xs bg-surface-overlay border-border-subtle">
                           {getActivityIcon(activity.type)} {activity.type}
                         </Badge>
-                        <span className="text-gray-400 text-xs">
+                        <span className="text-muted text-sm">
                           {new Date(activity.createdAt).toLocaleDateString()}
                         </span>
                       </div>
                       
                       {activity.evidenceUrl && (
-                        <div className="mb-3">
+                        <div className="mb-4">
                           <img 
                             src={activity.evidenceUrl} 
                             alt="Activity evidence" 
-                            className="w-full max-w-md h-48 object-cover rounded-lg"
+                            className="w-full max-w-md h-48 object-cover rounded-lg border border-border-subtle shadow-soft"
                           />
                         </div>
                       )}
                       
-                      <p className="text-gray-300 text-sm mb-3">{activity.description}</p>
+                      <p className="text-body text-sm mb-4">{activity.description}</p>
                       
-                      <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-6">
                         <Button
                           size="sm"
                           variant="ghost"
                           onClick={() => likeActivity.mutate(activity.id)}
-                          className="text-gray-400 hover:text-white"
+                          className="text-muted hover:text-military-green transition-colors duration-200 p-2"
                         >
-                          <ThumbsUp className="mr-1 h-4 w-4" />
+                          <ThumbsUp className="mr-2 h-4 w-4" />
                           {activity.likesCount || 0}
                         </Button>
                         
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="text-gray-400 hover:text-white"
+                          className="text-muted hover:text-secondary transition-colors duration-200 p-2"
                         >
-                          <MessageCircle className="mr-1 h-4 w-4" />
+                          <MessageCircle className="mr-2 h-4 w-4" />
                           {activity.commentsCount || 0}
                         </Button>
                         
@@ -150,9 +152,9 @@ export default function ActivityFeed() {
                           size="sm"
                           variant="ghost"
                           onClick={() => flagActivity.mutate(activity.id)}
-                          className="text-gray-400 hover:text-red-400"
+                          className="text-muted hover:text-red-400 transition-colors duration-200 p-2"
                         >
-                          <Flag className="mr-1 h-4 w-4" />
+                          <Flag className="mr-2 h-4 w-4" />
                           Flag
                         </Button>
                       </div>

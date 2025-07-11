@@ -37,26 +37,26 @@ export async function seedDatabase() {
     // Create sample competitions
     const comp1 = await storage.createCompetition({
       name: "Summer Tactical Challenge",
-      description: "8-week intensive fitness competition",
+      description: "3-week intensive fitness competition",
       startDate: new Date("2025-07-01"),
-      endDate: new Date("2025-08-31"),
+      endDate: new Date("2025-07-21"),
       maxTeams: 10,
       isActive: true,
       createdBy: user1.id,
       requiredActivities: ["cardio", "strength", "flexibility"],
-      targetGoals: ["100,000 steps as a team", "50 hours of strength training", "25 hours of flexibility work"]
+      targetGoals: ["50,000 steps as a team", "25 hours of strength training", "15 hours of flexibility work"]
     });
     
     const comp2 = await storage.createCompetition({
       name: "Winter Warrior Program",
-      description: "Cold weather endurance challenge",
+      description: "4-week cold weather endurance challenge",
       startDate: new Date("2025-12-01"),
-      endDate: new Date("2026-02-28"),
+      endDate: new Date("2025-12-28"),
       maxTeams: 8,
       isActive: false,
       createdBy: user1.id,
       requiredActivities: ["cardio", "strength", "sports"],
-      targetGoals: ["75,000 steps as a team", "40 hours of strength training", "30 hours of sports activities"]
+      targetGoals: ["40,000 steps as a team", "20 hours of strength training", "16 hours of sports activities"]
     });
 
     // Create sample teams

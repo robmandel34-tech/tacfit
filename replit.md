@@ -42,6 +42,8 @@ Preferred communication style: Simple, everyday language.
 - **NEW**: Team target goals displayed on competition cards (e.g., "100,000 steps as a team")
 - **NEW**: Enhanced competition cards show required activities and measurable goals
 - **NEW**: Database schema updated to support competition-specific activities and targets
+- **UPDATED**: Competition durations shortened to 2-4 weeks for more realistic timeframes
+- **UPDATED**: Target goals adjusted proportionally to match shorter competition periods
 
 ### Progress Map Feature (July 2025)
 - **NEW**: Added topographical progress map to Competition Status page

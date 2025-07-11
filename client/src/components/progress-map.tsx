@@ -107,12 +107,39 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
             {/* Team markers */}
             {teamsWithProgress.map((team, index) => {
               // Calculate position along the weaving route path
-              const progress = Math.min(team.progress / 85, 1); // Normalize to 0-1
+              const progress = Math.min(team.progress / 100, 1.2); // Allow teams to go beyond screen (>1.0)
               
-              // Weaving path calculation matching the SVG curve
+              // Weaving path calculation matching the exact SVG curve
               const t = progress;
-              const pathX = 10 + (80 * t) + Math.sin(t * Math.PI * 2.5) * 8;
-              const pathY = 85 - (70 * t) + Math.cos(t * Math.PI * 2) * 6;
+              
+              // Calculate position based on the actual SVG path points
+              let pathX, pathY;
+              if (t <= 0.2) {
+                // Start to first curve: M10,85 Q20,75 30,80
+                const localT = t / 0.2;
+                pathX = 10 + (20 * localT);
+                pathY = 85 - (10 * localT) + (5 * Math.sin(localT * Math.PI));
+              } else if (t <= 0.4) {
+                // First to second curve: Q40,85 50,70
+                const localT = (t - 0.2) / 0.2;
+                pathX = 30 + (20 * localT);
+                pathY = 80 + (5 * localT) - (15 * localT * localT);
+              } else if (t <= 0.6) {
+                // Second to third curve: Q60,55 70,60
+                const localT = (t - 0.4) / 0.2;
+                pathX = 50 + (20 * localT);
+                pathY = 70 - (15 * localT) + (5 * Math.sin(localT * Math.PI));
+              } else if (t <= 0.8) {
+                // Third to fourth curve: Q80,65 90,15
+                const localT = (t - 0.6) / 0.2;
+                pathX = 70 + (20 * localT);
+                pathY = 60 + (5 * localT) - (50 * localT * localT);
+              } else {
+                // Beyond screen (cut off)
+                const localT = (t - 0.8) / 0.4;
+                pathX = 90 + (20 * localT); // Continue beyond right edge
+                pathY = 15 - (30 * localT); // Continue upward off screen
+              }
               
               return (
                 <div

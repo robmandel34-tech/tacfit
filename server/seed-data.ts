@@ -76,6 +76,14 @@ export async function seedDatabase() {
       motto: "Soar Higher, Push Harder"
     });
 
+    const team3 = await storage.createTeam({
+      name: "Ghost Riders",
+      competitionId: comp1.id,
+      captainId: user1.id,
+      points: 950, // High points to push off screen
+      motto: "Beyond the Horizon"
+    });
+
     // Add team members
     await storage.addTeamMember({
       teamId: team1.id,

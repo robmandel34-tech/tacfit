@@ -134,7 +134,15 @@ export default function Profile() {
         title: "Profile picture updated",
         description: "Your profile picture has been updated successfully.",
       });
+      // Invalidate all relevant queries to update profile pictures everywhere
       queryClient.invalidateQueries({ queryKey: ["/api/users", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/chat"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/team-members"] });
+      // Also invalidate specific activity queries that may exist
+      queryClient.invalidateQueries({ predicate: (query) => 
+        query.queryKey[0]?.toString().includes("/api/activities") 
+      });
       // Update user context with new avatar
       updateUser({ avatar: data.avatar });
       setIsUploadingAvatar(false);
@@ -179,6 +187,7 @@ export default function Profile() {
         title: "Cover photo updated",
         description: "Your cover photo has been updated successfully.",
       });
+      // Invalidate user queries to update cover photos
       queryClient.invalidateQueries({ queryKey: ["/api/users", user?.id] });
       // Update user context with new cover photo
       updateUser({ coverPhoto: data.coverPhoto });

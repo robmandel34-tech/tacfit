@@ -25,8 +25,8 @@ export default function Dashboard() {
   });
 
   const { data: userTeamMembership } = useQuery({
-    queryKey: ["/api/team-members", user?.id],
-    enabled: !!user,
+    queryKey: [`/api/team-members/${user?.id}`],
+    enabled: !!user?.id,
   });
 
   if (isLoading) {

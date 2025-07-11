@@ -9,7 +9,7 @@ export default function BottomNavigation() {
 
   // Check if user is part of an active competition and team
   const { data: userTeamMember } = useQuery({
-    queryKey: ["/api/team-members", { userId: user?.id }],
+    queryKey: [`/api/team-members/${user?.id}`],
     enabled: !!user,
   });
 

@@ -4,15 +4,10 @@ import Navigation from "@/components/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Crosshair, Flame, Camera, MessageCircle, UserPlus, Trophy, Dumbbell, Users } from "lucide-react";
-import ActivitySubmissionModal from "@/components/activity-submission-modal";
-import ChatModal from "@/components/chat-modal";
-import { useState } from "react";
+import { Crosshair, Flame, UserPlus, Trophy, Dumbbell, Users } from "lucide-react";
 
 export default function Dashboard() {
   const { user, isLoading } = useAuthRequired();
-  const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
-  const [isChatModalOpen, setIsChatModalOpen] = useState(false);
 
   const { data: competitions = [] } = useQuery({
     queryKey: ["/api/competitions"],
@@ -163,24 +158,6 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {hasJoinedCompetition && (
-                    <>
-                      <Button 
-                        className="w-full bg-military-green hover:bg-military-green-light text-white"
-                        onClick={() => setIsActivityModalOpen(true)}
-                      >
-                        <Camera className="mr-2 h-4 w-4" />
-                        Submit Activity
-                      </Button>
-                      <Button 
-                        className="w-full bg-steel-blue hover:bg-blue-600 text-white"
-                        onClick={() => setIsChatModalOpen(true)}
-                      >
-                        <MessageCircle className="mr-2 h-4 w-4" />
-                        Team Chat
-                      </Button>
-                    </>
-                  )}
                   <Button 
                     className="w-full bg-tactical-gray-lighter hover:bg-tactical-gray-lightest text-white"
                   >
@@ -189,7 +166,7 @@ export default function Dashboard() {
                   </Button>
                   {!hasJoinedCompetition && (
                     <div className="text-center py-4 text-gray-400">
-                      <p className="text-sm">Join a competition to unlock activity submission and team chat</p>
+                      <p className="text-sm">Join a competition to unlock team features</p>
                     </div>
                   )}
                 </div>
@@ -248,16 +225,6 @@ export default function Dashboard() {
           </div>
         </div>
       </main>
-
-      <ActivitySubmissionModal 
-        isOpen={isActivityModalOpen} 
-        onClose={() => setIsActivityModalOpen(false)} 
-      />
-      
-      <ChatModal 
-        isOpen={isChatModalOpen} 
-        onClose={() => setIsChatModalOpen(false)} 
-      />
     </div>
   );
 }

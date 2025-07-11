@@ -15,6 +15,7 @@ import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
 import Invitation from "@/pages/invitation";
 import BottomNavigation from "@/components/bottom-navigation";
+import FloatingActionButton from "@/components/floating-action-button";
 
 function Router() {
   return (
@@ -43,6 +44,7 @@ function App() {
           <Toaster />
           <Router />
           <BottomNavigation />
+          <FloatingActionButton />
         </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>

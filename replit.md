@@ -26,6 +26,8 @@ Preferred communication style: Simple, everyday language.
 - **FIXED**: Profile pictures now display throughout the app (navigation, activity cards, chat, team pages)
 - **FIXED**: File upload size limit increased to 10MB with proper error handling
 - **FIXED**: User context updates immediately when profile pictures are uploaded
+- **FIXED**: Competition creation buttons now properly validate user points (1000 required)
+- **FIXED**: Profile picture uploads now refresh all cached data to update images everywhere
 
 ### Progress Map Feature (July 2025)
 - **NEW**: Added topographical progress map to Competition Status page

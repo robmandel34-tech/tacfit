@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
-import { Zap, Crosshair, Users2 } from "lucide-react";
+import { House, Mountain, Shield } from "lucide-react";
 
 export default function BottomNavigation() {
   const { user } = useAuth();
@@ -20,13 +20,13 @@ export default function BottomNavigation() {
   const hasActiveMembership = userTeamMember && userTeamMember.length > 0;
   
   const navItems = hasActiveMembership ? [
-    { path: "/", icon: Zap, label: "Home" },
-    { path: "/competition-status", icon: Crosshair, label: "Competition" },
-    { path: "/team", icon: Users2, label: "Team" }
+    { path: "/", icon: House, label: "Home" },
+    { path: "/competition-status", icon: Mountain, label: "Competition" },
+    { path: "/team", icon: Shield, label: "Team" }
   ] : [
-    { path: "/", icon: Zap, label: "Home" },
-    { path: "/competitions", icon: Crosshair, label: "Competitions" },
-    { path: "/activity-feed", icon: Users2, label: "Activity" }
+    { path: "/", icon: House, label: "Home" },
+    { path: "/competitions", icon: Mountain, label: "Competitions" },
+    { path: "/activity-feed", icon: Shield, label: "Activity" }
   ];
 
   return (

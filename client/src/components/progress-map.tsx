@@ -42,7 +42,9 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
   ];
 
   return (
-    <Card className="w-full bg-tactical-gray-light border-tactical-gray">
+    <Card className="w-full bg-tactical-gray-light border-tactical-gray rounded-xl shadow-lg" style={{
+      boxShadow: '0 4px 12px rgba(0,0,0,0.15), 0 2px 6px rgba(0,0,0,0.1)'
+    }}>
       <CardHeader>
         <CardTitle className="text-white flex items-center gap-2">
           <MapPin className="h-5 w-5" />
@@ -52,7 +54,9 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
       <CardContent>
         <div className="relative">
           {/* Map Background */}
-          <div className="relative h-96 rounded-lg overflow-hidden">
+          <div className="relative h-96 rounded-xl overflow-hidden shadow-lg" style={{
+            boxShadow: '0 8px 16px rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.1)'
+          }}>
             {/* High-Quality Wilderness Terrain Background */}
             <div 
               className="w-full h-full bg-cover bg-center"

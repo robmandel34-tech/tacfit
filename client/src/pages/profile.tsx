@@ -260,7 +260,7 @@ export default function Profile() {
           <div className="lg:col-span-1">
             <Card className="bg-tactical-gray-light border-tactical-gray overflow-hidden">
               {/* Cover Photo Section */}
-              <div className="relative h-40 bg-gradient-to-r from-military-green to-steel-blue">
+              <div className="relative h-32 bg-gradient-to-r from-military-green to-steel-blue">
                 {displayUser.coverPhoto ? (
                   <img
                     src={`/uploads/${displayUser.coverPhoto}`}
@@ -295,12 +295,9 @@ export default function Profile() {
                 )}
               </div>
               
-              <CardHeader>
-                <CardTitle className="text-white">Profile</CardTitle>
-              </CardHeader>
-              <CardContent>
+              <CardContent className="pt-6">
                 <div className="text-center">
-                  <div className="relative inline-block -mt-20 mb-4">
+                  <div className="relative inline-block -mt-16 mb-4">
                     <div className="relative">
                       {displayUser.avatar ? (
                         <img

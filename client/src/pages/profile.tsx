@@ -422,7 +422,7 @@ export default function Profile() {
                           {updateUserMotto.isPending ? (
                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                           ) : (
-                            <Check className="h-4 w-4" />
+                            <Check className="h-4 w-4 text-white" />
                           )}
                         </Button>
                         <Button
@@ -432,7 +432,7 @@ export default function Profile() {
                           onClick={handleMottoCancel}
                           className="text-gray-400 hover:text-white"
                         >
-                          <X className="h-4 w-4" />
+                          <X className="h-4 w-4 text-gray-400" />
                         </Button>
                       </form>
                     ) : (
@@ -447,7 +447,7 @@ export default function Profile() {
                             onClick={handleMottoEdit}
                             className="text-gray-400 hover:text-white ml-2"
                           >
-                            <Edit2 className="h-4 w-4" />
+                            <Edit2 className="h-4 w-4 text-gray-400" />
                           </Button>
                         )}
                       </div>
@@ -622,7 +622,7 @@ export default function Profile() {
                                           })}
                                           disabled={handleFriendRequest.isPending}
                                         >
-                                          <Check className="h-4 w-4" />
+                                          <Check className="h-4 w-4 text-white" />
                                         </Button>
                                         <Button
                                           size="sm"
@@ -633,7 +633,7 @@ export default function Profile() {
                                           })}
                                           disabled={handleFriendRequest.isPending}
                                         >
-                                          <X className="h-4 w-4" />
+                                          <X className="h-4 w-4 text-white" />
                                         </Button>
                                       </div>
                                     </div>
@@ -688,7 +688,7 @@ export default function Profile() {
               <CardContent>
                 {history.length === 0 ? (
                   <div className="text-center py-8">
-                    <Calendar className="mx-auto h-12 w-12 text-gray-500 mb-4" />
+                    <Calendar className="mx-auto h-12 w-12 text-gray-300 mb-4" />
                     <p className="text-gray-300">No competition history yet</p>
                     <p className="text-sm text-gray-400">Join your first competition to get started</p>
                   </div>

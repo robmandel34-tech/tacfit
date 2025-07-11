@@ -55,7 +55,7 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
 
   // Filter users based on search query
   useEffect(() => {
-    if (!users || !user) return;
+    if (!users || !user || users.length === 0) return;
     
     const filtered = users
       .filter((u: User) => u.id !== user.id) // Exclude current user
@@ -66,7 +66,7 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
       .sort((a: User, b: User) => b.points - a.points); // Sort by points descending
     
     setFilteredUsers(filtered);
-  }, [users, searchQuery, user]);
+  }, [users.length, searchQuery, user?.id]);
 
   // Send friend request mutation
   const sendFriendRequestMutation = useMutation({

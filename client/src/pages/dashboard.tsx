@@ -78,8 +78,8 @@ export default function Dashboard() {
           <div className="bg-gradient-to-r from-military-green-dark to-military-green tile-card-elevated p-6 text-white">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold mb-2">Mission Control</h1>
-                <p className="text-gray-200 text-lg">Ready for your next challenge, soldier?</p>
+                <h1 className="text-3xl font-bold mb-2">Command Center</h1>
+                <p className="text-gray-200 text-lg">Tactical overview and mission status</p>
               </div>
               <div className="hidden md:block">
                 <Crosshair className="text-6xl text-military-green-light" />
@@ -98,8 +98,8 @@ export default function Dashboard() {
                     <Flame className="text-white text-xl" />
                   </div>
                   <div>
-                    <h3 className="text-white font-bold">Current Mission: {activeCompetitions[0].name}</h3>
-                    <p className="text-gray-300">Team: Active Squad | Competition in progress</p>
+                    <h3 className="text-white font-bold">Active Operation: {activeCompetitions[0].name}</h3>
+                    <p className="text-gray-300">Squad deployed | Mission in progress</p>
                   </div>
                 </div>
                 <div className="text-right">
@@ -119,7 +119,7 @@ export default function Dashboard() {
             {/* Quick Actions */}
             <Card className="tile-card">
               <CardHeader>
-                <CardTitle className="text-xl font-bold text-white">Quick Actions</CardTitle>
+                <CardTitle className="text-xl font-bold text-white">Tactical Commands</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -127,11 +127,11 @@ export default function Dashboard() {
                     className="w-full bg-tactical-gray-lighter hover:bg-tactical-gray-lightest text-white"
                   >
                     <UserPlus className="mr-2 h-4 w-4" />
-                    Find Friends
+                    Locate Allies
                   </Button>
                   {!hasJoinedCompetition && (
                     <div className="text-center py-4 text-gray-400">
-                      <p className="text-sm">Join a competition to unlock team features</p>
+                      <p className="text-sm">Deploy to operation to unlock squad features</p>
                     </div>
                   )}
                 </div>
@@ -142,15 +142,15 @@ export default function Dashboard() {
             <Card className="tile-card">
               <CardHeader>
                 <CardTitle className="text-xl font-bold text-white">Latest Intel</CardTitle>
-                <p className="text-gray-400 text-sm">Recent activity from all active competitions</p>
+                <p className="text-gray-400 text-sm">Field reports from all active operations</p>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {recentActivities.length === 0 ? (
                     <div className="text-center py-8 text-gray-300">
                       <Users className="mx-auto h-12 w-12 text-gray-500 mb-4" />
-                      <p>No recent activity</p>
-                      <p className="text-sm text-gray-400">Activity from all competitions will appear here</p>
+                      <p>No field reports</p>
+                      <p className="text-sm text-gray-400">Activity from all operations will appear here</p>
                     </div>
                   ) : (
                     recentActivities.map((activity: any) => (
@@ -164,7 +164,7 @@ export default function Dashboard() {
                           </Avatar>
                           <div className="flex-1">
                             <div className="flex items-center space-x-2 mb-2">
-                              <span className="text-white font-bold text-sm">{activity.user?.username || "Unknown"}</span>
+                              <span className="text-white font-bold text-sm">{activity.user?.username || "Unknown Operator"}</span>
                               <span className="text-gray-400 text-xs">
                                 {new Date(activity.createdAt).toLocaleDateString()}
                               </span>
@@ -176,7 +176,7 @@ export default function Dashboard() {
                             {activity.points && (
                               <div className="flex items-center mt-2">
                                 <span className="text-combat-orange text-xs font-bold">
-                                  +{activity.points} points
+                                  +{activity.points} tactical points
                                 </span>
                               </div>
                             )}

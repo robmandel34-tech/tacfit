@@ -84,6 +84,21 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
     }
   };
 
+  const getActivityTypeDisplayName = (type: string) => {
+    switch (type) {
+      case 'cardio':
+        return 'Cardio Training';
+      case 'strength':
+        return 'Strength Operations';
+      case 'flexibility':
+        return 'Mobility Training';
+      case 'sports':
+        return 'Combat Sports';
+      default:
+        return 'Special Operations';
+    }
+  };
+
   const likeActivity = useMutation({
     mutationFn: async (activityId: number) => {
       if (!user) throw new Error('Must be logged in to like activities');
@@ -176,7 +191,7 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
                 {activity.user.username}
               </span>
               <Badge variant="outline" className="text-xs border-gray-600 text-gray-300">
-                {getActivityIcon(activity.type)} {activity.type}
+                {getActivityIcon(activity.type)} {getActivityTypeDisplayName(activity.type)}
               </Badge>
               <span className="text-gray-400 text-sm">
                 {new Date(activity.createdAt).toLocaleDateString()}

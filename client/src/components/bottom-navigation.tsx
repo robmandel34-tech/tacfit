@@ -20,13 +20,13 @@ export default function BottomNavigation() {
   const hasActiveMembership = userTeamMember && userTeamMember.length > 0;
   
   const navItems = hasActiveMembership ? [
-    { path: "/", icon: House, label: "Home" },
-    { path: "/competition-status", icon: Mountain, label: "Competition" },
-    { path: "/team", icon: Shield, label: "Team" }
+    { path: "/", icon: House, label: "Command" },
+    { path: "/competition-status", icon: Mountain, label: "Operation" },
+    { path: "/team", icon: Shield, label: "Squad" }
   ] : [
-    { path: "/", icon: House, label: "Home" },
-    { path: "/competitions", icon: Mountain, label: "Competitions" },
-    { path: "/activity-feed", icon: Shield, label: "Activity" }
+    { path: "/", icon: House, label: "Command" },
+    { path: "/competitions", icon: Mountain, label: "Operations" },
+    { path: "/activity-feed", icon: Shield, label: "Intel" }
   ];
 
   return (

@@ -23,13 +23,13 @@ export default function Register() {
     try {
       await register(username, email, password);
       toast({
-        title: "Welcome to TacFit!",
-        description: "Your account has been created successfully.",
+        title: "Operator registered",
+        description: "Your tactical command access has been granted.",
       });
     } catch (error) {
       toast({
-        title: "Registration failed",
-        description: "There was an error creating your account.",
+        title: "Registration denied",
+        description: "Unable to process registration. Check your details and try again.",
         variant: "destructive",
       });
     } finally {
@@ -44,9 +44,9 @@ export default function Register() {
           <div className="flex justify-center mb-6">
             <Shield className="text-military-green text-5xl" />
           </div>
-          <CardTitle className="text-3xl font-bold text-heading tracking-tight">Join TacFit</CardTitle>
+          <CardTitle className="text-3xl font-bold text-heading tracking-tight">Join the Force</CardTitle>
           <CardDescription className="text-body text-lg">
-            Create your account to get started
+            Register for your tactical command access
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -60,7 +60,7 @@ export default function Register() {
                 onChange={(e) => setUsername(e.target.value)}
                 required
                 className="bg-surface-elevated border-border-subtle text-primary placeholder:text-muted focus:border-military-green focus:ring-1 focus:ring-military-green"
-                placeholder="Choose a username"
+                placeholder="Choose your callsign"
               />
             </div>
             <div className="space-y-2">
@@ -92,14 +92,14 @@ export default function Register() {
               disabled={isLoading}
               className="w-full btn-primary py-3 text-lg font-semibold"
             >
-              {isLoading ? "Creating account..." : "Create Account"}
+              {isLoading ? "Registering operator..." : "Join the Force"}
             </Button>
           </form>
           <div className="text-center">
             <span className="text-secondary text-sm">
-              Already have an account?{" "}
+              Already have tactical access?{" "}
               <Link href="/login" className="text-military-green hover:text-military-green-light font-semibold transition-colors">
-                Sign in
+                Access command center
               </Link>
             </span>
           </div>

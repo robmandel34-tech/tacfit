@@ -32,7 +32,7 @@ export default function ActivityFeed() {
         },
       });
       if (!response.ok) {
-        throw new Error('Failed to like activity');
+        throw new Error('Failed to approve activity');
       }
       return response.json();
     },
@@ -50,7 +50,7 @@ export default function ActivityFeed() {
         },
       });
       if (!response.ok) {
-        throw new Error('Failed to flag activity');
+        throw new Error('Failed to report activity');
       }
       return response.json();
     },

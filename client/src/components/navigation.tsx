@@ -27,25 +27,25 @@ export default function Navigation() {
                 href="/"
                 className={`${location === '/' ? 'text-primary font-semibold' : 'text-gray-300'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay`}
               >
-                Dashboard
+                Command Center
               </Link>
               <Link 
                 href="/competitions"
                 className={`${location === '/competitions' ? 'text-primary font-semibold' : 'text-gray-300'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay`}
               >
-                Competitions
+                Operations
               </Link>
               <Link 
                 href="/team"
                 className={`${location === '/team' ? 'text-primary font-semibold' : 'text-gray-300'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay`}
               >
-                Teams
+                Squad
               </Link>
               <Link 
                 href="/activity-feed"
                 className={`${location === '/activity-feed' ? 'text-primary font-semibold' : 'text-gray-300'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay`}
               >
-                Activity Feed
+                Intel Feed
               </Link>
             </nav>
           </div>

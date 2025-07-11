@@ -51,7 +51,7 @@ export default function CompetitionCard({ competition, onInvite, onJoin }: Compe
           
           <div className="flex items-center text-sm text-muted">
             <Users className="mr-3 h-4 w-4 text-steel-blue" />
-            <span className="font-medium">Max {competition.maxTeams} teams</span>
+            <span className="font-medium">Max {competition.maxTeams} squads</span>
           </div>
           
           {competition.requiredActivities && competition.requiredActivities.length > 0 && (
@@ -60,7 +60,7 @@ export default function CompetitionCard({ competition, onInvite, onJoin }: Compe
               <div className="space-y-3">
                 <div className="flex items-center text-sm text-secondary">
                   <Activity className="mr-3 h-4 w-4 text-military-green" />
-                  <span className="font-semibold">Required Activities:</span>
+                  <span className="font-semibold">Required Training:</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {competition.requiredActivities.map((activity, index) => (

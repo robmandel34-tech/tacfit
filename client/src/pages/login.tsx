@@ -22,13 +22,13 @@ export default function Login() {
     try {
       await login(email, password);
       toast({
-        title: "Welcome back!",
-        description: "You have successfully logged in.",
+        title: "Mission briefing ready",
+        description: "Access granted. Welcome back, operator.",
       });
     } catch (error) {
       toast({
-        title: "Login failed",
-        description: "Invalid email or password.",
+        title: "Access denied",
+        description: "Invalid credentials. Check your intel and try again.",
         variant: "destructive",
       });
     } finally {
@@ -45,7 +45,7 @@ export default function Login() {
           </div>
           <CardTitle className="text-3xl font-bold text-heading tracking-tight">TacFit</CardTitle>
           <CardDescription className="text-body text-lg">
-            Sign in to your account
+            Access your tactical command center
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">

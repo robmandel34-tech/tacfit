@@ -10,6 +10,29 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### Masculine Text Language Update (July 2025)
+- **UPDATED**: All interface text made more masculine and tactical throughout the app
+- **CHANGED**: "Dashboard" → "Command Center" for main page and navigation
+- **CHANGED**: "Competitions" → "Operations" or "Tactical Operations" 
+- **CHANGED**: "Teams" → "Squad" in navigation and interface
+- **CHANGED**: "Activity Feed" → "Intel Feed" in navigation
+- **CHANGED**: "Find Friends" → "Locate Allies" in dashboard
+- **CHANGED**: "Quick Actions" → "Tactical Commands" section
+- **CHANGED**: "Welcome back!" → "Mission briefing ready" on login
+- **CHANGED**: "Sign in to your account" → "Access your tactical command center"
+- **CHANGED**: "Join TacFit" → "Join the Force" on registration
+- **CHANGED**: "Choose a username" → "Choose your callsign" placeholder
+- **CHANGED**: "Create Account" → "Join the Force" button text
+- **CHANGED**: Activity types renamed: "Cardio" → "Cardio Training", "Strength Training" → "Strength Operations", "Flexibility" → "Mobility Training", "Sports" → "Combat Sports", "Other" → "Special Operations"
+- **CHANGED**: "Recent activity" → "Field reports" in dashboard
+- **CHANGED**: "Competition in progress" → "Squad deployed | Mission in progress"
+- **CHANGED**: "points" → "tactical points" in various contexts
+- **CHANGED**: "Max X teams" → "Max X squads" in competition cards
+- **CHANGED**: "Required Activities" → "Required Training" in competition details
+- **CHANGED**: Error messages updated with tactical language (e.g., "Access denied", "Invalid credentials")
+- **ENHANCED**: Bottom navigation updated with tactical terms: "Command", "Operation", "Squad", "Intel"
+- **ENHANCED**: Toast notifications and feedback messages use military-inspired language
+
 ### UI Text Visibility Fixes (July 2025)
 - **FIXED**: Text color visibility issues throughout the application
 - **FIXED**: Points display in navigation bar now shows white text instead of black

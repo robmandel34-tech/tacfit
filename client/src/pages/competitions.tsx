@@ -50,8 +50,8 @@ export default function Competitions() {
       <main className="container mx-auto px-4 py-8">
         <div className="flex items-start justify-between mb-12 gap-4">
           <div className="flex-1">
-            <h1 className="text-4xl font-bold text-heading mb-3 tracking-tight">Competitions</h1>
-            <p className="text-body text-lg">Join competitions and compete with teams</p>
+            <h1 className="text-4xl font-bold text-heading mb-3 tracking-tight">Tactical Operations</h1>
+            <p className="text-body text-lg">Deploy with squads and dominate the battlefield</p>
           </div>
           <div className="flex flex-col items-end space-y-3 flex-shrink-0">
             {user && (user.points || 0) < 1000 && (
@@ -66,8 +66,8 @@ export default function Competitions() {
               onClick={() => {
                 if ((user.points || 0) < 1000) {
                   toast({
-                    title: "Insufficient Points",
-                    description: "You need at least 1000 points to create a competition. Keep participating to earn more points!",
+                    title: "Insufficient tactical points",
+                    description: "You need at least 1000 tactical points to create an operation. Keep fighting to earn more points!",
                     variant: "destructive",
                   });
                 } else {

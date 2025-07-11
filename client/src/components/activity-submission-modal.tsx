@@ -44,11 +44,11 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
 
   // Activity type display names and measurement units
   const activityTypeNames: Record<string, string> = {
-    cardio: "Cardio",
-    strength: "Strength Training",
-    flexibility: "Flexibility",
-    sports: "Sports",
-    other: "Other"
+    cardio: "Cardio Training",
+    strength: "Strength Operations",
+    flexibility: "Mobility Training",
+    sports: "Combat Sports",
+    other: "Special Operations"
   };
 
   const activityMeasurements: Record<string, string> = {

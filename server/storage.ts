@@ -53,6 +53,7 @@ export interface IStorage {
   
   // Chat operations
   getChatMessages(teamId?: number, competitionId?: number): Promise<ChatMessage[]>;
+  getDirectMessages(userId1: number, userId2: number): Promise<ChatMessage[]>;
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
   
   // Friend operations

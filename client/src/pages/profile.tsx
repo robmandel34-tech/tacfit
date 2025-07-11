@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Trophy, Target, Users, Calendar, UserPlus, MessageCircle, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import DirectMessageModal from "@/components/direct-message-modal";
 
 export default function Profile() {
   const { user, isLoading } = useAuthRequired();
@@ -130,14 +131,36 @@ export default function Profile() {
                   {/* Friend Actions */}
                   <div className="space-y-2">
                     {!isOwnProfile && (
-                      <Button 
-                        onClick={() => sendFriendRequest.mutate()}
-                        disabled={sendFriendRequest.isPending}
-                        className="w-full bg-military-green hover:bg-military-green-light"
-                      >
-                        <UserPlus className="mr-2 h-4 w-4" />
-                        Send Friend Request
-                      </Button>
+                      <>
+                        {/* Check if they are friends and show message button */}
+                        {friends.some((f: any) => f.status === "accepted" && 
+                          ((f.userId === user?.id && f.friendId === targetUserId) || 
+                           (f.userId === targetUserId && f.friendId === user?.id))) ? (
+                          <Button 
+                            onClick={() => {
+                              setSelectedFriend({
+                                id: targetUserId!,
+                                username: displayUser.username,
+                                avatar: displayUser.avatar
+                              });
+                              setIsDMModalOpen(true);
+                            }}
+                            className="w-full bg-steel-blue hover:bg-blue-600"
+                          >
+                            <MessageCircle className="mr-2 h-4 w-4" />
+                            Send Message
+                          </Button>
+                        ) : (
+                          <Button 
+                            onClick={() => sendFriendRequest.mutate()}
+                            disabled={sendFriendRequest.isPending}
+                            className="w-full bg-military-green hover:bg-military-green-light"
+                          >
+                            <UserPlus className="mr-2 h-4 w-4" />
+                            Send Friend Request
+                          </Button>
+                        )}
+                      </>
                     )}
                     
                     {isOwnProfile && (
@@ -170,17 +193,19 @@ export default function Profile() {
                                         <p className="text-gray-400 text-sm capitalize">{friendship.status}</p>
                                       </div>
                                     </div>
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="text-steel-blue hover:bg-steel-blue hover:text-white"
-                                      onClick={() => {
-                                        setSelectedFriend(friendship.friend);
-                                        setIsDMModalOpen(true);
-                                      }}
-                                    >
-                                      <MessageCircle className="h-4 w-4" />
-                                    </Button>
+                                    {friendship.status === "accepted" && (
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="text-steel-blue hover:bg-steel-blue hover:text-white"
+                                        onClick={() => {
+                                          setSelectedFriend(friendship.friend);
+                                          setIsDMModalOpen(true);
+                                        }}
+                                      >
+                                        <MessageCircle className="h-4 w-4" />
+                                      </Button>
+                                    )}
                                   </div>
                                 ))
                               )}
@@ -265,40 +290,13 @@ export default function Profile() {
       </main>
 
       {/* Direct Message Modal */}
-      <Dialog open={isDMModalOpen} onOpenChange={setIsDMModalOpen}>
-        <DialogContent className="bg-tactical-gray-light border-tactical-gray max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-white">
-              Message {selectedFriend?.username}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="bg-tactical-gray rounded-lg p-4 max-h-48 overflow-y-auto">
-              <p className="text-gray-400 text-sm text-center">
-                Direct messaging feature coming soon!
-              </p>
-            </div>
-            <div className="flex space-x-2">
-              <Input
-                placeholder="Type your message..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                className="flex-1 bg-tactical-gray border-tactical-gray text-white"
-              />
-              <Button
-                onClick={() => {
-                  // DM functionality to be implemented
-                  setMessage("");
-                  setIsDMModalOpen(false);
-                }}
-                className="bg-steel-blue hover:bg-blue-600"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {selectedFriend && (
+        <DirectMessageModal
+          isOpen={isDMModalOpen}
+          onClose={() => setIsDMModalOpen(false)}
+          friend={selectedFriend}
+        />
+      )}
     </div>
   );
 }

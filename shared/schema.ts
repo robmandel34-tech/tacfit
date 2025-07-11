@@ -77,10 +77,11 @@ export const activityLikes = pgTable("activity_likes", {
 export const chatMessages = pgTable("chat_messages", {
   id: serial("id").primaryKey(),
   senderId: integer("sender_id").references(() => users.id),
+  receiverId: integer("receiver_id").references(() => users.id), // For direct messages
   teamId: integer("team_id").references(() => teams.id),
   competitionId: integer("competition_id").references(() => competitions.id),
   content: text("content").notNull(),
-  type: text("type").default("team"), // team, competition
+  type: text("type").default("team"), // team, competition, direct
   createdAt: timestamp("created_at").defaultNow(),
 });
 

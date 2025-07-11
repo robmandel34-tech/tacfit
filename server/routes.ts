@@ -667,15 +667,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const teamId = req.query.teamId as string;
       const competitionId = req.query.competitionId as string;
+      const userId1 = req.query.userId1 as string;
+      const userId2 = req.query.userId2 as string;
       
-      const messages = await storage.getChatMessages(
-        teamId ? parseInt(teamId) : undefined,
-        competitionId ? parseInt(competitionId) : undefined
-      );
+      let messages;
+      if (userId1 && userId2) {
+        // Direct message between two users
+        messages = await storage.getDirectMessages(
+          parseInt(userId1),
+          parseInt(userId2)
+        );
+      } else {
+        // Team or competition chat
+        messages = await storage.getChatMessages(
+          teamId ? parseInt(teamId) : undefined,
+          competitionId ? parseInt(competitionId) : undefined
+        );
+      }
       
       // Get user details for each message
       const messagesWithUsers = await Promise.all(
-        messages.map(async (message) => {
+        messages.map(async (message: any) => {
           const user = await storage.getUser(message.senderId!);
           return {
             ...message,

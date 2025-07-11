@@ -9,7 +9,7 @@ import {
   competitionInvitations, competitionEntries
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, or } from "drizzle-orm";
 import { IStorage } from "./storage";
 
 export class DatabaseStorage implements IStorage {
@@ -228,6 +228,22 @@ export class DatabaseStorage implements IStorage {
     }
     
     return await query;
+  }
+
+  async getDirectMessages(userId1: number, userId2: number): Promise<ChatMessage[]> {
+    return await db
+      .select()
+      .from(chatMessages)
+      .where(
+        and(
+          eq(chatMessages.type, "direct"),
+          or(
+            and(eq(chatMessages.senderId, userId1), eq(chatMessages.receiverId, userId2)),
+            and(eq(chatMessages.senderId, userId2), eq(chatMessages.receiverId, userId1))
+          )
+        )
+      )
+      .orderBy(chatMessages.createdAt);
   }
 
   async createChatMessage(insertMessage: InsertChatMessage): Promise<ChatMessage> {

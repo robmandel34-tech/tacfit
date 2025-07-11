@@ -65,21 +65,21 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
             {/* Enhanced overlay for better visibility and contrast */}
             <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/50" />
 
-            {/* Sleek diagonal route path from bottom left to top right */}
+            {/* Weaving diagonal route path from bottom left to top right */}
             <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
               {/* Background stroke for better visibility */}
-              <path d="M10,85 Q25,75 40,65 Q55,50 70,35 Q80,25 90,15" 
+              <path d="M10,85 Q20,75 30,80 Q40,85 50,70 Q60,55 70,60 Q80,65 90,15" 
                     stroke="rgba(0,0,0,0.6)" 
                     strokeWidth="3" 
                     fill="none" />
               {/* Main route path - thin with dashes */}
-              <path d="M10,85 Q25,75 40,65 Q55,50 70,35 Q80,25 90,15" 
+              <path d="M10,85 Q20,75 30,80 Q40,85 50,70 Q60,55 70,60 Q80,65 90,15" 
                     stroke="rgba(255,255,255,0.95)" 
                     strokeWidth="1.5" 
                     fill="none"
                     strokeDasharray="6,3" />
               {/* Inner glowing effect */}
-              <path d="M10,85 Q25,75 40,65 Q55,50 70,35 Q80,25 90,15" 
+              <path d="M10,85 Q20,75 30,80 Q40,85 50,70 Q60,55 70,60 Q80,65 90,15" 
                     stroke="rgba(134,239,172,0.8)" 
                     strokeWidth="1" 
                     fill="none"
@@ -106,16 +106,13 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
 
             {/* Team markers */}
             {teamsWithProgress.map((team, index) => {
-              // Calculate position along the diagonal route path
+              // Calculate position along the weaving route path
               const progress = Math.min(team.progress / 85, 1); // Normalize to 0-1
               
-              // Smooth diagonal path from bottom left (10,85) to top right (90,15)
-              const startX = 10, startY = 85;
-              const endX = 90, endY = 15;
-              
-              // Calculate position with subtle curve for natural movement
-              const pathX = startX + (endX - startX) * progress + Math.sin(progress * Math.PI) * 3;
-              const pathY = startY + (endY - startY) * progress + Math.cos(progress * Math.PI) * 2;
+              // Weaving path calculation matching the SVG curve
+              const t = progress;
+              const pathX = 10 + (80 * t) + Math.sin(t * Math.PI * 2.5) * 8;
+              const pathY = 85 - (70 * t) + Math.cos(t * Math.PI * 2) * 6;
               
               return (
                 <div

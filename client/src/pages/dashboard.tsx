@@ -166,7 +166,7 @@ export default function Dashboard() {
                               <span className="text-gray-400 text-xs">
                                 {new Date(activity.createdAt).toLocaleDateString()}
                               </span>
-                              <Badge variant="outline" className="text-xs">
+                              <Badge variant="outline" className="text-xs text-gray-300 border-gray-600">
                                 {activity.type || "General"}
                               </Badge>
                             </div>

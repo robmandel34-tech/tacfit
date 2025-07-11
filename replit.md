@@ -114,6 +114,7 @@ Preferred communication style: Simple, everyday language.
 - **NEW**: Real-time name updates with proper cache invalidation
 - **NEW**: Enhanced profile page centering for all elements (name, motto, stats, content)
 - **NEW**: PATCH endpoint for partial user updates (/api/users/:id PATCH)
+- **FIXED**: Activity type badge text color in Latest Intel section now shows gray text instead of black
 
 ### Competition Status Features (July 2025)
 - New Competition Status page with comprehensive competition overview

@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Users, Crown, Target, Camera, Send, MessageCircle } from "lucide-react";
+import { Users, Crown, Target, Camera, Send, MessageCircle, Edit2, Check, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Team() {
@@ -20,6 +20,8 @@ export default function Team() {
   const [, navigate] = useLocation();
   const [message, setMessage] = useState("");
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [isEditingMotto, setIsEditingMotto] = useState(false);
+  const [mottoText, setMottoText] = useState("");
 
   // Get user's current team membership
   const { data: userTeamMember } = useQuery({
@@ -121,6 +123,35 @@ export default function Team() {
     },
   });
 
+  // Update team motto mutation
+  const updateTeamMotto = useMutation({
+    mutationFn: async (motto: string) => {
+      const response = await fetch(`/api/teams/${team?.id}/motto`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ motto }),
+      });
+
+      if (!response.ok) throw new Error("Failed to update motto");
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Motto updated!",
+        description: "Your team motto has been updated successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: [`/api/teams/${team?.id}`] });
+      setIsEditingMotto(false);
+    },
+    onError: () => {
+      toast({
+        title: "Update failed",
+        description: "Failed to update team motto. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim()) return;
@@ -138,6 +169,23 @@ export default function Team() {
   const triggerPhotoUpload = () => {
     const fileInput = document.getElementById('team-photo-input') as HTMLInputElement;
     fileInput?.click();
+  };
+
+  const handleMottoEdit = () => {
+    setMottoText(team?.motto || "");
+    setIsEditingMotto(true);
+  };
+
+  const handleMottoSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (mottoText.trim()) {
+      updateTeamMotto.mutate(mottoText.trim());
+    }
+  };
+
+  const handleMottoCancel = () => {
+    setIsEditingMotto(false);
+    setMottoText("");
   };
 
   // Auto-refresh messages
@@ -189,9 +237,59 @@ export default function Team() {
                   <span className="text-military-green font-bold">{team.points} points</span>
                 </div>
               </div>
-              {team.motto && (
-                <p className="text-gray-300 italic mt-2">"{team.motto}"</p>
-              )}
+              
+              {/* Team Motto Section */}
+              <div className="mt-4">
+                {isEditingMotto ? (
+                  <form onSubmit={handleMottoSubmit} className="flex items-center space-x-2">
+                    <Input
+                      value={mottoText}
+                      onChange={(e) => setMottoText(e.target.value)}
+                      placeholder="Enter team motto..."
+                      className="flex-1 bg-tactical-gray text-white placeholder-gray-400 border-tactical-gray"
+                      maxLength={100}
+                      autoFocus
+                    />
+                    <Button
+                      type="submit"
+                      size="sm"
+                      className="bg-military-green hover:bg-military-green-light text-white"
+                      disabled={updateTeamMotto.isPending || !mottoText.trim()}
+                    >
+                      {updateTeamMotto.isPending ? (
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      ) : (
+                        <Check className="h-4 w-4" />
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={handleMottoCancel}
+                      className="text-gray-400 hover:text-white"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </form>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <p className="text-gray-300 italic">
+                      {team.motto ? `"${team.motto}"` : "No motto set"}
+                    </p>
+                    {(userTeamMember?.[0]?.role === 'captain' || team.captainId === user?.id) && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleMottoEdit}
+                        className="text-gray-400 hover:text-white ml-2"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
             </CardHeader>
             <CardContent>
               {/* Team Picture */}

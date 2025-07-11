@@ -401,6 +401,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update team motto
+  app.patch("/api/teams/:id/motto", async (req, res) => {
+    try {
+      const teamId = parseInt(req.params.id);
+      const { motto } = req.body;
+      
+      const team = await storage.getTeam(teamId);
+      if (!team) {
+        return res.status(404).json({ message: "Team not found" });
+      }
+      
+      // Update team motto
+      const updatedTeam = await storage.updateTeam(teamId, { motto });
+      
+      if (!updatedTeam) {
+        return res.status(500).json({ message: "Failed to update team motto" });
+      }
+      
+      res.json(updatedTeam);
+    } catch (error) {
+      console.error("Team motto update error:", error);
+      res.status(500).json({ message: "Error updating team motto" });
+    }
+  });
+
   // Upload team photo
   app.post("/api/teams/:id/photo", upload.single('photo'), async (req, res) => {
     try {

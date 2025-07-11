@@ -95,6 +95,11 @@ Preferred communication style: Simple, everyday language.
 - Team captain identification with crown icon
 - Team-specific activity feed showing only team member submissions
 - Improved team member management with user details and points
+- **NEW**: Team motto editing functionality for team captains and creators
+- **NEW**: Inline motto editing with save/cancel buttons and loading states
+- **NEW**: API endpoint for updating team mottos (PATCH /api/teams/:id/motto)
+- **NEW**: Permission-based editing - only team captains can edit mottos
+- **NEW**: Real-time motto updates with proper error handling and notifications
 
 ### Competition Status Features (July 2025)
 - New Competition Status page with comprehensive competition overview

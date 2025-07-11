@@ -32,12 +32,24 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
   const { user } = useAuth();
   const [showComments, setShowComments] = useState(false);
   
-  // Get current like status for this user
-  const { data: userLikeStatus } = useQuery({
-    queryKey: [`/api/activities/${activity.id}/likes`, user?.id],
+  // Get current likes for this activity
+  const { data: activityLikes } = useQuery({
+    queryKey: [`/api/activities/${activity.id}/likes`],
     enabled: !!user,
-    select: (data: any[]) => data.some(like => like.userId === user?.id),
   });
+
+  // Get current comments for this activity
+  const { data: activityComments } = useQuery({
+    queryKey: [`/api/activities/${activity.id}/comments`],
+    enabled: !!user,
+  });
+
+  // Check if current user has liked this activity
+  const userLikeStatus = activityLikes?.some((like: any) => like.userId === user?.id);
+  
+  // Get current counts (use live data if available, fallback to activity prop)
+  const currentLikeCount = activityLikes?.length ?? activity.likesCount;
+  const currentCommentCount = activityComments?.length ?? activity.commentsCount;
   
   const getInitials = (username: string) => {
     return username.split(' ').map(word => word[0]).join('').toUpperCase() || username.slice(0, 2).toUpperCase();
@@ -180,7 +192,7 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
                 }`}
               >
                 <ThumbsUp className={`h-4 w-4 ${userLikeStatus ? 'fill-current' : ''}`} />
-                <span>{activity.likesCount}</span>
+                <span>{currentLikeCount}</span>
               </button>
               
               <button 
@@ -188,7 +200,7 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
                 className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors text-sm"
               >
                 <MessageCircle className="h-4 w-4" />
-                <span>{activity.commentsCount}</span>
+                <span>{currentCommentCount}</span>
               </button>
               
               <button

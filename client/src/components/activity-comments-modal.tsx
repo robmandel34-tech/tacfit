@@ -49,6 +49,8 @@ export default function ActivityCommentsModal({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/activities/${activityId}/comments`] });
       queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/activities/competition"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/activities/team"] });
       setNewComment("");
     },
   });

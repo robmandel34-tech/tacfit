@@ -4,6 +4,7 @@ import Navigation from "@/components/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Crosshair, Flame, UserPlus, Trophy, Dumbbell, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -155,11 +156,12 @@ export default function Dashboard() {
                     recentActivities.map((activity: any) => (
                       <div key={activity.id} className="content-tile p-4">
                         <div className="flex items-start space-x-3">
-                          <div className="w-10 h-10 bg-military-green rounded-full flex items-center justify-center flex-shrink-0">
-                            <span className="text-white font-bold text-sm">
+                          <Avatar className="h-10 w-10 flex-shrink-0">
+                            <AvatarImage src={activity.user?.avatar ? `/uploads/${activity.user.avatar}` : undefined} />
+                            <AvatarFallback className="bg-military-green text-white">
                               {activity.user?.username?.slice(0, 2).toUpperCase() || "U"}
-                            </span>
-                          </div>
+                            </AvatarFallback>
+                          </Avatar>
                           <div className="flex-1">
                             <div className="flex items-center space-x-2 mb-2">
                               <span className="text-white font-bold text-sm">{activity.user?.username || "Unknown"}</span>

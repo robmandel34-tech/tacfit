@@ -10,7 +10,7 @@ export default function FloatingActionButton() {
     <>
       <Button
         onClick={() => setIsModalOpen(true)}
-        className="fixed bottom-20 right-6 w-14 h-14 rounded-full bg-military-green/90 hover:bg-military-green-light/90 shadow-2xl z-50 border-2 border-white/50 transition-all duration-300 hover:scale-110 backdrop-blur-sm"
+        className="fixed bottom-28 right-6 w-14 h-14 rounded-full bg-military-green/90 hover:bg-military-green-light/90 shadow-2xl z-50 border-2 border-white/50 transition-all duration-300 hover:scale-110 backdrop-blur-sm"
         size="icon"
       >
         <svg

@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -46,6 +47,7 @@ export default function TeamSelectionModal({
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
 
   const { data: teams = [], isLoading } = useQuery({
@@ -72,6 +74,8 @@ export default function TeamSelectionModal({
       queryClient.invalidateQueries({ queryKey: [`/api/team-members/${user?.id}`] });
       queryClient.invalidateQueries({ queryKey: [`/api/competitions/${competitionId}/teams-with-members`] });
       onClose();
+      // Navigate to team page after successful join
+      setLocation("/team");
     },
     onError: (error: any) => {
       toast({

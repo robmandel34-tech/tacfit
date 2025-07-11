@@ -69,7 +69,11 @@ Preferred communication style: Simple, everyday language.
 - **UPDATED**: Target goals adjusted proportionally to match shorter competition periods
 - **NEW**: Activity submission dropdown filtering - only shows required activities for current competition
 - **NEW**: Dynamic activity type filtering based on competition requirements (e.g., Cardio, Strength, Flexibility only)
+- **NEW**: Activity measurement indicators showing specific units for each activity type (minutes, reps, etc.)
 - **ENHANCED**: Activity submission modal now queries user's team and competition to display relevant activities
+- **ENHANCED**: Latest Intel card on dashboard now displays actual user profile pictures instead of colored circles
+- **FIXED**: Activity submission dropdown text visibility with proper white text and military green highlighting
+- **FIXED**: Auto-navigation to team page after successfully joining a competition and team
 
 ### Progress Map Feature (July 2025)
 - **NEW**: Added topographical progress map to Competition Status page

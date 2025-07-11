@@ -188,9 +188,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "You are already in a competition. Leave your current competition first." });
       }
       
-      // Check if user has enough points (first competition is free)
-      if ((user.competitionsEntered || 0) > 0 && (user.points || 0) < 1000) {
-        return res.status(403).json({ message: "Need at least 1000 points to join additional competitions" });
+      // First competition is always free, subsequent competitions require 1000 points
+      // We don't use competitionsEntered count since users can leave competitions
+      // Instead, we give users a free pass if they have 0 points (likely first time)
+      if ((user.points || 0) > 0 && (user.points || 0) < 1000) {
+        return res.status(403).json({ message: "Need at least 1000 points to join competitions" });
       }
 
       // Get existing teams for the competition
@@ -575,7 +577,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         fs.renameSync(req.file.path, filePath);
         activityData.evidenceUrl = `/uploads/${fileName}`;
-        activityData.evidenceType = 'photo';
+        activityData.evidenceType = req.file.mimetype.startsWith('video/') ? 'video' : 'photo';
       }
       
       const activity = await storage.createActivity(activityData);

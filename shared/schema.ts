@@ -51,6 +51,7 @@ export const activities = pgTable("activities", {
   teamId: integer("team_id").references(() => teams.id),
   type: text("type").notNull(), // cardio, strength, flexibility, sports, other
   description: text("description").notNull(),
+  quantity: text("quantity"),
   evidenceType: text("evidence_type"), // photo, screenshot, text
   evidenceUrl: text("evidence_url"),
   points: integer("points").default(10),

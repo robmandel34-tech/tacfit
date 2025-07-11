@@ -21,6 +21,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   const queryClient = useQueryClient();
   const [type, setType] = useState("");
   const [description, setDescription] = useState("");
+  const [quantity, setQuantity] = useState("");
   const [file, setFile] = useState<File | null>(null);
 
   const submitActivity = useMutation({
@@ -57,6 +58,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   const resetForm = () => {
     setType("");
     setDescription("");
+    setQuantity("");
     setFile(null);
   };
 
@@ -69,6 +71,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     formData.append("userId", user.id.toString());
     formData.append("type", type);
     formData.append("description", description);
+    formData.append("quantity", quantity);
     
     if (file) {
       formData.append("evidence", file);
@@ -120,11 +123,26 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
           </div>
           
           <div>
-            <Label className="text-gray-300 font-medium mb-2">Evidence</Label>
+            <Label className="text-gray-300 font-medium mb-2">Quantity</Label>
+            <Input
+              type="text"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              className="bg-tactical-gray-lighter border-tactical-gray text-white"
+              placeholder="e.g., 30 minutes, 50 push-ups, 3 miles"
+              required
+            />
+          </div>
+          
+          <div>
+            <Label className="text-gray-300 font-medium mb-2">Evidence (Photo or Video)</Label>
             <div className="border-2 border-dashed border-tactical-gray rounded-lg p-4 text-center">
               {file ? (
                 <div className="space-y-2">
                   <p className="text-green-400">✓ {file.name}</p>
+                  <p className="text-gray-400 text-sm">
+                    {file.type.startsWith('image/') ? 'Image' : 'Video'} • {Math.round(file.size / 1024)}KB
+                  </p>
                   <Button 
                     type="button" 
                     variant="ghost" 
@@ -139,10 +157,10 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
               ) : (
                 <div>
                   <Camera className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                  <p className="text-gray-400 mb-2">Upload photo or screenshot</p>
+                  <p className="text-gray-400 mb-2">Upload photo or video evidence</p>
                   <Input
                     type="file"
-                    accept="image/*"
+                    accept="image/*,video/*"
                     onChange={handleFileChange}
                     className="hidden"
                     id="evidence-upload"

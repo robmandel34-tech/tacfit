@@ -190,12 +190,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "You are already in a competition. Leave your current competition first." });
       }
       
-      // First competition is always free, subsequent competitions require 1000 points
-      // We don't use competitionsEntered count since users can leave competitions
-      // Instead, we give users a free pass if they have 0 points (likely first time)
-      if ((user.points || 0) > 0 && (user.points || 0) < 1000) {
-        return res.status(403).json({ message: "Need at least 1000 points to join competitions" });
-      }
+      // Joining competitions is free for all users
+      // Only creating competitions requires 1000 points
 
       // Get existing teams for the competition
       const existingTeams = await storage.getTeamsByCompetition(competitionId);

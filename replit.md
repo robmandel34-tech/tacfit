@@ -28,6 +28,7 @@ Preferred communication style: Simple, everyday language.
 - **FIXED**: User context updates immediately when profile pictures are uploaded
 - **FIXED**: Competition creation buttons now properly validate user points (1000 required)
 - **FIXED**: Profile picture uploads now refresh all cached data to update images everywhere
+- **FIXED**: Competition joining is now free for all users (1000 point requirement only applies to creating competitions)
 
 ### Progress Map Feature (July 2025)
 - **NEW**: Added topographical progress map to Competition Status page

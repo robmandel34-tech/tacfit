@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Trophy, Target, Users, Calendar, UserPlus, MessageCircle, Send } from "lucide-react";
+import { Trophy, Target, Users, Calendar, UserPlus, MessageCircle, Send, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import DirectMessageModal from "@/components/direct-message-modal";
@@ -64,7 +64,9 @@ export default function Profile() {
         title: "Friend request sent",
         description: "Your friend request has been sent successfully.",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/friends"] });
+      // Refresh both users' friends lists to update the UI
+      queryClient.invalidateQueries({ queryKey: ["/api/friends", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/friends", targetUserId] });
     },
     onError: () => {
       toast({
@@ -132,34 +134,53 @@ export default function Profile() {
                   <div className="space-y-2">
                     {!isOwnProfile && (
                       <>
-                        {/* Check if they are friends and show message button */}
-                        {friends.some((f: any) => f.status === "accepted" && 
-                          ((f.userId === user?.id && f.friendId === targetUserId) || 
-                           (f.userId === targetUserId && f.friendId === user?.id))) ? (
-                          <Button 
-                            onClick={() => {
-                              setSelectedFriend({
-                                id: targetUserId!,
-                                username: displayUser.username,
-                                avatar: displayUser.avatar
-                              });
-                              setIsDMModalOpen(true);
-                            }}
-                            className="w-full bg-steel-blue hover:bg-blue-600"
-                          >
-                            <MessageCircle className="mr-2 h-4 w-4" />
-                            Send Message
-                          </Button>
-                        ) : (
-                          <Button 
-                            onClick={() => sendFriendRequest.mutate()}
-                            disabled={sendFriendRequest.isPending}
-                            className="w-full bg-military-green hover:bg-military-green-light"
-                          >
-                            <UserPlus className="mr-2 h-4 w-4" />
-                            Send Friend Request
-                          </Button>
-                        )}
+                        {/* Check relationship status and show appropriate button */}
+                        {(() => {
+                          const existingFriendship = friends.find((f: any) => 
+                            (f.userId === user?.id && f.friendId === targetUserId) || 
+                            (f.userId === targetUserId && f.friendId === user?.id)
+                          );
+                          
+                          if (existingFriendship?.status === "accepted") {
+                            return (
+                              <Button 
+                                onClick={() => {
+                                  setSelectedFriend({
+                                    id: targetUserId!,
+                                    username: displayUser.username,
+                                    avatar: displayUser.avatar
+                                  });
+                                  setIsDMModalOpen(true);
+                                }}
+                                className="w-full bg-steel-blue hover:bg-blue-600"
+                              >
+                                <MessageCircle className="mr-2 h-4 w-4" />
+                                Send Message
+                              </Button>
+                            );
+                          } else if (existingFriendship?.status === "pending") {
+                            return (
+                              <Button 
+                                disabled
+                                className="w-full bg-gray-600 cursor-not-allowed"
+                              >
+                                <Clock className="mr-2 h-4 w-4" />
+                                Friend Request Pending
+                              </Button>
+                            );
+                          } else {
+                            return (
+                              <Button 
+                                onClick={() => sendFriendRequest.mutate()}
+                                disabled={sendFriendRequest.isPending}
+                                className="w-full bg-military-green hover:bg-military-green-light"
+                              >
+                                <UserPlus className="mr-2 h-4 w-4" />
+                                {sendFriendRequest.isPending ? "Sending..." : "Send Friend Request"}
+                              </Button>
+                            );
+                          }
+                        })()}
                       </>
                     )}
                     

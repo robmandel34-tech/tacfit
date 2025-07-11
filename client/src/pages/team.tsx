@@ -22,6 +22,8 @@ export default function Team() {
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [isEditingMotto, setIsEditingMotto] = useState(false);
   const [mottoText, setMottoText] = useState("");
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [nameText, setNameText] = useState("");
 
   // Get user's current team membership
   const { data: userTeamMember } = useQuery({
@@ -152,6 +154,38 @@ export default function Team() {
     },
   });
 
+  // Update team name mutation
+  const updateTeamName = useMutation({
+    mutationFn: async (name: string) => {
+      const response = await fetch(`/api/teams/${team?.id}/name`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update name");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Team name updated!",
+        description: "Your team name has been updated successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: [`/api/teams/${team?.id}`] });
+      setIsEditingName(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Update failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim()) return;
@@ -186,6 +220,23 @@ export default function Team() {
   const handleMottoCancel = () => {
     setIsEditingMotto(false);
     setMottoText("");
+  };
+
+  const handleNameEdit = () => {
+    setNameText(team?.name || "");
+    setIsEditingName(true);
+  };
+
+  const handleNameSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (nameText.trim()) {
+      updateTeamName.mutate(nameText.trim());
+    }
+  };
+
+  const handleNameCancel = () => {
+    setIsEditingName(false);
+    setNameText("");
   };
 
   // Auto-refresh messages
@@ -228,10 +279,56 @@ export default function Team() {
           <Card className="mb-6 sharp-card bg-tactical-gray-light border-tactical-gray">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-white flex items-center">
-                  <Users className="mr-2 h-5 w-5" />
-                  {team.name}
-                </CardTitle>
+                <div className="flex items-center flex-1">
+                  <Users className="mr-2 h-5 w-5 text-white" />
+                  {isEditingName ? (
+                    <form onSubmit={handleNameSubmit} className="flex items-center space-x-2 flex-1">
+                      <Input
+                        value={nameText}
+                        onChange={(e) => setNameText(e.target.value)}
+                        placeholder="Enter team name..."
+                        className="flex-1 bg-tactical-gray text-white placeholder-gray-400 border-tactical-gray"
+                        maxLength={50}
+                        autoFocus
+                      />
+                      <Button
+                        type="submit"
+                        size="sm"
+                        className="bg-military-green hover:bg-military-green-light text-white"
+                        disabled={updateTeamName.isPending || !nameText.trim()}
+                      >
+                        {updateTeamName.isPending ? (
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <Check className="h-4 w-4" />
+                        )}
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={handleNameCancel}
+                        className="text-gray-400 hover:text-white"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </form>
+                  ) : (
+                    <div className="flex items-center">
+                      <CardTitle className="text-white">{team.name}</CardTitle>
+                      {(userTeamMember?.[0]?.role === 'captain' || team.captainId === user?.id) && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleNameEdit}
+                          className="text-gray-400 hover:text-white ml-2"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
                 <div className="flex items-center">
                   <Target className="mr-1 h-4 w-4 text-military-green" />
                   <span className="text-military-green font-bold">{team.points} points</span>

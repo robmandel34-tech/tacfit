@@ -426,6 +426,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update team name
+  app.patch("/api/teams/:id/name", async (req, res) => {
+    try {
+      const teamId = parseInt(req.params.id);
+      const { name } = req.body;
+      
+      if (!name || name.trim().length === 0) {
+        return res.status(400).json({ message: "Team name is required" });
+      }
+      
+      const team = await storage.getTeam(teamId);
+      if (!team) {
+        return res.status(404).json({ message: "Team not found" });
+      }
+      
+      // Check if team name already exists in the same competition
+      const existingTeams = await storage.getTeamsByCompetition(team.competitionId);
+      const nameExists = existingTeams.some(t => t.name.toLowerCase() === name.trim().toLowerCase() && t.id !== teamId);
+      
+      if (nameExists) {
+        return res.status(400).json({ message: "Team name already exists in this competition" });
+      }
+      
+      // Update team name
+      const updatedTeam = await storage.updateTeam(teamId, { name: name.trim() });
+      
+      if (!updatedTeam) {
+        return res.status(500).json({ message: "Failed to update team name" });
+      }
+      
+      res.json(updatedTeam);
+    } catch (error) {
+      console.error("Team name update error:", error);
+      res.status(500).json({ message: "Error updating team name" });
+    }
+  });
+
   // Upload team photo
   app.post("/api/teams/:id/photo", upload.single('photo'), async (req, res) => {
     try {

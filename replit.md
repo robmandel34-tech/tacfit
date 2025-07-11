@@ -100,6 +100,11 @@ Preferred communication style: Simple, everyday language.
 - **NEW**: API endpoint for updating team mottos (PATCH /api/teams/:id/motto)
 - **NEW**: Permission-based editing - only team captains can edit mottos
 - **NEW**: Real-time motto updates with proper error handling and notifications
+- **NEW**: Team name editing functionality for team captains and creators
+- **NEW**: Inline team name editing with validation and duplicate checking
+- **NEW**: API endpoint for updating team names (PATCH /api/teams/:id/name)
+- **NEW**: Duplicate team name prevention within the same competition
+- **NEW**: Character limits and validation for team names (50 characters max)
 
 ### Competition Status Features (July 2025)
 - New Competition Status page with comprehensive competition overview

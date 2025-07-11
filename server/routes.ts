@@ -679,6 +679,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/friends/:id", async (req, res) => {
+    try {
+      const { status } = req.body;
+      const friendship = await storage.updateFriendship(parseInt(req.params.id), status);
+      if (!friendship) {
+        return res.status(404).json({ message: "Friendship not found" });
+      }
+      res.json(friendship);
+    } catch (error) {
+      res.status(500).json({ message: "Error updating friendship" });
+    }
+  });
+
   // Competition history routes
   app.get("/api/history/:userId", async (req, res) => {
     try {

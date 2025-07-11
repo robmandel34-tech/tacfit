@@ -1,6 +1,7 @@
 import { useAuthRequired } from "@/lib/auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import Navigation from "@/components/navigation";
 import ActivityCard from "@/components/activity-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +17,7 @@ export default function Team() {
   const { user, isLoading } = useAuthRequired();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, navigate] = useLocation();
   const [message, setMessage] = useState("");
 
   // Get user's current team membership
@@ -177,7 +179,10 @@ export default function Team() {
               {teamMembers.map((member: any) => (
                 <div key={member.id} className="bg-tactical-gray p-4 rounded-sm">
                   <div className="flex items-center space-x-3">
-                    <Avatar className="h-12 w-12">
+                    <Avatar 
+                      className="h-12 w-12 cursor-pointer hover:ring-2 hover:ring-military-green transition-all"
+                      onClick={() => navigate(`/profile/${member.user?.id}`)}
+                    >
                       <AvatarImage src={member.user?.avatar} />
                       <AvatarFallback className="bg-military-green text-white">
                         {member.user?.username?.charAt(0).toUpperCase()}
@@ -185,7 +190,12 @@ export default function Team() {
                     </Avatar>
                     <div className="flex-1">
                       <div className="flex items-center">
-                        <h3 className="font-medium text-white">{member.user?.username}</h3>
+                        <h3 
+                          className="font-medium text-white cursor-pointer hover:text-military-green transition-colors"
+                          onClick={() => navigate(`/profile/${member.user?.id}`)}
+                        >
+                          {member.user?.username}
+                        </h3>
                         {member.role === 'captain' && (
                           <Crown className="ml-2 h-4 w-4 text-yellow-500" />
                         )}
@@ -222,14 +232,22 @@ export default function Team() {
                   ) : (
                     messages.map((msg: any) => (
                       <div key={msg.id} className="flex items-start space-x-3">
-                        <Avatar className="h-8 w-8">
+                        <Avatar 
+                          className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-military-green transition-all"
+                          onClick={() => navigate(`/profile/${msg.sender?.id}`)}
+                        >
                           <AvatarFallback className="bg-military-green text-white text-xs">
                             {msg.sender?.username?.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center space-x-2">
-                            <p className="text-sm font-medium text-white">{msg.sender?.username}</p>
+                            <p 
+                              className="text-sm font-medium text-white cursor-pointer hover:text-military-green transition-colors"
+                              onClick={() => navigate(`/profile/${msg.sender?.id}`)}
+                            >
+                              {msg.sender?.username}
+                            </p>
                             <p className="text-xs text-gray-400">
                               {new Date(msg.createdAt).toLocaleTimeString()}
                             </p>

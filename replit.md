@@ -10,6 +10,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### Social Features Implementation (July 2025)
+- **NEW**: Dynamic user profiles with friend request system
+- Clickable profile pictures throughout the app navigate to user profiles
+- Friend request functionality with "Send Friend Request" button on other users' profiles
+- Friends list modal showing accepted friends with messaging capability
+- Direct messaging interface (UI ready, backend to be implemented)
+- Profile pictures clickable in activity cards, team member displays, and chat messages
+- Dynamic profile URLs support viewing any user's profile via /profile/:userId route
+- Friend management with status tracking (pending, accepted, rejected)
+
 ### Progress Map Feature (July 2025)
 - **NEW**: Added topographical progress map to Competition Status page
 - Teams positioned along real Alaska wilderness satellite imagery based on points
@@ -50,6 +60,8 @@ Preferred communication style: Simple, everyday language.
 - Added `motto` and `pictureUrl` fields to teams table
 - Enhanced API routes for team-specific and competition-specific data retrieval
 - New endpoints: `/api/teams/competition/:id`, `/api/team-members/team/:id`, `/api/activities/team/:id`
+- **NEW**: Added friendship management endpoints: `/api/friends/:userId`, `/api/friends` (POST), `/api/friends/:id` (PUT)
+- **NEW**: Enhanced user profile endpoints to support dynamic user viewing
 - Updated seed data to include team mottos for testing
 
 ### UI/UX Improvements (July 2025)

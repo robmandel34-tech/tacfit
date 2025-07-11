@@ -29,6 +29,7 @@ function Router() {
         <Route path="/team" component={Team} />
         <Route path="/activity-feed" component={ActivityFeed} />
         <Route path="/profile" component={Profile} />
+        <Route path="/profile/:userId" component={Profile} />
         <Route path="/invite/:token" component={Invitation} />
         <Route component={NotFound} />
       </Switch>

@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ThumbsUp, MessageCircle, Flag } from "lucide-react";
+import { useLocation } from "wouter";
 
 interface ActivityCardProps {
   activity: {
@@ -11,6 +12,7 @@ interface ActivityCardProps {
     evidenceUrl?: string;
     createdAt: string;
     user: {
+      id: number;
       username: string;
     };
     likesCount: number;
@@ -21,8 +23,14 @@ interface ActivityCardProps {
 }
 
 export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardProps) {
+  const [, navigate] = useLocation();
+  
   const getInitials = (username: string) => {
     return username.split(' ').map(word => word[0]).join('').toUpperCase() || username.slice(0, 2).toUpperCase();
+  };
+
+  const handleProfileClick = () => {
+    navigate(`/profile/${activity.user.id}`);
   };
 
   const getActivityIcon = (type: string) => {
@@ -44,14 +52,22 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
     <Card className="bg-tactical-gray-light border-tactical-gray">
       <CardContent className="p-4">
         <div className="flex items-start space-x-3">
-          <div className="w-12 h-12 bg-military-green rounded-full flex items-center justify-center flex-shrink-0">
+          <div 
+            className="w-12 h-12 bg-military-green rounded-full flex items-center justify-center flex-shrink-0 cursor-pointer hover:bg-military-green-light transition-colors"
+            onClick={handleProfileClick}
+          >
             <span className="text-white font-bold text-sm">
               {getInitials(activity.user.username)}
             </span>
           </div>
           <div className="flex-1">
             <div className="flex items-center space-x-2 mb-2">
-              <span className="text-white font-bold text-sm">{activity.user.username}</span>
+              <span 
+                className="text-white font-bold text-sm cursor-pointer hover:text-military-green-light transition-colors"
+                onClick={handleProfileClick}
+              >
+                {activity.user.username}
+              </span>
               <Badge variant="outline" className="text-xs">
                 {getActivityIcon(activity.type)} {activity.type}
               </Badge>

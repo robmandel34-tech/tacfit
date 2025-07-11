@@ -343,8 +343,8 @@ export default function Profile() {
                   
                   <div className="bg-tactical-gray-lighter rounded-lg p-4 mb-4">
                     <div className="flex items-center justify-center space-x-2 mb-2">
-                      <Trophy className="text-orange-400 h-5 w-5" />
-                      <span className="text-orange-400 font-bold text-lg">{displayUser.points}</span>
+                      <Trophy className="h-5 w-5" style={{ color: '#fb923c' }} />
+                      <span className="font-bold text-lg" style={{ color: '#fb923c' }}>{displayUser.points}</span>
                     </div>
                     <p className="text-gray-300 text-sm">Total Points</p>
                   </div>

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useAuthRequired } from "@/lib/auth";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/navigation";
 import CompetitionCard from "@/components/competition-card";
 import InviteFriendsModal from "@/components/invite-friends-modal";
@@ -11,15 +13,44 @@ export default function Competitions() {
   const { user, isLoading } = useAuthRequired();
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [selectedCompetition, setSelectedCompetition] = useState<{ id: number; name: string } | null>(null);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: competitions = [] } = useQuery({
     queryKey: ["/api/competitions"],
     enabled: !!user,
   });
 
+  const joinCompetitionMutation = useMutation({
+    mutationFn: async (competitionId: number) => {
+      const response = await apiRequest("POST", `/api/competitions/${competitionId}/join`, {
+        userId: user?.id
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success!",
+        description: "You've joined the competition and been assigned to a team.",
+      });
+      queryClient.invalidateQueries({ queryKey: [`/api/team-members/${user?.id}`] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to join competition",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleInvite = (competitionId: number, competitionName: string) => {
     setSelectedCompetition({ id: competitionId, name: competitionName });
     setInviteModalOpen(true);
+  };
+
+  const handleJoin = (competitionId: number) => {
+    joinCompetitionMutation.mutate(competitionId);
   };
 
   if (isLoading) {
@@ -63,6 +94,7 @@ export default function Competitions() {
                 key={competition.id}
                 competition={competition}
                 onInvite={handleInvite}
+                onJoin={handleJoin}
               />
             ))
           )}

@@ -14,9 +14,10 @@ interface CompetitionCardProps {
     isActive: boolean;
   };
   onInvite?: (competitionId: number, competitionName: string) => void;
+  onJoin?: (competitionId: number) => void;
 }
 
-export default function CompetitionCard({ competition, onInvite }: CompetitionCardProps) {
+export default function CompetitionCard({ competition, onInvite, onJoin }: CompetitionCardProps) {
   return (
     <Card className="bg-tactical-gray-light border-tactical-gray">
       <CardHeader>
@@ -51,7 +52,10 @@ export default function CompetitionCard({ competition, onInvite }: CompetitionCa
         
         <div className="mt-4 pt-4 border-t border-tactical-gray">
           <div className="flex gap-2">
-            <Button className="flex-1 bg-military-green hover:bg-military-green-light text-white sharp-button">
+            <Button 
+              onClick={() => onJoin?.(competition.id)}
+              className="flex-1 bg-military-green hover:bg-military-green-light text-white sharp-button"
+            >
               <Trophy className="mr-2 h-4 w-4" />
               {competition.isActive ? "Join Now" : "Register Interest"}
             </Button>

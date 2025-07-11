@@ -71,7 +71,8 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
       const userData = await response.json();
       setUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));
-      setLocation("/");
+      // Force navigation to dashboard
+      window.location.href = "/";
     } catch (error) {
       throw error;
     }

@@ -38,55 +38,55 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-tactical-gray px-4">
-      <Card className="w-full max-w-md bg-tactical-gray-light border-tactical-gray">
+      <Card className="w-full max-w-md card-modern">
         <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <Shield className="text-military-green text-4xl" />
+          <div className="flex justify-center mb-6">
+            <Shield className="text-military-green text-5xl" />
           </div>
-          <CardTitle className="text-2xl font-bold text-white">TacFit</CardTitle>
-          <CardDescription className="text-gray-300">
+          <CardTitle className="text-3xl font-bold text-heading tracking-tight">TacFit</CardTitle>
+          <CardDescription className="text-body text-lg">
             Sign in to your account
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <CardContent className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-gray-300">Email</Label>
+              <Label htmlFor="email" className="text-secondary font-medium">Email</Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="bg-tactical-gray-lighter border-tactical-gray text-white"
+                className="bg-surface-elevated border-border-subtle text-primary placeholder:text-muted focus:border-military-green focus:ring-1 focus:ring-military-green"
+                placeholder="Enter your email"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-gray-300">Password</Label>
+              <Label htmlFor="password" className="text-secondary font-medium">Password</Label>
               <Input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="bg-tactical-gray-lighter border-tactical-gray text-white"
+                className="bg-surface-elevated border-border-subtle text-primary placeholder:text-muted focus:border-military-green focus:ring-1 focus:ring-military-green"
+                placeholder="Enter your password"
               />
             </div>
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-military-green hover:bg-military-green-light text-white font-medium"
+              className="w-full btn-primary py-3 text-lg font-semibold"
             >
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
-          <div className="mt-4 text-center">
-            <span className="text-gray-300 text-sm">
+          <div className="text-center">
+            <span className="text-secondary text-sm">
               Don't have an account?{" "}
-              <Link href="/register">
-                <a className="text-military-green hover:text-military-green-light font-medium">
-                  Sign up
-                </a>
+              <Link href="/register" className="text-military-green hover:text-military-green-light font-semibold transition-colors">
+                Sign up
               </Link>
             </span>
           </div>

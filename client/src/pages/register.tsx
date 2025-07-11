@@ -39,66 +39,67 @@ export default function Register() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-tactical-gray px-4">
-      <Card className="w-full max-w-md bg-tactical-gray-light border-tactical-gray">
+      <Card className="w-full max-w-md card-modern">
         <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <Shield className="text-military-green text-4xl" />
+          <div className="flex justify-center mb-6">
+            <Shield className="text-military-green text-5xl" />
           </div>
-          <CardTitle className="text-2xl font-bold text-white">Join TacFit</CardTitle>
-          <CardDescription className="text-gray-300">
+          <CardTitle className="text-3xl font-bold text-heading tracking-tight">Join TacFit</CardTitle>
+          <CardDescription className="text-body text-lg">
             Create your account to get started
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <CardContent className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="username" className="text-gray-300">Username</Label>
+              <Label htmlFor="username" className="text-secondary font-medium">Username</Label>
               <Input
                 id="username"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                className="bg-tactical-gray-lighter border-tactical-gray text-white"
+                className="bg-surface-elevated border-border-subtle text-primary placeholder:text-muted focus:border-military-green focus:ring-1 focus:ring-military-green"
+                placeholder="Choose a username"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-gray-300">Email</Label>
+              <Label htmlFor="email" className="text-secondary font-medium">Email</Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="bg-tactical-gray-lighter border-tactical-gray text-white"
+                className="bg-surface-elevated border-border-subtle text-primary placeholder:text-muted focus:border-military-green focus:ring-1 focus:ring-military-green"
+                placeholder="Enter your email"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-gray-300">Password</Label>
+              <Label htmlFor="password" className="text-secondary font-medium">Password</Label>
               <Input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="bg-tactical-gray-lighter border-tactical-gray text-white"
+                className="bg-surface-elevated border-border-subtle text-primary placeholder:text-muted focus:border-military-green focus:ring-1 focus:ring-military-green"
+                placeholder="Create a password"
               />
             </div>
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-military-green hover:bg-military-green-light text-white font-medium"
+              className="w-full btn-primary py-3 text-lg font-semibold"
             >
               {isLoading ? "Creating account..." : "Create Account"}
             </Button>
           </form>
-          <div className="mt-4 text-center">
-            <span className="text-gray-300 text-sm">
+          <div className="text-center">
+            <span className="text-secondary text-sm">
               Already have an account?{" "}
-              <Link href="/login">
-                <a className="text-military-green hover:text-military-green-light font-medium">
-                  Sign in
-                </a>
+              <Link href="/login" className="text-military-green hover:text-military-green-light font-semibold transition-colors">
+                Sign in
               </Link>
             </span>
           </div>

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, X, Edit2, Check, Trash2, Calendar } from "lucide-react";
+import { Plus, X, Edit2, Check, Trash2, Calendar, ChevronDown, ChevronUp } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -34,6 +34,7 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
   
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [newTask, setNewTask] = useState({
     title: '',
     description: '',
@@ -226,92 +227,107 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-white">Mission Planning Board</h3>
-        <Button
-          onClick={() => setIsAddingTask(true)}
-          className="bg-military-green hover:bg-military-green-dark text-white"
-          size="sm"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Task
-        </Button>
+        <div className="flex items-center space-x-2">
+          <h3 className="text-lg font-semibold text-white">Mission Planning Board</h3>
+          <Button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            variant="ghost"
+            size="sm"
+            className="text-gray-400 hover:text-white hover:bg-slate-700"
+          >
+            {isCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+          </Button>
+        </div>
+        {!isCollapsed && (
+          <Button
+            onClick={() => setIsAddingTask(true)}
+            className="bg-military-green hover:bg-military-green-dark text-white"
+            size="sm"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Task
+          </Button>
+        )}
       </div>
 
-      {/* Add Task Form */}
-      {isAddingTask && (
-        <Card className="bg-slate-800 border-slate-700">
-          <CardHeader>
-            <CardTitle className="text-white text-sm">Create New Task</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Input
-              placeholder="Task title"
-              value={newTask.title}
-              onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-              className="bg-slate-700 border-slate-600 text-white"
-            />
-            <Input
-              placeholder="Description (optional)"
-              value={newTask.description}
-              onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-              className="bg-slate-700 border-slate-600 text-white"
-            />
-            <Select
-              value={newTask.assignedTo}
-              onValueChange={(value) => setNewTask({ ...newTask, assignedTo: value })}
-            >
-              <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                <SelectValue placeholder="Assign to team member" />
-              </SelectTrigger>
-              <SelectContent>
-                {teamMembers.map((member) => (
-                  <SelectItem key={member.user?.id} value={member.user?.id?.toString()}>
-                    {member.user?.username}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <div className="flex items-center space-x-2">
-              <Calendar className="h-4 w-4 text-gray-400" />
-              <Input
-                type="date"
-                value={newTask.dueDate}
-                onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
-                className="bg-slate-700 border-slate-600 text-white"
-                placeholder="Due date (optional)"
-              />
-            </div>
-            <div className="flex space-x-2">
-              <Button
-                onClick={handleCreateTask}
-                className="bg-military-green hover:bg-military-green-dark text-white"
-                size="sm"
-                disabled={createTaskMutation.isPending}
-              >
-                <Check className="h-4 w-4 mr-2" />
-                Create
-              </Button>
-              <Button
-                onClick={() => {
-                  setIsAddingTask(false);
-                  setNewTask({ title: '', description: '', assignedTo: '', dueDate: '' });
-                }}
-                variant="outline"
-                size="sm"
-              >
-                <X className="h-4 w-4 mr-2" />
-                Cancel
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Collapsible Content */}
+      {!isCollapsed && (
+        <>
+          {/* Add Task Form */}
+          {isAddingTask && (
+            <Card className="bg-slate-800 border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white text-sm">Create New Task</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Input
+                  placeholder="Task title"
+                  value={newTask.title}
+                  onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                  className="bg-slate-700 border-slate-600 text-white"
+                />
+                <Input
+                  placeholder="Description (optional)"
+                  value={newTask.description}
+                  onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                  className="bg-slate-700 border-slate-600 text-white"
+                />
+                <Select
+                  value={newTask.assignedTo}
+                  onValueChange={(value) => setNewTask({ ...newTask, assignedTo: value })}
+                >
+                  <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                    <SelectValue placeholder="Assign to team member" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {teamMembers.map((member) => (
+                      <SelectItem key={member.user?.id} value={member.user?.id?.toString()}>
+                        {member.user?.username}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="flex items-center space-x-2">
+                  <Calendar className="h-4 w-4 text-gray-400" />
+                  <Input
+                    type="date"
+                    value={newTask.dueDate}
+                    onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+                    className="bg-slate-700 border-slate-600 text-white"
+                    placeholder="Due date (optional)"
+                  />
+                </div>
+                <div className="flex space-x-2">
+                  <Button
+                    onClick={handleCreateTask}
+                    className="bg-military-green hover:bg-military-green-dark text-white"
+                    size="sm"
+                    disabled={createTaskMutation.isPending}
+                  >
+                    <Check className="h-4 w-4 mr-2" />
+                    Create
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setIsAddingTask(false);
+                      setNewTask({ title: '', description: '', assignedTo: '', dueDate: '' });
+                    }}
+                    variant="outline"
+                    size="sm"
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Cancel
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-      {/* Task List */}
-      <div className="space-y-3">
-        {tasks.map((task: MissionTask) => (
-          <Card key={task.id} className="bg-slate-800 border-slate-700">
-            <CardContent className="p-4">
+          {/* Task List */}
+          <div className="space-y-3">
+            {tasks.map((task: MissionTask) => (
+              <Card key={task.id} className="bg-slate-800 border-slate-700">
+                <CardContent className="p-4">
               {editingTaskId === task.id ? (
                 /* Edit Mode */
                 <div className="space-y-3">
@@ -458,17 +474,19 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
 
-      {tasks.length === 0 && !isAddingTask && (
-        <Card className="bg-slate-800 border-slate-700">
-          <CardContent className="p-8 text-center">
-            <p className="text-gray-400">No mission tasks yet. Create your first task to get started.</p>
-          </CardContent>
-        </Card>
+          {tasks.length === 0 && !isAddingTask && (
+            <Card className="bg-slate-800 border-slate-700">
+              <CardContent className="p-8 text-center">
+                <p className="text-gray-400">No mission tasks yet. Create your first task to get started.</p>
+              </CardContent>
+            </Card>
+          )}
+        </>
       )}
     </div>
   );

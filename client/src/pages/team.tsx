@@ -50,6 +50,12 @@ export default function Team() {
     enabled: !!userTeamMember?.[0]?.teamId,
   });
 
+  // Get competition details
+  const { data: competition } = useQuery({
+    queryKey: [`/api/competitions/${team?.competitionId}`],
+    enabled: !!team?.competitionId,
+  });
+
 
 
   // Upload team photo mutation
@@ -421,6 +427,63 @@ export default function Team() {
                 onChange={handlePhotoUpload}
                 className="hidden"
               />
+              
+              {/* Activity Progress Section */}
+              {competition && competition.requiredActivities && competition.requiredActivities.length > 0 && (
+                <div className="mt-4 p-4 bg-tactical-gray rounded-lg border border-tactical-gray">
+                  <h3 className="text-white font-semibold mb-3 flex items-center">
+                    <Target className="mr-2 h-4 w-4 text-military-green" />
+                    Activity Progress
+                  </h3>
+                  <div className="space-y-3">
+                    {competition.requiredActivities.map((activityType: string, index: number) => {
+                      // Calculate progress for this activity type
+                      const activitiesOfType = teamActivities.filter((activity: any) => activity.type === activityType);
+                      const totalQuantity = activitiesOfType.reduce((sum: number, activity: any) => {
+                        const quantity = parseInt(activity.quantity || '0');
+                        return sum + quantity;
+                      }, 0);
+                      
+                      // Get target goal for this activity type
+                      const targetGoal = competition.targetGoals?.[index] || '';
+                      const targetNumber = parseInt(targetGoal.replace(/[^0-9]/g, '')) || 0;
+                      
+                      // Get unit from target goal
+                      const unit = targetGoal.includes('steps') ? 'steps' : 
+                                  targetGoal.includes('minutes') ? 'minutes' : 
+                                  targetGoal.includes('reps') ? 'reps' : 
+                                  targetGoal.includes('miles') ? 'miles' : 'units';
+                      
+                      const percentage = targetNumber > 0 ? Math.min((totalQuantity / targetNumber) * 100, 100) : 0;
+                      
+                      return (
+                        <div key={activityType} className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-300 capitalize font-medium">
+                              {activityType === 'cardio' ? 'Cardio Training' :
+                               activityType === 'strength' ? 'Strength Operations' :
+                               activityType === 'flexibility' ? 'Mobility Training' :
+                               activityType === 'sports' ? 'Combat Sports' : 'Special Operations'}
+                            </span>
+                            <span className="text-sm text-gray-400">
+                              {totalQuantity.toLocaleString()}/{targetNumber.toLocaleString()} {unit}
+                            </span>
+                          </div>
+                          <div className="w-full bg-tactical-gray-light rounded-full h-2">
+                            <div 
+                              className="bg-military-green h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${percentage}%` }}
+                            ></div>
+                          </div>
+                          <div className="text-xs text-gray-400">
+                            {percentage.toFixed(1)}% complete
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}

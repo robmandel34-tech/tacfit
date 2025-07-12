@@ -127,7 +127,7 @@ export default function CompetitionStatus() {
                   <Activity className="mr-2 h-4 w-4 text-military-green" />
                   <span className="font-semibold">Required Training:</span>
                 </div>
-                <div className="flex flex-wrap gap-2 mb-4">
+                <div className="flex flex-wrap gap-2">
                   {competition.requiredActivities.map((activity: string, index: number) => (
                     <Badge 
                       key={index} 
@@ -138,22 +138,6 @@ export default function CompetitionStatus() {
                     </Badge>
                   ))}
                 </div>
-                {competition.targetGoals && competition.targetGoals.length > 0 && (
-                  <div>
-                    <div className="flex items-center text-sm text-gray-300 mb-3">
-                      <Target className="mr-2 h-4 w-4 text-orange-500" />
-                      <span className="font-semibold">Team Goals:</span>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {competition.targetGoals.map((goal: string, index: number) => (
-                        <div key={index} className="flex items-center text-xs text-gray-300 bg-tactical-gray-light rounded-lg px-3 py-2 border border-tactical-gray">
-                          <CheckCircle className="mr-2 h-3 w-3 text-military-green flex-shrink-0" />
-                          <span className="font-medium">{goal}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             )}
           </div>
@@ -166,7 +150,23 @@ export default function CompetitionStatus() {
           </div>
         )}
 
-
+        {/* Team Goals Section */}
+        {competition && competition.targetGoals && competition.targetGoals.length > 0 && (
+          <div className="mb-6">
+            <div className="flex items-center text-sm text-gray-300 mb-3">
+              <Target className="mr-2 h-4 w-4 text-orange-500" />
+              <span className="font-semibold">Team Goals:</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {competition.targetGoals.map((goal: string, index: number) => (
+                <div key={index} className="flex items-center text-xs text-gray-300 bg-tactical-gray-light rounded-lg px-3 py-2 border border-tactical-gray">
+                  <CheckCircle className="mr-2 h-3 w-3 text-military-green flex-shrink-0" />
+                  <span className="font-medium">{goal}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Activity Feed */}
         <Card className="sharp-card bg-tactical-gray-light border-tactical-gray">

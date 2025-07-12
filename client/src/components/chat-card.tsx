@@ -8,7 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Send, Smile, ImageIcon, Search, ChevronDown, ChevronUp, MessageSquare } from "lucide-react";
+import { Send, Smile, ImageIcon, Search, ChevronDown, ChevronUp, Radio } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import EmojiPicker from 'emoji-picker-react';
 import GiphyApi from 'giphy-api';
@@ -184,7 +184,7 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
           <CardHeader className="cursor-pointer hover:bg-tactical-gray-lighter transition-colors">
             <CardTitle className="flex items-center justify-between text-lg text-white">
               <div className="flex items-center space-x-2">
-                <MessageSquare className="w-5 h-5" />
+                <Radio className="w-5 h-5" />
                 <span>{title || (teamId ? "Team Comms" : "Competition Chat")}</span>
                 {unreadCount > 0 && (
                   <span className="bg-military-green text-white text-xs px-2 py-1 rounded-full">

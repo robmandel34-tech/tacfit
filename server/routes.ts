@@ -753,16 +753,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const competitionId = parseInt(req.params.competitionId);
       const activities = await storage.getActivitiesByCompetition(competitionId);
       
-      // Get user details for each activity
+      // Get user details and team information for each activity
       const activitiesWithUsers = await Promise.all(
         activities.map(async (activity) => {
           const user = await storage.getUser(activity.userId!);
           const likes = await storage.getActivityLikes(activity.id);
           const comments = await storage.getActivityComments(activity.id);
           
+          // Get user's team for this competition
+          let team = null;
+          if (user) {
+            const userTeamMembership = await storage.getUserTeam(user.id, competitionId);
+            if (userTeamMembership) {
+              team = await storage.getTeam(userTeamMembership.teamId);
+            }
+          }
+          
           return {
             ...activity,
             user: user ? { id: user.id, username: user.username, avatar: user.avatar } : null,
+            team: team ? { id: team.id, name: team.name } : null,
             likesCount: likes.length,
             commentsCount: comments.length
           };

@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ThumbsUp, MessageCircle, Flag } from "lucide-react";
+import { ThumbsUp, MessageCircle, Flag, Users } from "lucide-react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -20,6 +20,10 @@ interface ActivityCardProps {
     user: {
       id: number;
       username: string;
+    };
+    team?: {
+      id: number;
+      name: string;
     };
     likesCount: number;
     commentsCount: number;
@@ -208,6 +212,12 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
                 >
                   {activity.user.username}
                 </span>
+                {activity.team && (
+                  <div className="flex items-center gap-1 text-xs text-gray-400">
+                    <Users className="h-3 w-3" />
+                    <span>{activity.team.name}</span>
+                  </div>
+                )}
                 <Badge variant="outline" className="text-xs border-gray-600 text-gray-300 whitespace-nowrap">
                   {getActivityIcon(activity.type)} {getActivityTypeDisplayName(activity.type)}
                 </Badge>

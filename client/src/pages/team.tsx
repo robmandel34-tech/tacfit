@@ -475,7 +475,7 @@ export default function Team() {
         <div className="mb-6">
           <ChatCard 
             teamId={userTeamMember?.[0]?.teamId}
-            title="Team Communications"
+            title="Team Comms"
           />
         </div>
 

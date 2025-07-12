@@ -159,11 +159,16 @@ Preferred communication style: Simple, everyday language.
 - **NEW**: GIF search using Giphy API with thumbnail preview grid and hover effects
 - **NEW**: Proper rendering of GIFs in chat messages with fallback error handling
 - **NEW**: Enhanced message input with emoji and GIF picker buttons integrated into tactical design theme
+- **NEW**: Collapsible team chat card with unread message tracking system
+- **NEW**: "Team Comms" title for more tactical, concise branding
+- **NEW**: Smart unread message counter that only shows messages not yet viewed (when dropdown opened)
+- **NEW**: Automatic message read tracking when chat is expanded
 - **ENHANCED**: Chat messages now support multimedia content including text, emojis, and animated GIFs
 - **ENHANCED**: Chat input interface improved with dedicated buttons for emoji and GIF selection
 - **ENHANCED**: GIF search functionality with debounced search input and loading states
 - **ENHANCED**: Chat API endpoint properly joins user data with messages to display profile pictures and usernames
 - **ENHANCED**: User avatar display in chat messages with fallback to username initials when no profile picture exists
+- **ENHANCED**: Team chat now uses collapsible card format instead of always-visible section
 
 ### Competition Status Features (July 2025)
 - New Competition Status page with comprehensive competition overview

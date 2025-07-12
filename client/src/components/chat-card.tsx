@@ -30,6 +30,7 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
   const [gifs, setGifs] = useState<any[]>([]);
   const [isSearchingGifs, setIsSearchingGifs] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [lastViewedCount, setLastViewedCount] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { data: messages = [], refetch } = useQuery({
@@ -159,6 +160,23 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
     return () => clearInterval(interval);
   }, [refetch]);
 
+  // Update last viewed count when chat is opened
+  useEffect(() => {
+    if (isOpen && messages.length > 0) {
+      setLastViewedCount(messages.length);
+    }
+  }, [isOpen, messages.length]);
+
+  // Initialize last viewed count on first load
+  useEffect(() => {
+    if (messages.length > 0 && lastViewedCount === 0) {
+      setLastViewedCount(messages.length);
+    }
+  }, [messages.length, lastViewedCount]);
+
+  // Calculate unread messages
+  const unreadCount = Math.max(0, messages.length - lastViewedCount);
+
   return (
     <Card className="bg-tactical-gray-light border-tactical-gray text-white">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -167,10 +185,10 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
             <CardTitle className="flex items-center justify-between text-lg text-white">
               <div className="flex items-center space-x-2">
                 <MessageSquare className="w-5 h-5" />
-                <span>{title || (teamId ? "Team Communications" : "Competition Chat")}</span>
-                {messages.length > 0 && (
+                <span>{title || (teamId ? "Team Comms" : "Competition Chat")}</span>
+                {unreadCount > 0 && (
                   <span className="bg-military-green text-white text-xs px-2 py-1 rounded-full">
-                    {messages.length}
+                    {unreadCount}
                   </span>
                 )}
               </div>

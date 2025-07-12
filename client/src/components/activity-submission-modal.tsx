@@ -175,7 +175,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
             <div>
             <Label className="text-gray-300 font-medium mb-2">Activity Type</Label>
             <Select value={type} onValueChange={setType}>
-              <SelectTrigger className="bg-tactical-gray-lighter border-2 border-tactical-gray text-white focus:border-white focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
+              <SelectTrigger className="bg-tactical-gray-lighter border-2 border-tactical-gray text-white focus:border-white focus:ring-0 focus:ring-offset-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
                 <SelectValue placeholder="Select activity type" />
               </SelectTrigger>
               <SelectContent className="bg-tactical-gray-light border-tactical-gray text-white">

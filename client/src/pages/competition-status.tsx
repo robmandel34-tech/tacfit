@@ -166,13 +166,13 @@ export default function CompetitionStatus() {
                           className="w-8 h-8 rounded-full object-cover"
                         />
                       ) : (
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                           index === 0 ? 'bg-yellow-500 text-black' :
                           index === 1 ? 'bg-gray-400 text-black' :
                           index === 2 ? 'bg-amber-600 text-black' :
                           'bg-tactical-gray-light text-gray-300'
                         }`}>
-                          {index + 1}
+                          <Users className="w-4 h-4" />
                         </div>
                       )}
                       {/* Ranking badge overlay */}

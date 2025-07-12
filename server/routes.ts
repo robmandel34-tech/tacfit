@@ -1408,8 +1408,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const columnIndex = Math.floor(itemIndex / ITEMS_PER_COLUMN);
       const rowIndex = itemIndex % ITEMS_PER_COLUMN;
       
-      const gridX = PADDING + (columnIndex * (ITEM_WIDTH + COLUMN_SPACING));
-      const gridY = PADDING + (rowIndex * (ITEM_HEIGHT + PADDING));
+      const gridX = PADDING + (columnIndex * 160); // Column 1: X=8, Column 2: X=168
+      const gridY = PADDING + (rowIndex * 83); // Match existing grid pattern (8, 91, 174, 257, 340)
 
       const item = await storage.createWhiteboardItem({
         teamId,

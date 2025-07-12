@@ -14,6 +14,7 @@ interface ActivityCardProps {
     id: number;
     type: string;
     description: string;
+    quantity?: string;
     evidenceUrl?: string;
     createdAt: string;
     user: {
@@ -96,6 +97,21 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
         return 'Combat Sports';
       default:
         return 'Special Operations';
+    }
+  };
+
+  const getActivityMeasurement = (type: string) => {
+    switch (type) {
+      case 'cardio':
+        return 'minutes';
+      case 'strength':
+        return 'reps';
+      case 'flexibility':
+        return 'minutes';
+      case 'sports':
+        return 'minutes';
+      default:
+        return 'quantity';
     }
   };
 
@@ -197,12 +213,12 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
                 </Badge>
               </div>
               <p className="text-gray-300 text-sm">
-                {activity.quantity && activity.metric && (
+                {activity.quantity && (
                   <span className="font-medium text-white">
-                    {activity.quantity} {activity.metric}
+                    {activity.quantity} {getActivityMeasurement(activity.type)}
                   </span>
                 )}
-                {activity.quantity && activity.metric && activity.description && ' - '}
+                {activity.quantity && activity.description && ' - '}
                 {activity.description}
               </p>
             </div>

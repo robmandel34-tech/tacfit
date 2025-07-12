@@ -181,6 +181,7 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
   };
 
   const handleMouseDown = (e: React.MouseEvent, item: MissionItem) => {
+    e.preventDefault();
     setIsDragging(true);
     setSelectedItem(item);
     const rect = e.currentTarget.getBoundingClientRect();
@@ -211,13 +212,20 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
 
   const handleMouseUp = () => {
     if (isDragging && selectedItem) {
-      // Save position to backend
-      updateItemPosition.mutate({
-        id: selectedItem.id,
-        position: { x: selectedItem.positionX, y: selectedItem.positionY },
-      });
+      // Get the current position from the updated query data
+      const currentItems = queryClient.getQueryData([`/api/teams/${teamId}/whiteboard`]) as MissionItem[] || [];
+      const currentItem = currentItems.find(item => item.id === selectedItem.id);
+      
+      if (currentItem) {
+        // Save position to backend
+        updateItemPosition.mutate({
+          id: selectedItem.id,
+          position: { x: currentItem.positionX, y: currentItem.positionY },
+        });
+      }
     }
     setIsDragging(false);
+    setSelectedItem(null);
     setDragOffset({ x: 0, y: 0 });
   };
 
@@ -387,7 +395,7 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
             whiteboardItems.map((item: MissionItem) => (
               <div
                 key={item.id}
-                className={`absolute cursor-move select-none ${getItemColor(item.type, item.priority)} rounded-lg p-3 shadow-lg max-w-xs`}
+                className={`absolute cursor-move select-none ${getItemColor(item.type, item.priority)} rounded-lg p-3 shadow-lg max-w-xs transition-none ${isDragging && selectedItem?.id === item.id ? 'opacity-90 shadow-xl' : ''}`}
                 style={{
                   left: `${item.positionX}px`,
                   top: `${item.positionY}px`,

@@ -425,6 +425,14 @@ export default function Team() {
           </Card>
         )}
 
+        {/* Team Chat - Collapsible */}
+        <div className="mb-6">
+          <ChatCard 
+            teamId={userTeamMember?.[0]?.teamId}
+            title="Team Comms"
+          />
+        </div>
+
         {/* Team Members */}
         <Card className="mb-6 tile-card">
           <CardHeader>
@@ -470,14 +478,6 @@ export default function Team() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Team Chat - Collapsible */}
-        <div className="mb-6">
-          <ChatCard 
-            teamId={userTeamMember?.[0]?.teamId}
-            title="Team Comms"
-          />
-        </div>
 
         {/* Team Activities */}
         <Card className="sharp-card bg-tactical-gray-light border-tactical-gray">

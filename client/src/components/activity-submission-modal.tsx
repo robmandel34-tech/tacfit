@@ -165,13 +165,14 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-tactical-gray-light border-tactical-gray text-white">
+      <DialogContent className="bg-tactical-gray-light border-tactical-gray text-white max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-white">Submit Activity</DialogTitle>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
+        <div className="max-h-[70vh] overflow-y-auto pr-2">
+          <form id="activity-form" onSubmit={handleSubmit} className="space-y-4">
+            <div>
             <Label className="text-gray-300 font-medium mb-2">Activity Type</Label>
             <Select value={type} onValueChange={setType}>
               <SelectTrigger className="bg-tactical-gray-lighter border-tactical-gray text-white">
@@ -312,25 +313,27 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
               )}
             </div>
           </div>
-          
-          <div className="flex space-x-3">
-            <Button 
-              type="button" 
-              variant="ghost"
-              onClick={onClose}
-              className="flex-1 bg-tactical-gray-lighter hover:bg-tactical-gray-lightest text-white"
-            >
-              Cancel
-            </Button>
-            <Button 
-              type="submit" 
-              disabled={submitActivity.isPending || !type || !description}
-              className="flex-1 bg-military-green hover:bg-military-green-light text-white"
-            >
-              {submitActivity.isPending ? "Submitting..." : "Submit"}
-            </Button>
-          </div>
-        </form>
+          </form>
+        </div>
+        
+        <div className="flex space-x-3 pt-4 border-t border-tactical-gray">
+          <Button 
+            type="button" 
+            variant="ghost"
+            onClick={onClose}
+            className="flex-1 bg-tactical-gray-lighter hover:bg-tactical-gray-lightest text-white"
+          >
+            Cancel
+          </Button>
+          <Button 
+            type="submit" 
+            form="activity-form"
+            disabled={submitActivity.isPending || !type || !description}
+            className="flex-1 bg-military-green hover:bg-military-green-light text-white"
+          >
+            {submitActivity.isPending ? "Submitting..." : "Submit"}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

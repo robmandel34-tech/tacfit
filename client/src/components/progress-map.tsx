@@ -38,7 +38,7 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
   // Generate topographical features along the route
   const features = [
     { position: 10, icon: Flag, name: "Base Camp", color: "text-green-600", x: 12, y: 80 },
-    { position: 90, icon: Trophy, name: "Victory Point", color: "text-yellow-600", x: 89, y: 16 }
+    { position: 90, icon: Trophy, name: "Victory Point", color: "text-yellow-600", x: 85, y: 16 }
   ];
 
   return (

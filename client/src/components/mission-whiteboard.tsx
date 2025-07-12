@@ -51,9 +51,9 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
   const whiteboardRef = useRef<HTMLDivElement>(null);
   
   // Grid layout constants
-  const ITEM_WIDTH = 160; // Even smaller width
-  const ITEM_HEIGHT = 80; // Even smaller height
-  const PADDING = 10;
+  const ITEM_WIDTH = 140; // Smaller width to fit in columns
+  const ITEM_HEIGHT = 75; // Smaller height
+  const PADDING = 8;
   const ITEMS_PER_COLUMN = 5; // More items per column with smaller cards
   
   // New item form state
@@ -364,7 +364,7 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
                 </div>
                 
                 {item.description && (
-                  <p className="text-white/90 text-xs mb-1 line-clamp-2">{item.description}</p>
+                  <p className="text-white/90 text-xs mb-1 line-clamp-1">{item.description}</p>
                 )}
                 
                 <div className="flex items-center justify-between mt-auto">

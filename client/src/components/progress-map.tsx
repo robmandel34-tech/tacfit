@@ -233,12 +233,12 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
                     <div className="w-full bg-gray-700 rounded-full h-2 mb-2">
                       <div 
                         className="bg-military-green h-2 rounded-full transition-all duration-1000"
-                        style={{ width: `${(team.progress / 85) * 100}%` }}
+                        style={{ width: `${Math.min(team.progress, 100)}%` }}
                       />
                     </div>
                     
                     <div className="text-sm text-gray-400">
-                      {Math.round(team.progress)}% complete
+                      {Math.round(Math.min(team.progress, 100))}% complete
                     </div>
                     
                     {team.motto && (

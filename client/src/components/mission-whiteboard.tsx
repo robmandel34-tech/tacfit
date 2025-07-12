@@ -70,6 +70,8 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
   const { data: whiteboardItems = [] } = useQuery({
     queryKey: [`/api/teams/${teamId}/whiteboard`],
     enabled: !!teamId,
+    staleTime: 0, // Always fetch fresh data
+    cacheTime: 0, // Don't cache results
   });
 
   // Get team members for assignment
@@ -343,7 +345,7 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
             whiteboardItems.map((item: MissionItem) => (
               <div
                 key={item.id}
-                className={`absolute select-none ${getItemColor(item.type, item.priority)} rounded-lg p-3 shadow-lg transition-none`}
+                className={`absolute select-none ${getItemColor(item.type, item.priority)} rounded-lg p-2 shadow-lg transition-none overflow-hidden`}
                 style={{
                   left: `${item.positionX}px`,
                   top: `${item.positionY}px`,
@@ -351,17 +353,17 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
                   height: `${ITEM_HEIGHT}px`,
                 }}
               >
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center space-x-2">
+                <div className="flex items-start justify-between mb-1">
+                  <div className="flex items-center space-x-1 flex-1 min-w-0">
                     {getItemIcon(item.type)}
-                    <span className="text-white font-medium text-sm">{item.title}</span>
+                    <span className="text-white font-medium text-sm truncate">{item.title}</span>
                   </div>
-                  <div className="flex items-center space-x-1">
+                  <div className="flex items-center space-x-1 flex-shrink-0">
                     {getStatusIcon(item.status)}
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="h-6 w-6 p-0 hover:bg-black/20"
+                      className="h-5 w-5 p-0 hover:bg-black/20 flex-shrink-0"
                       onClick={(e) => {
                         e.stopPropagation();
                         deleteItem.mutate(item.id);

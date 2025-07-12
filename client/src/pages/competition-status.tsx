@@ -7,7 +7,7 @@ import ProgressMap from "@/components/progress-map";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trophy, Users, Target, Calendar, LogOut } from "lucide-react";
+import { Trophy, Users, Target, Calendar, LogOut, Activity, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -122,17 +122,38 @@ export default function CompetitionStatus() {
               </div>
             </div>
             {competition.requiredActivities && competition.requiredActivities.length > 0 && (
-              <div className="text-sm text-gray-400 mb-4">
-                <span className="font-medium">Required: </span>
-                {competition.requiredActivities.map((activity: string, index: number) => (
-                  <span key={activity}>
-                    {activity}
-                    {competition.targetGoals && competition.targetGoals[index] && (
-                      <span className="text-military-green"> ({competition.targetGoals[index]})</span>
-                    )}
-                    {index < competition.requiredActivities.length - 1 && ', '}
-                  </span>
-                ))}
+              <div className="mb-4">
+                <div className="flex items-center text-sm text-gray-300 mb-3">
+                  <Activity className="mr-2 h-4 w-4 text-military-green" />
+                  <span className="font-semibold">Required Training:</span>
+                </div>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {competition.requiredActivities.map((activity: string, index: number) => (
+                    <Badge 
+                      key={index} 
+                      variant="outline" 
+                      className="text-xs capitalize bg-tactical-gray-light border-tactical-gray text-gray-300 hover:bg-military-green hover:text-white transition-colors"
+                    >
+                      {activity}
+                    </Badge>
+                  ))}
+                </div>
+                {competition.targetGoals && competition.targetGoals.length > 0 && (
+                  <div>
+                    <div className="flex items-center text-sm text-gray-300 mb-3">
+                      <Target className="mr-2 h-4 w-4 text-orange-500" />
+                      <span className="font-semibold">Team Goals:</span>
+                    </div>
+                    <div className="space-y-2">
+                      {competition.targetGoals.map((goal: string, index: number) => (
+                        <div key={index} className="flex items-center text-sm text-gray-300 bg-tactical-gray-light rounded-lg p-3 border border-tactical-gray">
+                          <CheckCircle className="mr-3 h-4 w-4 text-military-green flex-shrink-0" />
+                          <span className="font-medium">{goal}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

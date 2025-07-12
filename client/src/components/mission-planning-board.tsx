@@ -239,7 +239,7 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
 
       {/* Add Task Form */}
       {isAddingTask && (
-        <Card className="bg-tactical-gray border-tactical-gray">
+        <Card className="bg-slate-800 border-slate-700">
           <CardHeader>
             <CardTitle className="text-white text-sm">Create New Task</CardTitle>
           </CardHeader>
@@ -248,19 +248,19 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
               placeholder="Task title"
               value={newTask.title}
               onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-              className="bg-tactical-gray-light border-tactical-gray text-white"
+              className="bg-slate-700 border-slate-600 text-white"
             />
             <Input
               placeholder="Description (optional)"
               value={newTask.description}
               onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-              className="bg-tactical-gray-light border-tactical-gray text-white"
+              className="bg-slate-700 border-slate-600 text-white"
             />
             <Select
               value={newTask.assignedTo}
               onValueChange={(value) => setNewTask({ ...newTask, assignedTo: value })}
             >
-              <SelectTrigger className="bg-tactical-gray-light border-tactical-gray text-white">
+              <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                 <SelectValue placeholder="Assign to team member" />
               </SelectTrigger>
               <SelectContent>
@@ -277,7 +277,7 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
                 type="date"
                 value={newTask.dueDate}
                 onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
-                className="bg-tactical-gray-light border-tactical-gray text-white"
+                className="bg-slate-700 border-slate-600 text-white"
                 placeholder="Due date (optional)"
               />
             </div>
@@ -310,7 +310,7 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
       {/* Task List */}
       <div className="space-y-3">
         {tasks.map((task: MissionTask) => (
-          <Card key={task.id} className="bg-tactical-gray border-tactical-gray">
+          <Card key={task.id} className="bg-slate-800 border-slate-700">
             <CardContent className="p-4">
               {editingTaskId === task.id ? (
                 /* Edit Mode */
@@ -331,7 +331,7 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
                           value={editTask.assignedTo}
                           onValueChange={(value) => setEditTask({ ...editTask, assignedTo: value })}
                         >
-                          <SelectTrigger className="w-40 bg-tactical-gray-light border-tactical-gray text-white">
+                          <SelectTrigger className="w-40 bg-slate-700 border-slate-600 text-white">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -365,13 +365,13 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
                   <Input
                     value={editTask.title}
                     onChange={(e) => setEditTask({ ...editTask, title: e.target.value })}
-                    className="bg-tactical-gray-light border-tactical-gray text-white font-medium"
+                    className="bg-slate-700 border-slate-600 text-white font-medium"
                   />
                   <Input
                     value={editTask.description}
                     onChange={(e) => setEditTask({ ...editTask, description: e.target.value })}
                     placeholder="Description (optional)"
-                    className="bg-tactical-gray-light border-tactical-gray text-white"
+                    className="bg-slate-700 border-slate-600 text-white"
                   />
                   <div className="flex items-center space-x-2">
                     <Calendar className="h-4 w-4 text-gray-400" />
@@ -379,7 +379,7 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
                       type="date"
                       value={editTask.dueDate}
                       onChange={(e) => setEditTask({ ...editTask, dueDate: e.target.value })}
-                      className="bg-tactical-gray-light border-tactical-gray text-white"
+                      className="bg-slate-700 border-slate-600 text-white"
                       placeholder="Due date (optional)"
                     />
                   </div>
@@ -438,16 +438,17 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
                     <div className="flex items-center space-x-2">
                       <Button
                         onClick={() => startEditing(task)}
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
+                        className="text-gray-400 hover:text-white hover:bg-slate-700"
                       >
                         <Edit2 className="h-4 w-4" />
                       </Button>
                       <Button
                         onClick={() => deleteTaskMutation.mutate(task.id)}
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
-                        className="text-red-400 hover:text-red-300"
+                        className="text-red-400 hover:text-red-300 hover:bg-slate-700"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -461,7 +462,7 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
       </div>
 
       {tasks.length === 0 && !isAddingTask && (
-        <Card className="bg-tactical-gray border-tactical-gray">
+        <Card className="bg-slate-800 border-slate-700">
           <CardContent className="p-8 text-center">
             <p className="text-gray-400">No mission tasks yet. Create your first task to get started.</p>
           </CardContent>

@@ -208,7 +208,7 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
                       <p className="text-sm">Start the conversation!</p>
                     </div>
                   ) : (
-                    messages.map((msg: any) => {
+                    [...messages].reverse().map((msg: any) => {
                       const avatarUrl = msg.user?.avatar ? `/uploads/${msg.user.avatar}` : undefined;
                       
                       return (

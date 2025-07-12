@@ -163,6 +163,7 @@ Preferred communication style: Simple, everyday language.
 - **NEW**: "Team Comms" title for more tactical, concise branding
 - **NEW**: Smart unread message counter that only shows messages not yet viewed (when dropdown opened)
 - **NEW**: Automatic message read tracking when chat is expanded
+- **NEW**: Messages now display in reverse chronological order with newest messages at the top
 - **ENHANCED**: Chat messages now support multimedia content including text, emojis, and animated GIFs
 - **ENHANCED**: Chat input interface improved with dedicated buttons for emoji and GIF selection
 - **ENHANCED**: GIF search functionality with debounced search input and loading states

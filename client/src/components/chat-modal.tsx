@@ -179,9 +179,8 @@ export default function ChatModal({ isOpen, onClose, teamId, competitionId }: Ch
                   <p className="text-sm">Start the conversation!</p>
                 </div>
               ) : (
-                messages.map((msg: any) => {
+                [...messages].reverse().map((msg: any) => {
                   const avatarUrl = msg.user?.avatar ? `/uploads/${msg.user.avatar}` : undefined;
-                  console.log('Message:', msg.id, 'User:', msg.user?.username, 'Avatar:', msg.user?.avatar, 'URL:', avatarUrl);
                   
                   return (
                   <div key={msg.id} className="flex items-start space-x-3">
@@ -189,12 +188,6 @@ export default function ChatModal({ isOpen, onClose, teamId, competitionId }: Ch
                       <AvatarImage 
                         src={avatarUrl}
                         alt={msg.user?.username || "User"}
-                        onError={(e) => {
-                          console.log('Avatar load error:', e, 'URL:', avatarUrl);
-                        }}
-                        onLoad={() => {
-                          console.log('Avatar loaded successfully:', avatarUrl);
-                        }}
                       />
                       <AvatarFallback className="bg-military-green text-white text-xs">
                         {getInitials(msg.user?.username || "U")}

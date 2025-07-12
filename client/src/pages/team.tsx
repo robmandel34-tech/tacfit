@@ -600,14 +600,12 @@ export default function Team() {
 
         {/* Mission Planning Board */}
         {userTeamMember?.[0]?.teamId && teamMembers.length > 0 && (
-          <Card className="mb-6 tile-card">
-            <CardContent className="p-6">
-              <MissionPlanningBoard 
-                teamId={userTeamMember[0].teamId}
-                teamMembers={teamMembers}
-              />
-            </CardContent>
-          </Card>
+          <div className="mb-6">
+            <MissionPlanningBoard 
+              teamId={userTeamMember[0].teamId}
+              teamMembers={teamMembers}
+            />
+          </div>
         )}
 
         {/* Team Members */}

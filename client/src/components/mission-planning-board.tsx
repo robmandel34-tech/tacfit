@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, X, Edit2, Check, Trash2, Calendar, ChevronDown, ChevronUp } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Plus, X, Edit2, Check, Trash2, Calendar, ChevronDown, ChevronUp, Clipboard } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -225,37 +226,37 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <h3 className="text-lg font-semibold text-white">Mission Planning Board</h3>
-          <Button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            variant="ghost"
-            size="sm"
-            className="text-gray-400 hover:text-white hover:bg-slate-700"
-          >
-            {isCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
-          </Button>
-        </div>
-        {!isCollapsed && (
-          <Button
-            onClick={() => setIsAddingTask(true)}
-            className="bg-military-green hover:bg-military-green-dark text-white"
-            size="sm"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Task
-          </Button>
-        )}
-      </div>
-
-      {/* Collapsible Content */}
-      {!isCollapsed && (
-        <>
-          {/* Add Task Form */}
-          {isAddingTask && (
-            <Card className="bg-slate-800 border-slate-700">
+    <Card className="bg-tactical-gray-light border-tactical-gray text-white">
+      <Collapsible open={!isCollapsed} onOpenChange={(open) => setIsCollapsed(!open)}>
+        <CollapsibleTrigger asChild>
+          <CardHeader className="cursor-pointer hover:bg-tactical-gray-lighter transition-colors">
+            <CardTitle className="flex items-center justify-between text-lg text-white">
+              <div className="flex items-center space-x-2">
+                <Clipboard className="w-5 h-5" />
+                <span>Mission Planning Board</span>
+              </div>
+              {isCollapsed ? <ChevronDown className="w-5 h-5" /> : <ChevronUp className="w-5 h-5" />}
+            </CardTitle>
+          </CardHeader>
+        </CollapsibleTrigger>
+        
+        <CollapsibleContent>
+          <CardContent className="p-4 pt-0">
+            <div className="space-y-4">
+              <div className="flex justify-end">
+                <Button
+                  onClick={() => setIsAddingTask(true)}
+                  className="bg-military-green hover:bg-military-green-dark text-white"
+                  size="sm"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Task
+                </Button>
+              </div>
+              
+              {/* Add Task Form */}
+              {isAddingTask && (
+                <Card className="bg-slate-800 border-slate-700">
               <CardHeader>
                 <CardTitle className="text-white text-sm">Create New Task</CardTitle>
               </CardHeader>
@@ -320,12 +321,18 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
                   </Button>
                 </div>
               </CardContent>
-            </Card>
-          )}
+                </Card>
+              )}
 
-          {/* Task List */}
-          <div className="space-y-3">
-            {tasks.map((task: MissionTask) => (
+              {/* Task List */}
+              <div className="space-y-3">
+                {tasks.length === 0 ? (
+                  <div className="text-center py-8 text-gray-400">
+                    <p>No tasks assigned yet</p>
+                    <p className="text-sm">Create your first mission task to get started</p>
+                  </div>
+                ) : (
+                  tasks.map((task: MissionTask) => (
               <Card key={task.id} className="bg-slate-800 border-slate-700">
                 <CardContent className="p-4">
               {editingTaskId === task.id ? (
@@ -474,20 +481,15 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
                   </div>
                 </div>
               )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {tasks.length === 0 && !isAddingTask && (
-            <Card className="bg-slate-800 border-slate-700">
-              <CardContent className="p-8 text-center">
-                <p className="text-gray-400">No mission tasks yet. Create your first task to get started.</p>
-              </CardContent>
-            </Card>
-          )}
-        </>
-      )}
-    </div>
+                  </CardContent>
+                    </Card>
+                    ))
+                  )}
+                </div>
+            </div>
+          </CardContent>
+        </CollapsibleContent>
+      </Collapsible>
+    </Card>
   );
 }

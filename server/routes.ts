@@ -1400,10 +1400,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const existingItems = await storage.getWhiteboardItems(teamId);
       const itemIndex = existingItems.length;
       const ITEMS_PER_COLUMN = 5;
-      const ITEM_WIDTH = 140;
-      const ITEM_HEIGHT = 75;
-      const PADDING = 8;
-      const COLUMN_SPACING = 20;
+      const ITEM_WIDTH = 130;
+      const ITEM_HEIGHT = 70;
+      const PADDING = 10;
+      const COLUMN_SPACING = 10;
       
       const columnIndex = Math.floor(itemIndex / ITEMS_PER_COLUMN);
       const rowIndex = itemIndex % ITEMS_PER_COLUMN;

@@ -51,10 +51,10 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
   const whiteboardRef = useRef<HTMLDivElement>(null);
   
   // Grid layout constants
-  const ITEM_WIDTH = 140; // Smaller width to fit in columns
-  const ITEM_HEIGHT = 75; // Smaller height
-  const PADDING = 8;
-  const COLUMN_SPACING = 20; // Spacing between columns
+  const ITEM_WIDTH = 130; // Even smaller width
+  const ITEM_HEIGHT = 70; // Even smaller height
+  const PADDING = 10; // Equal padding all around
+  const COLUMN_SPACING = 10; // Tighter column spacing
   const ITEMS_PER_COLUMN = 5; // More items per column with smaller cards
   
   // New item form state

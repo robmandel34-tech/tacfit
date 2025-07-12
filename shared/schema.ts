@@ -161,6 +161,8 @@ export const missionTasks = pgTable("mission_tasks", {
   assignedTo: text("assigned_to").notNull(),
   assignedToUsername: text("assigned_to_username").notNull(),
   status: text("status").notNull().default("pending"), // 'pending', 'in-progress', 'completed'
+  dueDate: timestamp("due_date"),
+  completed: boolean("completed").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

@@ -5,7 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, X, Edit2, Check, Trash2 } from "lucide-react";
+import { Plus, X, Edit2, Check, Trash2, Calendar } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { format } from "date-fns";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 
@@ -16,6 +18,8 @@ interface MissionTask {
   assignedTo: string;
   assignedToUsername: string;
   status: 'pending' | 'in-progress' | 'completed';
+  dueDate?: string;
+  completed: boolean;
   teamId: number;
 }
 
@@ -34,11 +38,13 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
     title: '',
     description: '',
     assignedTo: '',
+    dueDate: '',
   });
   const [editTask, setEditTask] = useState({
     title: '',
     description: '',
     assignedTo: '',
+    dueDate: '',
   });
 
   // Get mission tasks
@@ -65,7 +71,7 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
       });
       queryClient.invalidateQueries({ queryKey: [`/api/mission-tasks/team/${teamId}`] });
       setIsAddingTask(false);
-      setNewTask({ title: '', description: '', assignedTo: '' });
+      setNewTask({ title: '', description: '', assignedTo: '', dueDate: '' });
     },
     onError: () => {
       toast({
@@ -129,6 +135,29 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
     },
   });
 
+  // Toggle completion mutation
+  const toggleCompletionMutation = useMutation({
+    mutationFn: async ({ id, completed }: { id: string; completed: boolean }) => {
+      const response = await fetch(`/api/mission-tasks/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ completed, status: completed ? 'completed' : 'pending' }),
+      });
+      if (!response.ok) throw new Error('Failed to update task completion');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/mission-tasks/team/${teamId}`] });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update task completion. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleCreateTask = () => {
     if (!newTask.title.trim() || !newTask.assignedTo) return;
     
@@ -140,6 +169,8 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
       assignedTo: newTask.assignedTo,
       assignedToUsername: assignedMember?.user?.username || 'Unknown',
       status: 'pending',
+      dueDate: newTask.dueDate || undefined,
+      completed: false,
       teamId,
     });
   };
@@ -155,6 +186,7 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
       description: editTask.description,
       assignedTo: editTask.assignedTo,
       assignedToUsername: assignedMember?.user?.username || 'Unknown',
+      dueDate: editTask.dueDate || undefined,
     });
   };
 
@@ -171,6 +203,7 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
       title: task.title,
       description: task.description,
       assignedTo: task.assignedTo,
+      dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
     });
   };
 
@@ -238,6 +271,16 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
                 ))}
               </SelectContent>
             </Select>
+            <div className="flex items-center space-x-2">
+              <Calendar className="h-4 w-4 text-gray-400" />
+              <Input
+                type="date"
+                value={newTask.dueDate}
+                onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+                className="bg-tactical-gray-light border-tactical-gray text-white"
+                placeholder="Due date (optional)"
+              />
+            </div>
             <div className="flex space-x-2">
               <Button
                 onClick={handleCreateTask}
@@ -251,7 +294,7 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
               <Button
                 onClick={() => {
                   setIsAddingTask(false);
-                  setNewTask({ title: '', description: '', assignedTo: '' });
+                  setNewTask({ title: '', description: '', assignedTo: '', dueDate: '' });
                 }}
                 variant="outline"
                 size="sm"
@@ -330,39 +373,69 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
                     placeholder="Description (optional)"
                     className="bg-tactical-gray-light border-tactical-gray text-white"
                   />
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="h-4 w-4 text-gray-400" />
+                    <Input
+                      type="date"
+                      value={editTask.dueDate}
+                      onChange={(e) => setEditTask({ ...editTask, dueDate: e.target.value })}
+                      className="bg-tactical-gray-light border-tactical-gray text-white"
+                      placeholder="Due date (optional)"
+                    />
+                  </div>
                 </div>
               ) : (
                 /* View Mode */
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center space-x-2">
+                      <Checkbox
+                        checked={task.completed}
+                        onCheckedChange={(checked) => 
+                          toggleCompletionMutation.mutate({ id: task.id, completed: !!checked })
+                        }
+                        className="data-[state=checked]:bg-military-green data-[state=checked]:border-military-green"
+                      />
                       <Badge variant="outline" className="text-white border-gray-600">
                         TASK
                       </Badge>
-                      <div className="flex items-center space-x-2">
-                        <Avatar className="h-6 w-6">
-                          <AvatarImage src={teamMembers.find(m => m.user?.id?.toString() === task.assignedTo)?.user?.avatar ? `/uploads/${teamMembers.find(m => m.user?.id?.toString() === task.assignedTo)?.user?.avatar}` : undefined} />
-                          <AvatarFallback className="bg-military-green text-white text-xs">
-                            {task.assignedToUsername?.charAt(0)?.toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="text-gray-300 text-sm">{task.assignedToUsername}</span>
-                      </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Select
-                        value={task.status}
-                        onValueChange={(value) => handleStatusChange(task.id, value)}
-                      >
-                        <SelectTrigger className="w-32 bg-tactical-gray-light border-tactical-gray text-white">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pending">Pending</SelectItem>
-                          <SelectItem value="in-progress">In Progress</SelectItem>
-                          <SelectItem value="completed">Completed</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src={teamMembers.find(m => m.user?.id?.toString() === task.assignedTo)?.user?.avatar ? `/uploads/${teamMembers.find(m => m.user?.id?.toString() === task.assignedTo)?.user?.avatar}` : undefined} />
+                        <AvatarFallback className="bg-military-green text-white text-xs">
+                          {task.assignedToUsername?.charAt(0)?.toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-gray-300 text-sm">{task.assignedToUsername}</span>
+                    </div>
+                  </div>
+                  <div className="mb-3">
+                    <h4 className={`text-white font-medium ${task.completed ? 'line-through opacity-75' : ''}`}>
+                      {task.title}
+                    </h4>
+                    {task.description && (
+                      <p className={`text-gray-300 text-sm mt-1 ${task.completed ? 'line-through opacity-75' : ''}`}>
+                        {task.description}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-3 h-3 rounded-full ${getStatusColor(task.status)}`} />
+                        <span className="text-gray-400 text-sm">{getStatusText(task.status)}</span>
+                      </div>
+                      {task.dueDate && (
+                        <div className="flex items-center space-x-1">
+                          <Calendar className="h-3 w-3 text-gray-400" />
+                          <span className="text-gray-400 text-sm">
+                            {format(new Date(task.dueDate), 'MMM d, yyyy')}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center space-x-2">
                       <Button
                         onClick={() => startEditing(task)}
                         variant="outline"
@@ -379,16 +452,6 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
-                  </div>
-                  <div>
-                    <h4 className="text-white font-medium">{task.title}</h4>
-                    {task.description && (
-                      <p className="text-gray-300 text-sm mt-1">{task.description}</p>
-                    )}
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className={`w-3 h-3 rounded-full ${getStatusColor(task.status)}`} />
-                    <span className="text-gray-400 text-sm">{getStatusText(task.status)}</span>
                   </div>
                 </div>
               )}

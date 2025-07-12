@@ -7,7 +7,7 @@ import ProgressMap from "@/components/progress-map";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trophy, Users, Target, Calendar, LogOut, Activity, CheckCircle } from "lucide-react";
+import { Trophy, Users, Target, Calendar, LogOut, Activity, CheckCircle, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -114,11 +114,25 @@ export default function CompetitionStatus() {
               </Button>
             </div>
             <div className="text-sm text-gray-400 mb-2">
-              <div className="flex items-center">
-                <Calendar className="mr-2 h-4 w-4" />
-                <span>
-                  {new Date(competition.startDate).toLocaleDateString()} - {new Date(competition.endDate).toLocaleDateString()}
-                </span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <Calendar className="mr-2 h-4 w-4" />
+                  <span>
+                    {new Date(competition.startDate).toLocaleDateString()} - {new Date(competition.endDate).toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="flex items-center bg-tactical-gray-light rounded-lg px-3 py-1 border border-tactical-gray">
+                  <Clock className="mr-2 h-4 w-4 text-orange-500" />
+                  <span className="font-medium text-gray-300">
+                    {(() => {
+                      const endDate = new Date(competition.endDate);
+                      const today = new Date();
+                      const timeDiff = endDate.getTime() - today.getTime();
+                      const daysRemaining = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                      return daysRemaining > 0 ? `${daysRemaining} days left` : 'Completed';
+                    })()}
+                  </span>
+                </div>
               </div>
             </div>
             {competition.requiredActivities && competition.requiredActivities.length > 0 && (

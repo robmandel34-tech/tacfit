@@ -54,6 +54,7 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
   const ITEM_WIDTH = 140; // Smaller width to fit in columns
   const ITEM_HEIGHT = 75; // Smaller height
   const PADDING = 8;
+  const COLUMN_SPACING = 20; // Spacing between columns
   const ITEMS_PER_COLUMN = 5; // More items per column with smaller cards
   
   // New item form state

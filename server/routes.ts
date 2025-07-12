@@ -1403,11 +1403,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const ITEM_WIDTH = 140;
       const ITEM_HEIGHT = 75;
       const PADDING = 8;
+      const COLUMN_SPACING = 20;
       
       const columnIndex = Math.floor(itemIndex / ITEMS_PER_COLUMN);
       const rowIndex = itemIndex % ITEMS_PER_COLUMN;
       
-      const gridX = PADDING + (columnIndex * (ITEM_WIDTH + PADDING));
+      const gridX = PADDING + (columnIndex * (ITEM_WIDTH + COLUMN_SPACING));
       const gridY = PADDING + (rowIndex * (ITEM_HEIGHT + PADDING));
 
       const item = await storage.createWhiteboardItem({

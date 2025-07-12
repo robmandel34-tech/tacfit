@@ -84,18 +84,18 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
                     {/* Background stroke for better visibility */}
                     <path d="M12,80 Q18,72 27,76 Q36,82 46,66 Q56,50 66,55 Q76,60 85,10" 
                           stroke="rgba(0,0,0,0.6)" 
-                          strokeWidth="3" 
+                          strokeWidth="2" 
                           fill="none" />
                     {/* Main route path - thin with dashes */}
                     <path d="M12,80 Q18,72 27,76 Q36,82 46,66 Q56,50 66,55 Q76,60 85,10" 
                           stroke="rgba(255,255,255,0.95)" 
-                          strokeWidth="1.5" 
+                          strokeWidth="1" 
                           fill="none"
                           strokeDasharray="6,3" />
                     {/* Inner glowing effect */}
                     <path d="M12,80 Q18,72 27,76 Q36,82 46,66 Q56,50 66,55 Q76,60 85,10" 
                           stroke="rgba(134,239,172,0.8)" 
-                          strokeWidth="1" 
+                          strokeWidth="0.5" 
                           fill="none"
                           strokeDasharray="6,3" />
                   </svg>

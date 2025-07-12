@@ -158,13 +158,32 @@ export default function CompetitionStatus() {
                   onClick={() => navigate(`/team/${team.id}`)}
                 >
                   <div className="flex items-center">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3 ${
-                      index === 0 ? 'bg-yellow-500 text-black' :
-                      index === 1 ? 'bg-gray-400 text-black' :
-                      index === 2 ? 'bg-amber-600 text-black' :
-                      'bg-tactical-gray-light text-gray-300'
-                    }`}>
-                      {index + 1}
+                    <div className="relative w-8 h-8 mr-3">
+                      {team.pictureUrl ? (
+                        <img 
+                          src={team.pictureUrl} 
+                          alt={`${team.name} team picture`}
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                          index === 0 ? 'bg-yellow-500 text-black' :
+                          index === 1 ? 'bg-gray-400 text-black' :
+                          index === 2 ? 'bg-amber-600 text-black' :
+                          'bg-tactical-gray-light text-gray-300'
+                        }`}>
+                          {index + 1}
+                        </div>
+                      )}
+                      {/* Ranking badge overlay */}
+                      <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-full border border-white flex items-center justify-center text-xs font-bold ${
+                        index === 0 ? 'bg-yellow-500 text-black' :
+                        index === 1 ? 'bg-gray-400 text-black' :
+                        index === 2 ? 'bg-amber-600 text-black' :
+                        'bg-tactical-gray-light text-gray-300'
+                      }`}>
+                        {index + 1}
+                      </div>
                     </div>
                     <div>
                       <div className="font-medium text-white">{team.name}</div>

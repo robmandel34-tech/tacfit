@@ -57,7 +57,7 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
         </div>
         
         {/* Map Container */}
-        <Card className="w-full bg-tactical-gray-light border-tactical-gray rounded-xl rounded-tl-none shadow-lg" style={{
+        <Card className="w-full bg-tactical-gray-light border-tactical-gray rounded-xl shadow-lg" style={{
           boxShadow: '0 4px 12px rgba(0,0,0,0.15), 0 2px 6px rgba(0,0,0,0.1)'
         }}>
           <CardContent className="p-6">

@@ -104,17 +104,19 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
                   {features.map((feature, index) => (
                     <div
                       key={index}
-                      className="absolute flex flex-col items-center"
+                      className={`absolute flex items-center ${feature.name === 'Victory Point' ? 'flex-row-reverse' : 'flex-col'}`}
                       style={{
                         left: `${feature.x}%`,
                         top: `${feature.y}%`,
-                        transform: 'translate(-50%, -50%)'
+                        transform: feature.name === 'Victory Point' ? 'translate(-100%, -50%)' : 'translate(-50%, -50%)'
                       }}
                     >
                       <div className={`p-2 rounded-full bg-black/60 border-2 border-white/30 ${feature.color}`}>
                         <feature.icon className="h-4 w-4 drop-shadow-lg" />
                       </div>
-                      <span className="text-xs text-white mt-1 font-medium drop-shadow-lg bg-black/40 px-2 py-1 rounded">{feature.name}</span>
+                      <span className={`text-xs text-white font-medium drop-shadow-lg bg-black/40 px-2 py-1 rounded ${
+                        feature.name === 'Victory Point' ? 'mr-2' : 'mt-1'
+                      }`}>{feature.name}</span>
                     </div>
                   ))}
 

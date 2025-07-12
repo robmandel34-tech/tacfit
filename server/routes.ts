@@ -1396,6 +1396,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Missing required fields" });
       }
       
+      // Calculate grid position based on existing items
+      const existingItems = await storage.getWhiteboardItems(teamId);
+      const itemIndex = existingItems.length;
+      const ITEMS_PER_COLUMN = 3;
+      const ITEM_WIDTH = 240;
+      const ITEM_HEIGHT = 120;
+      const PADDING = 20;
+      
+      const columnIndex = Math.floor(itemIndex / ITEMS_PER_COLUMN);
+      const rowIndex = itemIndex % ITEMS_PER_COLUMN;
+      
+      const gridX = PADDING + (columnIndex * (ITEM_WIDTH + PADDING));
+      const gridY = PADDING + (rowIndex * (ITEM_HEIGHT + PADDING));
+
       const item = await storage.createWhiteboardItem({
         teamId,
         type,
@@ -1404,8 +1418,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         priority: priority || 'medium',
         assignedTo,
         dueDate: dueDate ? new Date(dueDate) : undefined,
-        positionX: position?.x || 0,
-        positionY: position?.y || 0,
+        positionX: gridX,
+        positionY: gridY,
         createdBy: createdBy || 10, // TODO: Get from auth context
       });
       

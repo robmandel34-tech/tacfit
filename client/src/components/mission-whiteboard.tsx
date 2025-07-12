@@ -51,10 +51,10 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
   const whiteboardRef = useRef<HTMLDivElement>(null);
   
   // Grid layout constants
-  const ITEM_WIDTH = 280;
+  const ITEM_WIDTH = 240; // Reduced width to fit 2 columns nicely
   const ITEM_HEIGHT = 120;
   const PADDING = 20;
-  const ITEMS_PER_COLUMN = 4;
+  const ITEMS_PER_COLUMN = 3; // Reduced to 3 per column for better spacing
   
   // New item form state
   const [newItem, setNewItem] = useState({
@@ -119,16 +119,7 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
     },
   });
 
-  // Calculate grid position for new items
-  const calculateGridPosition = (itemIndex: number) => {
-    const columnIndex = Math.floor(itemIndex / ITEMS_PER_COLUMN);
-    const rowIndex = itemIndex % ITEMS_PER_COLUMN;
-    
-    return {
-      x: PADDING + (columnIndex * (ITEM_WIDTH + PADDING)),
-      y: PADDING + (rowIndex * (ITEM_HEIGHT + PADDING)),
-    };
-  };
+
 
   // Update item status mutation
   const updateItemStatus = useMutation({
@@ -169,13 +160,11 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
     e.preventDefault();
     if (!newItem.title.trim()) return;
 
-    // Calculate grid position for new item
-    const gridPosition = calculateGridPosition(whiteboardItems.length);
-
+    // Grid position is now calculated by the backend
     createItem.mutate({
       ...newItem,
-      positionX: gridPosition.x,
-      positionY: gridPosition.y,
+      positionX: 0, // Backend will calculate proper position
+      positionY: 0, // Backend will calculate proper position
       createdBy: 10, // This would come from auth context
     });
   };

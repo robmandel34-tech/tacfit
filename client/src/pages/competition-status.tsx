@@ -100,7 +100,7 @@ export default function CompetitionStatus() {
         {competition && (
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
-              <h1 className="text-xl font-bold text-white">
+              <h1 className="text-3xl font-bold text-white flex-1 mr-4">
                 {competition.name}
               </h1>
               <Button
@@ -108,7 +108,7 @@ export default function CompetitionStatus() {
                 size="sm"
                 onClick={() => leaveCompetitionMutation.mutate()}
                 disabled={leaveCompetitionMutation.isPending}
-                className="text-red-500 hover:text-red-600 hover:bg-transparent p-2"
+                className="text-red-500 hover:text-red-600 hover:bg-transparent p-2 flex-shrink-0"
               >
                 <LogOut className="h-5 w-5" />
               </Button>

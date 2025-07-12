@@ -187,6 +187,12 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
         <div className="p-6 pb-4">
           <div className="flex gap-4">
             <div className="flex flex-col items-center gap-1">
+              {activity.team && (
+                <div className="flex items-center gap-1 text-xs text-gray-400">
+                  <Users className="h-3 w-3" />
+                  <span className="text-center">{activity.team.name}</span>
+                </div>
+              )}
               <div 
                 className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={handleProfileClick}
@@ -205,21 +211,15 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
                   </div>
                 )}
               </div>
-              {activity.team && (
-                <div className="flex items-center gap-1 text-xs text-gray-400">
-                  <Users className="h-3 w-3" />
-                  <span className="text-center">{activity.team.name}</span>
-                </div>
-              )}
+              <span 
+                className="text-white text-xs font-medium cursor-pointer hover:text-military-green transition-colors text-center"
+                onClick={handleProfileClick}
+              >
+                {activity.user.username}
+              </span>
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 mb-3">
-                <span 
-                  className="text-white font-semibold cursor-pointer hover:text-military-green transition-colors"
-                  onClick={handleProfileClick}
-                >
-                  {activity.user.username}
-                </span>
                 <Badge variant="outline" className="text-xs border-gray-600 text-gray-300 whitespace-nowrap">
                   {getActivityIcon(activity.type)} {getActivityTypeDisplayName(activity.type)}
                 </Badge>

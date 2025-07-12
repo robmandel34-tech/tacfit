@@ -648,7 +648,7 @@ export default function Team() {
                             variant="secondary" 
                             className="bg-orange-600 text-white text-xs px-2 py-1"
                           >
-                            {getPendingTasksCount(member.user?.id)} pending
+                            {getPendingTasksCount(member.user?.id)} tasks pending
                           </Badge>
                         )}
                       </div>

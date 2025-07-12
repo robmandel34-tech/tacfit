@@ -196,7 +196,15 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
                   {getActivityIcon(activity.type)} {getActivityTypeDisplayName(activity.type)}
                 </Badge>
               </div>
-              <p className="text-gray-300 text-sm">{activity.description}</p>
+              <p className="text-gray-300 text-sm">
+                {activity.quantity && activity.metric && (
+                  <span className="font-medium text-white">
+                    {activity.quantity} {activity.metric}
+                  </span>
+                )}
+                {activity.quantity && activity.metric && activity.description && ' - '}
+                {activity.description}
+              </p>
             </div>
           </div>
         </div>

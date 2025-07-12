@@ -121,7 +121,8 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
               {/* Team markers */}
               {teamsWithProgress.map((team, index) => {
                 // Calculate position along the weaving route path
-                const progress = Math.min(team.progress / 85, 1.2); // Use 85 as max since that's our progress cap
+                // Scale progress so 85% maps to 0.8 (end of visible path)
+                const progress = Math.min((team.progress / 85) * 0.8, 1.2);
                 
                 // Weaving path calculation matching the exact SVG curve
                 const t = progress;

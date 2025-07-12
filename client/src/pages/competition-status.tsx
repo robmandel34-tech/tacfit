@@ -100,8 +100,7 @@ export default function CompetitionStatus() {
         {competition && (
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
-              <h1 className="text-3xl font-bold text-white flex items-center">
-                <Trophy className="mr-3 h-8 w-8" />
+              <h1 className="text-xl font-bold text-white">
                 {competition.name}
               </h1>
               <Button
@@ -114,19 +113,35 @@ export default function CompetitionStatus() {
                 <LogOut className="h-5 w-5" />
               </Button>
             </div>
-            <div className="flex items-center text-sm text-gray-400 mb-4">
-              <Calendar className="mr-2 h-4 w-4" />
-              <span>
-                {new Date(competition.startDate).toLocaleDateString()} - {new Date(competition.endDate).toLocaleDateString()}
-              </span>
+            <div className="text-sm text-gray-400 mb-2">
+              <div className="flex items-center">
+                <Calendar className="mr-2 h-4 w-4" />
+                <span>
+                  {new Date(competition.startDate).toLocaleDateString()} - {new Date(competition.endDate).toLocaleDateString()}
+                </span>
+              </div>
             </div>
+            {competition.requiredActivities && competition.requiredActivities.length > 0 && (
+              <div className="text-sm text-gray-400 mb-4">
+                <span className="font-medium">Required: </span>
+                {competition.requiredActivities.map((activity: string, index: number) => (
+                  <span key={activity}>
+                    {activity}
+                    {competition.targetGoals && competition.targetGoals[index] && (
+                      <span className="text-military-green"> ({competition.targetGoals[index]})</span>
+                    )}
+                    {index < competition.requiredActivities.length - 1 && ', '}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
         {/* Progress Map */}
         {competition && teams.length > 0 && (
           <div className="mb-6">
-            <ProgressMap teams={teams} competitionName={competition.name} />
+            <ProgressMap teams={teams} competitionName="" />
           </div>
         )}
 

@@ -43,11 +43,6 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
 
   return (
     <div className="w-full">
-      {/* Competition Title - Centered above everything */}
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-white">{competitionName}</h2>
-      </div>
-      
       {/* Tab-like header for Team Progress Map */}
       <div className="relative">
         <div className="flex justify-center mb-0">

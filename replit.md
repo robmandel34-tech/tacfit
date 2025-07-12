@@ -177,6 +177,10 @@ Preferred communication style: Simple, everyday language.
 - All competition activities feed with user attribution
 - Real-time competition progress tracking
 - Enhanced competition header with date ranges and status badges
+- **UPDATED**: Cleaner page layout with competition name above map, smaller header text
+- **UPDATED**: Leave competition button converted to red icon-only design
+- **UPDATED**: Required activities and quantities displayed below date for clear visibility
+- **UPDATED**: Removed repetitive competition name from progress map component
 
 ### Database Schema Updates (July 2025)
 - Added `motto` and `pictureUrl` fields to teams table

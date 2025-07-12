@@ -396,17 +396,19 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
                         }
                         className="data-[state=checked]:bg-military-green data-[state=checked]:border-military-green"
                       />
-                      <Badge variant="outline" className="text-white border-gray-600">
-                        TASK
-                      </Badge>
-                      <Button
-                        onClick={() => startEditing(task)}
-                        variant="ghost"
-                        size="sm"
-                        className="text-gray-400 hover:text-white hover:bg-slate-700"
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center space-x-1">
+                        <Badge variant="outline" className="text-white border-gray-600">
+                          TASK
+                        </Badge>
+                        <Button
+                          onClick={() => startEditing(task)}
+                          variant="ghost"
+                          size="sm"
+                          className="text-gray-400 hover:text-white hover:bg-slate-700"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Avatar className="h-6 w-6">

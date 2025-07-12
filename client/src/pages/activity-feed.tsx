@@ -78,6 +78,11 @@ export default function ActivityFeed() {
     }
   };
 
+  const isVideoFile = (url: string) => {
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv'];
+    return videoExtensions.some(ext => url.toLowerCase().includes(ext));
+  };
+
   if (!user) {
     return <div>Please log in to view the activity feed.</div>;
   }
@@ -145,11 +150,22 @@ export default function ActivityFeed() {
                   <div className="mb-4">
                     {activity.evidenceUrl && (
                       <div className="mb-4">
-                        <img 
-                          src={activity.evidenceUrl} 
-                          alt="Activity evidence" 
-                          className="w-full max-w-lg h-48 object-cover rounded-lg border border-gray-600"
-                        />
+                        {isVideoFile(activity.evidenceUrl) ? (
+                          <video 
+                            src={activity.evidenceUrl} 
+                            className="w-full max-w-lg h-48 object-cover rounded-lg border border-gray-600"
+                            controls
+                            preload="metadata"
+                          >
+                            Your browser does not support the video tag.
+                          </video>
+                        ) : (
+                          <img 
+                            src={activity.evidenceUrl} 
+                            alt="Activity evidence" 
+                            className="w-full max-w-lg h-48 object-cover rounded-lg border border-gray-600"
+                          />
+                        )}
                       </div>
                     )}
                     

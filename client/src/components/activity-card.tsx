@@ -119,6 +119,11 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
     }
   };
 
+  const isVideoFile = (url: string) => {
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv'];
+    return videoExtensions.some(ext => url.toLowerCase().includes(ext));
+  };
+
   const likeActivity = useMutation({
     mutationFn: async (activityId: number) => {
       if (!user) throw new Error('Must be logged in to like activities');
@@ -237,14 +242,25 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
           </div>
         </div>
         
-        {/* Full-width image */}
+        {/* Full-width media */}
         {activity.evidenceUrl && (
           <div className="mb-0">
-            <img 
-              src={activity.evidenceUrl} 
-              alt="Activity evidence" 
-              className="w-full h-64 object-cover border-t border-b border-gray-600"
-            />
+            {isVideoFile(activity.evidenceUrl) ? (
+              <video 
+                src={activity.evidenceUrl} 
+                className="w-full h-64 object-cover border-t border-b border-gray-600"
+                controls
+                preload="metadata"
+              >
+                Your browser does not support the video tag.
+              </video>
+            ) : (
+              <img 
+                src={activity.evidenceUrl} 
+                alt="Activity evidence" 
+                className="w-full h-64 object-cover border-t border-b border-gray-600"
+              />
+            )}
           </div>
         )}
         

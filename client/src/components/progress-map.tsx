@@ -82,18 +82,18 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
                   {/* Weaving diagonal route path from bottom left to top right */}
                   <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
                     {/* Background stroke for better visibility */}
-                    <path d="M10,85 Q20,75 30,80 Q40,85 50,70 Q60,55 70,60 Q80,65 90,15" 
+                    <path d="M12,80 Q20,75 30,80 Q40,85 50,70 Q60,55 70,60 Q80,65 90,15" 
                           stroke="rgba(0,0,0,0.6)" 
                           strokeWidth="3" 
                           fill="none" />
                     {/* Main route path - thin with dashes */}
-                    <path d="M10,85 Q20,75 30,80 Q40,85 50,70 Q60,55 70,60 Q80,65 90,15" 
+                    <path d="M12,80 Q20,75 30,80 Q40,85 50,70 Q60,55 70,60 Q80,65 90,15" 
                           stroke="rgba(255,255,255,0.95)" 
                           strokeWidth="1.5" 
                           fill="none"
                           strokeDasharray="6,3" />
                     {/* Inner glowing effect */}
-                    <path d="M10,85 Q20,75 30,80 Q40,85 50,70 Q60,55 70,60 Q80,65 90,15" 
+                    <path d="M12,80 Q20,75 30,80 Q40,85 50,70 Q60,55 70,60 Q80,65 90,15" 
                           stroke="rgba(134,239,172,0.8)" 
                           strokeWidth="1" 
                           fill="none"

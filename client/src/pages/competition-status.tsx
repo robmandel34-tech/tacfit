@@ -96,42 +96,31 @@ export default function CompetitionStatus() {
       <Navigation />
       
       <main className="container mx-auto px-4 py-6">
-        {/* Competition Header */}
+        {/* Competition Header - Above Map */}
         {competition && (
-          <Card className="mb-6 tile-card-elevated">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-white flex items-center">
-                  <Trophy className="mr-2 h-5 w-5" />
-                  {competition.name}
-                </CardTitle>
-                <Badge variant={competition.isActive ? "default" : "secondary"}>
-                  {competition.isActive ? "Active" : "Upcoming"}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-300 mb-4">{competition.description}</p>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center text-sm text-gray-400">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  <span>
-                    {new Date(competition.startDate).toLocaleDateString()} - {new Date(competition.endDate).toLocaleDateString()}
-                  </span>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => leaveCompetitionMutation.mutate()}
-                  disabled={leaveCompetitionMutation.isPending}
-                  className="bg-red-100 hover:bg-red-200 text-red-700 border-red-300 hover:border-red-400 sharp-button"
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  {leaveCompetitionMutation.isPending ? "Leaving..." : "Leave Competition"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <h1 className="text-3xl font-bold text-white flex items-center">
+                <Trophy className="mr-3 h-8 w-8" />
+                {competition.name}
+              </h1>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => leaveCompetitionMutation.mutate()}
+                disabled={leaveCompetitionMutation.isPending}
+                className="text-red-500 hover:text-red-600 hover:bg-transparent p-2"
+              >
+                <LogOut className="h-5 w-5" />
+              </Button>
+            </div>
+            <div className="flex items-center text-sm text-gray-400 mb-4">
+              <Calendar className="mr-2 h-4 w-4" />
+              <span>
+                {new Date(competition.startDate).toLocaleDateString()} - {new Date(competition.endDate).toLocaleDateString()}
+              </span>
+            </div>
+          </div>
         )}
 
         {/* Progress Map */}

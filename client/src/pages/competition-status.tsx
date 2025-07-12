@@ -7,6 +7,7 @@ import ProgressMap from "@/components/progress-map";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Trophy, Users, Target, Calendar, LogOut, Activity, CheckCircle, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -103,15 +104,37 @@ export default function CompetitionStatus() {
               <h1 className="text-3xl font-bold text-white flex-1 mr-4">
                 {competition.name}
               </h1>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => leaveCompetitionMutation.mutate()}
-                disabled={leaveCompetitionMutation.isPending}
-                className="text-red-500 hover:text-red-600 hover:bg-transparent p-2 flex-shrink-0"
-              >
-                <LogOut className="h-5 w-5" />
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={leaveCompetitionMutation.isPending}
+                    className="text-red-500 hover:text-red-600 hover:bg-transparent p-2 flex-shrink-0"
+                  >
+                    <LogOut className="h-5 w-5" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="bg-tactical-gray-light border-tactical-gray">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="text-white">Leave Competition</AlertDialogTitle>
+                    <AlertDialogDescription className="text-gray-300">
+                      Are you sure you want to leave this competition? You will not be able to rejoin once you leave.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel className="bg-tactical-gray border-tactical-gray text-gray-300 hover:bg-tactical-gray-light">
+                      Cancel
+                    </AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={() => leaveCompetitionMutation.mutate()}
+                      className="bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      Leave Competition
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
             <div className="text-sm text-gray-400 mb-2">
               <div className="flex items-center justify-between">

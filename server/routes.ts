@@ -1406,7 +1406,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dueDate: dueDate ? new Date(dueDate) : undefined,
         positionX: position?.x || 0,
         positionY: position?.y || 0,
-        createdBy: createdBy || 1, // TODO: Get from auth context
+        createdBy: createdBy || 10, // TODO: Get from auth context
       });
       
       res.json(item);

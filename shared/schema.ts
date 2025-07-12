@@ -139,12 +139,12 @@ export const competitionEntries = pgTable("competition_entries", {
 export const whiteboardItems = pgTable("whiteboard_items", {
   id: serial("id").primaryKey(),
   teamId: integer("team_id").references(() => teams.id),
-  type: text("type").notNull(), // objective, strategy, milestone, note
+  type: text("type").notNull(), // note, task, goal, strategy
   title: text("title").notNull(),
   description: text("description"),
   priority: text("priority").default("medium"), // high, medium, low
-  status: text("status").default("pending"), // pending, in_progress, completed
-  assignedTo: text("assigned_to"),
+  status: text("status").default("todo"), // todo, in_progress, completed
+  assignedTo: integer("assigned_to").references(() => users.id),
   dueDate: timestamp("due_date"),
   positionX: integer("position_x").default(0),
   positionY: integer("position_y").default(0),

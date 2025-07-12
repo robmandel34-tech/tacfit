@@ -24,16 +24,17 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
 interface MissionItem {
-  id: string;
-  type: 'objective' | 'strategy' | 'milestone' | 'note';
+  id: number;
+  type: 'note' | 'task' | 'goal' | 'strategy';
   title: string;
   description: string;
   priority: 'high' | 'medium' | 'low';
-  status: 'pending' | 'in_progress' | 'completed';
-  assignedTo?: string;
+  status: 'todo' | 'in_progress' | 'completed';
+  assignedTo?: number;
   dueDate?: string;
-  position: { x: number; y: number };
-  createdBy: string;
+  positionX: number;
+  positionY: number;
+  createdBy: number;
   createdAt: string;
 }
 
@@ -53,11 +54,11 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
   
   // New item form state
   const [newItem, setNewItem] = useState({
-    type: 'objective' as MissionItem['type'],
+    type: 'note' as MissionItem['type'],
     title: '',
     description: '',
     priority: 'medium' as MissionItem['priority'],
-    assignedTo: '',
+    assignedTo: 0,
     dueDate: '',
   });
 
@@ -76,10 +77,20 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
   // Create whiteboard item mutation
   const createItem = useMutation({
     mutationFn: async (item: Omit<MissionItem, 'id' | 'createdAt'>) => {
+      const payload = {
+        type: item.type,
+        title: item.title,
+        description: item.description,
+        priority: item.priority,
+        assignedTo: item.assignedTo || null,
+        dueDate: item.dueDate || null,
+        position: { x: item.positionX, y: item.positionY },
+        createdBy: item.createdBy,
+      };
       const response = await fetch(`/api/teams/${teamId}/whiteboard`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(item),
+        body: JSON.stringify(payload),
       });
       if (!response.ok) throw new Error('Failed to create item');
       return response.json();
@@ -88,11 +99,11 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
       queryClient.invalidateQueries({ queryKey: [`/api/teams/${teamId}/whiteboard`] });
       setIsAddingItem(false);
       setNewItem({
-        type: 'objective',
+        type: 'note',
         title: '',
         description: '',
         priority: 'medium',
-        assignedTo: '',
+        assignedTo: 0,
         dueDate: '',
       });
       toast({
@@ -104,7 +115,7 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
 
   // Update item position mutation
   const updateItemPosition = useMutation({
-    mutationFn: async ({ id, position }: { id: string; position: { x: number; y: number } }) => {
+    mutationFn: async ({ id, position }: { id: number; position: { x: number; y: number } }) => {
       const response = await fetch(`/api/teams/${teamId}/whiteboard/${id}/position`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -120,7 +131,7 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
 
   // Update item status mutation
   const updateItemStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: MissionItem['status'] }) => {
+    mutationFn: async ({ id, status }: { id: number; status: MissionItem['status'] }) => {
       const response = await fetch(`/api/teams/${teamId}/whiteboard/${id}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -136,7 +147,7 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
 
   // Delete item mutation
   const deleteItem = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (id: number) => {
       const response = await fetch(`/api/teams/${teamId}/whiteboard/${id}`, {
         method: 'DELETE',
       });
@@ -163,8 +174,9 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
 
     createItem.mutate({
       ...newItem,
-      position: { x: centerX, y: centerY },
-      createdBy: 'current_user', // This would come from auth context
+      positionX: centerX,
+      positionY: centerY,
+      createdBy: 10, // This would come from auth context
     });
   };
 
@@ -190,7 +202,7 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
     // Update position immediately for smooth dragging
     const updatedItems = whiteboardItems.map((item: MissionItem) =>
       item.id === selectedItem.id
-        ? { ...item, position: { x: Math.max(0, newX), y: Math.max(0, newY) } }
+        ? { ...item, positionX: Math.max(0, newX), positionY: Math.max(0, newY) }
         : item
     );
     
@@ -202,7 +214,7 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
       // Save position to backend
       updateItemPosition.mutate({
         id: selectedItem.id,
-        position: selectedItem.position,
+        position: { x: selectedItem.positionX, y: selectedItem.positionY },
       });
     }
     setIsDragging(false);
@@ -211,9 +223,9 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
 
   const getItemIcon = (type: MissionItem['type']) => {
     switch (type) {
-      case 'objective': return <Target className="h-4 w-4" />;
+      case 'goal': return <Target className="h-4 w-4" />;
       case 'strategy': return <MapPin className="h-4 w-4" />;
-      case 'milestone': return <Flag className="h-4 w-4" />;
+      case 'task': return <Flag className="h-4 w-4" />;
       case 'note': return <Circle className="h-4 w-4" />;
       default: return <Circle className="h-4 w-4" />;
     }
@@ -221,9 +233,9 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
 
   const getItemColor = (type: MissionItem['type'], priority: MissionItem['priority']) => {
     const baseColors = {
-      objective: 'bg-military-green',
+      goal: 'bg-military-green',
       strategy: 'bg-blue-600',
-      milestone: 'bg-yellow-600',
+      task: 'bg-yellow-600',
       note: 'bg-gray-600',
     };
     
@@ -240,7 +252,7 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
     switch (status) {
       case 'completed': return <CheckCircle className="h-4 w-4 text-green-500" />;
       case 'in_progress': return <Clock className="h-4 w-4 text-yellow-500" />;
-      case 'pending': return <Circle className="h-4 w-4 text-gray-500" />;
+      case 'todo': return <Circle className="h-4 w-4 text-gray-500" />;
       default: return <Circle className="h-4 w-4 text-gray-500" />;
     }
   };
@@ -271,10 +283,10 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-tactical-gray border-tactical-gray">
-                    <SelectItem value="objective" className="text-white hover:bg-tactical-gray-light">Objective</SelectItem>
-                    <SelectItem value="strategy" className="text-white hover:bg-tactical-gray-light">Strategy</SelectItem>
-                    <SelectItem value="milestone" className="text-white hover:bg-tactical-gray-light">Milestone</SelectItem>
                     <SelectItem value="note" className="text-white hover:bg-tactical-gray-light">Note</SelectItem>
+                    <SelectItem value="task" className="text-white hover:bg-tactical-gray-light">Task</SelectItem>
+                    <SelectItem value="goal" className="text-white hover:bg-tactical-gray-light">Goal</SelectItem>
+                    <SelectItem value="strategy" className="text-white hover:bg-tactical-gray-light">Strategy</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -318,13 +330,13 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
                 
                 <div>
                   <label className="text-sm font-medium text-gray-300 mb-2 block">Assign To</label>
-                  <Select value={newItem.assignedTo} onValueChange={(value) => setNewItem({...newItem, assignedTo: value})}>
+                  <Select value={newItem.assignedTo?.toString()} onValueChange={(value) => setNewItem({...newItem, assignedTo: parseInt(value) || 0})}>
                     <SelectTrigger className="bg-tactical-gray text-white border-tactical-gray">
                       <SelectValue placeholder="Select member..." />
                     </SelectTrigger>
                     <SelectContent className="bg-tactical-gray border-tactical-gray">
                       {teamMembers.map((member: any) => (
-                        <SelectItem key={member.id} value={member.user?.username || ''} className="text-white hover:bg-tactical-gray-light">
+                        <SelectItem key={member.id} value={member.userId?.toString() || ''} className="text-white hover:bg-tactical-gray-light">
                           {member.user?.username}
                         </SelectItem>
                       ))}
@@ -339,15 +351,15 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
                   type="date"
                   value={newItem.dueDate}
                   onChange={(e) => setNewItem({...newItem, dueDate: e.target.value})}
-                  className="bg-tactical-gray text-white border-tactical-gray"
+                  className="bg-tactical-gray text-white border-tactical-gray [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert"
                 />
               </div>
               
               <div className="flex justify-end space-x-2 pt-4">
-                <Button type="button" variant="outline" onClick={() => setIsAddingItem(false)}>
+                <Button type="button" variant="outline" onClick={() => setIsAddingItem(false)} className="text-gray-300 border-gray-600 hover:bg-tactical-gray-light">
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-military-green hover:bg-military-green-light">
+                <Button type="submit" className="bg-military-green hover:bg-military-green-light text-white">
                   Add Item
                 </Button>
               </div>
@@ -377,8 +389,8 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
                 key={item.id}
                 className={`absolute cursor-move select-none ${getItemColor(item.type, item.priority)} rounded-lg p-3 shadow-lg max-w-xs`}
                 style={{
-                  left: `${item.position.x}px`,
-                  top: `${item.position.y}px`,
+                  left: `${item.positionX}px`,
+                  top: `${item.positionY}px`,
                   zIndex: selectedItem?.id === item.id ? 50 : 10,
                 }}
                 onMouseDown={(e) => handleMouseDown(e, item)}
@@ -433,8 +445,8 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
                       className="h-6 w-6 p-0 hover:bg-black/20"
                       onClick={(e) => {
                         e.stopPropagation();
-                        const newStatus = item.status === 'completed' ? 'pending' : 
-                                        item.status === 'pending' ? 'in_progress' : 'completed';
+                        const newStatus = item.status === 'completed' ? 'todo' : 
+                                        item.status === 'todo' ? 'in_progress' : 'completed';
                         updateItemStatus.mutate({ id: item.id, status: newStatus });
                       }}
                     >

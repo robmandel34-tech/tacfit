@@ -58,6 +58,7 @@ export const activities = pgTable("activities", {
   quantity: text("quantity"),
   evidenceType: text("evidence_type"), // photo, screenshot, text
   evidenceUrl: text("evidence_url"),
+  imageUrl: text("image_url"), // Additional image URL for dual media support
   points: integer("points").default(10),
   isFlagged: boolean("is_flagged").default(false),
   createdAt: timestamp("created_at").defaultNow(),

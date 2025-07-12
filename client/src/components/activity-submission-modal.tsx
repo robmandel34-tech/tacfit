@@ -22,7 +22,8 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   const [type, setType] = useState("");
   const [description, setDescription] = useState("");
   const [quantity, setQuantity] = useState("");
-  const [file, setFile] = useState<File | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
 
   // Get user's current team membership
   const { data: userTeamMember } = useQuery({
@@ -112,7 +113,8 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     setType("");
     setDescription("");
     setQuantity("");
-    setFile(null);
+    setImageFile(null);
+    setVideoFile(null);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -136,17 +138,28 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     formData.append("description", description);
     formData.append("quantity", quantity);
     
-    if (file) {
-      formData.append("evidence", file);
+    if (videoFile) {
+      formData.append("evidence", videoFile);
+    }
+    
+    if (imageFile) {
+      formData.append("image", imageFile);
     }
 
     submitActivity.mutate(formData);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      setFile(selectedFile);
+      setImageFile(selectedFile);
+    }
+  };
+
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      setVideoFile(selectedFile);
     }
   };
 
@@ -212,20 +225,26 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
             />
           </div>
           
-          <div>
-            <Label className="text-gray-300 font-medium mb-2">Evidence (Photo or Video)</Label>
+          <div className="space-y-4">
+            <Label className="text-gray-300 font-medium mb-2">Evidence (Photo + Video)</Label>
+            
+            {/* Image Upload */}
             <div className="border-2 border-dashed border-tactical-gray rounded-lg p-4 text-center">
-              {file ? (
+              <div className="mb-2">
+                <Camera className="mx-auto h-6 w-6 text-gray-400 mb-1" />
+                <p className="text-gray-400 text-sm">Image Evidence</p>
+              </div>
+              {imageFile ? (
                 <div className="space-y-2">
-                  <p className="text-green-400">✓ {file.name}</p>
-                  <p className="text-gray-400 text-sm">
-                    {file.type.startsWith('image/') ? 'Image' : 'Video'} • {Math.round(file.size / 1024)}KB
+                  <p className="text-green-400">✓ {imageFile.name}</p>
+                  <p className="text-gray-400 text-xs">
+                    Image • {Math.round(imageFile.size / 1024)}KB
                   </p>
                   <Button 
                     type="button" 
                     variant="ghost" 
                     size="sm"
-                    onClick={() => setFile(null)}
+                    onClick={() => setImageFile(null)}
                     className="text-red-400 hover:text-red-300"
                   >
                     <X className="h-4 w-4 mr-1" />
@@ -234,20 +253,60 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                 </div>
               ) : (
                 <div>
-                  <Camera className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                  <p className="text-gray-400 mb-2">Upload photo or video evidence</p>
                   <Input
                     type="file"
-                    accept="image/*,video/*"
-                    onChange={handleFileChange}
+                    accept="image/*"
+                    onChange={handleImageChange}
                     className="hidden"
-                    id="evidence-upload"
+                    id="image-upload"
                   />
                   <Label 
-                    htmlFor="evidence-upload"
+                    htmlFor="image-upload"
                     className="cursor-pointer text-military-green hover:text-military-green-light"
                   >
-                    Choose File
+                    Choose Image
+                  </Label>
+                </div>
+              )}
+            </div>
+
+            {/* Video Upload */}
+            <div className="border-2 border-dashed border-tactical-gray rounded-lg p-4 text-center">
+              <div className="mb-2">
+                <div className="mx-auto h-6 w-6 text-gray-400 mb-1 flex items-center justify-center">🎥</div>
+                <p className="text-gray-400 text-sm">Video Evidence</p>
+              </div>
+              {videoFile ? (
+                <div className="space-y-2">
+                  <p className="text-green-400">✓ {videoFile.name}</p>
+                  <p className="text-gray-400 text-xs">
+                    Video • {Math.round(videoFile.size / 1024)}KB
+                  </p>
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setVideoFile(null)}
+                    className="text-red-400 hover:text-red-300"
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Remove
+                  </Button>
+                </div>
+              ) : (
+                <div>
+                  <Input
+                    type="file"
+                    accept="video/*"
+                    onChange={handleVideoChange}
+                    className="hidden"
+                    id="video-upload"
+                  />
+                  <Label 
+                    htmlFor="video-upload"
+                    className="cursor-pointer text-military-green hover:text-military-green-light"
+                  >
+                    Choose Video
                   </Label>
                 </div>
               )}

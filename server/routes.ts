@@ -813,10 +813,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/activities", upload.single('evidence'), async (req, res) => {
+  app.post("/api/activities", upload.fields([
+    { name: 'evidence', maxCount: 1 },
+    { name: 'image', maxCount: 1 }
+  ]), async (req, res) => {
     try {
       console.log("Activity submission request body:", req.body);
-      console.log("Activity submission file:", req.file);
+      console.log("Activity submission files:", req.files);
       
       // Get user's current team for activity submission
       const userId = parseInt(req.body.userId);
@@ -850,15 +853,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const validatedData = insertActivitySchema.parse(activityData);
       
-      // Handle file upload
-      if (req.file) {
-        const fileExtension = path.extname(req.file.originalname);
+      // Handle file uploads
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      
+      // Handle video file (primary evidence)
+      if (files['evidence'] && files['evidence'][0]) {
+        const videoFile = files['evidence'][0];
+        const fileExtension = path.extname(videoFile.originalname);
         const fileName = `${Date.now()}${fileExtension}`;
         const filePath = path.join('uploads', fileName);
         
-        fs.renameSync(req.file.path, filePath);
+        fs.renameSync(videoFile.path, filePath);
         validatedData.evidenceUrl = `/uploads/${fileName}`;
-        validatedData.evidenceType = req.file.mimetype.startsWith('video/') ? 'video' : 'photo';
+        validatedData.evidenceType = videoFile.mimetype.startsWith('video/') ? 'video' : 'photo';
+      }
+      
+      // Handle image file (secondary evidence)
+      if (files['image'] && files['image'][0]) {
+        const imageFile = files['image'][0];
+        const fileExtension = path.extname(imageFile.originalname);
+        const fileName = `${Date.now()}_img${fileExtension}`;
+        const filePath = path.join('uploads', fileName);
+        
+        fs.renameSync(imageFile.path, filePath);
+        validatedData.imageUrl = `/uploads/${fileName}`;
       }
       
       const activity = await storage.createActivity(validatedData);

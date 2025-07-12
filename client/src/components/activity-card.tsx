@@ -1,7 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ThumbsUp, MessageCircle, Flag, Users } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ThumbsUp, MessageCircle, Flag, Users, Image } from "lucide-react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -16,6 +17,7 @@ interface ActivityCardProps {
     description: string;
     quantity?: string;
     evidenceUrl?: string;
+    imageUrl?: string;
     createdAt: string;
     user: {
       id: number;
@@ -36,6 +38,7 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
   const [, navigate] = useLocation();
   const { user } = useAuth();
   const [showComments, setShowComments] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
   
   // Get current likes for this activity
   const { data: activityLikes } = useQuery({
@@ -243,9 +246,9 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
         </div>
         
         {/* Full-width media */}
-        {activity.evidenceUrl && (
-          <div className="mb-0">
-            {isVideoFile(activity.evidenceUrl) ? (
+        {(activity.evidenceUrl || activity.imageUrl) && (
+          <div className="mb-0 relative">
+            {activity.evidenceUrl && isVideoFile(activity.evidenceUrl) ? (
               <video 
                 src={activity.evidenceUrl} 
                 className="w-full h-64 object-cover border-t border-b border-gray-600"
@@ -254,12 +257,28 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
               >
                 Your browser does not support the video tag.
               </video>
-            ) : (
+            ) : activity.evidenceUrl ? (
               <img 
                 src={activity.evidenceUrl} 
                 alt="Activity evidence" 
                 className="w-full h-64 object-cover border-t border-b border-gray-600"
               />
+            ) : activity.imageUrl ? (
+              <img 
+                src={activity.imageUrl} 
+                alt="Activity evidence" 
+                className="w-full h-64 object-cover border-t border-b border-gray-600"
+              />
+            ) : null}
+            
+            {/* Show image icon when both video and image are present */}
+            {activity.evidenceUrl && activity.imageUrl && (
+              <button
+                onClick={() => setShowImageModal(true)}
+                className="absolute top-4 right-4 bg-black/50 rounded-full p-2 hover:bg-black/70 transition-colors"
+              >
+                <Image className="h-4 w-4 text-white" />
+              </button>
             )}
           </div>
         )}
@@ -324,6 +343,24 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
         activityId={activity.id}
         activityTitle={activity.description}
       />
+      
+      {/* Image Modal */}
+      <Dialog open={showImageModal} onOpenChange={setShowImageModal}>
+        <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle className="text-white">Activity Image</DialogTitle>
+          </DialogHeader>
+          <div className="p-6 pt-0">
+            {activity.imageUrl && (
+              <img 
+                src={activity.imageUrl} 
+                alt="Activity evidence" 
+                className="w-full h-auto max-h-[70vh] object-contain rounded-lg"
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

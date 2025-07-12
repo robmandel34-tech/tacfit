@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Users, Crown, Target, Camera, Send, MessageCircle, Edit2, Check, X } from "lucide-react";
+import { Users, Crown, Target, Camera, Send, MessageCircle, Edit2, Check, X, ChevronDown, ChevronUp } from "lucide-react";
 import ChatCard from "@/components/chat-card";
 
 import { useToast } from "@/hooks/use-toast";
@@ -26,6 +26,8 @@ export default function Team() {
   const [mottoText, setMottoText] = useState("");
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameText, setNameText] = useState("");
+  const [isProgressExpanded, setIsProgressExpanded] = useState(false);
+  const [lastViewedProgress, setLastViewedProgress] = useState<Record<string, number>>({});
 
   // Get user's current team membership
   const { data: userTeamMember } = useQuery({
@@ -57,7 +59,41 @@ export default function Team() {
     enabled: !!team?.competitionId,
   });
 
+  // Load last viewed progress from localStorage
+  useEffect(() => {
+    if (team?.id) {
+      const stored = localStorage.getItem(`progress_viewed_${team.id}`);
+      if (stored) {
+        setLastViewedProgress(JSON.parse(stored));
+      }
+    }
+  }, [team?.id]);
 
+  // Save last viewed progress to localStorage
+  const updateLastViewedProgress = (progressData: Record<string, number>) => {
+    if (team?.id) {
+      localStorage.setItem(`progress_viewed_${team.id}`, JSON.stringify(progressData));
+      setLastViewedProgress(progressData);
+    }
+  };
+
+  // Handle expanding progress card
+  const handleProgressExpand = () => {
+    setIsProgressExpanded(!isProgressExpanded);
+    if (!isProgressExpanded && competition?.requiredActivities && teamActivities) {
+      // When expanding, mark current progress as viewed
+      const currentProgress: Record<string, number> = {};
+      competition.requiredActivities.forEach((activityType: string) => {
+        const activitiesOfType = teamActivities.filter((activity: any) => activity.type === activityType);
+        const totalQuantity = activitiesOfType.reduce((sum: number, activity: any) => {
+          const quantity = parseInt(activity.quantity || '0');
+          return sum + quantity;
+        }, 0);
+        currentProgress[activityType] = totalQuantity;
+      });
+      updateLastViewedProgress(currentProgress);
+    }
+  };
 
   // Upload team photo mutation
   const uploadTeamPhoto = useMutation({
@@ -429,59 +465,106 @@ export default function Team() {
                 className="hidden"
               />
               
-              {/* Activity Progress Section */}
+              {/* Activity Progress Section - Collapsible */}
               {competition && competition.requiredActivities && competition.requiredActivities.length > 0 && (
-                <div className="mt-4 p-4 bg-tactical-gray rounded-lg border border-tactical-gray">
-                  <h3 className="text-white font-semibold mb-3 flex items-center">
-                    <Target className="mr-2 h-4 w-4 text-military-green" />
-                    Activity Progress
-                  </h3>
-                  <div className="space-y-3">
-                    {competition.requiredActivities.map((activityType: string, index: number) => {
-                      // Calculate progress for this activity type
-                      const activitiesOfType = teamActivities.filter((activity: any) => activity.type === activityType);
-                      const totalQuantity = activitiesOfType.reduce((sum: number, activity: any) => {
-                        const quantity = parseInt(activity.quantity || '0');
-                        return sum + quantity;
-                      }, 0);
-                      
-                      // Get target goal for this activity type
-                      const targetGoal = competition.targetGoals?.[index] || '';
-                      const targetNumber = parseInt(targetGoal.replace(/[^0-9]/g, '')) || 0;
-                      
-                      // Get unit from target goal
-                      const unit = targetGoal.includes('steps') ? 'steps' : 
-                                  targetGoal.includes('minutes') ? 'minutes' : 
-                                  targetGoal.includes('reps') ? 'reps' : 
-                                  targetGoal.includes('miles') ? 'miles' : 'units';
-                      
-                      const percentage = targetNumber > 0 ? Math.min((totalQuantity / targetNumber) * 100, 100) : 0;
-                      
-                      return (
-                        <div key={activityType} className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-300 capitalize font-medium">
-                              {activityType === 'cardio' ? 'Cardio Training' :
-                               activityType === 'strength' ? 'Strength Operations' :
-                               activityType === 'flexibility' ? 'Mobility Training' :
-                               activityType === 'sports' ? 'Combat Sports' : 'Special Operations'}
-                            </span>
-                            <span className="text-sm text-gray-400">
-                              {totalQuantity.toLocaleString()}/{targetNumber.toLocaleString()} {unit}
-                            </span>
-                          </div>
-                          <div className="w-full bg-tactical-gray-light rounded-full h-2">
-                            <div 
-                              className="bg-military-green h-2 rounded-full transition-all duration-300"
-                              style={{ width: `${percentage}%` }}
-                            ></div>
-                          </div>
-                          <div className="text-xs text-gray-400">
-                            {percentage.toFixed(1)}% complete
-                          </div>
-                        </div>
-                      );
-                    })}
+                <div className="mt-4">
+                  <div 
+                    className="p-4 bg-tactical-gray rounded-lg border border-tactical-gray cursor-pointer hover:bg-tactical-gray-light transition-colors"
+                    onClick={handleProgressExpand}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <Target className="mr-2 h-4 w-4 text-military-green" />
+                        <h3 className="text-white font-semibold">Activity Progress</h3>
+                        {(() => {
+                          // Calculate current progress
+                          const currentProgress: Record<string, number> = {};
+                          competition.requiredActivities.forEach((activityType: string) => {
+                            const activitiesOfType = teamActivities.filter((activity: any) => activity.type === activityType);
+                            const totalQuantity = activitiesOfType.reduce((sum: number, activity: any) => {
+                              const quantity = parseInt(activity.quantity || '0');
+                              return sum + quantity;
+                            }, 0);
+                            currentProgress[activityType] = totalQuantity;
+                          });
+
+                          // Check if there's new progress
+                          const hasNewProgress = Object.keys(currentProgress).some(activityType => {
+                            const current = currentProgress[activityType] || 0;
+                            const lastViewed = lastViewedProgress[activityType] || 0;
+                            return current > lastViewed;
+                          });
+
+                          return hasNewProgress ? (
+                            <div className="ml-2 w-2 h-2 bg-military-green rounded-full animate-pulse" />
+                          ) : null;
+                        })()}
+                      </div>
+                      {isProgressExpanded ? (
+                        <ChevronUp className="h-4 w-4 text-gray-400" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4 text-gray-400" />
+                      )}
+                    </div>
+                    
+                    {isProgressExpanded && (
+                      <div className="mt-4 space-y-3">
+                        {competition.requiredActivities.map((activityType: string, index: number) => {
+                          // Calculate progress for this activity type
+                          const activitiesOfType = teamActivities.filter((activity: any) => activity.type === activityType);
+                          const totalQuantity = activitiesOfType.reduce((sum: number, activity: any) => {
+                            const quantity = parseInt(activity.quantity || '0');
+                            return sum + quantity;
+                          }, 0);
+                          
+                          // Get target goal for this activity type
+                          const targetGoal = competition.targetGoals?.[index] || '';
+                          const targetNumber = parseInt(targetGoal.replace(/[^0-9]/g, '')) || 0;
+                          
+                          // Get unit from target goal
+                          const unit = targetGoal.includes('steps') ? 'steps' : 
+                                      targetGoal.includes('minutes') ? 'minutes' : 
+                                      targetGoal.includes('reps') ? 'reps' : 
+                                      targetGoal.includes('miles') ? 'miles' : 'units';
+                          
+                          const percentage = targetNumber > 0 ? Math.min((totalQuantity / targetNumber) * 100, 100) : 0;
+                          
+                          // Check if this activity type has new progress
+                          const lastViewed = lastViewedProgress[activityType] || 0;
+                          const hasNewProgressForType = totalQuantity > lastViewed;
+                          
+                          return (
+                            <div key={activityType} className="space-y-2">
+                              <div className="flex justify-between items-center">
+                                <div className="flex items-center">
+                                  <span className="text-sm text-gray-300 capitalize font-medium">
+                                    {activityType === 'cardio' ? 'Cardio Training' :
+                                     activityType === 'strength' ? 'Strength Operations' :
+                                     activityType === 'flexibility' ? 'Mobility Training' :
+                                     activityType === 'sports' ? 'Combat Sports' : 'Special Operations'}
+                                  </span>
+                                  {hasNewProgressForType && (
+                                    <div className="ml-2 w-1.5 h-1.5 bg-military-green rounded-full animate-pulse" />
+                                  )}
+                                </div>
+                                <span className="text-sm text-gray-400">
+                                  {totalQuantity.toLocaleString()}/{targetNumber.toLocaleString()} {unit}
+                                </span>
+                              </div>
+                              <div className="w-full bg-tactical-gray-light rounded-full h-2">
+                                <div 
+                                  className="bg-military-green h-2 rounded-full transition-all duration-300"
+                                  style={{ width: `${percentage}%` }}
+                                ></div>
+                              </div>
+                              <div className="text-xs text-gray-400">
+                                {percentage.toFixed(1)}% complete
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

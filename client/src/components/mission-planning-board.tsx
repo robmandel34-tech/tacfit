@@ -243,7 +243,7 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
         <CollapsibleContent>
           <CardContent className="p-4 pt-0">
             <div className="space-y-4">
-              <div className="flex justify-end">
+              <div className="flex justify-start">
                 <Button
                   onClick={() => setIsAddingTask(true)}
                   className="bg-military-green hover:bg-military-green-dark text-white"

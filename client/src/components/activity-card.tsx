@@ -162,97 +162,103 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
 
   return (
     <Card className="tile-card">
-      <CardContent className="p-6">
-        <div className="flex gap-4">
-          <div 
-            className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={handleProfileClick}
-          >
-            {activity.user.avatar ? (
-              <img
-                src={`/uploads/${activity.user.avatar}`}
-                alt="Profile picture"
-                className="w-12 h-12 rounded-full object-cover"
-              />
-            ) : (
-              <div className="w-12 h-12 bg-military-green rounded-full flex items-center justify-center hover:bg-military-green-light transition-colors">
-                <span className="text-white font-bold text-sm">
-                  {getInitials(activity.user.username)}
+      <CardContent className="p-0">
+        {/* Header with profile info */}
+        <div className="p-6 pb-4">
+          <div className="flex gap-4">
+            <div 
+              className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={handleProfileClick}
+            >
+              {activity.user.avatar ? (
+                <img
+                  src={`/uploads/${activity.user.avatar}`}
+                  alt="Profile picture"
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-12 h-12 bg-military-green rounded-full flex items-center justify-center hover:bg-military-green-light transition-colors">
+                  <span className="text-white font-bold text-sm">
+                    {getInitials(activity.user.username)}
+                  </span>
+                </div>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3 mb-3">
+                <span 
+                  className="text-white font-semibold cursor-pointer hover:text-military-green transition-colors"
+                  onClick={handleProfileClick}
+                >
+                  {activity.user.username}
+                </span>
+                <Badge variant="outline" className="text-xs border-gray-600 text-gray-300 whitespace-nowrap">
+                  {getActivityIcon(activity.type)} {getActivityTypeDisplayName(activity.type)}
+                </Badge>
+                <span className="text-gray-400 text-sm">
+                  {new Date(activity.createdAt).toLocaleDateString()}
                 </span>
               </div>
-            )}
+              <p className="text-gray-300 text-sm">{activity.description}</p>
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-3 mb-3">
-              <span 
-                className="text-white font-semibold cursor-pointer hover:text-military-green transition-colors"
-                onClick={handleProfileClick}
-              >
-                {activity.user.username}
-              </span>
-              <Badge variant="outline" className="text-xs border-gray-600 text-gray-300">
-                {getActivityIcon(activity.type)} {getActivityTypeDisplayName(activity.type)}
-              </Badge>
-              <span className="text-gray-400 text-sm">
-                {new Date(activity.createdAt).toLocaleDateString()}
-              </span>
-            </div>
-            
-            {activity.evidenceUrl && (
-              <div className="mb-4">
-                <img 
-                  src={activity.evidenceUrl} 
-                  alt="Activity evidence" 
-                  className="w-full max-w-md h-48 object-cover rounded-lg border border-gray-600"
-                />
-              </div>
-            )}
-            
-            <p className="text-gray-300 text-sm mb-4">{activity.description}</p>
-            
-            <div className="flex items-center gap-4 pt-3 border-t border-gray-600">
-              <button
-                onClick={handleLike}
-                disabled={likeActivity.isPending}
-                className="flex items-center gap-2 transition-colors text-sm text-gray-400 hover:text-military-green"
+        </div>
+        
+        {/* Full-width image */}
+        {activity.evidenceUrl && (
+          <div className="mb-0">
+            <img 
+              src={activity.evidenceUrl} 
+              alt="Activity evidence" 
+              className="w-full h-64 object-cover border-t border-b border-gray-600"
+            />
+          </div>
+        )}
+        
+        {/* Full-width action bar */}
+        <div className="px-6 py-4 border-t border-gray-600">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleLike}
+              disabled={likeActivity.isPending}
+              className="flex items-center gap-2 transition-colors text-sm text-gray-400 hover:text-military-green"
+              style={{
+                color: userLikeStatus ? '#7cb342' : undefined
+              }}
+            >
+              <ThumbsUp 
+                className="h-4 w-4" 
                 style={{
-                  color: userLikeStatus ? '#7cb342' : undefined
+                  fill: userLikeStatus ? '#7cb342' : 'none'
                 }}
-              >
-                <ThumbsUp 
-                  className="h-4 w-4" 
-                  style={{
-                    fill: userLikeStatus ? '#7cb342' : 'none'
-                  }}
-                />
-                <span>{currentLikeCount}</span>
-              </button>
-              
-              <button 
-                onClick={() => setShowComments(true)}
-                className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors text-sm"
-              >
-                <MessageCircle className="h-4 w-4" />
-                <span>{currentCommentCount}</span>
-              </button>
-              
-              <button
-                onClick={handleFlag}
-                disabled={flagActivity.isPending}
-                className="flex items-center gap-2 transition-colors text-sm text-gray-400 hover:text-red-400"
+              />
+              <span>{currentLikeCount}</span>
+            </button>
+            
+            <button 
+              onClick={() => setShowComments(true)}
+              className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors text-sm"
+            >
+              <MessageCircle className="h-4 w-4" />
+              <span>{currentCommentCount}</span>
+            </button>
+            
+            <button
+              onClick={handleFlag}
+              disabled={flagActivity.isPending}
+              className="flex items-center gap-2 transition-colors text-sm text-gray-400 hover:text-red-400"
+              style={{
+                color: userFlagStatus ? '#ef4444' : undefined
+              }}
+            >
+              <Flag 
+                className="h-4 w-4" 
                 style={{
-                  color: userFlagStatus ? '#ef4444' : undefined
+                  fill: userFlagStatus ? '#ef4444' : 'none'
                 }}
-              >
-                <Flag 
-                  className="h-4 w-4" 
-                  style={{
-                    fill: userFlagStatus ? '#ef4444' : 'none'
-                  }}
-                />
-                <span className="text-gray-300">{currentFlagCount > 0 ? currentFlagCount : 'Flag'}</span>
-              </button>
-            </div>
+              />
+              <span className="text-gray-300">{currentFlagCount > 0 ? currentFlagCount : 'Flag'}</span>
+            </button>
           </div>
         </div>
       </CardContent>

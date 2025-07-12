@@ -38,7 +38,7 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
   // Generate topographical features along the route
   const features = [
     { position: 10, icon: Flag, name: "Base Camp", color: "text-green-600", x: 12, y: 84 },
-    { position: 90, icon: Trophy, name: "Victory Point", color: "text-yellow-600", x: 80, y: 16 }
+    { position: 90, icon: Trophy, name: "Victory Point", color: "text-yellow-600", x: 75, y: 12 }
   ];
 
   return (
@@ -82,18 +82,18 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
                   {/* Weaving diagonal route path from bottom left to top right */}
                   <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
                     {/* Background stroke for better visibility */}
-                    <path d="M12,80 Q20,75 30,80 Q40,85 50,70 Q60,55 70,60 Q80,65 90,15" 
+                    <path d="M12,80 Q18,72 27,76 Q36,82 46,66 Q56,50 66,55 Q76,60 85,10" 
                           stroke="rgba(0,0,0,0.6)" 
                           strokeWidth="3" 
                           fill="none" />
                     {/* Main route path - thin with dashes */}
-                    <path d="M12,80 Q20,75 30,80 Q40,85 50,70 Q60,55 70,60 Q80,65 90,15" 
+                    <path d="M12,80 Q18,72 27,76 Q36,82 46,66 Q56,50 66,55 Q76,60 85,10" 
                           stroke="rgba(255,255,255,0.95)" 
                           strokeWidth="1.5" 
                           fill="none"
                           strokeDasharray="6,3" />
                     {/* Inner glowing effect */}
-                    <path d="M12,80 Q20,75 30,80 Q40,85 50,70 Q60,55 70,60 Q80,65 90,15" 
+                    <path d="M12,80 Q18,72 27,76 Q36,82 46,66 Q56,50 66,55 Q76,60 85,10" 
                           stroke="rgba(134,239,172,0.8)" 
                           strokeWidth="1" 
                           fill="none"
@@ -129,33 +129,33 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
                 // Weaving path calculation matching the exact SVG curve
                 const t = progress;
                 
-                // Calculate position based on the actual SVG path points
+                // Calculate position based on the rotated SVG path points
                 let pathX, pathY;
                 if (t <= 0.2) {
-                  // Start to first curve: M10,85 Q20,75 30,80
+                  // Start to first curve: M12,80 Q18,72 27,76
                   const localT = t / 0.2;
-                  pathX = 10 + (20 * localT);
-                  pathY = 85 - (10 * localT) + (5 * Math.sin(localT * Math.PI));
+                  pathX = 12 + (15 * localT);
+                  pathY = 80 - (8 * localT) + (4 * Math.sin(localT * Math.PI));
                 } else if (t <= 0.4) {
-                  // First to second curve: Q40,85 50,70
+                  // First to second curve: Q36,82 46,66
                   const localT = (t - 0.2) / 0.2;
-                  pathX = 30 + (20 * localT);
-                  pathY = 80 + (5 * localT) - (15 * localT * localT);
+                  pathX = 27 + (19 * localT);
+                  pathY = 76 + (6 * localT) - (16 * localT * localT);
                 } else if (t <= 0.6) {
-                  // Second to third curve: Q60,55 70,60
+                  // Second to third curve: Q56,50 66,55
                   const localT = (t - 0.4) / 0.2;
-                  pathX = 50 + (20 * localT);
-                  pathY = 70 - (15 * localT) + (5 * Math.sin(localT * Math.PI));
+                  pathX = 46 + (20 * localT);
+                  pathY = 66 - (16 * localT) + (5 * Math.sin(localT * Math.PI));
                 } else if (t <= 0.8) {
-                  // Third to fourth curve: Q80,65 90,15
+                  // Third to fourth curve: Q76,60 85,10
                   const localT = (t - 0.6) / 0.2;
-                  pathX = 70 + (20 * localT);
-                  pathY = 60 + (5 * localT) - (50 * localT * localT);
+                  pathX = 66 + (19 * localT);
+                  pathY = 55 + (5 * localT) - (50 * localT * localT);
                 } else {
                   // Beyond screen (cut off)
                   const localT = (t - 0.8) / 0.4;
-                  pathX = 90 + (20 * localT); // Continue beyond right edge
-                  pathY = 15 - (30 * localT); // Continue upward off screen
+                  pathX = 85 + (15 * localT); // Continue beyond right edge
+                  pathY = 10 - (25 * localT); // Continue upward off screen
                 }
               
                 return (

@@ -120,11 +120,11 @@ export default function CompetitionStatus() {
                   </span>
                 </div>
                 <Button
-                  variant="destructive"
+                  variant="outline"
                   size="sm"
                   onClick={() => leaveCompetitionMutation.mutate()}
                   disabled={leaveCompetitionMutation.isPending}
-                  className="bg-red-600 hover:bg-red-700 text-white sharp-button"
+                  className="bg-red-100 hover:bg-red-200 text-red-700 border-red-300 hover:border-red-400 sharp-button"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
                   {leaveCompetitionMutation.isPending ? "Leaving..." : "Leave Competition"}

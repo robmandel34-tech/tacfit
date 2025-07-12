@@ -51,22 +51,22 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
       {/* Tab-like header for Team Progress Map */}
       <div className="relative">
         <div className="flex justify-center mb-0">
-          <div className="bg-tactical-gray-light border-tactical-gray border-t border-l border-r px-6 py-2 shadow-lg">
+          <div className="bg-tactical-gray-light border-tactical-gray border-t border-l border-r rounded-t-xl px-6 py-2 shadow-lg">
             <h3 className="text-lg font-semibold text-white">Team Progress Map</h3>
           </div>
         </div>
         
         {/* Map Container */}
-        <Card className="w-full bg-tactical-gray-light border-tactical-gray shadow-lg" style={{
+        <Card className="w-full bg-tactical-gray-light border-tactical-gray rounded-xl rounded-tl-none shadow-lg" style={{
           boxShadow: '0 4px 12px rgba(0,0,0,0.15), 0 2px 6px rgba(0,0,0,0.1)'
         }}>
           <CardContent className="p-6">
             <div className="relative">
               {/* Map Background */}
-              <div className="relative h-96 overflow-visible shadow-lg" style={{
+              <div className="relative h-96 rounded-xl overflow-visible shadow-lg" style={{
                 boxShadow: '0 8px 16px rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.1)'
               }}>
-                <div className="absolute inset-0 overflow-hidden">
+                <div className="absolute inset-0 rounded-xl overflow-hidden">
                   {/* High-Quality Wilderness Terrain Background */}
                   <div 
                     className="w-full h-full bg-cover bg-center"

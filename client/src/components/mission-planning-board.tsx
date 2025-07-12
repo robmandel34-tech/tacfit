@@ -399,6 +399,14 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
                       <Badge variant="outline" className="text-white border-gray-600">
                         TASK
                       </Badge>
+                      <Button
+                        onClick={() => startEditing(task)}
+                        variant="ghost"
+                        size="sm"
+                        className="text-gray-400 hover:text-white hover:bg-slate-700"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Avatar className="h-6 w-6">
@@ -436,14 +444,6 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
                       )}
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Button
-                        onClick={() => startEditing(task)}
-                        variant="ghost"
-                        size="sm"
-                        className="text-gray-400 hover:text-white hover:bg-slate-700"
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
                       <Button
                         onClick={() => deleteTaskMutation.mutate(task.id)}
                         variant="ghost"

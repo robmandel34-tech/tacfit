@@ -141,64 +141,7 @@ export default function CompetitionStatus() {
           </div>
         )}
 
-        {/* Team Leaderboard */}
-        <Card className="mb-6 sharp-card bg-tactical-gray-light border-tactical-gray">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center">
-              <Users className="mr-2 h-5 w-5" />
-              Team Standings
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {teams.sort((a: any, b: any) => b.points - a.points).map((team: any, index: number) => (
-                <div 
-                  key={team.id} 
-                  className="flex items-center justify-between p-3 bg-tactical-gray rounded-sm cursor-pointer hover:bg-tactical-gray-light transition-colors"
-                  onClick={() => navigate(`/team/${team.id}`)}
-                >
-                  <div className="flex items-center">
-                    <div className="relative w-8 h-8 mr-3">
-                      {team.pictureUrl ? (
-                        <img 
-                          src={team.pictureUrl} 
-                          alt={`${team.name} team picture`}
-                          className="w-8 h-8 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                          index === 0 ? 'bg-yellow-500 text-black' :
-                          index === 1 ? 'bg-gray-400 text-black' :
-                          index === 2 ? 'bg-amber-600 text-black' :
-                          'bg-tactical-gray-light text-gray-300'
-                        }`}>
-                          <Users className="w-4 h-4" />
-                        </div>
-                      )}
-                      {/* Ranking badge overlay */}
-                      <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-full border border-white flex items-center justify-center text-xs font-bold ${
-                        index === 0 ? 'bg-yellow-500 text-black' :
-                        index === 1 ? 'bg-gray-400 text-black' :
-                        index === 2 ? 'bg-amber-600 text-black' :
-                        'bg-tactical-gray-light text-gray-300'
-                      }`}>
-                        {index + 1}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="font-medium text-white">{team.name}</div>
-                      <div className="text-sm text-gray-400">{team.motto || 'No motto set'}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center">
-                    <Target className="mr-1 h-4 w-4 text-military-green" />
-                    <span className="text-military-green font-bold">{team.points}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+
 
         {/* Activity Feed */}
         <Card className="sharp-card bg-tactical-gray-light border-tactical-gray">

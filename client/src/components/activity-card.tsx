@@ -212,7 +212,7 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
                 )}
               </div>
               <span 
-                className="text-white text-xs font-medium cursor-pointer hover:text-military-green transition-colors text-center"
+                className="text-white text-sm font-medium cursor-pointer hover:text-military-green transition-colors text-center"
                 onClick={handleProfileClick}
               >
                 {activity.user.username}

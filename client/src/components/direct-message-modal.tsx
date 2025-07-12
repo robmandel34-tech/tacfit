@@ -190,7 +190,9 @@ export default function DirectMessageModal({ isOpen, onClose, friend }: DirectMe
                           : "bg-tactical-gray text-gray-200"
                       }`}
                     >
-                      {renderMessageContent(msg.content)}
+                      <div className="break-words">
+                        {renderMessageContent(msg.content)}
+                      </div>
                       <p className="text-xs opacity-60 mt-1">
                         {new Date(msg.createdAt).toLocaleTimeString([], {
                           hour: '2-digit',

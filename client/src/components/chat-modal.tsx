@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Send, Smile, ImageIcon, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import EmojiPicker from 'emoji-picker-react';
@@ -180,21 +181,15 @@ export default function ChatModal({ isOpen, onClose, teamId, competitionId }: Ch
               ) : (
                 messages.map((msg: any) => (
                   <div key={msg.id} className="flex items-start space-x-3">
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">
-                      {msg.user?.avatar ? (
-                        <img
-                          src={`/uploads/${msg.user.avatar}`}
-                          alt="Profile picture"
-                          className="w-8 h-8 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-8 h-8 bg-military-green rounded-full flex items-center justify-center">
-                          <span className="text-white font-bold text-xs">
-                            {getInitials(msg.user?.username || "U")}
-                          </span>
-                        </div>
-                      )}
-                    </div>
+                    <Avatar className="w-8 h-8 flex-shrink-0">
+                      <AvatarImage 
+                        src={msg.user?.avatar ? `/uploads/${msg.user.avatar}` : undefined}
+                        alt={msg.user?.username || "User"}
+                      />
+                      <AvatarFallback className="bg-military-green text-white text-xs">
+                        {getInitials(msg.user?.username || "U")}
+                      </AvatarFallback>
+                    </Avatar>
                     <div className="flex-1">
                       <div className="bg-tactical-gray-light rounded-lg p-2">
                         <div className="flex items-center space-x-2 mb-1">

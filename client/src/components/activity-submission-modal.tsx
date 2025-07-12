@@ -175,7 +175,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
             <div>
             <Label className="text-gray-300 font-medium mb-2">Activity Type</Label>
             <Select value={type} onValueChange={setType}>
-              <SelectTrigger className="bg-tactical-gray-lighter border-tactical-gray text-white">
+              <SelectTrigger className="bg-tactical-gray-lighter border-tactical-gray text-white focus:border-white focus:ring-1 focus:ring-white">
                 <SelectValue placeholder="Select activity type" />
               </SelectTrigger>
               <SelectContent className="bg-tactical-gray-light border-tactical-gray text-white">
@@ -197,7 +197,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
             <Textarea 
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="bg-tactical-gray-lighter border-tactical-gray text-white h-24"
+              className="bg-tactical-gray-lighter border-tactical-gray text-white h-24 focus:border-white focus:ring-1 focus:ring-white"
               placeholder="Describe your activity..."
               required
             />
@@ -216,7 +216,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
               type="text"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
-              className="bg-tactical-gray-lighter border-tactical-gray text-white"
+              className="bg-tactical-gray-lighter border-tactical-gray text-white focus:border-white focus:ring-1 focus:ring-white"
               placeholder={
                 type 
                   ? `e.g., 30 ${activityMeasurements[type]}`
@@ -230,7 +230,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
             <Label className="text-gray-300 font-medium mb-2">Evidence (Photo + Video)</Label>
             
             {/* Image Upload */}
-            <div className="border-2 border-dashed border-tactical-gray rounded-lg p-4 text-center">
+            <div className="border-2 border-dashed border-tactical-gray rounded-lg p-4 text-center hover:border-white/50 transition-colors">
               <div className="mb-2">
                 <Camera className="mx-auto h-6 w-6 text-gray-400 mb-1" />
                 <p className="text-gray-400 text-sm">Image Evidence</p>
@@ -272,7 +272,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
             </div>
 
             {/* Video Upload */}
-            <div className="border-2 border-dashed border-tactical-gray rounded-lg p-4 text-center">
+            <div className="border-2 border-dashed border-tactical-gray rounded-lg p-4 text-center hover:border-white/50 transition-colors">
               <div className="mb-2">
                 <div className="mx-auto h-6 w-6 text-gray-400 mb-1 flex items-center justify-center">🎥</div>
                 <p className="text-gray-400 text-sm">Video Evidence</p>

@@ -144,10 +144,10 @@ export default function CompetitionStatus() {
                       <Target className="mr-2 h-4 w-4 text-orange-500" />
                       <span className="font-semibold">Team Goals:</span>
                     </div>
-                    <div className="space-y-2">
+                    <div className="flex flex-wrap gap-2">
                       {competition.targetGoals.map((goal: string, index: number) => (
-                        <div key={index} className="flex items-center text-sm text-gray-300 bg-tactical-gray-light rounded-lg p-3 border border-tactical-gray">
-                          <CheckCircle className="mr-3 h-4 w-4 text-military-green flex-shrink-0" />
+                        <div key={index} className="flex items-center text-xs text-gray-300 bg-tactical-gray-light rounded-lg px-3 py-2 border border-tactical-gray">
+                          <CheckCircle className="mr-2 h-3 w-3 text-military-green flex-shrink-0" />
                           <span className="font-medium">{goal}</span>
                         </div>
                       ))}

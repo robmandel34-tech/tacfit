@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Send } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Send, Smile, ImageIcon, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import EmojiPicker from 'emoji-picker-react';
 import { apiRequest } from "@/lib/queryClient";
 
 interface DirectMessageModalProps {
@@ -25,6 +27,12 @@ export default function DirectMessageModal({ isOpen, onClose, friend }: DirectMe
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [message, setMessage] = useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showGifPicker, setShowGifPicker] = useState(false);
+  const [gifSearch, setGifSearch] = useState("");
+  const [gifs, setGifs] = useState<any[]>([]);
+  const [isSearchingGifs, setIsSearchingGifs] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const { data: messages = [], refetch } = useQuery({
     queryKey: ["/api/chat", { userId1: user?.id, userId2: friend.id }],
@@ -73,6 +81,71 @@ export default function DirectMessageModal({ isOpen, onClose, friend }: DirectMe
     }
   };
 
+  // Handle emoji selection
+  const handleEmojiClick = (emojiData: any) => {
+    const emoji = emojiData.emoji;
+    setMessage(prev => prev + emoji);
+    setShowEmojiPicker(false);
+    inputRef.current?.focus();
+  };
+
+  // Search GIFs using Giphy API
+  const searchGifs = async (query: string) => {
+    if (!query.trim()) {
+      setGifs([]);
+      return;
+    }
+    
+    setIsSearchingGifs(true);
+    try {
+      const response = await fetch(`https://api.giphy.com/v1/gifs/search?api_key=GlVGYHkr3WSBnllca54iNt0yFbjz7L65&q=${encodeURIComponent(query)}&limit=20&rating=pg-13`);
+      const data = await response.json();
+      setGifs(data.data || []);
+    } catch (error) {
+      console.error('Failed to search GIFs:', error);
+      setGifs([]);
+    } finally {
+      setIsSearchingGifs(false);
+    }
+  };
+
+  // Handle GIF selection
+  const handleGifSelect = (gifUrl: string) => {
+    sendMessage.mutate(`[GIF] ${gifUrl}`);
+    setShowGifPicker(false);
+    setGifSearch("");
+    setGifs([]);
+  };
+
+  // Render message content (handle GIFs and regular text)
+  const renderMessageContent = (content: string) => {
+    if (content.startsWith('[GIF] ')) {
+      const gifUrl = content.substring(6);
+      return (
+        <img 
+          src={gifUrl} 
+          alt="GIF" 
+          className="max-w-48 max-h-48 rounded-lg object-cover"
+          onError={(e) => {
+            e.currentTarget.style.display = 'none';
+          }}
+        />
+      );
+    }
+    return content;
+  };
+
+  // Handle GIF search input
+  useEffect(() => {
+    const delayedSearch = setTimeout(() => {
+      if (gifSearch) {
+        searchGifs(gifSearch);
+      }
+    }, 500);
+    
+    return () => clearTimeout(delayedSearch);
+  }, [gifSearch]);
+
   // Auto-refresh messages
   useEffect(() => {
     if (isOpen) {
@@ -117,7 +190,7 @@ export default function DirectMessageModal({ isOpen, onClose, friend }: DirectMe
                           : "bg-tactical-gray text-gray-200"
                       }`}
                     >
-                      <p>{msg.content}</p>
+                      {renderMessageContent(msg.content)}
                       <p className="text-xs opacity-60 mt-1">
                         {new Date(msg.createdAt).toLocaleTimeString([], {
                           hour: '2-digit',
@@ -132,7 +205,85 @@ export default function DirectMessageModal({ isOpen, onClose, friend }: DirectMe
           </ScrollArea>
 
           <form onSubmit={handleSendMessage} className="flex gap-2 mt-4">
+            <div className="flex gap-2">
+              {/* Emoji Picker */}
+              <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="bg-tactical-gray-lighter border-tactical-gray text-white hover:bg-tactical-gray"
+                  >
+                    <Smile className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-white border-tactical-gray">
+                  <EmojiPicker onEmojiClick={handleEmojiClick} />
+                </PopoverContent>
+              </Popover>
+
+              {/* GIF Picker */}
+              <Popover open={showGifPicker} onOpenChange={setShowGifPicker}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="bg-tactical-gray-lighter border-tactical-gray text-white hover:bg-tactical-gray"
+                  >
+                    <ImageIcon className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-96 p-4 bg-tactical-gray-light border-tactical-gray">
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <Search className="h-4 w-4 text-gray-400" />
+                      <Input
+                        value={gifSearch}
+                        onChange={(e) => setGifSearch(e.target.value)}
+                        placeholder="Search GIFs..."
+                        className="flex-1 bg-tactical-gray-lighter border-tactical-gray text-white"
+                      />
+                    </div>
+                    <div className="max-h-60 overflow-y-auto">
+                      {isSearchingGifs ? (
+                        <div className="text-center text-gray-400 py-4">
+                          Searching...
+                        </div>
+                      ) : gifs.length > 0 ? (
+                        <div className="grid grid-cols-3 gap-2">
+                          {gifs.map((gif: any) => (
+                            <button
+                              key={gif.id}
+                              onClick={() => handleGifSelect(gif.images.fixed_height.url)}
+                              className="relative aspect-square rounded-lg overflow-hidden hover:opacity-80 transition-opacity"
+                            >
+                              <img
+                                src={gif.images.fixed_height_small.url}
+                                alt={gif.title}
+                                className="w-full h-full object-cover"
+                              />
+                            </button>
+                          ))}
+                        </div>
+                      ) : gifSearch ? (
+                        <div className="text-center text-gray-400 py-4">
+                          No GIFs found
+                        </div>
+                      ) : (
+                        <div className="text-center text-gray-400 py-4">
+                          Search for GIFs to send
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
+
             <Input
+              ref={inputRef}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Type a message..."

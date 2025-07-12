@@ -48,9 +48,13 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
   const queryClient = useQueryClient();
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MissionItem | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const whiteboardRef = useRef<HTMLDivElement>(null);
+  
+  // Grid layout constants
+  const ITEM_WIDTH = 280;
+  const ITEM_HEIGHT = 120;
+  const PADDING = 20;
+  const ITEMS_PER_COLUMN = 4;
   
   // New item form state
   const [newItem, setNewItem] = useState({
@@ -113,21 +117,16 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
     },
   });
 
-  // Update item position mutation
-  const updateItemPosition = useMutation({
-    mutationFn: async ({ id, position }: { id: number; position: { x: number; y: number } }) => {
-      const response = await fetch(`/api/teams/${teamId}/whiteboard/${id}/position`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ position }),
-      });
-      if (!response.ok) throw new Error('Failed to update position');
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/teams/${teamId}/whiteboard`] });
-    },
-  });
+  // Calculate grid position for new items
+  const calculateGridPosition = (itemIndex: number) => {
+    const columnIndex = Math.floor(itemIndex / ITEMS_PER_COLUMN);
+    const rowIndex = itemIndex % ITEMS_PER_COLUMN;
+    
+    return {
+      x: PADDING + (columnIndex * (ITEM_WIDTH + PADDING)),
+      y: PADDING + (rowIndex * (ITEM_HEIGHT + PADDING)),
+    };
+  };
 
   // Update item status mutation
   const updateItemStatus = useMutation({
@@ -168,66 +167,18 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
     e.preventDefault();
     if (!newItem.title.trim()) return;
 
-    const whiteboardRect = whiteboardRef.current?.getBoundingClientRect();
-    const centerX = whiteboardRect ? whiteboardRect.width / 2 : 300;
-    const centerY = whiteboardRect ? whiteboardRect.height / 2 : 200;
+    // Calculate grid position for new item
+    const gridPosition = calculateGridPosition(whiteboardItems.length);
 
     createItem.mutate({
       ...newItem,
-      positionX: centerX,
-      positionY: centerY,
+      positionX: gridPosition.x,
+      positionY: gridPosition.y,
       createdBy: 10, // This would come from auth context
     });
   };
 
-  const handleMouseDown = (e: React.MouseEvent, item: MissionItem) => {
-    e.preventDefault();
-    setIsDragging(true);
-    setSelectedItem(item);
-    const rect = e.currentTarget.getBoundingClientRect();
-    setDragOffset({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
-  };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || !selectedItem) return;
-
-    const whiteboardRect = whiteboardRef.current?.getBoundingClientRect();
-    if (!whiteboardRect) return;
-
-    const newX = e.clientX - whiteboardRect.left - dragOffset.x;
-    const newY = e.clientY - whiteboardRect.top - dragOffset.y;
-
-    // Update position immediately for smooth dragging
-    const updatedItems = whiteboardItems.map((item: MissionItem) =>
-      item.id === selectedItem.id
-        ? { ...item, positionX: Math.max(0, newX), positionY: Math.max(0, newY) }
-        : item
-    );
-    
-    queryClient.setQueryData([`/api/teams/${teamId}/whiteboard`], updatedItems);
-  };
-
-  const handleMouseUp = () => {
-    if (isDragging && selectedItem) {
-      // Get the current position from the updated query data
-      const currentItems = queryClient.getQueryData([`/api/teams/${teamId}/whiteboard`]) as MissionItem[] || [];
-      const currentItem = currentItems.find(item => item.id === selectedItem.id);
-      
-      if (currentItem) {
-        // Save position to backend
-        updateItemPosition.mutate({
-          id: selectedItem.id,
-          position: { x: currentItem.positionX, y: currentItem.positionY },
-        });
-      }
-    }
-    setIsDragging(false);
-    setSelectedItem(null);
-    setDragOffset({ x: 0, y: 0 });
-  };
 
   const getItemIcon = (type: MissionItem['type']) => {
     switch (type) {
@@ -379,9 +330,6 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
         <div 
           ref={whiteboardRef}
           className="relative bg-tactical-gray rounded-lg border-2 border-dashed border-tactical-gray-light min-h-[500px] overflow-hidden"
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
         >
           {whiteboardItems.length === 0 ? (
             <div className="absolute inset-0 flex items-center justify-center">
@@ -395,13 +343,13 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
             whiteboardItems.map((item: MissionItem) => (
               <div
                 key={item.id}
-                className={`absolute cursor-move select-none ${getItemColor(item.type, item.priority)} rounded-lg p-3 shadow-lg max-w-xs transition-none ${isDragging && selectedItem?.id === item.id ? 'opacity-90 shadow-xl' : ''}`}
+                className={`absolute select-none ${getItemColor(item.type, item.priority)} rounded-lg p-3 shadow-lg transition-none`}
                 style={{
                   left: `${item.positionX}px`,
                   top: `${item.positionY}px`,
-                  zIndex: selectedItem?.id === item.id ? 50 : 10,
+                  width: `${ITEM_WIDTH}px`,
+                  height: `${ITEM_HEIGHT}px`,
                 }}
-                onMouseDown={(e) => handleMouseDown(e, item)}
               >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center space-x-2">

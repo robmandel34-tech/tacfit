@@ -186,21 +186,29 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
         {/* Header with profile info */}
         <div className="p-6 pb-4">
           <div className="flex gap-4">
-            <div 
-              className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
-              onClick={handleProfileClick}
-            >
-              {activity.user.avatar ? (
-                <img
-                  src={`/uploads/${activity.user.avatar}`}
-                  alt="Profile picture"
-                  className="w-12 h-12 rounded-full object-cover"
-                />
-              ) : (
-                <div className="w-12 h-12 bg-military-green rounded-full flex items-center justify-center hover:bg-military-green-light transition-colors">
-                  <span className="text-white font-bold text-sm">
-                    {getInitials(activity.user.username)}
-                  </span>
+            <div className="flex flex-col items-center gap-1">
+              <div 
+                className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={handleProfileClick}
+              >
+                {activity.user.avatar ? (
+                  <img
+                    src={`/uploads/${activity.user.avatar}`}
+                    alt="Profile picture"
+                    className="w-12 h-12 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-12 h-12 bg-military-green rounded-full flex items-center justify-center hover:bg-military-green-light transition-colors">
+                    <span className="text-white font-bold text-sm">
+                      {getInitials(activity.user.username)}
+                    </span>
+                  </div>
+                )}
+              </div>
+              {activity.team && (
+                <div className="flex items-center gap-1 text-xs text-gray-400">
+                  <Users className="h-3 w-3" />
+                  <span className="text-center">{activity.team.name}</span>
                 </div>
               )}
             </div>
@@ -212,12 +220,6 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
                 >
                   {activity.user.username}
                 </span>
-                {activity.team && (
-                  <div className="flex items-center gap-1 text-xs text-gray-400">
-                    <Users className="h-3 w-3" />
-                    <span>{activity.team.name}</span>
-                  </div>
-                )}
                 <Badge variant="outline" className="text-xs border-gray-600 text-gray-300 whitespace-nowrap">
                   {getActivityIcon(activity.type)} {getActivityTypeDisplayName(activity.type)}
                 </Badge>

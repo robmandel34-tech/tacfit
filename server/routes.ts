@@ -1388,14 +1388,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/mission-tasks", async (req, res) => {
     try {
-      const taskData = insertMissionTaskSchema.parse({
-        ...req.body,
-        id: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-      });
+      // Create task with generated ID
+      const taskData = {
+        id: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        teamId: parseInt(req.body.teamId),
+        title: req.body.title,
+        description: req.body.description || null,
+        assignedTo: req.body.assignedTo,
+        assignedToUsername: req.body.assignedToUsername,
+        status: req.body.status || 'pending',
+        dueDate: req.body.dueDate ? new Date(req.body.dueDate) : null,
+        completed: req.body.completed || false,
+      };
       const task = await storage.createMissionTask(taskData);
       res.json(task);
     } catch (error) {
-      res.status(400).json({ message: "Invalid task data" });
+      console.error("Task creation error:", error);
+      res.status(400).json({ message: "Invalid task data", error: error.message });
     }
   });
 

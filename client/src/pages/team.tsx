@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Users, Crown, Target, Camera, Send, MessageCircle, Edit2, Check, X, ChevronDown, ChevronUp } from "lucide-react";
 import ChatCard from "@/components/chat-card";
+import MissionPlanningBoard from "@/components/mission-planning-board";
 
 import { useToast } from "@/hooks/use-toast";
 
@@ -581,6 +582,18 @@ export default function Team() {
             title="Team Comms"
           />
         </div>
+
+        {/* Mission Planning Board */}
+        {userTeamMember?.[0]?.teamId && teamMembers.length > 0 && (
+          <Card className="mb-6 tile-card">
+            <CardContent className="p-6">
+              <MissionPlanningBoard 
+                teamId={userTeamMember[0].teamId}
+                teamMembers={teamMembers}
+              />
+            </CardContent>
+          </Card>
+        )}
 
         {/* Team Members */}
         <Card className="mb-6 tile-card">

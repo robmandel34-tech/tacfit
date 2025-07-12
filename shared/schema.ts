@@ -153,6 +153,18 @@ export const whiteboardItems = pgTable("whiteboard_items", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const missionTasks = pgTable("mission_tasks", {
+  id: text("id").primaryKey(),
+  teamId: integer("team_id").references(() => teams.id).notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  assignedTo: text("assigned_to").notNull(),
+  assignedToUsername: text("assigned_to_username").notNull(),
+  status: text("status").notNull().default("pending"), // 'pending', 'in-progress', 'completed'
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -215,6 +227,11 @@ export const insertWhiteboardItemSchema = createInsertSchema(whiteboardItems).om
   updatedAt: true,
 });
 
+export const insertMissionTaskSchema = createInsertSchema(missionTasks).omit({
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -242,3 +259,5 @@ export type CompetitionEntry = typeof competitionEntries.$inferSelect;
 export type InsertCompetitionEntry = z.infer<typeof insertCompetitionEntrySchema>;
 export type WhiteboardItem = typeof whiteboardItems.$inferSelect;
 export type InsertWhiteboardItem = z.infer<typeof insertWhiteboardItemSchema>;
+export type MissionTask = typeof missionTasks.$inferSelect;
+export type InsertMissionTask = z.infer<typeof insertMissionTaskSchema>;

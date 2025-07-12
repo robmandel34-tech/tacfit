@@ -6,7 +6,7 @@ import {
   insertUserSchema, insertCompetitionSchema, insertTeamSchema, 
   insertTeamMemberSchema, insertActivitySchema, insertActivityCommentSchema,
   insertChatMessageSchema, insertFriendshipSchema, insertCompetitionInvitationSchema,
-  insertCompetitionEntrySchema, friendships
+  insertCompetitionEntrySchema, insertMissionTaskSchema, friendships
 } from "@shared/schema";
 import { db } from "./db";
 import { and, eq } from "drizzle-orm";
@@ -1375,7 +1375,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Mission Task routes
+  app.get("/api/mission-tasks/team/:teamId", async (req, res) => {
+    try {
+      const teamId = parseInt(req.params.teamId);
+      const tasks = await storage.getMissionTasks(teamId);
+      res.json(tasks);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching mission tasks" });
+    }
+  });
 
+  app.post("/api/mission-tasks", async (req, res) => {
+    try {
+      const taskData = insertMissionTaskSchema.parse({
+        ...req.body,
+        id: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      });
+      const task = await storage.createMissionTask(taskData);
+      res.json(task);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid task data" });
+    }
+  });
+
+  app.patch("/api/mission-tasks/:id", async (req, res) => {
+    try {
+      const taskId = req.params.id;
+      const updates = req.body;
+      const task = await storage.updateMissionTask(taskId, updates);
+      if (!task) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+      res.json(task);
+    } catch (error) {
+      res.status(500).json({ message: "Error updating task" });
+    }
+  });
+
+  app.delete("/api/mission-tasks/:id", async (req, res) => {
+    try {
+      const taskId = req.params.id;
+      const success = await storage.deleteMissionTask(taskId);
+      if (!success) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+      res.json({ message: "Task deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Error deleting task" });
+    }
+  });
 
   // Serve uploaded files
   app.use('/uploads', express.static('uploads'));

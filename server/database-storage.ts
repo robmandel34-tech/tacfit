@@ -4,9 +4,10 @@ import {
   InsertActivityComment, ActivityLike, ActivityFlag, InsertActivityFlag, 
   ChatMessage, InsertChatMessage, Friendship, InsertFriendship, CompetitionHistory, 
   CompetitionInvitation, InsertCompetitionInvitation, CompetitionEntry, 
-  InsertCompetitionEntry, WhiteboardItem, InsertWhiteboardItem, users, competitions, teams, teamMembers, activities, 
+  InsertCompetitionEntry, WhiteboardItem, InsertWhiteboardItem, MissionTask, InsertMissionTask,
+  users, competitions, teams, teamMembers, activities, 
   activityComments, activityLikes, activityFlags, chatMessages, friendships, 
-  competitionHistory, competitionInvitations, competitionEntries, whiteboardItems
+  competitionHistory, competitionInvitations, competitionEntries, whiteboardItems, missionTasks
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc } from "drizzle-orm";
@@ -423,6 +424,37 @@ export class DatabaseStorage implements IStorage {
 
   async deleteWhiteboardItem(id: number): Promise<boolean> {
     const result = await db.delete(whiteboardItems).where(eq(whiteboardItems.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Mission task operations
+  async getMissionTasks(teamId: number): Promise<MissionTask[]> {
+    return await db
+      .select()
+      .from(missionTasks)
+      .where(eq(missionTasks.teamId, teamId))
+      .orderBy(desc(missionTasks.createdAt));
+  }
+
+  async createMissionTask(insertTask: InsertMissionTask): Promise<MissionTask> {
+    const [task] = await db
+      .insert(missionTasks)
+      .values(insertTask)
+      .returning();
+    return task;
+  }
+
+  async updateMissionTask(id: string, updates: Partial<MissionTask>): Promise<MissionTask | undefined> {
+    const [task] = await db
+      .update(missionTasks)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(missionTasks.id, id))
+      .returning();
+    return task || undefined;
+  }
+
+  async deleteMissionTask(id: string): Promise<boolean> {
+    const result = await db.delete(missionTasks).where(eq(missionTasks.id, id));
     return result.rowCount > 0;
   }
 }

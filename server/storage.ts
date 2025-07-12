@@ -4,7 +4,7 @@ import {
   InsertActivityComment, ActivityLike, ChatMessage, InsertChatMessage, 
   Friendship, InsertFriendship, CompetitionHistory, CompetitionInvitation,
   InsertCompetitionInvitation, CompetitionEntry, InsertCompetitionEntry,
-  WhiteboardItem, InsertWhiteboardItem
+  WhiteboardItem, InsertWhiteboardItem, MissionTask, InsertMissionTask
 } from "@shared/schema";
 
 export interface IStorage {
@@ -89,6 +89,12 @@ export interface IStorage {
   updateWhiteboardItemPosition(id: number, positionX: number, positionY: number): Promise<WhiteboardItem | undefined>;
   updateWhiteboardItemStatus(id: number, status: string): Promise<WhiteboardItem | undefined>;
   deleteWhiteboardItem(id: number): Promise<boolean>;
+  
+  // Mission task operations
+  getMissionTasks(teamId: number): Promise<MissionTask[]>;
+  createMissionTask(insertTask: InsertMissionTask): Promise<MissionTask>;
+  updateMissionTask(id: string, updates: Partial<MissionTask>): Promise<MissionTask | undefined>;
+  deleteMissionTask(id: string): Promise<boolean>;
 }
 
 import { DatabaseStorage } from "./database-storage";

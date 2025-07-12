@@ -396,7 +396,7 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
                         }
                         className="data-[state=checked]:bg-military-green data-[state=checked]:border-military-green"
                       />
-                      <div className="flex items-center space-x-1">
+                      <div className="flex items-center space-x-0.5">
                         <Badge variant="outline" className="text-white border-gray-600">
                           TASK
                         </Badge>

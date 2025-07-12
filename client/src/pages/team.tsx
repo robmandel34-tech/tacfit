@@ -60,6 +60,12 @@ export default function Team() {
     enabled: !!team?.competitionId,
   });
 
+  // Get mission tasks
+  const { data: missionTasks = [] } = useQuery({
+    queryKey: [`/api/mission-tasks/team/${userTeamMember?.[0]?.teamId}`],
+    enabled: !!userTeamMember?.[0]?.teamId,
+  });
+
   // Load last viewed progress from localStorage
   useEffect(() => {
     if (team?.id) {
@@ -275,6 +281,15 @@ export default function Team() {
   const handleNameCancel = () => {
     setIsEditingName(false);
     setNameText("");
+  };
+
+  // Function to count pending tasks for a team member
+  const getPendingTasksCount = (userId: number) => {
+    return missionTasks.filter((task: any) => 
+      task.assignedTo === userId.toString() && 
+      task.status === 'pending' && 
+      !task.completed
+    ).length;
   };
 
 
@@ -626,7 +641,17 @@ export default function Team() {
                           <Crown className="ml-2 h-4 w-4 text-yellow-500" />
                         )}
                       </div>
-                      <p className="text-sm text-gray-400 capitalize">{member.role}</p>
+                      <div className="flex items-center space-x-2">
+                        <p className="text-sm text-gray-400 capitalize">{member.role}</p>
+                        {getPendingTasksCount(member.user?.id) > 0 && (
+                          <Badge 
+                            variant="secondary" 
+                            className="bg-orange-600 text-white text-xs px-2 py-1"
+                          >
+                            {getPendingTasksCount(member.user?.id)} pending
+                          </Badge>
+                        )}
+                      </div>
                       <p className="text-sm text-military-green">{member.user?.points || 0} points</p>
                       {member.user?.motto && (
                         <p className="text-xs text-gray-300 italic mt-1">

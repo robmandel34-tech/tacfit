@@ -51,8 +51,8 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
       {/* Tab-like header for Team Progress Map */}
       <div className="relative">
         <div className="flex justify-center mb-0">
-          <div className="bg-amber-100 border-amber-200 border-t border-l border-r rounded-t-xl px-6 py-3 shadow-lg">
-            <h3 className="text-lg font-semibold text-green-800">Team Progress Map</h3>
+          <div className="bg-gray-700 border-gray-600 border-t border-l border-r rounded-t-xl px-6 py-3 shadow-lg">
+            <h3 className="text-lg font-semibold text-white">Team Progress Map</h3>
           </div>
         </div>
         

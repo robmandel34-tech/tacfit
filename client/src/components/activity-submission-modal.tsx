@@ -175,7 +175,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
             <div>
             <Label className="text-gray-300 font-medium mb-2">Activity Type</Label>
             <Select value={type} onValueChange={setType}>
-              <SelectTrigger className="bg-tactical-gray-lighter border-tactical-gray text-white focus:border-white focus:ring-1 focus:ring-white">
+              <SelectTrigger className="bg-tactical-gray-lighter border-tactical-gray text-white focus:border-white focus:ring-0 focus:outline-none focus:shadow-[0_0_0_2px_white]">
                 <SelectValue placeholder="Select activity type" />
               </SelectTrigger>
               <SelectContent className="bg-tactical-gray-light border-tactical-gray text-white">
@@ -197,7 +197,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
             <Textarea 
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="bg-tactical-gray-lighter border-tactical-gray text-white h-24 focus:border-white focus:ring-1 focus:ring-white"
+              className="bg-tactical-gray-lighter border-tactical-gray text-white h-24 focus:border-white focus:ring-0 focus:outline-none focus:shadow-[0_0_0_2px_white]"
               placeholder="Describe your activity..."
               required
             />
@@ -216,7 +216,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
               type="text"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
-              className="bg-tactical-gray-lighter border-tactical-gray text-white focus:border-white focus:ring-1 focus:ring-white"
+              className="bg-tactical-gray-lighter border-tactical-gray text-white focus:border-white focus:ring-0 focus:outline-none focus:shadow-[0_0_0_2px_white]"
               placeholder={
                 type 
                   ? `e.g., 30 ${activityMeasurements[type]}`

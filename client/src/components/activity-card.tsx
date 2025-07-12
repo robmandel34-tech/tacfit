@@ -195,9 +195,6 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
                 <Badge variant="outline" className="text-xs border-gray-600 text-gray-300 whitespace-nowrap">
                   {getActivityIcon(activity.type)} {getActivityTypeDisplayName(activity.type)}
                 </Badge>
-                <span className="text-gray-400 text-sm">
-                  {new Date(activity.createdAt).toLocaleDateString()}
-                </span>
               </div>
               <p className="text-gray-300 text-sm">{activity.description}</p>
             </div>
@@ -217,48 +214,54 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
         
         {/* Full-width action bar */}
         <div className="px-6 py-4 border-t border-gray-600">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={handleLike}
-              disabled={likeActivity.isPending}
-              className="flex items-center gap-2 transition-colors text-sm text-gray-400 hover:text-military-green"
-              style={{
-                color: userLikeStatus ? '#7cb342' : undefined
-              }}
-            >
-              <ThumbsUp 
-                className="h-4 w-4" 
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handleLike}
+                disabled={likeActivity.isPending}
+                className="flex items-center gap-2 transition-colors text-sm text-gray-400 hover:text-military-green"
                 style={{
-                  fill: userLikeStatus ? '#7cb342' : 'none'
+                  color: userLikeStatus ? '#7cb342' : undefined
                 }}
-              />
-              <span>{currentLikeCount}</span>
-            </button>
-            
-            <button 
-              onClick={() => setShowComments(true)}
-              className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors text-sm"
-            >
-              <MessageCircle className="h-4 w-4" />
-              <span>{currentCommentCount}</span>
-            </button>
-            
-            <button
-              onClick={handleFlag}
-              disabled={flagActivity.isPending}
-              className="flex items-center gap-2 transition-colors text-sm text-gray-400 hover:text-red-400"
-              style={{
-                color: userFlagStatus ? '#ef4444' : undefined
-              }}
-            >
-              <Flag 
-                className="h-4 w-4" 
+              >
+                <ThumbsUp 
+                  className="h-4 w-4" 
+                  style={{
+                    fill: userLikeStatus ? '#7cb342' : 'none'
+                  }}
+                />
+                <span>{currentLikeCount}</span>
+              </button>
+              
+              <button 
+                onClick={() => setShowComments(true)}
+                className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors text-sm"
+              >
+                <MessageCircle className="h-4 w-4" />
+                <span>{currentCommentCount}</span>
+              </button>
+              
+              <button
+                onClick={handleFlag}
+                disabled={flagActivity.isPending}
+                className="flex items-center gap-2 transition-colors text-sm text-gray-400 hover:text-red-400"
                 style={{
-                  fill: userFlagStatus ? '#ef4444' : 'none'
+                  color: userFlagStatus ? '#ef4444' : undefined
                 }}
-              />
-              <span className="text-gray-300">{currentFlagCount > 0 ? currentFlagCount : 'Flag'}</span>
-            </button>
+              >
+                <Flag 
+                  className="h-4 w-4" 
+                  style={{
+                    fill: userFlagStatus ? '#ef4444' : 'none'
+                  }}
+                />
+                <span className="text-gray-300">{currentFlagCount > 0 ? currentFlagCount : 'Flag'}</span>
+              </button>
+            </div>
+            
+            <span className="text-gray-400 text-sm">
+              {new Date(activity.createdAt).toLocaleDateString()}
+            </span>
           </div>
         </div>
       </CardContent>

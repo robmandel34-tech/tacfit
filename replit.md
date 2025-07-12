@@ -10,6 +10,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### Mission Whiteboard Removal (July 2025)
+- **REMOVED**: Mission whiteboard/planning board feature completely removed from team page
+- **CLEANED**: Removed MissionWhiteboard component from client/src/components/mission-whiteboard.tsx
+- **CLEANED**: Removed all whiteboard API endpoints from server/routes.ts
+- **SIMPLIFIED**: Team page now focuses on core features: team info, progress tracking, chat, and member management
+- **REASON**: User feedback indicated the whiteboard feature was not working as expected
+
 ### Masculine Text Language Update (July 2025)
 - **UPDATED**: All interface text made more masculine and tactical throughout the app
 - **CHANGED**: "Dashboard" → "Command Center" for main page and navigation

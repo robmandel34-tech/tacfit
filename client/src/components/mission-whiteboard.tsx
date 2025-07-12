@@ -51,10 +51,10 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
   const whiteboardRef = useRef<HTMLDivElement>(null);
   
   // Grid layout constants
-  const ITEM_WIDTH = 240; // Reduced width to fit 2 columns nicely
-  const ITEM_HEIGHT = 120;
-  const PADDING = 20;
-  const ITEMS_PER_COLUMN = 3; // Reduced to 3 per column for better spacing
+  const ITEM_WIDTH = 160; // Even smaller width
+  const ITEM_HEIGHT = 80; // Even smaller height
+  const PADDING = 10;
+  const ITEMS_PER_COLUMN = 5; // More items per column with smaller cards
   
   // New item form state
   const [newItem, setNewItem] = useState({
@@ -345,39 +345,39 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
                 <div className="flex items-start justify-between mb-1">
                   <div className="flex items-center space-x-1 flex-1 min-w-0">
                     {getItemIcon(item.type)}
-                    <span className="text-white font-medium text-sm truncate">{item.title}</span>
+                    <span className="text-white font-medium text-xs truncate">{item.title}</span>
                   </div>
                   <div className="flex items-center space-x-1 flex-shrink-0">
                     {getStatusIcon(item.status)}
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="h-5 w-5 p-0 hover:bg-black/20 flex-shrink-0"
+                      className="h-4 w-4 p-0 hover:bg-black/20 flex-shrink-0"
                       onClick={(e) => {
                         e.stopPropagation();
                         deleteItem.mutate(item.id);
                       }}
                     >
-                      <Trash2 className="h-3 w-3 text-red-400" />
+                      <Trash2 className="h-2.5 w-2.5 text-red-400" />
                     </Button>
                   </div>
                 </div>
                 
                 {item.description && (
-                  <p className="text-white/90 text-xs mb-2">{item.description}</p>
+                  <p className="text-white/90 text-xs mb-1 line-clamp-2">{item.description}</p>
                 )}
                 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-between mt-auto">
+                  <div className="flex items-center space-x-1 flex-1 min-w-0">
                     {item.assignedTo && (
                       <div className="flex items-center space-x-1">
-                        <User className="h-3 w-3 text-white/70" />
+                        <User className="h-2.5 w-2.5 text-white/70" />
                         <span className="text-white/70 text-xs">{item.assignedTo}</span>
                       </div>
                     )}
                     {item.dueDate && (
                       <div className="flex items-center space-x-1">
-                        <Calendar className="h-3 w-3 text-white/70" />
+                        <Calendar className="h-2.5 w-2.5 text-white/70" />
                         <span className="text-white/70 text-xs">
                           {format(new Date(item.dueDate), 'MMM d')}
                         </span>
@@ -385,11 +385,11 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
                     )}
                   </div>
                   
-                  <div className="flex items-center space-x-1">
+                  <div className="flex items-center space-x-1 flex-shrink-0">
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="h-6 w-6 p-0 hover:bg-black/20"
+                      className="h-4 w-4 p-0 hover:bg-black/20"
                       onClick={(e) => {
                         e.stopPropagation();
                         const newStatus = item.status === 'completed' ? 'todo' : 
@@ -398,9 +398,9 @@ export default function MissionWhiteboard({ teamId, competitionId }: MissionWhit
                       }}
                     >
                       {item.status === 'completed' ? (
-                        <CheckCircle className="h-3 w-3 text-green-400" />
+                        <CheckCircle className="h-2.5 w-2.5 text-green-400" />
                       ) : (
-                        <Circle className="h-3 w-3 text-gray-400" />
+                        <Circle className="h-2.5 w-2.5 text-gray-400" />
                       )}
                     </Button>
                   </div>

@@ -1399,10 +1399,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Calculate grid position based on existing items
       const existingItems = await storage.getWhiteboardItems(teamId);
       const itemIndex = existingItems.length;
-      const ITEMS_PER_COLUMN = 3;
-      const ITEM_WIDTH = 240;
-      const ITEM_HEIGHT = 120;
-      const PADDING = 20;
+      const ITEMS_PER_COLUMN = 5;
+      const ITEM_WIDTH = 160;
+      const ITEM_HEIGHT = 80;
+      const PADDING = 10;
       
       const columnIndex = Math.floor(itemIndex / ITEMS_PER_COLUMN);
       const rowIndex = itemIndex % ITEMS_PER_COLUMN;

@@ -136,6 +136,23 @@ export const competitionEntries = pgTable("competition_entries", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const whiteboardItems = pgTable("whiteboard_items", {
+  id: serial("id").primaryKey(),
+  teamId: integer("team_id").references(() => teams.id),
+  type: text("type").notNull(), // objective, strategy, milestone, note
+  title: text("title").notNull(),
+  description: text("description"),
+  priority: text("priority").default("medium"), // high, medium, low
+  status: text("status").default("pending"), // pending, in_progress, completed
+  assignedTo: text("assigned_to"),
+  dueDate: timestamp("due_date"),
+  positionX: integer("position_x").default(0),
+  positionY: integer("position_y").default(0),
+  createdBy: integer("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -192,6 +209,12 @@ export const insertCompetitionEntrySchema = createInsertSchema(competitionEntrie
   createdAt: true,
 });
 
+export const insertWhiteboardItemSchema = createInsertSchema(whiteboardItems).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -217,3 +240,5 @@ export type CompetitionInvitation = typeof competitionInvitations.$inferSelect;
 export type InsertCompetitionInvitation = z.infer<typeof insertCompetitionInvitationSchema>;
 export type CompetitionEntry = typeof competitionEntries.$inferSelect;
 export type InsertCompetitionEntry = z.infer<typeof insertCompetitionEntrySchema>;
+export type WhiteboardItem = typeof whiteboardItems.$inferSelect;
+export type InsertWhiteboardItem = z.infer<typeof insertWhiteboardItemSchema>;

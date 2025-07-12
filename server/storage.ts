@@ -3,7 +3,8 @@ import {
   TeamMember, InsertTeamMember, Activity, InsertActivity, ActivityComment, 
   InsertActivityComment, ActivityLike, ChatMessage, InsertChatMessage, 
   Friendship, InsertFriendship, CompetitionHistory, CompetitionInvitation,
-  InsertCompetitionInvitation, CompetitionEntry, InsertCompetitionEntry
+  InsertCompetitionInvitation, CompetitionEntry, InsertCompetitionEntry,
+  WhiteboardItem, InsertWhiteboardItem
 } from "@shared/schema";
 
 export interface IStorage {
@@ -81,6 +82,13 @@ export interface IStorage {
   getCompetitionEntry(userId: number, competitionId: number): Promise<CompetitionEntry | undefined>;
   updateCompetitionEntry(id: number, updates: Partial<CompetitionEntry>): Promise<CompetitionEntry | undefined>;
   getUserCompetitionEntries(userId: number): Promise<CompetitionEntry[]>;
+  
+  // Whiteboard operations
+  getWhiteboardItems(teamId: number): Promise<WhiteboardItem[]>;
+  createWhiteboardItem(insertItem: InsertWhiteboardItem): Promise<WhiteboardItem>;
+  updateWhiteboardItemPosition(id: number, positionX: number, positionY: number): Promise<WhiteboardItem | undefined>;
+  updateWhiteboardItemStatus(id: number, status: string): Promise<WhiteboardItem | undefined>;
+  deleteWhiteboardItem(id: number): Promise<boolean>;
 }
 
 import { DatabaseStorage } from "./database-storage";

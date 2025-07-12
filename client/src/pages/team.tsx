@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Users, Crown, Target, Camera, Send, MessageCircle, Edit2, Check, X } from "lucide-react";
 import ChatCard from "@/components/chat-card";
+import MissionWhiteboard from "@/components/mission-whiteboard";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Team() {
@@ -487,6 +488,14 @@ export default function Team() {
             </CardContent>
           </Card>
         )}
+
+        {/* Mission Planning Whiteboard */}
+        <div className="mb-6">
+          <MissionWhiteboard 
+            teamId={userTeamMember?.[0]?.teamId}
+            competitionId={team?.competitionId}
+          />
+        </div>
 
         {/* Team Chat - Collapsible */}
         <div className="mb-6">

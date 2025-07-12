@@ -4,9 +4,9 @@ import {
   InsertActivityComment, ActivityLike, ActivityFlag, InsertActivityFlag, 
   ChatMessage, InsertChatMessage, Friendship, InsertFriendship, CompetitionHistory, 
   CompetitionInvitation, InsertCompetitionInvitation, CompetitionEntry, 
-  InsertCompetitionEntry, users, competitions, teams, teamMembers, activities, 
+  InsertCompetitionEntry, WhiteboardItem, InsertWhiteboardItem, users, competitions, teams, teamMembers, activities, 
   activityComments, activityLikes, activityFlags, chatMessages, friendships, 
-  competitionHistory, competitionInvitations, competitionEntries
+  competitionHistory, competitionInvitations, competitionEntries, whiteboardItems
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc } from "drizzle-orm";
@@ -391,5 +391,38 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(competitionEntries)
       .where(eq(competitionEntries.userId, userId));
+  }
+
+  // Whiteboard operations
+  async getWhiteboardItems(teamId: number): Promise<WhiteboardItem[]> {
+    return await db.select().from(whiteboardItems).where(eq(whiteboardItems.teamId, teamId));
+  }
+
+  async createWhiteboardItem(insertItem: InsertWhiteboardItem): Promise<WhiteboardItem> {
+    const [item] = await db.insert(whiteboardItems).values(insertItem).returning();
+    return item;
+  }
+
+  async updateWhiteboardItemPosition(id: number, positionX: number, positionY: number): Promise<WhiteboardItem | undefined> {
+    const [item] = await db
+      .update(whiteboardItems)
+      .set({ positionX, positionY, updatedAt: new Date() })
+      .where(eq(whiteboardItems.id, id))
+      .returning();
+    return item;
+  }
+
+  async updateWhiteboardItemStatus(id: number, status: string): Promise<WhiteboardItem | undefined> {
+    const [item] = await db
+      .update(whiteboardItems)
+      .set({ status, updatedAt: new Date() })
+      .where(eq(whiteboardItems.id, id))
+      .returning();
+    return item;
+  }
+
+  async deleteWhiteboardItem(id: number): Promise<boolean> {
+    const result = await db.delete(whiteboardItems).where(eq(whiteboardItems.id, id));
+    return result.rowCount > 0;
   }
 }

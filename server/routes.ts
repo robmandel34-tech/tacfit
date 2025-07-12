@@ -1375,6 +1375,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Whiteboard routes
+  app.get("/api/teams/:teamId/whiteboard", async (req, res) => {
+    try {
+      const teamId = parseInt(req.params.teamId);
+      const items = await storage.getWhiteboardItems(teamId);
+      res.json(items);
+    } catch (error) {
+      console.error("Error getting whiteboard items:", error);
+      res.status(500).json({ error: "Failed to get whiteboard items" });
+    }
+  });
+
+  app.post("/api/teams/:teamId/whiteboard", async (req, res) => {
+    try {
+      const teamId = parseInt(req.params.teamId);
+      const { type, title, description, priority, assignedTo, dueDate, position, createdBy } = req.body;
+      
+      if (!type || !title) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+      
+      const item = await storage.createWhiteboardItem({
+        teamId,
+        type,
+        title,
+        description,
+        priority: priority || 'medium',
+        assignedTo,
+        dueDate: dueDate ? new Date(dueDate) : undefined,
+        positionX: position?.x || 0,
+        positionY: position?.y || 0,
+        createdBy: createdBy || 1, // TODO: Get from auth context
+      });
+      
+      res.json(item);
+    } catch (error) {
+      console.error("Error creating whiteboard item:", error);
+      res.status(500).json({ error: "Failed to create whiteboard item" });
+    }
+  });
+
+  app.patch("/api/teams/:teamId/whiteboard/:itemId/position", async (req, res) => {
+    try {
+      const itemId = parseInt(req.params.itemId);
+      const { position } = req.body;
+      
+      if (!position || typeof position.x !== 'number' || typeof position.y !== 'number') {
+        return res.status(400).json({ error: "Invalid position data" });
+      }
+      
+      const item = await storage.updateWhiteboardItemPosition(itemId, position.x, position.y);
+      
+      if (!item) {
+        return res.status(404).json({ error: "Whiteboard item not found" });
+      }
+      
+      res.json(item);
+    } catch (error) {
+      console.error("Error updating whiteboard item position:", error);
+      res.status(500).json({ error: "Failed to update whiteboard item position" });
+    }
+  });
+
+  app.patch("/api/teams/:teamId/whiteboard/:itemId/status", async (req, res) => {
+    try {
+      const itemId = parseInt(req.params.itemId);
+      const { status } = req.body;
+      
+      if (!status) {
+        return res.status(400).json({ error: "Missing status" });
+      }
+      
+      const item = await storage.updateWhiteboardItemStatus(itemId, status);
+      
+      if (!item) {
+        return res.status(404).json({ error: "Whiteboard item not found" });
+      }
+      
+      res.json(item);
+    } catch (error) {
+      console.error("Error updating whiteboard item status:", error);
+      res.status(500).json({ error: "Failed to update whiteboard item status" });
+    }
+  });
+
+  app.delete("/api/teams/:teamId/whiteboard/:itemId", async (req, res) => {
+    try {
+      const itemId = parseInt(req.params.itemId);
+      
+      const success = await storage.deleteWhiteboardItem(itemId);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Whiteboard item not found" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting whiteboard item:", error);
+      res.status(500).json({ error: "Failed to delete whiteboard item" });
+    }
+  });
+
   // Serve uploaded files
   app.use('/uploads', express.static('uploads'));
 

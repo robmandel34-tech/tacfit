@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Users, Crown, Target, Camera, Send, MessageCircle, Edit2, Check, X } from "lucide-react";
+import ChatCard from "@/components/chat-card";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Team() {
@@ -18,7 +19,7 @@ export default function Team() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
-  const [message, setMessage] = useState("");
+
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [isEditingMotto, setIsEditingMotto] = useState(false);
   const [mottoText, setMottoText] = useState("");
@@ -49,49 +50,7 @@ export default function Team() {
     enabled: !!userTeamMember?.[0]?.teamId,
   });
 
-  // Get team chat messages
-  const { data: messages = [], refetch: refetchMessages } = useQuery({
-    queryKey: ["/api/chat", { teamId: userTeamMember?.[0]?.teamId }],
-    queryFn: async () => {
-      const params = new URLSearchParams();
-      if (userTeamMember?.[0]?.teamId) params.append("teamId", userTeamMember[0].teamId.toString());
-      
-      const response = await fetch(`/api/chat?${params}`);
-      if (!response.ok) throw new Error("Failed to fetch messages");
-      return response.json();
-    },
-    enabled: !!userTeamMember?.[0]?.teamId,
-  });
 
-  // Send message mutation
-  const sendMessage = useMutation({
-    mutationFn: async (content: string) => {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          senderId: user?.id,
-          content,
-          teamId: userTeamMember?.[0]?.teamId,
-          type: "team",
-        }),
-      });
-
-      if (!response.ok) throw new Error("Failed to send message");
-      return response.json();
-    },
-    onSuccess: () => {
-      setMessage("");
-      refetchMessages();
-    },
-    onError: () => {
-      toast({
-        title: "Failed to send message",
-        description: "Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
 
   // Upload team photo mutation
   const uploadTeamPhoto = useMutation({
@@ -274,15 +233,7 @@ export default function Team() {
     setNameText("");
   };
 
-  // Auto-refresh messages
-  useEffect(() => {
-    if (userTeamMember?.[0]?.teamId) {
-      const interval = setInterval(() => {
-        refetchMessages();
-      }, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [userTeamMember?.[0]?.teamId, refetchMessages]);
+
 
   if (isLoading) {
     return (
@@ -520,76 +471,13 @@ export default function Team() {
           </CardContent>
         </Card>
 
-        {/* Team Chat */}
-        <Card className="mb-6 tile-card">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center">
-              <MessageCircle className="mr-2 h-5 w-5" />
-              Team Chat
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {/* Messages */}
-              <ScrollArea className="h-80 w-full rounded-sm border border-tactical-gray bg-tactical-gray p-4">
-                <div className="space-y-4">
-                  {messages.length === 0 ? (
-                    <div className="text-center py-8">
-                      <MessageCircle className="mx-auto h-12 w-12 text-gray-500 mb-4" />
-                      <p className="text-gray-400">No messages yet</p>
-                      <p className="text-sm text-gray-500">Start a conversation with your team!</p>
-                    </div>
-                  ) : (
-                    messages.map((msg: any) => (
-                      <div key={msg.id} className="flex items-start space-x-3">
-                        <Avatar 
-                          className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-military-green transition-all"
-                          onClick={() => navigate(`/profile/${msg.sender?.id}`)}
-                        >
-                          <AvatarImage src={msg.sender?.avatar ? `/uploads/${msg.sender.avatar}` : undefined} />
-                          <AvatarFallback className="bg-military-green text-white text-xs">
-                            {msg.sender?.username?.charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-2">
-                            <p 
-                              className="text-sm font-medium text-white cursor-pointer hover:text-military-green transition-colors"
-                              onClick={() => navigate(`/profile/${msg.sender?.id}`)}
-                            >
-                              {msg.sender?.username}
-                            </p>
-                            <p className="text-xs text-gray-400">
-                              {new Date(msg.createdAt).toLocaleTimeString()}
-                            </p>
-                          </div>
-                          <p className="text-sm text-gray-300 mt-1">{msg.content}</p>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </ScrollArea>
-
-              {/* Message Input */}
-              <form onSubmit={handleSubmit} className="flex space-x-2">
-                <Input
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Type your message..."
-                  className="flex-1 bg-tactical-gray border-tactical-gray text-white placeholder-gray-400"
-                />
-                <Button 
-                  type="submit" 
-                  disabled={!message.trim() || sendMessage.isPending}
-                  className="bg-military-green hover:bg-military-green-light"
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
-              </form>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Team Chat - Collapsible */}
+        <div className="mb-6">
+          <ChatCard 
+            teamId={userTeamMember?.[0]?.teamId}
+            title="Team Communications"
+          />
+        </div>
 
         {/* Team Activities */}
         <Card className="sharp-card bg-tactical-gray-light border-tactical-gray">

@@ -22,7 +22,7 @@ export default function BottomNavigation() {
   const navItems = hasActiveMembership ? [
     { path: "/", icon: House, label: "Command" },
     { path: "/competition-status", icon: Mountain, label: "Operation" },
-    { path: "/team", icon: Shield, label: "Squad" }
+    { path: "/team", icon: Shield, label: "Team" }
   ] : [
     { path: "/", icon: House, label: "Command" },
     { path: "/competitions", icon: Mountain, label: "Operations" },

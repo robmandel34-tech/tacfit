@@ -10,12 +10,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### Mission Whiteboard Removal (July 2025)
-- **REMOVED**: Mission whiteboard/planning board feature completely removed from team page
-- **CLEANED**: Removed MissionWhiteboard component from client/src/components/mission-whiteboard.tsx
-- **CLEANED**: Removed all whiteboard API endpoints from server/routes.ts
-- **SIMPLIFIED**: Team page now focuses on core features: team info, progress tracking, chat, and member management
-- **REASON**: User feedback indicated the whiteboard feature was not working as expected
+### Mission Planning Board Updates (July 2025)
+- **RESTORED**: Mission Planning Board brought back with collapsible format matching Team Comms card
+- **ENHANCED**: Added proper Card wrapper with header structure and collapsible trigger
+- **INTEGRATED**: Collapsible component with CardHeader as trigger for consistent tactical theme
+- **STYLED**: Added Clipboard icon and consistent styling with tactical theme colors
+- **POSITIONED**: "Add Task" button aligned to left side for better visual flow
+- **SECURED**: Task completion restricted to assigned user OR team captain only
+- **PERMISSION**: Added authentication checks to prevent unauthorized task completion
+- **DISABLED**: Checkbox becomes disabled for users without task completion permissions
+- **VISUAL**: Added visual indicators (opacity, cursor) for disabled task completion states
 
 ### Masculine Text Language Update (July 2025)
 - **UPDATED**: All interface text made more masculine and tactical throughout the app

@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 
 interface MissionTask {
   id: string;
@@ -32,6 +33,19 @@ interface MissionPlanningBoardProps {
 export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPlanningBoardProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  
+  // Check if current user can complete a task (assigned user or team captain)
+  const canCompleteTask = (task: MissionTask) => {
+    if (!user) return false;
+    
+    // Check if user is assigned to the task
+    if (task.assignedTo === user.id.toString()) return true;
+    
+    // Check if user is team captain
+    const currentUserMember = teamMembers.find(m => m.user?.id === user.id);
+    return currentUserMember?.role === 'captain';
+  };
   
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
@@ -414,10 +428,11 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         checked={task.completed}
+                        disabled={!canCompleteTask(task)}
                         onCheckedChange={(checked) => 
                           toggleCompletionMutation.mutate({ id: task.id, completed: !!checked })
                         }
-                        className="data-[state=checked]:bg-military-green data-[state=checked]:border-military-green"
+                        className="data-[state=checked]:bg-military-green data-[state=checked]:border-military-green disabled:opacity-50 disabled:cursor-not-allowed"
                       />
                       <div className="flex items-center space-x-0.5">
                         <Badge variant="outline" className="text-white border-gray-600">

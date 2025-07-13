@@ -44,7 +44,7 @@ export async function seedDatabase() {
       isActive: true,
       createdBy: user1.id,
       requiredActivities: ["cardio", "strength", "flexibility"],
-      targetGoals: ["50,000 steps as a team", "25 hours of strength training", "15 hours of flexibility work"]
+      targetGoals: ["1,500 minutes of cardio", "5,000 reps of strength training", "900 minutes of flexibility work"]
     });
     
     const comp2 = await storage.createCompetition({
@@ -55,8 +55,8 @@ export async function seedDatabase() {
       maxTeams: 8,
       isActive: false,
       createdBy: user1.id,
-      requiredActivities: ["cardio", "strength", "sports"],
-      targetGoals: ["40,000 steps as a team", "20 hours of strength training", "16 hours of sports activities"]
+      requiredActivities: ["cardio", "strength", "flexibility"],
+      targetGoals: ["1,200 minutes of cardio", "4,000 reps of strength training", "720 minutes of flexibility work"]
     });
 
     // Create sample teams

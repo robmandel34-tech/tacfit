@@ -115,10 +115,8 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
         return 'reps';
       case 'flexibility':
         return 'minutes';
-      case 'sports':
-        return 'minutes';
       default:
-        return 'quantity';
+        return 'units';
     }
   };
 

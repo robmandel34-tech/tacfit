@@ -21,6 +21,16 @@ Preferred communication style: Simple, everyday language.
 - **DISABLED**: Checkbox becomes disabled for users without task completion permissions
 - **VISUAL**: Added visual indicators (opacity, cursor) for disabled task completion states
 
+### Activity Measurement Standardization (July 2025)
+- **STANDARDIZED**: All competitions now use the same three activity types: Cardio, Strength, Flexibility
+- **UNIFIED**: Activity measurements consistent across all areas: Cardio = minutes, Strength = reps, Flexibility = minutes
+- **ENHANCED**: Activity submission form shows measurement unit clearly above quantity field
+- **RESTRICTED**: Quantity field now only accepts numeric input (type="number")
+- **DISABLED**: Quantity field disabled until user selects activity type
+- **UPDATED**: Target goals in competitions use consistent units (e.g., "1,500 minutes of cardio")
+- **CLEANED**: Removed inconsistent activity types (sports, other) to focus on core three
+- **IMPROVED**: Activity cards and progress tracking use same measurement units throughout
+
 ### Masculine Text Language Update (July 2025)
 - **UPDATED**: All interface text made more masculine and tactical throughout the app
 - **CHANGED**: "Dashboard" → "Command Center" for main page and navigation

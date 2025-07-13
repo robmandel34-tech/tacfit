@@ -47,21 +47,17 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   const activityTypeNames: Record<string, string> = {
     cardio: "Cardio Training",
     strength: "Strength Operations",
-    flexibility: "Mobility Training",
-    sports: "Combat Sports",
-    other: "Special Operations"
+    flexibility: "Mobility Training"
   };
 
   const activityMeasurements: Record<string, string> = {
     cardio: "minutes",
     strength: "reps",
-    flexibility: "minutes",
-    sports: "minutes",
-    other: "quantity"
+    flexibility: "minutes"
   };
 
-  // Get required activities for current competition or fallback to all types
-  const availableActivityTypes = competition?.requiredActivities || ["cardio", "strength", "flexibility", "sports", "other"];
+  // Get required activities for current competition or fallback to standard types
+  const availableActivityTypes = competition?.requiredActivities || ["cardio", "strength", "flexibility"];
 
   const submitActivity = useMutation({
     mutationFn: async (data: FormData) => {
@@ -204,24 +200,25 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
           </div>
           
           <div>
-            <Label className="text-gray-300 font-medium mb-2">
-              Quantity
-              {type && (
-                <span className="text-sm text-gray-400 ml-2">
-                  (in {activityMeasurements[type] || "quantity"})
-                </span>
-              )}
-            </Label>
+            <Label className="text-gray-300 font-medium mb-2">Quantity</Label>
+            {type && (
+              <div className="text-sm text-military-green font-medium mb-2">
+                Enter amount in {activityMeasurements[type]}
+              </div>
+            )}
             <Input
-              type="text"
+              type="number"
+              min="1"
+              step="1"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
               className="bg-tactical-gray-lighter border-2 border-tactical-gray text-white focus:border-white focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
               placeholder={
                 type 
-                  ? `e.g., 30 ${activityMeasurements[type]}`
-                  : "e.g., 30 minutes"
+                  ? `e.g., 30`
+                  : "Select activity type first"
               }
+              disabled={!type}
               required
             />
           </div>

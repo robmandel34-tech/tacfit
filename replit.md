@@ -31,6 +31,14 @@ Preferred communication style: Simple, everyday language.
 - **CLEANED**: Removed inconsistent activity types (sports, other) to focus on core three
 - **IMPROVED**: Activity cards and progress tracking use same measurement units throughout
 
+### Bonus Points System (July 2025)
+- **IMPLEMENTED**: 50% bonus points awarded when users submit both video AND image evidence
+- **CALCULATION**: Base points (10) + 50% bonus = 15 points total for dual evidence submissions
+- **VISUAL**: Activity submission modal shows bonus indicator when both files are uploaded
+- **INCENTIVE**: Tooltip encourages users to submit both evidence types for maximum points
+- **LOGGING**: Server logs bonus point awards for tracking and debugging
+- **AUTOMATIC**: Bonus calculation applied server-side during activity submission processing
+
 ### Masculine Text Language Update (July 2025)
 - **UPDATED**: All interface text made more masculine and tactical throughout the app
 - **CHANGED**: "Dashboard" → "Command Center" for main page and navigation

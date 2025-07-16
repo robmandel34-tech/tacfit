@@ -224,7 +224,20 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
           </div>
           
           <div className="space-y-4">
-            <Label className="text-gray-300 font-medium mb-2">Evidence (Photo + Video)</Label>
+            <div className="flex items-center justify-between">
+              <Label className="text-gray-300 font-medium mb-2">Evidence (Photo + Video)</Label>
+              {imageFile && videoFile && (
+                <div className="text-xs text-military-green font-medium bg-military-green/10 px-2 py-1 rounded">
+                  +50% Bonus Points!
+                </div>
+              )}
+            </div>
+            
+            {!imageFile || !videoFile ? (
+              <div className="text-xs text-gray-400 mb-2">
+                💡 Submit both image and video evidence to earn 50% bonus points
+              </div>
+            ) : null}
             
             {/* Image Upload */}
             <div className="border-2 border-dashed border-tactical-gray rounded-lg p-4 text-center hover:border-white/50 transition-colors">

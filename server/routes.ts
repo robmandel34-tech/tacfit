@@ -223,7 +223,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const competitionId = parseInt(req.params.id);
       const updates = req.body;
       
-      const competition = await storage.updateCompetition(competitionId, updates);
+      // Convert date strings to Date objects if they exist
+      const processedUpdates = {
+        ...updates,
+        ...(updates.startDate && { startDate: new Date(updates.startDate) }),
+        ...(updates.endDate && { endDate: new Date(updates.endDate) })
+      };
+      
+      const competition = await storage.updateCompetition(competitionId, processedUpdates);
       if (!competition) {
         return res.status(404).json({ message: "Competition not found" });
       }

@@ -59,6 +59,7 @@ Preferred communication style: Simple, everyday language.
 - **FIXED**: API request parameter order corrected for all admin mutations
 - **FIXED**: MaxTeams input field now allows proper editing without NaN errors
 - **FIXED**: Scrollable modal with proper overflow handling for long forms
+- **FIXED**: Date conversion error in competition updates - backend now properly handles date string to Date object conversion
 
 ### Masculine Text Language Update (July 2025)
 - **UPDATED**: All interface text made more masculine and tactical throughout the app

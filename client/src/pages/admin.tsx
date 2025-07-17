@@ -278,13 +278,13 @@ export default function AdminPage() {
                     Create Competition
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-tactical-dark border-tactical-gray max-w-2xl">
+                <DialogContent className="bg-tactical-dark border-tactical-gray max-w-2xl max-h-[80vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle className="text-white">
                       {editingCompetition ? 'Edit Competition' : 'Create New Competition'}
                     </DialogTitle>
                   </DialogHeader>
-                  <form onSubmit={handleSubmit} className="space-y-4">
+                  <form onSubmit={handleSubmit} className="space-y-4 pr-2">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="name" className="text-gray-300">Competition Name</Label>

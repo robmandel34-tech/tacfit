@@ -194,13 +194,20 @@ export default function AdminPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Ensure maxTeams is a valid number
+    const formData = {
+      ...competitionForm,
+      maxTeams: competitionForm.maxTeams === '' ? 10 : Number(competitionForm.maxTeams)
+    };
+    
     if (editingCompetition) {
       updateCompetition.mutate({
         id: editingCompetition.id,
-        updates: competitionForm
+        updates: formData
       });
     } else {
-      createCompetition.mutate(competitionForm);
+      createCompetition.mutate(formData);
     }
   };
 
@@ -292,10 +299,10 @@ export default function AdminPage() {
                           type="number"
                           min="1"
                           max="50"
-                          value={competitionForm.maxTeams}
+                          value={competitionForm.maxTeams || ''}
                           onChange={(e) => {
-                            const value = parseInt(e.target.value);
-                            setCompetitionForm(prev => ({ ...prev, maxTeams: isNaN(value) ? 10 : value }));
+                            const value = e.target.value === '' ? '' : parseInt(e.target.value);
+                            setCompetitionForm(prev => ({ ...prev, maxTeams: value }));
                           }}
                           className="bg-tactical-gray-lighter border-tactical-gray text-white"
                           required

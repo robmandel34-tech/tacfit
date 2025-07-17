@@ -8,6 +8,7 @@ interface User {
   points: number;
   avatar?: string;
   coverPhoto?: string;
+  isAdmin?: boolean;
 }
 
 interface AuthContextType {
@@ -16,6 +17,7 @@ interface AuthContextType {
   register: (username: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   updateUser: (updatedUser: Partial<User>) => void;
+  refreshUser: () => Promise<void>;
   isLoading: boolean;
 }
 
@@ -115,12 +117,28 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
     }
   };
 
+  const refreshUser = async () => {
+    if (user) {
+      try {
+        const response = await fetch(`/api/users/${user.id}`);
+        if (response.ok) {
+          const currentUser = await response.json();
+          setUser(currentUser);
+          localStorage.setItem("user", JSON.stringify(currentUser));
+        }
+      } catch (error) {
+        console.error("Failed to refresh user:", error);
+      }
+    }
+  };
+
   const contextValue: AuthContextType = {
     user,
     login,
     register,
     logout,
     updateUser,
+    refreshUser,
     isLoading
   };
 

@@ -50,6 +50,15 @@ Preferred communication style: Simple, everyday language.
 - **INTERFACE**: Clean tabbed interface for managing competitions, users, and settings
 - **BYPASS**: Admin users can create competitions without 1000 point requirement
 - **SEEDED**: Sample admin user (Alpha) created with admin privileges for testing
+- **ENHANCED**: Competition form includes activity selection and target goal configuration
+- **ACTIVITY SELECTION**: Checkbox interface for selecting required activities (Cardio, Strength, Flexibility)
+- **TARGET GOALS**: Dynamic input fields for setting quantitative goals per selected activity
+- **VALIDATION**: Form validation ensures at least one activity is selected before submission
+- **UNITS**: Proper unit handling (minutes for cardio/flexibility, reps for strength)
+- **DEFAULTS**: Smart default values when activities are selected (1500 cardio, 5000 strength, 1000 flexibility)
+- **FIXED**: API request parameter order corrected for all admin mutations
+- **FIXED**: MaxTeams input field now allows proper editing without NaN errors
+- **FIXED**: Scrollable modal with proper overflow handling for long forms
 
 ### Masculine Text Language Update (July 2025)
 - **UPDATED**: All interface text made more masculine and tactical throughout the app

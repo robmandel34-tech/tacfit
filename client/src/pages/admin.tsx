@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { Plus, Edit2, Trash2, Users, Trophy, Calendar, Settings } from "lucide-react";
+import { Plus, Edit2, Trash2, Users, Trophy, Calendar, Settings, X } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 
@@ -195,6 +195,16 @@ export default function AdminPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validate that at least one activity is selected
+    if (competitionForm.requiredActivities.length === 0) {
+      toast({
+        title: "Validation Error",
+        description: "Please select at least one required activity.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     // Ensure maxTeams is a valid number
     const formData = {
       ...competitionForm,
@@ -343,6 +353,91 @@ export default function AdminPage() {
                         />
                       </div>
                     </div>
+                    
+                    {/* Activity Selection */}
+                    <div className="space-y-4">
+                      <Label className="text-gray-300 text-lg font-semibold">Required Activities</Label>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {['cardio', 'strength', 'flexibility'].map((activity) => (
+                          <div key={activity} className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              id={activity}
+                              checked={competitionForm.requiredActivities.includes(activity)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setCompetitionForm(prev => {
+                                    const newActivities = [...prev.requiredActivities, activity];
+                                    const newGoals = [...prev.targetGoals];
+                                    const unit = activity === 'strength' ? 'reps' : 'minutes';
+                                    const defaultValue = activity === 'cardio' ? '1500' : activity === 'strength' ? '5000' : '1000';
+                                    newGoals[newActivities.length - 1] = `${defaultValue} ${unit} of ${activity}`;
+                                    return {
+                                      ...prev,
+                                      requiredActivities: newActivities,
+                                      targetGoals: newGoals
+                                    };
+                                  });
+                                } else {
+                                  setCompetitionForm(prev => {
+                                    const activityIndex = prev.requiredActivities.indexOf(activity);
+                                    const newActivities = prev.requiredActivities.filter(a => a !== activity);
+                                    const newGoals = prev.targetGoals.filter((_, index) => index !== activityIndex);
+                                    return {
+                                      ...prev,
+                                      requiredActivities: newActivities,
+                                      targetGoals: newGoals
+                                    };
+                                  });
+                                }
+                              }}
+                              className="w-4 h-4 text-military-green bg-tactical-gray-lighter border-tactical-gray rounded focus:ring-military-green"
+                            />
+                            <Label htmlFor={activity} className="text-gray-300 capitalize">
+                              {activity === 'cardio' ? 'Cardio Training' : 
+                               activity === 'strength' ? 'Strength Operations' : 
+                               'Mobility Training'}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {/* Target Goals */}
+                      <div className="space-y-3">
+                        <Label className="text-gray-300 font-semibold">Target Goals</Label>
+                        {competitionForm.requiredActivities.map((activity, index) => (
+                          <div key={activity} className="flex items-center space-x-2">
+                            <Label className="text-gray-300 w-24 capitalize">
+                              {activity === 'cardio' ? 'Cardio' : 
+                               activity === 'strength' ? 'Strength' : 
+                               'Flexibility'}:
+                            </Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              placeholder="Enter target quantity"
+                              value={competitionForm.targetGoals[index]?.split(' ')[0] || ''}
+                              onChange={(e) => {
+                                const newGoals = [...competitionForm.targetGoals];
+                                const unit = activity === 'strength' ? 'reps' : 'minutes';
+                                const activityIndex = competitionForm.requiredActivities.indexOf(activity);
+                                newGoals[activityIndex] = `${e.target.value} ${unit} of ${activity}`;
+                                setCompetitionForm(prev => ({
+                                  ...prev,
+                                  targetGoals: newGoals
+                                }));
+                              }}
+                              className="bg-tactical-gray-lighter border-tactical-gray text-white flex-1"
+                              required
+                            />
+                            <span className="text-gray-400 text-sm w-20">
+                              {activity === 'strength' ? 'reps' : 'minutes'}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    
                     <div className="flex space-x-4 pt-4">
                       <Button 
                         type="button" 

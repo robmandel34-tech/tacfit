@@ -24,7 +24,7 @@ export default function Navigation() {
               <Shield className="text-military-green text-3xl" />
               <span className="text-2xl font-bold text-heading tracking-tight">TacFit</span>
             </div>
-            <nav className="flex space-x-8">
+            <nav className="hidden md:flex space-x-8">
               <Link 
                 href="/"
                 className={`${location === '/' ? 'text-primary font-semibold' : 'text-gray-300'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay`}
@@ -52,9 +52,9 @@ export default function Navigation() {
               {user.isAdmin && (
                 <Link 
                   href="/admin"
-                  className={`${location === '/admin' ? 'text-primary font-semibold' : 'text-gray-300'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay bg-red-500 text-white font-bold`}
+                  className={`${location === '/admin' ? 'text-primary font-semibold' : 'text-gray-300'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay`}
                 >
-                  🔧 Admin Portal
+                  Admin Portal
                 </Link>
               )}
             </nav>
@@ -64,6 +64,14 @@ export default function Navigation() {
               <Trophy className="text-combat-orange text-lg" />
               <span className="text-sm font-semibold text-white">{user.points || 0} PTS</span>
             </div>
+            {user.isAdmin && (
+              <Link 
+                href="/admin"
+                className="md:hidden text-gray-300 hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay"
+              >
+                Admin
+              </Link>
+            )}
             <div className="relative">
               <button 
                 className="flex items-center space-x-3 hover:opacity-80 transition-opacity duration-200"

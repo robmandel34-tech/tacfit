@@ -9,6 +9,8 @@ export default function Navigation() {
 
   if (!user) return null;
 
+
+
   const getInitials = (username: string) => {
     return username.split(' ').map(word => word[0]).join('').toUpperCase() || username.slice(0, 2).toUpperCase();
   };
@@ -22,7 +24,7 @@ export default function Navigation() {
               <Shield className="text-military-green text-3xl" />
               <span className="text-2xl font-bold text-heading tracking-tight">TacFit</span>
             </div>
-            <nav className="hidden md:flex space-x-8">
+            <nav className="flex space-x-8">
               <Link 
                 href="/"
                 className={`${location === '/' ? 'text-primary font-semibold' : 'text-gray-300'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay`}
@@ -50,9 +52,9 @@ export default function Navigation() {
               {user.isAdmin && (
                 <Link 
                   href="/admin"
-                  className={`${location === '/admin' ? 'text-primary font-semibold' : 'text-gray-300'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay`}
+                  className={`${location === '/admin' ? 'text-primary font-semibold' : 'text-gray-300'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay bg-red-500 text-white font-bold`}
                 >
-                  Admin Portal
+                  🔧 Admin Portal
                 </Link>
               )}
             </nav>

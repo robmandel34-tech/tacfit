@@ -18,6 +18,7 @@ interface AuthContextType {
   logout: () => void;
   updateUser: (updatedUser: Partial<User>) => void;
   refreshUser: () => Promise<void>;
+  forceRefresh: () => void;
   isLoading: boolean;
 }
 
@@ -71,6 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
       }
 
       const userData = await response.json();
+      console.log("Login response:", userData); // Debug log
       setUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));
       // Force navigation to dashboard
@@ -109,6 +111,12 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
     setLocation("/login");
   };
 
+  const forceRefresh = () => {
+    localStorage.removeItem("user");
+    setUser(null);
+    setLocation("/login");
+  };
+
   const updateUser = (updatedUser: Partial<User>) => {
     if (user) {
       const newUser = { ...user, ...updatedUser };
@@ -139,6 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
     logout,
     updateUser,
     refreshUser,
+    forceRefresh,
     isLoading
   };
 

@@ -19,14 +19,15 @@ export default function BottomNavigation() {
   // Show different nav items based on whether user is in a competition
   const hasActiveMembership = userTeamMember && userTeamMember.length > 0;
   
-  const navItems = hasActiveMembership ? [
-    { path: "/", icon: House, label: "Command" },
-    { path: "/competition-status", icon: Mountain, label: "Operation" },
-    { path: "/team", icon: Shield, label: "Team" }
-  ] : [
-    { path: "/", icon: House, label: "Command" },
-    { path: "/competitions", icon: Mountain, label: "Operations" },
-    { path: "/activity-feed", icon: Shield, label: "Intel" }
+  const navItems = [
+    { path: "/", icon: House, label: "Command", enabled: true },
+    { 
+      path: hasActiveMembership ? "/competition-status" : "/competitions", 
+      icon: Mountain, 
+      label: "Competitions", 
+      enabled: true 
+    },
+    { path: "/team", icon: Shield, label: "Team", enabled: hasActiveMembership }
   ];
 
   return (
@@ -35,6 +36,19 @@ export default function BottomNavigation() {
         {navItems.map((item) => {
           const isActive = location === item.path;
           const IconComponent = item.icon;
+          
+          if (!item.enabled) {
+            // Disabled item - grey and not clickable
+            return (
+              <div 
+                key={item.path}
+                className="flex flex-col items-center justify-center p-3 rounded-lg cursor-not-allowed opacity-40"
+              >
+                <IconComponent size={22} />
+                <span className="text-xs mt-1 font-semibold">{item.label}</span>
+              </div>
+            );
+          }
           
           return (
             <Link 

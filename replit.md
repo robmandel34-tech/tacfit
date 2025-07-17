@@ -81,7 +81,9 @@ Preferred communication style: Simple, everyday language.
 - **CHANGED**: "Max X teams" → "Max X squads" in competition cards
 - **CHANGED**: "Required Activities" → "Required Training" in competition details
 - **CHANGED**: Error messages updated with tactical language (e.g., "Access denied", "Invalid credentials")
-- **ENHANCED**: Bottom navigation updated with tactical terms: "Command", "Operation", "Squad", "Intel"
+- **ENHANCED**: Bottom navigation updated with tactical terms: "Command", "Competitions", "Team"
+- **ENHANCED**: Team tab now stays visible but greyed out when user hasn't joined a competition
+- **REVERTED**: "Operations" navigation item renamed back to "Competitions" in both desktop and mobile navigation
 - **ENHANCED**: Toast notifications and feedback messages use military-inspired language
 
 ### UI Text Visibility Fixes (July 2025)

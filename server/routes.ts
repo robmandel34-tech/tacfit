@@ -74,7 +74,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email: user.email,
         avatar: user.avatar,
         points: user.points || 0,
-        competitionsEntered: user.competitionsEntered || 0
+        competitionsEntered: user.competitionsEntered || 0,
+        isAdmin: user.isAdmin || false,
+        createdAt: user.createdAt
       }));
       res.json(publicUsers);
     } catch (error) {
@@ -183,14 +185,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "User ID required" });
       }
 
-      // Get user to check points
+      // Get user to check permissions
       const user = await storage.getUser(createdBy);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Check if user has enough points to create a competition (1000 points threshold)
-      if ((user.points || 0) < 1000) {
+      // Admin users can create competitions without point requirements
+      if (!user.isAdmin && (user.points || 0) < 1000) {
         return res.status(403).json({ message: "Need at least 1000 points to create a competition" });
       }
 
@@ -202,6 +204,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(competition);
     } catch (error) {
       res.status(400).json({ message: "Invalid competition data" });
+    }
+  });
+
+  app.patch("/api/competitions/:id", async (req, res) => {
+    try {
+      const competitionId = parseInt(req.params.id);
+      const updates = req.body;
+      
+      const competition = await storage.updateCompetition(competitionId, updates);
+      if (!competition) {
+        return res.status(404).json({ message: "Competition not found" });
+      }
+      
+      res.json(competition);
+    } catch (error) {
+      console.error("Competition update error:", error);
+      res.status(500).json({ message: "Error updating competition" });
+    }
+  });
+
+  app.delete("/api/competitions/:id", async (req, res) => {
+    try {
+      const competitionId = parseInt(req.params.id);
+      const success = await storage.deleteCompetition(competitionId);
+      if (!success) {
+        return res.status(404).json({ message: "Competition not found" });
+      }
+      
+      res.json({ message: "Competition deleted successfully" });
+    } catch (error) {
+      console.error("Competition deletion error:", error);
+      res.status(500).json({ message: "Error deleting competition" });
     }
   });
 

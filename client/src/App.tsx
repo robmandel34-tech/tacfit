@@ -15,6 +15,7 @@ import ActivityFeed from "@/pages/activity-feed";
 import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
 import Invitation from "@/pages/invitation";
+import AdminPage from "@/pages/admin";
 import BottomNavigation from "@/components/bottom-navigation";
 import FloatingActionButton from "@/components/floating-action-button";
 
@@ -33,6 +34,7 @@ function Router() {
         <Route path="/profile" component={Profile} />
         <Route path="/profile/:userId" component={Profile} />
         <Route path="/invite/:token" component={Invitation} />
+        <Route path="/admin" component={AdminPage} />
         <Route component={NotFound} />
       </Switch>
     </div>

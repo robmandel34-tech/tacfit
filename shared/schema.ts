@@ -12,6 +12,7 @@ export const users = pgTable("users", {
   coverPhoto: text("cover_photo"),
   motto: text("motto"),
   competitionsEntered: integer("competitions_entered").default(0),
+  isAdmin: boolean("is_admin").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

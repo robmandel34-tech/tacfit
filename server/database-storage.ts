@@ -79,6 +79,13 @@ export class DatabaseStorage implements IStorage {
     return competition || undefined;
   }
 
+  async deleteCompetition(id: number): Promise<boolean> {
+    const result = await db
+      .delete(competitions)
+      .where(eq(competitions.id, id));
+    return result.rowCount > 0;
+  }
+
   // Team operations
   async getTeams(): Promise<Team[]> {
     return await db.select().from(teams);

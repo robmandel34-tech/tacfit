@@ -21,6 +21,7 @@ export interface IStorage {
   getCompetition(id: number): Promise<Competition | undefined>;
   createCompetition(competition: InsertCompetition): Promise<Competition>;
   updateCompetition(id: number, updates: Partial<Competition>): Promise<Competition | undefined>;
+  deleteCompetition(id: number): Promise<boolean>;
   
   // Team operations
   getTeams(): Promise<Team[]>;

@@ -17,7 +17,8 @@ export async function seedDatabase() {
       username: "Alpha",
       email: "alpha@test.com",
       password: "password123",
-      points: 1200
+      points: 1200,
+      isAdmin: true
     });
     
     const user2 = await storage.createUser({

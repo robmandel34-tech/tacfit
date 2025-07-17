@@ -196,14 +196,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Need at least 1000 points to create a competition" });
       }
 
-      const parsedData = insertCompetitionSchema.parse(competitionData);
+      // Convert date strings to Date objects
+      const processedData = {
+        ...competitionData,
+        startDate: new Date(competitionData.startDate),
+        endDate: new Date(competitionData.endDate)
+      };
+
+      const parsedData = insertCompetitionSchema.parse(processedData);
       const competition = await storage.createCompetition({
         ...parsedData,
         createdBy: user.id
       });
       res.json(competition);
     } catch (error) {
-      res.status(400).json({ message: "Invalid competition data" });
+      console.error("Competition creation error:", error);
+      if (error.issues) {
+        console.error("Validation issues:", error.issues);
+      }
+      res.status(400).json({ message: "Invalid competition data", error: error.message });
     }
   });
 

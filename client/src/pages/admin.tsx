@@ -93,12 +93,9 @@ export default function AdminPage() {
   // Create competition mutation
   const createCompetition = useMutation({
     mutationFn: async (data: typeof competitionForm) => {
-      return apiRequest("/api/competitions", {
-        method: "POST",
-        body: JSON.stringify({
-          ...data,
-          createdBy: user?.id
-        })
+      return apiRequest("POST", "/api/competitions", {
+        ...data,
+        createdBy: user?.id
       });
     },
     onSuccess: () => {
@@ -122,10 +119,7 @@ export default function AdminPage() {
   // Update competition mutation
   const updateCompetition = useMutation({
     mutationFn: async (data: { id: number; updates: Partial<Competition> }) => {
-      return apiRequest(`/api/competitions/${data.id}`, {
-        method: "PATCH",
-        body: JSON.stringify(data.updates)
-      });
+      return apiRequest("PATCH", `/api/competitions/${data.id}`, data.updates);
     },
     onSuccess: () => {
       toast({
@@ -147,9 +141,7 @@ export default function AdminPage() {
   // Delete competition mutation
   const deleteCompetition = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest(`/api/competitions/${id}`, {
-        method: "DELETE"
-      });
+      return apiRequest("DELETE", `/api/competitions/${id}`);
     },
     onSuccess: () => {
       toast({
@@ -170,10 +162,7 @@ export default function AdminPage() {
   // Toggle admin status mutation
   const toggleAdminStatus = useMutation({
     mutationFn: async (data: { userId: number; isAdmin: boolean }) => {
-      return apiRequest(`/api/users/${data.userId}`, {
-        method: "PATCH",
-        body: JSON.stringify({ isAdmin: data.isAdmin })
-      });
+      return apiRequest("PATCH", `/api/users/${data.userId}`, { isAdmin: data.isAdmin });
     },
     onSuccess: () => {
       toast({
@@ -304,7 +293,10 @@ export default function AdminPage() {
                           min="1"
                           max="50"
                           value={competitionForm.maxTeams}
-                          onChange={(e) => setCompetitionForm(prev => ({ ...prev, maxTeams: parseInt(e.target.value) }))}
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value);
+                            setCompetitionForm(prev => ({ ...prev, maxTeams: isNaN(value) ? 10 : value }));
+                          }}
                           className="bg-tactical-gray-lighter border-tactical-gray text-white"
                           required
                         />

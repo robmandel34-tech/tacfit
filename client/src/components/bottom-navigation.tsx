@@ -20,7 +20,7 @@ export default function BottomNavigation() {
   const hasActiveMembership = userTeamMember && userTeamMember.length > 0;
   
   const navItems = [
-    { path: "/", icon: House, label: "Command", enabled: true },
+    { path: "/", icon: House, label: "Home", enabled: true },
     { 
       path: hasActiveMembership ? "/competition-status" : "/competitions", 
       icon: Mountain, 

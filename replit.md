@@ -10,6 +10,20 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### Activity Types Management System (July 2025)
+- **NEW**: Complete activity types management system in admin portal
+- **NEW**: ActivityType schema with customizable measurement units and default quantities
+- **NEW**: CRUD operations for activity types (create, read, update, delete)
+- **NEW**: Activity Types tab in admin portal with comprehensive management interface
+- **NEW**: Dynamic activity selection in competition creation based on available activity types
+- **NEW**: Database seeding with default activity types (cardio, strength, flexibility)
+- **FIXED**: Competition creation form now properly shows "Create New Competition" vs "Edit Competition"
+- **FIXED**: Competition form no longer uses hardcoded activity types - now uses dynamic database-driven selection
+- **ENHANCED**: Admin can create custom activity types with specific measurement units (minutes, reps, sets, miles, etc.)
+- **ENHANCED**: Competition creation form dynamically adapts to available activity types
+- **ENHANCED**: Activity types can be enabled/disabled to control availability in competitions
+- **ENHANCED**: Default quantity values help with consistent goal setting across competitions
+
 ### Mission Planning Board Updates (July 2025)
 - **RESTORED**: Mission Planning Board brought back with collapsible format matching Team Comms card
 - **ENHANCED**: Added proper Card wrapper with header structure and collapsible trigger

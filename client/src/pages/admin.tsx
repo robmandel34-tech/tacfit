@@ -92,7 +92,8 @@ export default function AdminPage() {
   // Fetch activity types
   const { data: activityTypes = [], isLoading: activityTypesLoading } = useQuery({
     queryKey: ["/api/activity-types"],
-    select: (data: ActivityType[]) => data.sort((a, b) => a.name.localeCompare(b.name))
+    select: (data: ActivityType[]) => data.sort((a, b) => a.name.localeCompare(b.name)),
+    enabled: activeTab === 'activities' || activeTab === 'competitions'
   });
 
   // Competition form state
@@ -102,8 +103,8 @@ export default function AdminPage() {
     startDate: '',
     endDate: '',
     maxTeams: 10,
-    requiredActivities: ['cardio', 'strength', 'flexibility'],
-    targetGoals: ['1500 minutes of cardio', '5000 reps of strength', '1000 minutes of flexibility']
+    requiredActivities: [],
+    targetGoals: []
   });
 
   // Activity type form state
@@ -279,8 +280,8 @@ export default function AdminPage() {
       startDate: '',
       endDate: '',
       maxTeams: 10,
-      requiredActivities: ['cardio', 'strength', 'flexibility'],
-      targetGoals: ['1500 minutes of cardio', '5000 reps of strength', '1000 minutes of flexibility']
+      requiredActivities: [],
+      targetGoals: []
     });
   };
 
@@ -356,8 +357,8 @@ export default function AdminPage() {
       startDate: competition.startDate ? format(new Date(competition.startDate), 'yyyy-MM-dd') : '',
       endDate: competition.endDate ? format(new Date(competition.endDate), 'yyyy-MM-dd') : '',
       maxTeams: competition.maxTeams,
-      requiredActivities: competition.requiredActivities || ['cardio', 'strength', 'flexibility'],
-      targetGoals: competition.targetGoals || ['1500 minutes of cardio', '5000 reps of strength', '1000 minutes of flexibility']
+      requiredActivities: competition.requiredActivities || [],
+      targetGoals: competition.targetGoals || []
     });
     setIsCreateCompetitionOpen(true);
   };
@@ -414,7 +415,13 @@ export default function AdminPage() {
               <h2 className="text-2xl font-bold">Competition Management</h2>
               <Dialog open={isCreateCompetitionOpen} onOpenChange={setIsCreateCompetitionOpen}>
                 <DialogTrigger asChild>
-                  <Button className="bg-military-green hover:bg-military-green-light">
+                  <Button 
+                    className="bg-military-green hover:bg-military-green-light"
+                    onClick={() => {
+                      setEditingCompetition(null);
+                      resetCompetitionForm();
+                    }}
+                  >
                     <Plus className="h-4 w-4 mr-2" />
                     Create Competition
                   </Button>
@@ -493,20 +500,21 @@ export default function AdminPage() {
                     <div className="space-y-4">
                       <Label className="text-gray-300 text-lg font-semibold">Required Activities</Label>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {['cardio', 'strength', 'flexibility'].map((activity) => (
-                          <div key={activity} className="flex items-center space-x-2">
+                        {activityTypes.filter(at => at.isActive).map((activityType) => (
+                          <div key={activityType.name} className="flex items-center space-x-2">
                             <input
                               type="checkbox"
-                              id={activity}
-                              checked={competitionForm.requiredActivities.includes(activity)}
+                              id={activityType.name}
+                              checked={competitionForm.requiredActivities.includes(activityType.name)}
                               onChange={(e) => {
                                 if (e.target.checked) {
                                   setCompetitionForm(prev => {
-                                    const newActivities = [...prev.requiredActivities, activity];
+                                    const newActivities = [...prev.requiredActivities, activityType.name];
                                     const newGoals = [...prev.targetGoals];
-                                    const unit = activity === 'strength' ? 'reps' : 'minutes';
-                                    const defaultValue = activity === 'cardio' ? '1500' : activity === 'strength' ? '5000' : '1000';
-                                    newGoals[newActivities.length - 1] = `${defaultValue} ${unit} of ${activity}`;
+                                    const defaultValue = activityType.name === 'cardio' ? '1500' : 
+                                                       activityType.name === 'strength' ? '5000' : 
+                                                       activityType.defaultQuantity * 100;
+                                    newGoals[newActivities.length - 1] = `${defaultValue} ${activityType.measurementUnit} of ${activityType.displayName.toLowerCase()}`;
                                     return {
                                       ...prev,
                                       requiredActivities: newActivities,
@@ -515,8 +523,8 @@ export default function AdminPage() {
                                   });
                                 } else {
                                   setCompetitionForm(prev => {
-                                    const activityIndex = prev.requiredActivities.indexOf(activity);
-                                    const newActivities = prev.requiredActivities.filter(a => a !== activity);
+                                    const activityIndex = prev.requiredActivities.indexOf(activityType.name);
+                                    const newActivities = prev.requiredActivities.filter(a => a !== activityType.name);
                                     const newGoals = prev.targetGoals.filter((_, index) => index !== activityIndex);
                                     return {
                                       ...prev,
@@ -528,10 +536,8 @@ export default function AdminPage() {
                               }}
                               className="w-4 h-4 text-military-green bg-tactical-gray-lighter border-tactical-gray rounded focus:ring-military-green"
                             />
-                            <Label htmlFor={activity} className="text-gray-300 capitalize">
-                              {activity === 'cardio' ? 'Cardio Training' : 
-                               activity === 'strength' ? 'Strength Operations' : 
-                               'Mobility Training'}
+                            <Label htmlFor={activityType.name} className="text-gray-300">
+                              {activityType.displayName}
                             </Label>
                           </div>
                         ))}

@@ -426,12 +426,15 @@ export default function AdminPage() {
                     Create Competition
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-tactical-dark border-tactical-gray max-w-2xl max-h-[80vh] overflow-y-auto">
+                <DialogContent className="bg-tactical-dark border-tactical-gray max-w-2xl max-h-[80vh] overflow-y-auto" aria-describedby="competition-dialog-description">
                   <DialogHeader>
                     <DialogTitle className="text-white">
                       {editingCompetition ? 'Edit Competition' : 'Create New Competition'}
                     </DialogTitle>
                   </DialogHeader>
+                  <div id="competition-dialog-description" className="sr-only">
+                    {editingCompetition ? 'Edit existing competition details and settings' : 'Create a new competition with activities and target goals'}
+                  </div>
                   <form onSubmit={handleSubmit} className="space-y-4 pr-2">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
@@ -511,9 +514,7 @@ export default function AdminPage() {
                                   setCompetitionForm(prev => {
                                     const newActivities = [...prev.requiredActivities, activityType.name];
                                     const newGoals = [...prev.targetGoals];
-                                    const defaultValue = activityType.name === 'cardio' ? '1500' : 
-                                                       activityType.name === 'strength' ? '5000' : 
-                                                       activityType.defaultQuantity * 100;
+                                    const defaultValue = activityType.defaultQuantity;
                                     newGoals[newActivities.length - 1] = `${defaultValue} ${activityType.measurementUnit} of ${activityType.displayName.toLowerCase()}`;
                                     return {
                                       ...prev,
@@ -546,36 +547,38 @@ export default function AdminPage() {
                       {/* Target Goals */}
                       <div className="space-y-3">
                         <Label className="text-gray-300 font-semibold">Target Goals</Label>
-                        {competitionForm.requiredActivities.map((activity, index) => (
-                          <div key={activity} className="flex items-center space-x-2">
-                            <Label className="text-gray-300 w-24 capitalize">
-                              {activity === 'cardio' ? 'Cardio' : 
-                               activity === 'strength' ? 'Strength' : 
-                               'Flexibility'}:
-                            </Label>
-                            <Input
-                              type="number"
-                              min="1"
-                              placeholder="Enter target quantity"
-                              value={competitionForm.targetGoals[index]?.split(' ')[0] || ''}
-                              onChange={(e) => {
-                                const newGoals = [...competitionForm.targetGoals];
-                                const unit = activity === 'strength' ? 'reps' : 'minutes';
-                                const activityIndex = competitionForm.requiredActivities.indexOf(activity);
-                                newGoals[activityIndex] = `${e.target.value} ${unit} of ${activity}`;
-                                setCompetitionForm(prev => ({
-                                  ...prev,
-                                  targetGoals: newGoals
-                                }));
-                              }}
-                              className="bg-tactical-gray-lighter border-tactical-gray text-white flex-1"
-                              required
-                            />
-                            <span className="text-gray-400 text-sm w-20">
-                              {activity === 'strength' ? 'reps' : 'minutes'}
-                            </span>
-                          </div>
-                        ))}
+                        {competitionForm.requiredActivities.map((activity, index) => {
+                          const activityType = activityTypes.find(at => at.name === activity);
+                          if (!activityType) return null;
+                          
+                          return (
+                            <div key={activity} className="flex items-center space-x-2">
+                              <Label className="text-gray-300 w-32 capitalize">
+                                {activityType.displayName}:
+                              </Label>
+                              <Input
+                                type="number"
+                                min="1"
+                                placeholder="Enter target quantity"
+                                value={competitionForm.targetGoals[index]?.split(' ')[0] || ''}
+                                onChange={(e) => {
+                                  const newGoals = [...competitionForm.targetGoals];
+                                  const activityIndex = competitionForm.requiredActivities.indexOf(activity);
+                                  newGoals[activityIndex] = `${e.target.value} ${activityType.measurementUnit} of ${activityType.displayName.toLowerCase()}`;
+                                  setCompetitionForm(prev => ({
+                                    ...prev,
+                                    targetGoals: newGoals
+                                  }));
+                                }}
+                                className="bg-tactical-gray-lighter border-tactical-gray text-white flex-1"
+                                required
+                              />
+                              <span className="text-gray-400 text-sm w-20">
+                                {activityType.measurementUnit}
+                              </span>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                     
@@ -722,12 +725,15 @@ export default function AdminPage() {
                     Create Activity Type
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-tactical-dark border-tactical-gray max-w-md">
+                <DialogContent className="bg-tactical-dark border-tactical-gray max-w-md" aria-describedby="activity-type-dialog-description">
                   <DialogHeader>
                     <DialogTitle className="text-white">
                       {editingActivityType ? 'Edit Activity Type' : 'Create New Activity Type'}
                     </DialogTitle>
                   </DialogHeader>
+                  <div id="activity-type-dialog-description" className="sr-only">
+                    {editingActivityType ? 'Edit existing activity type settings and measurement units' : 'Create a new activity type with custom measurement units'}
+                  </div>
                   <form onSubmit={handleActivityTypeSubmit} className="space-y-4">
                     <div>
                       <Label htmlFor="name" className="text-gray-300">Activity Name (System Key)</Label>

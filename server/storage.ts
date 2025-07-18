@@ -4,7 +4,8 @@ import {
   InsertActivityComment, ActivityLike, ChatMessage, InsertChatMessage, 
   Friendship, InsertFriendship, CompetitionHistory, CompetitionInvitation,
   InsertCompetitionInvitation, CompetitionEntry, InsertCompetitionEntry,
-  WhiteboardItem, InsertWhiteboardItem, MissionTask, InsertMissionTask
+  WhiteboardItem, InsertWhiteboardItem, MissionTask, InsertMissionTask,
+  ActivityType, InsertActivityType
 } from "@shared/schema";
 
 export interface IStorage {
@@ -57,6 +58,13 @@ export interface IStorage {
   // Activity flag operations
   getActivityFlags(activityId: number): Promise<ActivityFlag[]>;
   toggleActivityFlag(activityId: number, userId: number): Promise<boolean>;
+  
+  // Activity type operations
+  getActivityTypes(): Promise<ActivityType[]>;
+  getActivityType(id: number): Promise<ActivityType | undefined>;
+  createActivityType(activityType: InsertActivityType): Promise<ActivityType>;
+  updateActivityType(id: number, updates: Partial<ActivityType>): Promise<ActivityType | undefined>;
+  deleteActivityType(id: number): Promise<boolean>;
   
   // Chat operations
   getChatMessages(teamId?: number, competitionId?: number): Promise<ChatMessage[]>;

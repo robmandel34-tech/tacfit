@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { Plus, Edit2, Trash2, Users, Trophy, Calendar, Settings, X } from "lucide-react";
+import { Plus, Edit2, Trash2, Users, Trophy, Calendar, Settings, X, Activity } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 
@@ -39,12 +39,22 @@ interface User {
   createdAt: string;
 }
 
+interface ActivityType {
+  id: number;
+  name: string;
+  displayName: string;
+  measurementUnit: string;
+  defaultQuantity: number;
+  isActive: boolean;
+  createdAt: string;
+}
+
 export default function AdminPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
-  const [activeTab, setActiveTab] = useState<'competitions' | 'users' | 'settings'>('competitions');
+  const [activeTab, setActiveTab] = useState<'competitions' | 'users' | 'activities' | 'settings'>('competitions');
   const [isCreateCompetitionOpen, setIsCreateCompetitionOpen] = useState(false);
   const [editingCompetition, setEditingCompetition] = useState<Competition | null>(null);
 
@@ -79,6 +89,12 @@ export default function AdminPage() {
     select: (data: User[]) => data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
   });
 
+  // Fetch activity types
+  const { data: activityTypes = [], isLoading: activityTypesLoading } = useQuery({
+    queryKey: ["/api/activity-types"],
+    select: (data: ActivityType[]) => data.sort((a, b) => a.name.localeCompare(b.name))
+  });
+
   // Competition form state
   const [competitionForm, setCompetitionForm] = useState({
     name: '',
@@ -89,6 +105,18 @@ export default function AdminPage() {
     requiredActivities: ['cardio', 'strength', 'flexibility'],
     targetGoals: ['1500 minutes of cardio', '5000 reps of strength', '1000 minutes of flexibility']
   });
+
+  // Activity type form state
+  const [activityTypeForm, setActivityTypeForm] = useState({
+    name: '',
+    displayName: '',
+    measurementUnit: '',
+    defaultQuantity: 1,
+    isActive: true
+  });
+
+  const [editingActivityType, setEditingActivityType] = useState<ActivityType | null>(null);
+  const [isCreateActivityTypeOpen, setIsCreateActivityTypeOpen] = useState(false);
 
   // Create competition mutation
   const createCompetition = useMutation({
@@ -180,6 +208,70 @@ export default function AdminPage() {
     }
   });
 
+  // Activity type mutations
+  const createActivityType = useMutation({
+    mutationFn: async (data: typeof activityTypeForm) => {
+      return apiRequest("POST", "/api/activity-types", data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Activity type created",
+        description: "The new activity type is now available.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/activity-types"] });
+      setIsCreateActivityTypeOpen(false);
+      resetActivityTypeForm();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to create activity type",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  const updateActivityType = useMutation({
+    mutationFn: async (data: { id: number; updates: Partial<ActivityType> }) => {
+      return apiRequest("PUT", `/api/activity-types/${data.id}`, data.updates);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Activity type updated",
+        description: "Changes have been saved.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/activity-types"] });
+      setEditingActivityType(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to update activity type",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  const deleteActivityType = useMutation({
+    mutationFn: async (id: number) => {
+      return apiRequest("DELETE", `/api/activity-types/${id}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Activity type deleted",
+        description: "The activity type has been removed.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/activity-types"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to delete activity type",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
   const resetCompetitionForm = () => {
     setCompetitionForm({
       name: '',
@@ -190,6 +282,41 @@ export default function AdminPage() {
       requiredActivities: ['cardio', 'strength', 'flexibility'],
       targetGoals: ['1500 minutes of cardio', '5000 reps of strength', '1000 minutes of flexibility']
     });
+  };
+
+  const resetActivityTypeForm = () => {
+    setActivityTypeForm({
+      name: '',
+      displayName: '',
+      measurementUnit: '',
+      defaultQuantity: 1,
+      isActive: true
+    });
+  };
+
+  const handleActivityTypeSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (editingActivityType) {
+      updateActivityType.mutate({
+        id: editingActivityType.id,
+        updates: activityTypeForm
+      });
+    } else {
+      createActivityType.mutate(activityTypeForm);
+    }
+  };
+
+  const handleEditActivityType = (activityType: ActivityType) => {
+    setEditingActivityType(activityType);
+    setActivityTypeForm({
+      name: activityType.name,
+      displayName: activityType.displayName,
+      measurementUnit: activityType.measurementUnit,
+      defaultQuantity: activityType.defaultQuantity,
+      isActive: activityType.isActive
+    });
+    setIsCreateActivityTypeOpen(true);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -261,6 +388,14 @@ export default function AdminPage() {
           >
             <Users className="h-4 w-4" />
             <span>Users</span>
+          </Button>
+          <Button
+            variant={activeTab === 'activities' ? 'default' : 'ghost'}
+            onClick={() => setActiveTab('activities')}
+            className="flex items-center space-x-2"
+          >
+            <Activity className="h-4 w-4" />
+            <span>Activity Types</span>
           </Button>
           <Button
             variant={activeTab === 'settings' ? 'default' : 'ghost'}
@@ -553,6 +688,166 @@ export default function AdminPage() {
                         </TableCell>
                         <TableCell className="text-gray-300">
                           {format(new Date(u.createdAt), 'MMM d, yyyy')}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Activity Types Tab */}
+        {activeTab === 'activities' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Activity Types Management</h2>
+              <Dialog open={isCreateActivityTypeOpen} onOpenChange={setIsCreateActivityTypeOpen}>
+                <DialogTrigger asChild>
+                  <Button 
+                    className="bg-military-green hover:bg-military-green-light"
+                    onClick={() => {
+                      setEditingActivityType(null);
+                      resetActivityTypeForm();
+                    }}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Activity Type
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-tactical-dark border-tactical-gray max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="text-white">
+                      {editingActivityType ? 'Edit Activity Type' : 'Create New Activity Type'}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleActivityTypeSubmit} className="space-y-4">
+                    <div>
+                      <Label htmlFor="name" className="text-gray-300">Activity Name (System Key)</Label>
+                      <Input
+                        id="name"
+                        value={activityTypeForm.name}
+                        onChange={(e) => setActivityTypeForm(prev => ({ ...prev, name: e.target.value }))}
+                        className="bg-tactical-gray-lighter border-tactical-gray text-white"
+                        placeholder="e.g., cardio, strength, flexibility"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="displayName" className="text-gray-300">Display Name</Label>
+                      <Input
+                        id="displayName"
+                        value={activityTypeForm.displayName}
+                        onChange={(e) => setActivityTypeForm(prev => ({ ...prev, displayName: e.target.value }))}
+                        className="bg-tactical-gray-lighter border-tactical-gray text-white"
+                        placeholder="e.g., Cardio Training, Strength Operations"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="measurementUnit" className="text-gray-300">Measurement Unit</Label>
+                      <Input
+                        id="measurementUnit"
+                        value={activityTypeForm.measurementUnit}
+                        onChange={(e) => setActivityTypeForm(prev => ({ ...prev, measurementUnit: e.target.value }))}
+                        className="bg-tactical-gray-lighter border-tactical-gray text-white"
+                        placeholder="e.g., minutes, reps, sets, miles"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="defaultQuantity" className="text-gray-300">Default Quantity</Label>
+                      <Input
+                        id="defaultQuantity"
+                        type="number"
+                        min="1"
+                        value={activityTypeForm.defaultQuantity}
+                        onChange={(e) => setActivityTypeForm(prev => ({ ...prev, defaultQuantity: parseInt(e.target.value) }))}
+                        className="bg-tactical-gray-lighter border-tactical-gray text-white"
+                        required
+                      />
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="isActive"
+                        checked={activityTypeForm.isActive}
+                        onChange={(e) => setActivityTypeForm(prev => ({ ...prev, isActive: e.target.checked }))}
+                        className="rounded border-tactical-gray"
+                      />
+                      <Label htmlFor="isActive" className="text-gray-300">Active</Label>
+                    </div>
+                    <div className="flex space-x-2 pt-4">
+                      <Button
+                        type="submit"
+                        className="bg-military-green hover:bg-military-green-light flex-1"
+                        disabled={createActivityType.isPending || updateActivityType.isPending}
+                      >
+                        {editingActivityType ? 'Update' : 'Create'}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setIsCreateActivityTypeOpen(false);
+                          setEditingActivityType(null);
+                          resetActivityTypeForm();
+                        }}
+                        className="flex-1"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            <Card className="bg-tactical-gray-lighter border-tactical-gray">
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-tactical-gray">
+                      <TableHead className="text-gray-300">Name</TableHead>
+                      <TableHead className="text-gray-300">Display Name</TableHead>
+                      <TableHead className="text-gray-300">Unit</TableHead>
+                      <TableHead className="text-gray-300">Default</TableHead>
+                      <TableHead className="text-gray-300">Status</TableHead>
+                      <TableHead className="text-gray-300">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {activityTypes.map((activityType) => (
+                      <TableRow key={activityType.id} className="border-tactical-gray">
+                        <TableCell className="text-white font-medium">{activityType.name}</TableCell>
+                        <TableCell className="text-gray-300">{activityType.displayName}</TableCell>
+                        <TableCell className="text-gray-300">{activityType.measurementUnit}</TableCell>
+                        <TableCell className="text-gray-300">{activityType.defaultQuantity}</TableCell>
+                        <TableCell>
+                          <Badge variant={activityType.isActive ? "default" : "secondary"}>
+                            {activityType.isActive ? "Active" : "Inactive"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditActivityType(activityType)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => deleteActivityType.mutate(activityType.id)}
+                              className="h-8 w-8 p-0 text-red-400 hover:text-red-300"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}

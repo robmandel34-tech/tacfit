@@ -6,7 +6,8 @@ import {
   insertUserSchema, insertCompetitionSchema, insertTeamSchema, 
   insertTeamMemberSchema, insertActivitySchema, insertActivityCommentSchema,
   insertChatMessageSchema, insertFriendshipSchema, insertCompetitionInvitationSchema,
-  insertCompetitionEntrySchema, insertMissionTaskSchema, friendships
+  insertCompetitionEntrySchema, insertMissionTaskSchema, insertActivityTypeSchema,
+  friendships
 } from "@shared/schema";
 import { db } from "./db";
 import { and, eq } from "drizzle-orm";
@@ -1058,6 +1059,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ flagged });
     } catch (error) {
       res.status(500).json({ message: "Error toggling flag" });
+    }
+  });
+
+  // Activity Types routes
+  app.get("/api/activity-types", async (req, res) => {
+    try {
+      const activityTypes = await storage.getActivityTypes();
+      res.json(activityTypes);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching activity types" });
+    }
+  });
+
+  app.post("/api/activity-types", async (req, res) => {
+    try {
+      const activityTypeData = insertActivityTypeSchema.parse(req.body);
+      const activityType = await storage.createActivityType(activityTypeData);
+      res.json(activityType);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid activity type data" });
+    }
+  });
+
+  app.put("/api/activity-types/:id", async (req, res) => {
+    try {
+      const updates = req.body;
+      const activityType = await storage.updateActivityType(parseInt(req.params.id), updates);
+      if (!activityType) {
+        return res.status(404).json({ message: "Activity type not found" });
+      }
+      res.json(activityType);
+    } catch (error) {
+      res.status(500).json({ message: "Error updating activity type" });
+    }
+  });
+
+  app.delete("/api/activity-types/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteActivityType(parseInt(req.params.id));
+      if (!success) {
+        return res.status(404).json({ message: "Activity type not found" });
+      }
+      res.json({ message: "Activity type deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Error deleting activity type" });
     }
   });
 

@@ -5,7 +5,8 @@ import {
   ChatMessage, InsertChatMessage, Friendship, InsertFriendship, CompetitionHistory, 
   CompetitionInvitation, InsertCompetitionInvitation, CompetitionEntry, 
   InsertCompetitionEntry, WhiteboardItem, InsertWhiteboardItem, MissionTask, InsertMissionTask,
-  users, competitions, teams, teamMembers, activities, 
+  ActivityType, InsertActivityType,
+  users, competitions, teams, teamMembers, activities, activityTypes,
   activityComments, activityLikes, activityFlags, chatMessages, friendships, 
   competitionHistory, competitionInvitations, competitionEntries, whiteboardItems, missionTasks
 } from "@shared/schema";
@@ -252,6 +253,40 @@ export class DatabaseStorage implements IStorage {
         .values({ activityId, userId });
       return true;
     }
+  }
+
+  // Activity type operations
+  async getActivityTypes(): Promise<ActivityType[]> {
+    return await db.select().from(activityTypes).orderBy(activityTypes.name);
+  }
+
+  async getActivityType(id: number): Promise<ActivityType | undefined> {
+    const [activityType] = await db.select().from(activityTypes).where(eq(activityTypes.id, id));
+    return activityType || undefined;
+  }
+
+  async createActivityType(insertActivityType: InsertActivityType): Promise<ActivityType> {
+    const [activityType] = await db
+      .insert(activityTypes)
+      .values(insertActivityType)
+      .returning();
+    return activityType;
+  }
+
+  async updateActivityType(id: number, updates: Partial<ActivityType>): Promise<ActivityType | undefined> {
+    const [activityType] = await db
+      .update(activityTypes)
+      .set(updates)
+      .where(eq(activityTypes.id, id))
+      .returning();
+    return activityType || undefined;
+  }
+
+  async deleteActivityType(id: number): Promise<boolean> {
+    const result = await db
+      .delete(activityTypes)
+      .where(eq(activityTypes.id, id));
+    return result.rowCount > 0;
   }
 
   // Chat operations

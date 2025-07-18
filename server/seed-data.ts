@@ -12,6 +12,31 @@ export async function seedDatabase() {
 
     console.log("Seeding database with sample data...");
 
+    // Create default activity types
+    const activityCardio = await storage.createActivityType({
+      name: "cardio",
+      displayName: "Cardio Training",
+      measurementUnit: "minutes",
+      defaultQuantity: 30,
+      isActive: true
+    });
+
+    const activityStrength = await storage.createActivityType({
+      name: "strength",
+      displayName: "Strength Operations",
+      measurementUnit: "reps",
+      defaultQuantity: 10,
+      isActive: true
+    });
+
+    const activityFlexibility = await storage.createActivityType({
+      name: "flexibility",
+      displayName: "Mobility Training",
+      measurementUnit: "minutes",
+      defaultQuantity: 15,
+      isActive: true
+    });
+
     // Create sample users
     const user1 = await storage.createUser({
       username: "Alpha",

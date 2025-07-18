@@ -49,6 +49,16 @@ export const teamMembers = pgTable("team_members", {
   joinedAt: timestamp("joined_at").defaultNow(),
 });
 
+export const activityTypes = pgTable("activity_types", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  displayName: text("display_name").notNull(),
+  measurementUnit: text("measurement_unit").notNull(), // minutes, reps, miles, etc.
+  defaultQuantity: integer("default_quantity").default(1),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const activities = pgTable("activities", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id),
@@ -195,6 +205,11 @@ export const insertActivitySchema = createInsertSchema(activities).omit({
   createdAt: true,
 });
 
+export const insertActivityTypeSchema = createInsertSchema(activityTypes).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertActivityCommentSchema = createInsertSchema(activityComments).omit({
   id: true,
   createdAt: true,
@@ -263,5 +278,7 @@ export type CompetitionEntry = typeof competitionEntries.$inferSelect;
 export type InsertCompetitionEntry = z.infer<typeof insertCompetitionEntrySchema>;
 export type WhiteboardItem = typeof whiteboardItems.$inferSelect;
 export type InsertWhiteboardItem = z.infer<typeof insertWhiteboardItemSchema>;
+export type ActivityType = typeof activityTypes.$inferSelect;
+export type InsertActivityType = z.infer<typeof insertActivityTypeSchema>;
 export type MissionTask = typeof missionTasks.$inferSelect;
 export type InsertMissionTask = z.infer<typeof insertMissionTaskSchema>;

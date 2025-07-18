@@ -43,21 +43,17 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     enabled: !!currentTeam?.competitionId,
   });
 
-  // Activity type display names and measurement units
-  const activityTypeNames: Record<string, string> = {
-    cardio: "Cardio Training",
-    strength: "Strength Operations",
-    flexibility: "Mobility Training"
-  };
+  // Fetch activity types from database
+  const { data: activityTypes = [] } = useQuery({
+    queryKey: ["/api/activity-types"],
+    select: (data: any[]) => data.filter(at => at.isActive).sort((a, b) => a.name.localeCompare(b.name))
+  });
 
-  const activityMeasurements: Record<string, string> = {
-    cardio: "minutes",
-    strength: "reps",
-    flexibility: "minutes"
-  };
-
-  // Get required activities for current competition or fallback to standard types
-  const availableActivityTypes = competition?.requiredActivities || ["cardio", "strength", "flexibility"];
+  // Get required activities for current competition or fallback to all active types
+  const availableActivityTypes = competition?.requiredActivities || activityTypes.map(at => at.name);
+  
+  // Get filtered activity types that are available for this competition
+  const competitionActivityTypes = activityTypes.filter(at => availableActivityTypes.includes(at.name));
 
   const submitActivity = useMutation({
     mutationFn: async (data: FormData) => {
@@ -175,17 +171,29 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                 <SelectValue placeholder="Select activity type" />
               </SelectTrigger>
               <SelectContent className="bg-tactical-gray-light border-tactical-gray text-white">
-                {availableActivityTypes.map((activityType) => (
+                {competitionActivityTypes.map((activityType) => (
                   <SelectItem 
-                    key={activityType} 
-                    value={activityType} 
+                    key={activityType.name} 
+                    value={activityType.name} 
                     className="text-white hover:bg-military-green focus:bg-military-green data-[highlighted]:bg-military-green data-[highlighted]:text-white"
                   >
-                    {activityTypeNames[activityType] || activityType}
+                    {activityType.displayName}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            
+            {/* Activity Description */}
+            {type && (
+              <div className="mt-3 p-3 bg-tactical-gray-lighter rounded-lg border border-tactical-gray">
+                <p className="text-sm text-gray-300">
+                  <strong className="text-white">About {competitionActivityTypes.find(at => at.name === type)?.displayName}:</strong>
+                </p>
+                <p className="text-sm text-gray-400 mt-1">
+                  {competitionActivityTypes.find(at => at.name === type)?.description || "No description available"}
+                </p>
+              </div>
+            )}
           </div>
           
           <div>
@@ -203,7 +211,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
             <Label className="text-gray-300 font-medium mb-2">Quantity</Label>
             {type && (
               <div className="text-sm text-military-green font-medium mb-2">
-                Enter amount in {activityMeasurements[type]}
+                Enter amount in {competitionActivityTypes.find(at => at.name === type)?.measurementUnit || 'units'}
               </div>
             )}
             <Input
@@ -215,7 +223,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
               className="bg-tactical-gray-lighter border-2 border-tactical-gray text-white focus:border-white focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
               placeholder={
                 type 
-                  ? `e.g., 30`
+                  ? `e.g., ${competitionActivityTypes.find(at => at.name === type)?.defaultQuantity || 30}`
                   : "Select activity type first"
               }
               disabled={!type}

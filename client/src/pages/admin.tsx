@@ -43,6 +43,7 @@ interface ActivityType {
   id: number;
   name: string;
   displayName: string;
+  description?: string;
   measurementUnit: string;
   defaultQuantity: number;
   isActive: boolean;
@@ -92,8 +93,7 @@ export default function AdminPage() {
   // Fetch activity types
   const { data: activityTypes = [], isLoading: activityTypesLoading } = useQuery({
     queryKey: ["/api/activity-types"],
-    select: (data: ActivityType[]) => data.sort((a, b) => a.name.localeCompare(b.name)),
-    enabled: activeTab === 'activities' || activeTab === 'competitions'
+    select: (data: ActivityType[]) => data.sort((a, b) => a.name.localeCompare(b.name))
   });
 
   // Competition form state
@@ -111,6 +111,7 @@ export default function AdminPage() {
   const [activityTypeForm, setActivityTypeForm] = useState({
     name: '',
     displayName: '',
+    description: '',
     measurementUnit: '',
     defaultQuantity: 1,
     isActive: true
@@ -289,6 +290,7 @@ export default function AdminPage() {
     setActivityTypeForm({
       name: '',
       displayName: '',
+      description: '',
       measurementUnit: '',
       defaultQuantity: 1,
       isActive: true
@@ -313,6 +315,7 @@ export default function AdminPage() {
     setActivityTypeForm({
       name: activityType.name,
       displayName: activityType.displayName,
+      description: activityType.description || '',
       measurementUnit: activityType.measurementUnit,
       defaultQuantity: activityType.defaultQuantity,
       isActive: activityType.isActive
@@ -755,6 +758,17 @@ export default function AdminPage() {
                         className="bg-tactical-gray-lighter border-tactical-gray text-white"
                         placeholder="e.g., Cardio Training, Strength Operations"
                         required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="description" className="text-gray-300">Description</Label>
+                      <Textarea
+                        id="description"
+                        value={activityTypeForm.description}
+                        onChange={(e) => setActivityTypeForm(prev => ({ ...prev, description: e.target.value }))}
+                        className="bg-tactical-gray-lighter border-tactical-gray text-white"
+                        placeholder="e.g., Cardiovascular exercises to improve heart health"
+                        rows={2}
                       />
                     </div>
                     <div>

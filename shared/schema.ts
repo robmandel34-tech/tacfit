@@ -53,6 +53,7 @@ export const activityTypes = pgTable("activity_types", {
   id: serial("id").primaryKey(),
   name: text("name").notNull().unique(),
   displayName: text("display_name").notNull(),
+  description: text("description"),
   measurementUnit: text("measurement_unit").notNull(), // minutes, reps, miles, etc.
   defaultQuantity: integer("default_quantity").default(1),
   isActive: boolean("is_active").default(true),

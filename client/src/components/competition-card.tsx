@@ -22,12 +22,19 @@ interface CompetitionCardProps {
 
 export default function CompetitionCard({ competition, onInvite, onJoin }: CompetitionCardProps) {
   return (
-    <Card className="card-modern hover-lift fade-in group">
+    <Card className={`card-modern hover-lift fade-in group ${competition.isActive ? 'ring-2 ring-military-green/30 border-military-green/50' : ''}`}>
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
-          <CardTitle className="text-heading text-xl mb-2 group-hover:text-military-green transition-colors">
-            {competition.name}
-          </CardTitle>
+          <div className="flex-1">
+            <CardTitle className="text-heading text-xl mb-2 group-hover:text-military-green transition-colors">
+              {competition.name}
+            </CardTitle>
+            {competition.isActive && (
+              <div className="text-xs text-military-green font-medium bg-military-green/10 px-2 py-1 rounded-full inline-block mb-2">
+                🟢 Join Window Open
+              </div>
+            )}
+          </div>
           <Badge 
             variant={competition.isActive ? "default" : "secondary"}
             className={`${competition.isActive 

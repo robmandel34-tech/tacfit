@@ -10,6 +10,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### Competition Discovery Enhancement (July 2025)
+- **NEW**: Competitions with open join windows now appear at top of competition feed
+- **NEW**: Visual indicators for active competitions (green ring border and "Join Window Open" badge)
+- **ENHANCED**: Competition sorting prioritizes active competitions before upcoming ones
+- **ENHANCED**: Secondary sorting by start date within each group (active vs upcoming)
+- **IMPROVED**: Clear visual distinction between joinable and upcoming competitions
+
 ### Activity Types Management System (July 2025)
 - **NEW**: Complete activity types management system in admin portal
 - **NEW**: ActivityType schema with customizable measurement units and default quantities
@@ -17,12 +24,14 @@ Preferred communication style: Simple, everyday language.
 - **NEW**: Activity Types tab in admin portal with comprehensive management interface
 - **NEW**: Dynamic activity selection in competition creation based on available activity types
 - **NEW**: Database seeding with default activity types (cardio, strength, flexibility)
+- **NEW**: Activity description field for providing guidance to users during activity submission
 - **FIXED**: Competition creation form now properly shows "Create New Competition" vs "Edit Competition"
 - **FIXED**: Competition form no longer uses hardcoded activity types - now uses dynamic database-driven selection
 - **ENHANCED**: Admin can create custom activity types with specific measurement units (minutes, reps, sets, miles, etc.)
 - **ENHANCED**: Competition creation form dynamically adapts to available activity types
 - **ENHANCED**: Activity types can be enabled/disabled to control availability in competitions
 - **ENHANCED**: Default quantity values help with consistent goal setting across competitions
+- **ENHANCED**: Activity submission modal displays helpful descriptions when selecting activity types
 
 ### Mission Planning Board Updates (July 2025)
 - **RESTORED**: Mission Planning Board brought back with collapsible format matching Team Comms card

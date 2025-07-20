@@ -21,6 +21,19 @@ export default function Competitions() {
   const { data: competitions = [] } = useQuery({
     queryKey: ["/api/competitions"],
     enabled: !!user,
+    select: (data: any[]) => {
+      // Sort competitions so that active ones (open join window) appear first
+      return data.sort((a, b) => {
+        // First sort by active status (active competitions first)
+        if (a.isActive && !b.isActive) return -1;
+        if (!a.isActive && b.isActive) return 1;
+        
+        // Then sort by start date (newer competitions first within each group)
+        const dateA = new Date(a.startDate).getTime();
+        const dateB = new Date(b.startDate).getTime();
+        return dateB - dateA;
+      });
+    }
   });
 
   // Remove the old automatic joining logic

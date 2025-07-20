@@ -10,6 +10,18 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### Dashboard Redesign & Enhancement (July 2025)
+- **REDESIGNED**: Complete home page/dashboard overhaul with contextual content
+- **NEW**: Dynamic layout that adapts based on user's competition participation status
+- **NEW**: Mission progress dashboard for active participants with stats cards
+- **NEW**: Available operations preview for users not yet deployed
+- **NEW**: Getting started guide with step-by-step mission briefing
+- **NEW**: Contextual quick action buttons that change based on user state
+- **ENHANCED**: Two-column layout with comprehensive mission information
+- **ENHANCED**: Visual progress indicators and tactical stats display
+- **ENHANCED**: Direct navigation to key features (team, competition status, operations)
+- **IMPROVED**: Professional command center aesthetic with better information hierarchy
+
 ### Competition Discovery Enhancement (July 2025)
 - **NEW**: Competitions with open join windows now appear at top of competition feed
 - **NEW**: Visual indicators for active competitions (green ring border and "Join Window Open" badge)

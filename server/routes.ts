@@ -317,6 +317,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Team not found" });
       }
 
+      // Get competition to check join window
+      const competition = await storage.getCompetition(team.competitionId!);
+      if (!competition) {
+        return res.status(404).json({ message: "Competition not found" });
+      }
+
+      // Check if competition is active
+      if (!competition.isActive) {
+        return res.status(400).json({ message: "Competition is not active" });
+      }
+
+      // Check join window if dates are set
+      const now = new Date();
+      if (competition.joinStartDate && competition.joinEndDate) {
+        if (now < competition.joinStartDate) {
+          return res.status(400).json({ message: "Join window has not opened yet" });
+        }
+        if (now > competition.joinEndDate) {
+          return res.status(400).json({ message: "Join window has closed" });
+        }
+      }
+
       // Check if user is already in any team
       const allTeams = await storage.getTeams();
       let currentlyInCompetition = false;
@@ -381,6 +403,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const competition = await storage.getCompetition(competitionId);
       if (!competition || !competition.isActive) {
         return res.status(400).json({ message: "Competition not available" });
+      }
+
+      // Check join window if dates are set
+      const now = new Date();
+      if (competition.joinStartDate && competition.joinEndDate) {
+        if (now < competition.joinStartDate) {
+          return res.status(400).json({ message: "Join window has not opened yet" });
+        }
+        if (now > competition.joinEndDate) {
+          return res.status(400).json({ message: "Join window has closed" });
+        }
       }
 
       // Check if user is already in any team

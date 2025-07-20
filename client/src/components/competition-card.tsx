@@ -17,6 +17,8 @@ interface CompetitionCardProps {
     isActive: boolean;
     requiredActivities?: string[];
     targetGoals?: string[];
+    joinWindowStatus?: string;
+    canJoin?: boolean;
   };
   onInvite?: (competitionId: number, competitionName: string) => void;
   onJoin?: (competitionId: number) => void;
@@ -31,19 +33,32 @@ export default function CompetitionCard({ competition, onInvite, onJoin }: Compe
             <CardTitle className="text-heading text-xl mb-2 group-hover:text-military-green transition-colors">
               {competition.name}
             </CardTitle>
-            {competition.isActive && (
+            {competition.joinWindowStatus === 'open' && (
               <div className="text-xs text-military-green font-medium bg-military-green/10 px-2 py-1 rounded-full inline-block mb-2">
                 🟢 Join Window Open
               </div>
             )}
+            {competition.joinWindowStatus === 'closed' && (
+              <div className="text-xs text-red-400 font-medium bg-red-400/10 px-2 py-1 rounded-full inline-block mb-2">
+                🔴 Join Window Closed
+              </div>
+            )}
+            {competition.joinWindowStatus === 'not-opened' && (
+              <div className="text-xs text-yellow-400 font-medium bg-yellow-400/10 px-2 py-1 rounded-full inline-block mb-2">
+                🟡 Join Window Not Yet Open
+              </div>
+            )}
           </div>
           <Badge 
-            variant={competition.isActive ? "default" : "secondary"}
-            className={`${competition.isActive 
+            variant={competition.canJoin ? "default" : "secondary"}
+            className={`${competition.canJoin 
               ? 'bg-success-green text-white' 
               : 'bg-surface-overlay text-secondary'} font-medium`}
           >
-            {competition.isActive ? "Active" : "Upcoming"}
+            {competition.joinWindowStatus === 'open' ? "Joinable" : 
+             competition.joinWindowStatus === 'closed' ? "Closed" : 
+             competition.joinWindowStatus === 'not-opened' ? "Soon" : 
+             competition.isActive ? "Active" : "Upcoming"}
           </Badge>
         </div>
       </CardHeader>
@@ -126,10 +141,14 @@ export default function CompetitionCard({ competition, onInvite, onJoin }: Compe
           <div className="flex gap-3">
             <Button 
               onClick={() => onJoin?.(competition.id)}
-              className="flex-1 btn-primary"
+              disabled={!competition.canJoin}
+              className={`flex-1 ${competition.canJoin ? 'btn-primary' : 'btn-secondary opacity-50 cursor-not-allowed'}`}
             >
               <Trophy className="mr-2 h-4 w-4" />
-              {competition.isActive ? "Join Now" : "Register Interest"}
+              {competition.joinWindowStatus === 'open' ? "Join Now" : 
+               competition.joinWindowStatus === 'closed' ? "Join Closed" : 
+               competition.joinWindowStatus === 'not-opened' ? "Not Open Yet" : 
+               competition.isActive ? "Join Now" : "Register Interest"}
             </Button>
             {onInvite && (
               <Button 

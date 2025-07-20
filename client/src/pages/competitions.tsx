@@ -22,11 +22,51 @@ export default function Competitions() {
     queryKey: ["/api/competitions"],
     enabled: !!user,
     select: (data: any[]) => {
-      // Sort competitions so that active ones (open join window) appear first
-      return data.sort((a, b) => {
-        // First sort by active status (active competitions first)
-        if (a.isActive && !b.isActive) return -1;
-        if (!a.isActive && b.isActive) return 1;
+      const now = new Date();
+      
+      // Add computed join window status to each competition
+      const enrichedCompetitions = data.map(comp => {
+        let joinWindowStatus = 'unknown';
+        let canJoin = comp.isActive;
+        
+        if (comp.joinStartDate && comp.joinEndDate) {
+          const joinStart = new Date(comp.joinStartDate);
+          const joinEnd = new Date(comp.joinEndDate);
+          
+          if (now < joinStart) {
+            joinWindowStatus = 'not-opened';
+            canJoin = false;
+          } else if (now > joinEnd) {
+            joinWindowStatus = 'closed';
+            canJoin = false;
+          } else {
+            joinWindowStatus = 'open';
+            canJoin = comp.isActive;
+          }
+        } else if (comp.isActive) {
+          joinWindowStatus = 'open';
+          canJoin = true;
+        }
+        
+        return {
+          ...comp,
+          joinWindowStatus,
+          canJoin
+        };
+      });
+      
+      // Sort competitions: joinable first, then by join window status, then by start date
+      return enrichedCompetitions.sort((a, b) => {
+        // First sort by joinability (joinable competitions first)
+        if (a.canJoin && !b.canJoin) return -1;
+        if (!a.canJoin && b.canJoin) return 1;
+        
+        // Then sort by join window status priority
+        const statusPriority = { 'open': 0, 'not-opened': 1, 'closed': 2, 'unknown': 3 };
+        const aPriority = statusPriority[a.joinWindowStatus] || 3;
+        const bPriority = statusPriority[b.joinWindowStatus] || 3;
+        
+        if (aPriority !== bPriority) return aPriority - bPriority;
         
         // Then sort by start date (newer competitions first within each group)
         const dateA = new Date(a.startDate).getTime();

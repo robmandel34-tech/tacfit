@@ -64,8 +64,10 @@ export async function seedDatabase() {
     const comp1 = await storage.createCompetition({
       name: "Summer Tactical Challenge",
       description: "3-week intensive fitness competition",
-      startDate: new Date("2025-07-01"),
-      endDate: new Date("2025-07-21"),
+      startDate: new Date("2025-08-01"),
+      endDate: new Date("2025-08-21"),
+      joinStartDate: new Date("2025-07-20"),
+      joinEndDate: new Date("2025-07-31"),
       maxTeams: 10,
       isActive: true,
       createdBy: user1.id,
@@ -78,11 +80,28 @@ export async function seedDatabase() {
       description: "4-week cold weather endurance challenge",
       startDate: new Date("2025-12-01"),
       endDate: new Date("2025-12-28"),
+      joinStartDate: new Date("2025-11-01"),
+      joinEndDate: new Date("2025-11-30"),
       maxTeams: 8,
-      isActive: false,
+      isActive: true,
       createdBy: user1.id,
       requiredActivities: ["cardio", "strength", "flexibility"],
       targetGoals: ["1,200 minutes of cardio", "4,000 reps of strength training", "720 minutes of flexibility work"]
+    });
+
+    // Create a competition with expired join window for testing
+    const comp3 = await storage.createCompetition({
+      name: "Spring Training Boot Camp",
+      description: "6-week spring preparation program",
+      startDate: new Date("2025-09-01"),
+      endDate: new Date("2025-10-15"),
+      joinStartDate: new Date("2025-06-01"),
+      joinEndDate: new Date("2025-06-30"),
+      maxTeams: 12,
+      isActive: true,
+      createdBy: user1.id,
+      requiredActivities: ["cardio", "strength", "flexibility"],
+      targetGoals: ["2,000 minutes of cardio", "6,000 reps of strength training", "1,200 minutes of flexibility work"]
     });
 
     // Create sample teams

@@ -22,6 +22,8 @@ interface Competition {
   description: string;
   startDate: string;
   endDate: string;
+  joinStartDate?: string;
+  joinEndDate?: string;
   maxTeams: number;
   isActive: boolean;
   requiredActivities: string[];
@@ -102,11 +104,13 @@ export default function AdminPage() {
   const [competitionForm, setCompetitionForm] = useState({
     name: '',
     description: '',
+    joinStartDate: '',
+    joinEndDate: '',
     startDate: '',
     endDate: '',
     maxTeams: 10,
-    requiredActivities: [],
-    targetGoals: []
+    requiredActivities: [] as string[],
+    targetGoals: [] as string[]
   });
 
   // Activity type form state
@@ -302,6 +306,8 @@ export default function AdminPage() {
     setCompetitionForm({
       name: '',
       description: '',
+      joinStartDate: '',
+      joinEndDate: '',
       startDate: '',
       endDate: '',
       maxTeams: 10,
@@ -363,7 +369,7 @@ export default function AdminPage() {
     // Ensure maxTeams is a valid number
     const formData = {
       ...competitionForm,
-      maxTeams: competitionForm.maxTeams === '' ? 10 : Number(competitionForm.maxTeams)
+      maxTeams: typeof competitionForm.maxTeams === 'string' ? 10 : Number(competitionForm.maxTeams)
     };
     
     if (editingCompetition) {
@@ -381,6 +387,8 @@ export default function AdminPage() {
     setCompetitionForm({
       name: competition.name,
       description: competition.description || '',
+      joinStartDate: competition.joinStartDate ? format(new Date(competition.joinStartDate), 'yyyy-MM-dd') : '',
+      joinEndDate: competition.joinEndDate ? format(new Date(competition.joinEndDate), 'yyyy-MM-dd') : '',
       startDate: competition.startDate ? format(new Date(competition.startDate), 'yyyy-MM-dd') : '',
       endDate: competition.endDate ? format(new Date(competition.endDate), 'yyyy-MM-dd') : '',
       maxTeams: competition.maxTeams,
@@ -503,7 +511,29 @@ export default function AdminPage() {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="startDate" className="text-gray-300">Start Date</Label>
+                        <Label htmlFor="joinStartDate" className="text-gray-300">Join Window Start</Label>
+                        <Input
+                          id="joinStartDate"
+                          type="date"
+                          value={competitionForm.joinStartDate || ''}
+                          onChange={(e) => setCompetitionForm(prev => ({ ...prev, joinStartDate: e.target.value }))}
+                          className="bg-tactical-gray-lighter border-tactical-gray text-white"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="joinEndDate" className="text-gray-300">Join Window End</Label>
+                        <Input
+                          id="joinEndDate"
+                          type="date"
+                          value={competitionForm.joinEndDate || ''}
+                          onChange={(e) => setCompetitionForm(prev => ({ ...prev, joinEndDate: e.target.value }))}
+                          className="bg-tactical-gray-lighter border-tactical-gray text-white"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="startDate" className="text-gray-300">Competition Start</Label>
                         <Input
                           id="startDate"
                           type="date"
@@ -514,7 +544,7 @@ export default function AdminPage() {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="endDate" className="text-gray-300">End Date</Label>
+                        <Label htmlFor="endDate" className="text-gray-300">Competition End</Label>
                         <Input
                           id="endDate"
                           type="date"

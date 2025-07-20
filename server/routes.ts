@@ -270,7 +270,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const processedData = {
         ...competitionData,
         startDate: new Date(competitionData.startDate),
-        endDate: new Date(competitionData.endDate)
+        endDate: new Date(competitionData.endDate),
+        ...(competitionData.joinStartDate && { joinStartDate: new Date(competitionData.joinStartDate) }),
+        ...(competitionData.joinEndDate && { joinEndDate: new Date(competitionData.joinEndDate) })
       };
 
       const parsedData = insertCompetitionSchema.parse(processedData);
@@ -297,7 +299,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const processedUpdates = {
         ...updates,
         ...(updates.startDate && { startDate: new Date(updates.startDate) }),
-        ...(updates.endDate && { endDate: new Date(updates.endDate) })
+        ...(updates.endDate && { endDate: new Date(updates.endDate) }),
+        ...(updates.joinStartDate && { joinStartDate: new Date(updates.joinStartDate) }),
+        ...(updates.joinEndDate && { joinEndDate: new Date(updates.joinEndDate) })
       };
       
       const competition = await storage.updateCompetition(competitionId, processedUpdates);

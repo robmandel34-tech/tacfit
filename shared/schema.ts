@@ -29,6 +29,8 @@ export const competitions = pgTable("competitions", {
   isActive: boolean("is_active").default(true),
   requiredActivities: text("required_activities").array().default([]),
   targetGoals: text("target_goals").array().default([]),
+  isCompleted: boolean("is_completed").default(false),
+  completedAt: timestamp("completed_at"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

@@ -20,6 +20,66 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
 });
 
+// Competition completion and reward logic
+async function completeCompetition(competitionId: number) {
+  try {
+    console.log(`Completing competition ${competitionId}...`);
+    
+    // Mark competition as completed
+    await storage.updateCompetition(competitionId, {
+      isCompleted: true,
+      completedAt: new Date()
+    });
+    
+    // Get all teams for this competition, sorted by points (highest first)
+    const teams = await storage.getTeamsByCompetition(competitionId);
+    const sortedTeams = teams.sort((a, b) => (b.points || 0) - (a.points || 0));
+    
+    // Distribute rewards based on placement
+    for (let i = 0; i < sortedTeams.length; i++) {
+      const team = sortedTeams[i];
+      const placement = i + 1;
+      
+      // Get team members
+      const teamMembers = await storage.getTeamMembers(team.id);
+      
+      let captainPoints = 0;
+      let memberPoints = 0;
+      
+      // Determine points based on placement
+      if (placement === 1) {
+        captainPoints = 1000;
+        memberPoints = 500;
+      } else if (placement === 2) {
+        captainPoints = 500;
+        memberPoints = 250;
+      } else {
+        // No rewards for 3rd place and below
+        continue;
+      }
+      
+      // Award points to team members
+      for (const member of teamMembers) {
+        const user = await storage.getUser(member.userId!);
+        if (!user) continue;
+        
+        const pointsToAward = member.role === 'captain' ? captainPoints : memberPoints;
+        const newPointTotal = (user.points || 0) + pointsToAward;
+        
+        await storage.updateUser(user.id, {
+          points: newPointTotal
+        });
+        
+        console.log(`Awarded ${pointsToAward} points to ${user.username} (${member.role}) from team ${team.name} (${placement === 1 ? '1st' : '2nd'} place)`);
+      }
+    }
+    
+    console.log(`Competition ${competitionId} completed successfully!`);
+  } catch (error) {
+    console.error(`Error completing competition ${competitionId}:`, error);
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Create uploads directory if it doesn't exist
   if (!fs.existsSync('uploads')) {
@@ -160,6 +220,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/competitions", async (req, res) => {
     try {
       const competitions = await storage.getCompetitions();
+      
+      // Check for competitions that should be completed
+      const now = new Date();
+      for (const competition of competitions) {
+        if (!competition.isCompleted && competition.endDate < now) {
+          await completeCompetition(competition.id);
+        }
+      }
+      
       res.json(competitions);
     } catch (error) {
       res.status(500).json({ message: "Error fetching competitions" });
@@ -255,6 +324,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Competition deletion error:", error);
       res.status(500).json({ message: "Error deleting competition" });
+    }
+  });
+
+  // Complete competition and distribute rewards
+  app.post("/api/competitions/:id/complete", async (req, res) => {
+    try {
+      const competitionId = parseInt(req.params.id);
+      const competition = await storage.getCompetition(competitionId);
+      
+      if (!competition) {
+        return res.status(404).json({ message: "Competition not found" });
+      }
+      
+      if (competition.isCompleted) {
+        return res.status(400).json({ message: "Competition already completed" });
+      }
+      
+      await completeCompetition(competitionId);
+      
+      res.json({ message: "Competition completed and rewards distributed successfully" });
+    } catch (error) {
+      console.error("Competition completion error:", error);
+      res.status(500).json({ message: "Error completing competition" });
     }
   });
 

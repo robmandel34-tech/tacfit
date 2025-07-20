@@ -71,6 +71,16 @@ Preferred communication style: Simple, everyday language.
 - **CLEANED**: Removed inconsistent activity types (sports, other) to focus on core three
 - **IMPROVED**: Activity cards and progress tracking use same measurement units throughout
 
+### Competition Reward System (July 2025)
+- **NEW**: Automated competition completion and point distribution system
+- **REWARDS**: 1st place - Team captain gets 1000 points, members get 500 points
+- **REWARDS**: 2nd place - Team captain gets 500 points, members get 250 points
+- **AUTOMATIC**: Competitions automatically completed when end date passes
+- **TRACKING**: Database schema updated with isCompleted and completedAt fields
+- **ADMIN**: Admin portal includes "Complete Competition" button for manual completion
+- **LOGGING**: Server logs all point awards and completion status for audit trail
+- **RANKING**: Teams ranked by total points with proper tie-breaking logic
+
 ### Bonus Points System (July 2025)
 - **IMPLEMENTED**: 50% bonus points awarded when users submit both video AND image evidence
 - **CALCULATION**: Base points (10) + 50% bonus = 15 points total for dual evidence submissions

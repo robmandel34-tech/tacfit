@@ -75,6 +75,23 @@ export async function seedDatabase() {
       targetGoals: ["1,500 minutes of cardio", "5,000 reps of strength training", "900 minutes of flexibility work"]
     });
     
+    // Create a completed competition for testing rewards
+    const completedComp = await storage.createCompetition({
+      name: "Alpha Challenge (Completed)",
+      description: "Completed competition for testing rewards",
+      startDate: new Date("2025-06-01"),
+      endDate: new Date("2025-06-15"),
+      joinStartDate: new Date("2025-05-15"),
+      joinEndDate: new Date("2025-05-31"),
+      maxTeams: 10,
+      isActive: true,
+      isCompleted: true,
+      completedAt: new Date("2025-06-15"),
+      createdBy: user1.id,
+      requiredActivities: ["cardio", "strength", "flexibility"],
+      targetGoals: ["1,000 minutes of cardio", "3,000 reps of strength training", "600 minutes of flexibility work"]
+    });
+    
     const comp2 = await storage.createCompetition({
       name: "Winter Warrior Program",
       description: "4-week cold weather endurance challenge",

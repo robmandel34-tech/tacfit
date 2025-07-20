@@ -26,6 +26,8 @@ interface Competition {
   isActive: boolean;
   requiredActivities: string[];
   targetGoals: string[];
+  isCompleted?: boolean;
+  completedAt?: string;
   createdAt: string;
 }
 
@@ -183,6 +185,28 @@ export default function AdminPage() {
     onError: (error: any) => {
       toast({
         title: "Failed to delete competition",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Complete competition mutation
+  const completeCompetition = useMutation({
+    mutationFn: async (id: number) => {
+      return apiRequest("POST", `/api/competitions/${id}/complete`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Competition completed",
+        description: "Rewards have been distributed to winning teams.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to complete competition",
         description: error.message,
         variant: "destructive"
       });
@@ -647,6 +671,17 @@ export default function AdminPage() {
                             >
                               <Edit2 className="h-4 w-4" />
                             </Button>
+                            {!competition.isCompleted && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => completeCompetition.mutate(competition.id)}
+                                className="h-8 w-8 p-0 text-yellow-400 hover:text-yellow-300"
+                                disabled={completeCompetition.isPending}
+                              >
+                                <Trophy className="h-4 w-4" />
+                              </Button>
+                            )}
                             <Button
                               size="sm"
                               variant="ghost"

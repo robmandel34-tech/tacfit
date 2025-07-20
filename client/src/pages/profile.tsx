@@ -387,12 +387,12 @@ export default function Profile() {
           <div className="lg:col-span-1">
             <Card className="bg-tactical-gray-light border-tactical-gray overflow-hidden">
               {/* Cover Photo Section */}
-              <div className="relative h-32 bg-gradient-to-r from-military-green to-steel-blue">
+              <div className="relative h-48 bg-gradient-to-r from-military-green to-steel-blue">
                 {displayUser.coverPhoto ? (
                   <img
                     src={`/uploads/${displayUser.coverPhoto}`}
                     alt="Cover photo"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover object-center"
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-r from-military-green to-steel-blue flex items-center justify-center">
@@ -424,16 +424,16 @@ export default function Profile() {
               
               <CardContent className="pt-6 px-4 flex flex-col items-center">
                 <div className="text-center w-full max-w-sm mx-auto">
-                  <div className="relative inline-block -mt-16 mb-4">
+                  <div className="relative inline-block -mt-24 mb-4">
                     <div className="relative">
                       {displayUser.avatar ? (
                         <img
                           src={`/uploads/${displayUser.avatar}`}
                           alt="Profile picture"
-                          className="w-20 h-20 rounded-full border-4 border-tactical-gray-light object-cover"
+                          className="w-24 h-24 rounded-full border-4 border-white object-cover shadow-lg"
                         />
                       ) : (
-                        <div className="w-20 h-20 bg-military-green rounded-full flex items-center justify-center border-4 border-tactical-gray-light">
+                        <div className="w-24 h-24 bg-military-green rounded-full flex items-center justify-center border-4 border-white shadow-lg">
                           <span className="text-white font-bold text-2xl">
                             {getInitials(displayUser.username)}
                           </span>

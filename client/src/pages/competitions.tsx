@@ -62,7 +62,7 @@ export default function Competitions() {
         if (!a.canJoin && b.canJoin) return 1;
         
         // Then sort by join window status priority
-        const statusPriority = { 'open': 0, 'not-opened': 1, 'closed': 2, 'unknown': 3 };
+        const statusPriority: { [key: string]: number } = { 'open': 0, 'not-opened': 1, 'closed': 2, 'unknown': 3 };
         const aPriority = statusPriority[a.joinWindowStatus] || 3;
         const bPriority = statusPriority[b.joinWindowStatus] || 3;
         

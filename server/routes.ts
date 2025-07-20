@@ -283,10 +283,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(competition);
     } catch (error) {
       console.error("Competition creation error:", error);
-      if (error.issues) {
-        console.error("Validation issues:", error.issues);
+      if (error && typeof error === 'object' && 'issues' in error) {
+        console.error("Validation issues:", (error as any).issues);
       }
-      res.status(400).json({ message: "Invalid competition data", error: error.message });
+      res.status(400).json({ message: "Invalid competition data", error: error instanceof Error ? error.message : String(error) });
     }
   });
 
@@ -666,12 +666,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Check if team name already exists in the same competition
-      const existingTeams = await storage.getTeamsByCompetition(team.competitionId);
-      const nameExists = existingTeams.some(t => t.name.toLowerCase() === name.trim().toLowerCase() && t.id !== teamId);
-      
-      if (nameExists) {
-        return res.status(400).json({ message: "Team name already exists in this competition" });
+      if (team.competitionId) {
+        const existingTeams = await storage.getTeamsByCompetition(team.competitionId);
+        const nameExists = existingTeams.some(t => t.name.toLowerCase() === name.trim().toLowerCase() && t.id !== teamId);
+        
+        if (nameExists) {
+          return res.status(400).json({ message: "Team name already exists in this competition" });
+        }
       }
+
       
       // Update team name
       const updatedTeam = await storage.updateTeam(teamId, { name: name.trim() });
@@ -910,7 +913,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get user details for each activity
       const activitiesWithUsers = await Promise.all(
         activities.map(async (activity) => {
-          const user = await storage.getUser(activity.userId!);
+          const user = activity.userId ? await storage.getUser(activity.userId) : null;
           const likes = await storage.getActivityLikes(activity.id);
           const comments = await storage.getActivityComments(activity.id);
           
@@ -938,7 +941,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get user details and team information for each activity
       const activitiesWithUsers = await Promise.all(
         activities.map(async (activity) => {
-          const user = await storage.getUser(activity.userId!);
+          const user = activity.userId ? await storage.getUser(activity.userId) : null;
           const likes = await storage.getActivityLikes(activity.id);
           const comments = await storage.getActivityComments(activity.id);
           
@@ -946,7 +949,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           let team = null;
           if (user) {
             const userTeamMembership = await storage.getUserTeam(user.id, competitionId);
-            if (userTeamMembership) {
+            if (userTeamMembership && userTeamMembership.teamId) {
               team = await storage.getTeam(userTeamMembership.teamId);
             }
           }
@@ -976,7 +979,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get user details for each activity
       const activitiesWithUsers = await Promise.all(
         activities.map(async (activity) => {
-          const user = await storage.getUser(activity.userId!);
+          const user = activity.userId ? await storage.getUser(activity.userId) : null;
           const likes = await storage.getActivityLikes(activity.id);
           const comments = await storage.getActivityComments(activity.id);
           
@@ -1021,6 +1024,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      // Handle file uploads
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      
       // Calculate base points
       let basePoints = 10;
       
@@ -1050,9 +1056,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const validatedData = insertActivitySchema.parse(activityData);
       
-      // Handle file uploads
-      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-      
       // Handle video file (primary evidence)
       if (files['evidence'] && files['evidence'][0]) {
         const videoFile = files['evidence'][0];
@@ -1079,15 +1082,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const activity = await storage.createActivity(validatedData);
       
       // Update user and team points
-      await storage.updateUser(activity.userId!, { 
-        points: (await storage.getUser(activity.userId!))!.points! + activity.points! 
-      });
+      if (activity.userId && activity.points) {
+        const currentUser = await storage.getUser(activity.userId);
+        if (currentUser) {
+          await storage.updateUser(activity.userId, { 
+            points: (currentUser.points || 0) + activity.points 
+          });
+        }
+      }
       
-      if (activity.teamId) {
+      if (activity.teamId && activity.points) {
         const team = await storage.getTeam(activity.teamId);
         if (team) {
           await storage.updateTeam(activity.teamId, {
-            points: team.points! + activity.points!
+            points: (team.points || 0) + activity.points
           });
         }
       }
@@ -1664,7 +1672,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(task);
     } catch (error) {
       console.error("Task creation error:", error);
-      res.status(400).json({ message: "Invalid task data", error: error.message });
+      res.status(400).json({ message: "Invalid task data", error: error instanceof Error ? error.message : String(error) });
     }
   });
 

@@ -491,7 +491,7 @@ export default function AdminPage() {
                           max="50"
                           value={competitionForm.maxTeams || ''}
                           onChange={(e) => {
-                            const value = e.target.value === '' ? '' : parseInt(e.target.value);
+                            const value = e.target.value === '' ? 0 : parseInt(e.target.value);
                             setCompetitionForm(prev => ({ ...prev, maxTeams: value }));
                           }}
                           className="bg-tactical-gray-lighter border-tactical-gray text-white"

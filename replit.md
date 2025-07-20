@@ -16,9 +16,11 @@ Preferred communication style: Simple, everyday language.
 - **NEW**: Chronological sorting with newest activities appearing first
 - **NEW**: Clean, focused layout optimized for activity browsing
 - **NEW**: Empty state guidance encouraging users to join competitions and submit activities
+- **RESTRICTED**: Flag button removed from home page activity cards (only available within competitions)
 - **SIMPLIFIED**: Streamlined design focused on social engagement and motivation
 - **ENHANCED**: Central activity discovery replacing complex dashboard widgets
 - **IMPROVED**: Social media-style feed promotes community engagement and friendly competition
+- **SECURED**: Activity flagging restricted to competition participants only for appropriate moderation context
 
 ### Competition Discovery Enhancement (July 2025)
 - **NEW**: Competitions with open join windows now appear at top of competition feed

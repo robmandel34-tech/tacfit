@@ -32,9 +32,10 @@ interface ActivityCardProps {
   };
   onLike?: (id: number) => void;
   onFlag?: (id: number) => void;
+  showFlagButton?: boolean; // New prop to control flag button visibility
 }
 
-export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardProps) {
+export default function ActivityCard({ activity, onLike, onFlag, showFlagButton = true }: ActivityCardProps) {
   const [, navigate] = useLocation();
   const { user } = useAuth();
   const [showComments, setShowComments] = useState(false);
@@ -310,22 +311,24 @@ export default function ActivityCard({ activity, onLike, onFlag }: ActivityCardP
                 <span>{currentCommentCount}</span>
               </button>
               
-              <button
-                onClick={handleFlag}
-                disabled={flagActivity.isPending}
-                className="flex items-center gap-2 transition-colors text-sm text-gray-400 hover:text-red-400"
-                style={{
-                  color: userFlagStatus ? '#ef4444' : undefined
-                }}
-              >
-                <Flag 
-                  className="h-4 w-4" 
+              {showFlagButton && (
+                <button
+                  onClick={handleFlag}
+                  disabled={flagActivity.isPending}
+                  className="flex items-center gap-2 transition-colors text-sm text-gray-400 hover:text-red-400"
                   style={{
-                    fill: userFlagStatus ? '#ef4444' : 'none'
+                    color: userFlagStatus ? '#ef4444' : undefined
                   }}
-                />
-                <span className="text-gray-300">{currentFlagCount > 0 ? currentFlagCount : 'Flag'}</span>
-              </button>
+                >
+                  <Flag 
+                    className="h-4 w-4" 
+                    style={{
+                      fill: userFlagStatus ? '#ef4444' : 'none'
+                    }}
+                  />
+                  <span className="text-gray-300">{currentFlagCount > 0 ? currentFlagCount : 'Flag'}</span>
+                </button>
+              )}
             </div>
             
             <span className="text-gray-400 text-sm">

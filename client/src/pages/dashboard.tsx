@@ -77,6 +77,7 @@ export default function Dashboard() {
                 <ActivityCard
                   key={activity.id}
                   activity={activity}
+                  showFlagButton={false}
                 />
               ))}
             </div>

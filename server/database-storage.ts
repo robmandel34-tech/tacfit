@@ -84,7 +84,7 @@ export class DatabaseStorage implements IStorage {
     const result = await db
       .delete(competitions)
       .where(eq(competitions.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Team operations
@@ -152,7 +152,7 @@ export class DatabaseStorage implements IStorage {
     const result = await db
       .delete(teamMembers)
       .where(and(eq(teamMembers.teamId, teamId), eq(teamMembers.userId, userId)));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Activity operations
@@ -286,20 +286,18 @@ export class DatabaseStorage implements IStorage {
     const result = await db
       .delete(activityTypes)
       .where(eq(activityTypes.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Chat operations
   async getChatMessages(teamId?: number, competitionId?: number): Promise<ChatMessage[]> {
-    let query = db.select().from(chatMessages);
-    
     if (teamId) {
-      query = query.where(eq(chatMessages.teamId, teamId));
+      return await db.select().from(chatMessages).where(eq(chatMessages.teamId, teamId));
     } else if (competitionId) {
-      query = query.where(eq(chatMessages.competitionId, competitionId));
+      return await db.select().from(chatMessages).where(eq(chatMessages.competitionId, competitionId));
     }
     
-    return await query;
+    return await db.select().from(chatMessages);
   }
 
   async getDirectMessages(userId1: number, userId2: number): Promise<ChatMessage[]> {
@@ -466,7 +464,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteWhiteboardItem(id: number): Promise<boolean> {
     const result = await db.delete(whiteboardItems).where(eq(whiteboardItems.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Mission task operations
@@ -497,6 +495,6 @@ export class DatabaseStorage implements IStorage {
 
   async deleteMissionTask(id: string): Promise<boolean> {
     const result = await db.delete(missionTasks).where(eq(missionTasks.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 }

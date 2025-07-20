@@ -32,7 +32,7 @@ export default function Dashboard() {
 
   if (!user) return null;
 
-  const hasJoinedCompetition = userTeamMembership && userTeamMembership.length > 0;
+  const hasJoinedCompetition = Array.isArray(userTeamMembership) && userTeamMembership.length > 0;
 
   return (
     <div className="min-h-screen bg-tactical-gray">

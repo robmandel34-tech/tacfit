@@ -1,7 +1,7 @@
 import { 
   User, InsertUser, Competition, InsertCompetition, Team, InsertTeam, 
   TeamMember, InsertTeamMember, Activity, InsertActivity, ActivityComment, 
-  InsertActivityComment, ActivityLike, ChatMessage, InsertChatMessage, 
+  InsertActivityComment, ActivityLike, ActivityFlag, ChatMessage, InsertChatMessage, 
   Friendship, InsertFriendship, CompetitionHistory, CompetitionInvitation,
   InsertCompetitionInvitation, CompetitionEntry, InsertCompetitionEntry,
   WhiteboardItem, InsertWhiteboardItem, MissionTask, InsertMissionTask,

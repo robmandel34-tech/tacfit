@@ -22,6 +22,7 @@ interface ActivityCardProps {
     user: {
       id: number;
       username: string;
+      avatar?: string;
     };
     team?: {
       id: number;
@@ -60,15 +61,15 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
   });
 
   // Check if current user has liked this activity
-  const userLikeStatus = activityLikes?.some((like: any) => like.userId === user?.id);
+  const userLikeStatus = Array.isArray(activityLikes) ? activityLikes.some((like: any) => like.userId === user?.id) : false;
   
   // Check if current user has flagged this activity
-  const userFlagStatus = activityFlags?.some((flag: any) => flag.userId === user?.id);
+  const userFlagStatus = Array.isArray(activityFlags) ? activityFlags.some((flag: any) => flag.userId === user?.id) : false;
   
   // Get current counts (use live data if available, fallback to activity prop)
-  const currentLikeCount = activityLikes?.length ?? activity.likesCount;
-  const currentCommentCount = activityComments?.length ?? activity.commentsCount;
-  const currentFlagCount = activityFlags?.length ?? 0;
+  const currentLikeCount = Array.isArray(activityLikes) ? activityLikes.length : activity.likesCount;
+  const currentCommentCount = Array.isArray(activityComments) ? activityComments.length : activity.commentsCount;
+  const currentFlagCount = Array.isArray(activityFlags) ? activityFlags.length : 0;
   
   const getInitials = (username: string) => {
     return username.split(' ').map(word => word[0]).join('').toUpperCase() || username.slice(0, 2).toUpperCase();
@@ -204,7 +205,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
                 className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={handleProfileClick}
               >
-                {activity.user.avatar ? (
+                {activity.user?.avatar ? (
                   <img
                     src={`/uploads/${activity.user.avatar}`}
                     alt="Profile picture"

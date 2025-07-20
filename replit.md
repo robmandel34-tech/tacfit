@@ -10,17 +10,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### Dashboard Redesign & Enhancement (July 2025)
-- **REDESIGNED**: Complete home page/dashboard overhaul with contextual content
-- **NEW**: Dynamic layout that adapts based on user's competition participation status
-- **NEW**: Mission progress dashboard for active participants with stats cards
-- **NEW**: Available operations preview for users not yet deployed
-- **NEW**: Getting started guide with step-by-step mission briefing
-- **NEW**: Contextual quick action buttons that change based on user state
-- **ENHANCED**: Two-column layout with comprehensive mission information
-- **ENHANCED**: Visual progress indicators and tactical stats display
-- **ENHANCED**: Direct navigation to key features (team, competition status, operations)
-- **IMPROVED**: Professional command center aesthetic with better information hierarchy
+### Dashboard Activity Feed Implementation (July 2025)
+- **REDESIGNED**: Home page converted to social activity feed showing all submissions across competitions
+- **NEW**: Live activity feed displaying real-time fitness submissions from all users
+- **NEW**: Chronological sorting with newest activities appearing first
+- **NEW**: Clean, focused layout optimized for activity browsing
+- **NEW**: Empty state guidance encouraging users to join competitions and submit activities
+- **SIMPLIFIED**: Streamlined design focused on social engagement and motivation
+- **ENHANCED**: Central activity discovery replacing complex dashboard widgets
+- **IMPROVED**: Social media-style feed promotes community engagement and friendly competition
 
 ### Competition Discovery Enhancement (July 2025)
 - **NEW**: Competitions with open join windows now appear at top of competition feed

@@ -11,6 +11,8 @@ interface CompetitionCardProps {
     description: string;
     startDate: string;
     endDate: string;
+    joinStartDate?: string;
+    joinEndDate?: string;
     maxTeams: number;
     isActive: boolean;
     requiredActivities?: string[];
@@ -49,11 +51,26 @@ export default function CompetitionCard({ competition, onInvite, onJoin }: Compe
         <p className="text-body mb-6 leading-relaxed">{competition.description}</p>
         
         <div className="space-y-4">
+          {competition.joinStartDate && competition.joinEndDate && (
+            <div className="flex items-center text-sm text-muted">
+              <Calendar className="mr-3 h-4 w-4 text-military-green" />
+              <div className="flex flex-col">
+                <span className="font-medium text-military-green text-xs">Join Window:</span>
+                <span className="font-medium">
+                  {new Date(competition.joinStartDate).toLocaleDateString()} - {new Date(competition.joinEndDate).toLocaleDateString()}
+                </span>
+              </div>
+            </div>
+          )}
+          
           <div className="flex items-center text-sm text-muted">
             <Calendar className="mr-3 h-4 w-4 text-steel-blue" />
-            <span className="font-medium">
-              {new Date(competition.startDate).toLocaleDateString()} - {new Date(competition.endDate).toLocaleDateString()}
-            </span>
+            <div className="flex flex-col">
+              <span className="font-medium text-steel-blue text-xs">Competition:</span>
+              <span className="font-medium">
+                {new Date(competition.startDate).toLocaleDateString()} - {new Date(competition.endDate).toLocaleDateString()}
+              </span>
+            </div>
           </div>
           
           <div className="flex items-center text-sm text-muted">

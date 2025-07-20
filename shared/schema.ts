@@ -22,6 +22,8 @@ export const competitions = pgTable("competitions", {
   description: text("description"),
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date").notNull(),
+  joinStartDate: timestamp("join_start_date"),
+  joinEndDate: timestamp("join_end_date"),
   maxTeams: integer("max_teams").default(10),
   createdBy: integer("created_by").references(() => users.id),
   isActive: boolean("is_active").default(true),

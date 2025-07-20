@@ -25,9 +25,14 @@ Preferred communication style: Simple, everyday language.
 ### Competition Discovery Enhancement (July 2025)
 - **NEW**: Competitions with open join windows now appear at top of competition feed
 - **NEW**: Visual indicators for active competitions (green ring border and "Join Window Open" badge)
+- **NEW**: Dual date ranges showing separate join window and competition dates
+- **NEW**: Join window dates displayed with military green styling for emphasis
+- **NEW**: Competition dates displayed with steel blue styling for distinction
 - **ENHANCED**: Competition sorting prioritizes active competitions before upcoming ones
 - **ENHANCED**: Secondary sorting by start date within each group (active vs upcoming)
+- **ENHANCED**: Database schema updated with joinStartDate and joinEndDate fields
 - **IMPROVED**: Clear visual distinction between joinable and upcoming competitions
+- **IMPROVED**: Better information hierarchy with labeled date ranges
 
 ### Activity Types Management System (July 2025)
 - **NEW**: Complete activity types management system in admin portal

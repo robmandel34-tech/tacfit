@@ -5,7 +5,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useRouter } from "wouter";
+import { useLocation } from "wouter";
 
 // Make sure to call `loadStripe` outside of a component's render to avoid
 // recreating the `Stripe` object on every render.
@@ -69,7 +69,7 @@ const SubscribeForm = ({ onSuccess }: { onSuccess: () => void }) => {
 
 export default function Subscribe() {
   const [clientSecret, setClientSecret] = useState("");
-  const [, navigate] = useRouter();
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -89,7 +89,7 @@ export default function Subscribe() {
   }, [toast]);
 
   const handleSuccess = () => {
-    navigate('/');
+    setLocation('/');
   };
 
   if (!clientSecret) {

@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/use-auth";
-import { useRouter, useSearch } from "wouter";
+import { useLocation, useSearch } from "wouter";
 
 // Make sure to call `loadStripe` outside of a component's render to avoid
 // recreating the `Stripe` object on every render.
@@ -75,7 +75,7 @@ interface CheckoutProps {
 
 export default function Checkout() {
   const [clientSecret, setClientSecret] = useState("");
-  const [, navigate] = useRouter();
+  const [, setLocation] = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
   const search = useSearch();
@@ -106,9 +106,9 @@ export default function Checkout() {
 
   const handleSuccess = () => {
     if (competitionId) {
-      navigate('/competitions');
+      setLocation('/competitions');
     } else {
-      navigate('/');
+      setLocation('/');
     }
   };
 

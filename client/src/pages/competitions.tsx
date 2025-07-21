@@ -213,6 +213,19 @@ export default function Competitions() {
             open={paymentModalOpen}
             onOpenChange={setPaymentModalOpen}
             competition={selectedCompetition}
+            onPaymentSuccess={() => {
+              // After successful payment, open team selection modal
+              setPaymentModalOpen(false);
+              setTeamSelectionModalOpen(true);
+              
+              // Show helpful toast
+              setTimeout(() => {
+                toast({
+                  title: "Choose Your Squad",
+                  description: "Select a team to join or create a new one to complete your entry",
+                });
+              }, 500);
+            }}
           />
         )}
 

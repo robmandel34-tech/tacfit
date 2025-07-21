@@ -19,12 +19,14 @@ interface CompetitionPaymentModalProps {
     name: string;
     description?: string;
   };
+  onPaymentSuccess?: () => void;
 }
 
 export default function CompetitionPaymentModal({ 
   open, 
   onOpenChange, 
-  competition 
+  competition,
+  onPaymentSuccess
 }: CompetitionPaymentModalProps) {
   const { user, refreshUser } = useAuth();
   const { toast } = useToast();
@@ -57,14 +59,13 @@ export default function CompetitionPaymentModal({
       
       onOpenChange(false);
       
-      // After successful payment, now user needs to select/join a team
-      toast({
-        title: "Next Step: Join a Team",
-        description: "Now select a team to complete your competition entry",
-      });
-      
-      // Navigate to competitions page where they can join teams
-      setLocation('/competitions');
+      // After successful payment, trigger team selection
+      if (onPaymentSuccess) {
+        onPaymentSuccess();
+      } else {
+        // Fallback: navigate to competitions page
+        setLocation('/competitions');
+      }
     },
     onError: (error: any) => {
       toast({

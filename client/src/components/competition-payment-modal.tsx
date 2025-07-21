@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "wouter";
+import { useLocation } from "wouter";
 
 interface CompetitionPaymentModalProps {
   open: boolean;
@@ -28,7 +28,7 @@ export default function CompetitionPaymentModal({
 }: CompetitionPaymentModalProps) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [, navigate] = useRouter();
+  const [, setLocation] = useLocation();
   const [paymentMethod, setPaymentMethod] = useState<'points' | 'stripe' | null>(null);
 
   const ENTRY_COST_POINTS = 1000;
@@ -55,7 +55,7 @@ export default function CompetitionPaymentModal({
       });
       
       // Navigate to competitions page where they can join teams
-      navigate('/competitions');
+      setLocation('/competitions');
     },
     onError: (error: any) => {
       toast({
@@ -72,7 +72,7 @@ export default function CompetitionPaymentModal({
 
   const handleStripePayment = () => {
     // Navigate to checkout page with competition context
-    navigate(`/checkout?competitionId=${competition.id}&amount=${ENTRY_COST_USD}`);
+    setLocation(`/checkout?competitionId=${competition.id}&amount=${ENTRY_COST_USD}`);
   };
 
   const userPoints = user?.points || 0;

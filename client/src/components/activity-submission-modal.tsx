@@ -83,6 +83,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
       // Invalidate user and team data to update counts
       queryClient.invalidateQueries({ queryKey: ["/api/users", user?.id] });
       queryClient.invalidateQueries({ queryKey: ["/api/history", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/team-members", user?.id] });
       queryClient.invalidateQueries({ queryKey: ["/api/team-members"] });
       queryClient.invalidateQueries({ predicate: (query) => 
         query.queryKey[0]?.toString().includes("/api/team-members") 

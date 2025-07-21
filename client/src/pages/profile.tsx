@@ -59,6 +59,17 @@ export default function Profile() {
     enabled: !!targetUserId,
   });
 
+  // Get current team membership to check active competition participation
+  const { data: currentTeamMembership = [] } = useQuery({
+    queryKey: ["/api/team-members", targetUserId],
+    enabled: !!targetUserId,
+  });
+
+  // Calculate competitions count (completed + current active participation)
+  const completedCompetitions = history.length;
+  const activeCompetitions = currentTeamMembership.length > 0 ? 1 : 0;
+  const totalCompetitions = completedCompetitions + activeCompetitions;
+
   // Calculate wins (1st place finishes)
   const wins = history.filter((record: any) => record.finalRank === 1).length;
 
@@ -828,18 +839,18 @@ export default function Profile() {
                   <Card className="bg-tactical-gray-light border-tactical-gray cursor-pointer hover:bg-tactical-gray transition-colors">
                     <CardContent className="p-4 text-center">
                       <Users className="mx-auto h-8 w-8 text-steel-blue mb-2" />
-                      <div className="text-2xl font-bold text-white">{history.length}</div>
+                      <div className="text-2xl font-bold text-white">{totalCompetitions}</div>
                       <div className="text-sm text-gray-400">Competitions</div>
                     </CardContent>
                   </Card>
                 </DialogTrigger>
                 <DialogContent className="bg-tactical-gray-light border-tactical-gray max-w-2xl max-h-[80vh]">
                   <DialogHeader>
-                    <DialogTitle className="text-white">Competitions ({history.length})</DialogTitle>
+                    <DialogTitle className="text-white">Competitions ({totalCompetitions})</DialogTitle>
                   </DialogHeader>
                   <ScrollArea className="max-h-96">
                     <div className="space-y-3">
-                      {history.length === 0 ? (
+                      {totalCompetitions === 0 ? (
                         <p className="text-gray-400 text-center py-8">No competitions yet</p>
                       ) : (
                         history.map((record: any) => (
@@ -912,7 +923,7 @@ export default function Profile() {
                 <CardTitle className="text-white">Competition History</CardTitle>
               </CardHeader>
               <CardContent>
-                {history.length === 0 ? (
+                {totalCompetitions === 0 ? (
                   <div className="text-center py-8">
                     <Calendar className="mx-auto h-12 w-12 text-gray-300 mb-4" />
                     <p className="text-gray-300">No competition history yet</p>

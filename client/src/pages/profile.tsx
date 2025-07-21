@@ -502,7 +502,7 @@ export default function Profile() {
                       </form>
                     ) : (
                       <div className="flex items-center justify-center">
-                        <div className="flex items-center ml-6">
+                        <div className="flex items-center ml-10">
                           <h2 className="text-white font-bold text-xl mr-2">{displayUser.username}</h2>
                           {isOwnProfile && (
                             <Button

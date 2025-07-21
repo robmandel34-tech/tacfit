@@ -54,7 +54,8 @@ export default function Profile() {
   });
 
   const { data: activities = [] } = useQuery({
-    queryKey: ["/api/activities", { userId: targetUserId }],
+    queryKey: ["/api/activities", "user", targetUserId],
+    queryFn: () => fetch(`/api/activities?userId=${targetUserId}`).then(res => res.json()),
     enabled: !!targetUserId,
   });
 

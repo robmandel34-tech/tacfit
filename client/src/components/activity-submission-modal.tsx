@@ -79,7 +79,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
         query.queryKey[0]?.toString().includes("/api/activities") 
       });
       // Invalidate user-specific activity queries for profile page
-      queryClient.invalidateQueries({ queryKey: ["/api/activities", { userId: user?.id }] });
+      queryClient.invalidateQueries({ queryKey: ["/api/activities", "user", user?.id] });
       // Invalidate user and team data to update counts
       queryClient.invalidateQueries({ queryKey: ["/api/users", user?.id] });
       queryClient.invalidateQueries({ queryKey: ["/api/history", user?.id] });

@@ -63,7 +63,7 @@ export default function AdminPage() {
   const [isCreateCompetitionOpen, setIsCreateCompetitionOpen] = useState(false);
   const [editingCompetition, setEditingCompetition] = useState<Competition | null>(null);
   const [pointsAdjustmentUser, setPointsAdjustmentUser] = useState<User | null>(null);
-  const [pointsForm, setPointsForm] = useState({ points: 0, operation: 'add' as 'add' | 'set' });
+  const [pointsForm, setPointsForm] = useState({ points: '', operation: 'add' as 'add' | 'set' });
 
   // Check if user is admin
   if (!user?.isAdmin) {
@@ -796,7 +796,7 @@ export default function AdminPage() {
                             size="sm"
                             onClick={() => {
                               setPointsAdjustmentUser(u);
-                              setPointsForm({ points: 0, operation: 'add' });
+                              setPointsForm({ points: '', operation: 'add' });
                             }}
                             className="h-8 px-2 text-military-green hover:text-military-green-light"
                           >
@@ -826,10 +826,10 @@ export default function AdminPage() {
                 </div>
                 <form onSubmit={(e) => {
                   e.preventDefault();
-                  if (pointsAdjustmentUser) {
+                  if (pointsAdjustmentUser && pointsForm.points !== '') {
                     adjustUserPoints.mutate({
                       userId: pointsAdjustmentUser.id,
-                      points: pointsForm.points,
+                      points: parseInt(pointsForm.points) || 0,
                       operation: pointsForm.operation
                     });
                     setPointsAdjustmentUser(null);
@@ -859,8 +859,9 @@ export default function AdminPage() {
                       type="number"
                       min="0"
                       value={pointsForm.points}
-                      onChange={(e) => setPointsForm(prev => ({ ...prev, points: parseInt(e.target.value) || 0 }))}
+                      onChange={(e) => setPointsForm(prev => ({ ...prev, points: e.target.value }))}
                       className="bg-tactical-gray-lighter border-tactical-gray text-white"
+                      placeholder="Enter points amount"
                       required
                     />
                   </div>

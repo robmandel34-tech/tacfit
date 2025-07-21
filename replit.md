@@ -61,6 +61,17 @@ Preferred communication style: Simple, everyday language.
 - **DISABLED**: Checkbox becomes disabled for users without task completion permissions
 - **VISUAL**: Added visual indicators (opacity, cursor) for disabled task completion states
 
+### Profile Activity Statistics Implementation (July 2025)
+- **NEW**: Real-time activity, competition, and wins counting on profile pages
+- **NEW**: Clickable statistics cards that open detailed modal lists
+- **NEW**: Activities modal shows all user submissions with points, dates, and details
+- **NEW**: Competitions modal displays participation history with team info and rankings
+- **NEW**: Wins modal highlights 1st place finishes with special trophy styling
+- **FIXED**: Activity submission cache invalidation now updates profile statistics immediately
+- **ENHANCED**: Profile statistics use authentic data from API endpoints
+- **ENHANCED**: Modal interfaces provide comprehensive activity and competition history
+- **CALCULATED**: Wins automatically calculated from competition rankings (finalRank === 1)
+
 ### Activity Measurement Standardization (July 2025)
 - **STANDARDIZED**: All competitions now use the same three activity types: Cardio, Strength, Flexibility
 - **UNIFIED**: Activity measurements consistent across all areas: Cardio = minutes, Strength = reps, Flexibility = minutes

@@ -424,7 +424,7 @@ export default function Profile() {
               
               <CardContent className="pt-6 px-4 flex flex-col items-center">
                 <div className="text-center w-full max-w-sm mx-auto">
-                  <div className="relative inline-block -mt-8 mb-4">
+                  <div className="relative inline-block -mt-4 mb-4">
                     <div className="relative">
                       {displayUser.avatar ? (
                         <img

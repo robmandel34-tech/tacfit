@@ -917,9 +917,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const likes = await storage.getActivityLikes(activity.id);
           const comments = await storage.getActivityComments(activity.id);
           
+          // Get competition details if activity has a competitionId
+          let competition = null;
+          if (activity.competitionId) {
+            competition = await storage.getCompetition(activity.competitionId);
+          }
+          
+          // Get user's team for this competition if available
+          let team = null;
+          if (user && activity.competitionId) {
+            const userTeamMembership = await storage.getUserTeam(user.id, activity.competitionId);
+            if (userTeamMembership && userTeamMembership.teamId) {
+              team = await storage.getTeam(userTeamMembership.teamId);
+            }
+          }
+          
           return {
             ...activity,
             user: user ? { id: user.id, username: user.username, avatar: user.avatar } : null,
+            team: team ? { id: team.id, name: team.name } : null,
+            competition: competition ? { id: competition.id, name: competition.name } : null,
             likesCount: likes.length,
             commentsCount: comments.length
           };
@@ -954,10 +971,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           }
           
+          // Get competition details if activity has a competitionId
+          let activityCompetition = null;
+          if (activity.competitionId) {
+            activityCompetition = await storage.getCompetition(activity.competitionId);
+          }
+          
           return {
             ...activity,
             user: user ? { id: user.id, username: user.username, avatar: user.avatar } : null,
             team: team ? { id: team.id, name: team.name } : null,
+            competition: activityCompetition ? { id: activityCompetition.id, name: activityCompetition.name } : null,
             likesCount: likes.length,
             commentsCount: comments.length
           };
@@ -983,9 +1007,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const likes = await storage.getActivityLikes(activity.id);
           const comments = await storage.getActivityComments(activity.id);
           
+          // Get competition details if activity has a competitionId
+          let competition = null;
+          if (activity.competitionId) {
+            competition = await storage.getCompetition(activity.competitionId);
+          }
+          
           return {
             ...activity,
             user: user ? { id: user.id, username: user.username, avatar: user.avatar } : null,
+            competition: competition ? { id: competition.id, name: competition.name } : null,
             likesCount: likes.length,
             commentsCount: comments.length
           };

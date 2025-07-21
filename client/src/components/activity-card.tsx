@@ -18,6 +18,7 @@ interface ActivityCardProps {
     quantity?: string;
     evidenceUrl?: string;
     imageUrl?: string;
+    points?: number;
     createdAt: string;
     user: {
       id: number;
@@ -25,6 +26,10 @@ interface ActivityCardProps {
       avatar?: string;
     };
     team?: {
+      id: number;
+      name: string;
+    };
+    competition?: {
       id: number;
       name: string;
     };
@@ -231,6 +236,11 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
                 <Badge variant="outline" className="text-xs border-gray-600 text-gray-300 whitespace-nowrap">
                   {getActivityIcon(activity.type)} {getActivityTypeDisplayName(activity.type)}
                 </Badge>
+                {activity.points && (
+                  <Badge variant="outline" className="text-xs border-steel-blue text-steel-blue whitespace-nowrap">
+                    {activity.points} pts
+                  </Badge>
+                )}
               </div>
               <p className="text-gray-300 text-sm">
                 {activity.quantity && (
@@ -241,6 +251,11 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
                 {activity.quantity && activity.description && ' - '}
                 {activity.description}
               </p>
+              {activity.competition && (
+                <p className="text-xs text-military-green mt-1">
+                  📍 {activity.competition.name}
+                </p>
+              )}
             </div>
           </div>
         </div>

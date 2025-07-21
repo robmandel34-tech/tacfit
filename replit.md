@@ -68,6 +68,11 @@ Preferred communication style: Simple, everyday language.
 - **NEW**: Competitions modal displays participation history with team info and rankings
 - **NEW**: Wins modal highlights 1st place finishes with special trophy styling
 - **FIXED**: Activity submission cache invalidation now updates profile statistics immediately
+- **NEW**: Points display on activity submission modal showing base points (10) and bonus (+5 for dual evidence)
+- **NEW**: Competition name displayed on activity cards throughout the application  
+- **NEW**: Points badge shown on activity cards for easy tracking
+- **ENHANCED**: Activity submission modal includes live points calculator with total display
+- **ENHANCED**: All activity API endpoints now include competition and points information
 - **ENHANCED**: Profile statistics use authentic data from API endpoints
 - **ENHANCED**: Modal interfaces provide comprehensive activity and competition history
 - **CALCULATED**: Wins automatically calculated from competition rankings (finalRank === 1)

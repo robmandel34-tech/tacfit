@@ -271,6 +271,28 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
             />
           </div>
           
+          {/* Points Display */}
+          <div className="p-3 bg-tactical-gray-lighter rounded-lg border border-tactical-gray">
+            <div className="flex items-center justify-between">
+              <span className="text-gray-300">Base Points:</span>
+              <span className="text-white font-bold">10 points</span>
+            </div>
+            {imageFile && videoFile && (
+              <div className="flex items-center justify-between mt-1 text-military-green">
+                <span className="text-sm">Bonus (Photo + Video):</span>
+                <span className="font-bold">+5 points</span>
+              </div>
+            )}
+            <div className="border-t border-tactical-gray mt-2 pt-2">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-300 font-medium">Total:</span>
+                <span className="text-military-green font-bold text-lg">
+                  {imageFile && videoFile ? '15' : '10'} points
+                </span>
+              </div>
+            </div>
+          </div>
+
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label className="text-gray-300 font-medium mb-2">Evidence (Photo + Video)</Label>

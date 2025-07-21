@@ -151,7 +151,43 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      setVideoFile(selectedFile);
+      // Check if it's a video file
+      if (selectedFile.type.startsWith('video/')) {
+        // Create video element to check duration
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+        
+        video.onloadedmetadata = () => {
+          window.URL.revokeObjectURL(video.src);
+          
+          if (video.duration > 15) {
+            toast({
+              title: "Video too long",
+              description: "Videos must be 15 seconds or shorter",
+              variant: "destructive",
+            });
+            // Clear the file input
+            e.target.value = '';
+            return;
+          }
+          
+          setVideoFile(selectedFile);
+        };
+        
+        video.onerror = () => {
+          window.URL.revokeObjectURL(video.src);
+          toast({
+            title: "Invalid video file",
+            description: "Please select a valid video file",
+            variant: "destructive",
+          });
+          e.target.value = '';
+        };
+        
+        video.src = URL.createObjectURL(selectedFile);
+      } else {
+        setVideoFile(selectedFile);
+      }
     }
   };
 

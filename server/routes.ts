@@ -1790,10 +1790,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         points: (user.points || 0) - ENTRY_COST_POINTS
       });
 
-      // Create competition entry
+      // Create competition entry  
       const entry = await storage.createCompetitionEntry({
         userId: user.id,
         competitionId: competitionId,
+        paymentType: 'points',
+        paymentStatus: 'completed',
         paymentMethod: 'points',
         pointsUsed: ENTRY_COST_POINTS
       });

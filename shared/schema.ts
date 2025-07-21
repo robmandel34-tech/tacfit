@@ -148,11 +148,12 @@ export const competitionEntries = pgTable("competition_entries", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id),
   competitionId: integer("competition_id").references(() => competitions.id),
-  paymentMethod: text("payment_method").notNull(), // free, stripe, points
+  paymentType: text("payment_type").notNull(), // free, stripe, points
   paymentStatus: text("payment_status").default("pending"), // pending, completed, failed
   stripePaymentIntentId: text("stripe_payment_intent_id"),
   pointsUsed: integer("points_used").default(0),
   createdAt: timestamp("created_at").defaultNow(),
+  paymentMethod: text("payment_method"), // Additional method info
 });
 
 export const whiteboardItems = pgTable("whiteboard_items", {

@@ -501,14 +501,14 @@ export default function Profile() {
                         </Button>
                       </form>
                     ) : (
-                      <div className="flex items-center justify-center space-x-2">
+                      <div className="flex items-center justify-center relative">
                         <h2 className="text-white font-bold text-xl">{displayUser.username}</h2>
                         {isOwnProfile && (
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={handleNameEdit}
-                            className="text-gray-400 hover:text-white"
+                            className="text-gray-400 hover:text-white absolute left-full ml-2"
                           >
                             <Edit2 className="h-4 w-4 text-gray-400" />
                           </Button>

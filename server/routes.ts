@@ -1748,13 +1748,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Competition entry with points payment
   app.post("/api/competitions/:id/enter-with-points", async (req, res) => {
-    if (!req.isAuthenticated || !req.isAuthenticated()) {
+    if (!req.session?.user?.id) {
       return res.sendStatus(401);
     }
 
     try {
       const competitionId = parseInt(req.params.id);
-      const user = (req as any).user;
+      const user = req.session.user;
       const ENTRY_COST_POINTS = 1000;
 
       // Check if user has enough points
@@ -1825,11 +1825,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Get or create subscription for paid features
   app.post('/api/get-or-create-subscription', async (req, res) => {
-    if (!req.isAuthenticated || !req.isAuthenticated()) {
+    if (!req.session?.user?.id) {
       return res.sendStatus(401);
     }
 
-    let user = (req as any).user;
+    let user = req.session.user;
 
     // Check if user already has an active subscription
     if (user.stripeSubscriptionId) {

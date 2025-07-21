@@ -464,7 +464,7 @@ export default function Profile() {
                   </div>
                   
                   {/* Spacer to push content below profile picture */}
-                  <div className="h-16 mb-4"></div>
+                  <div className="h-8 mb-2"></div>
                   
                   {/* User Name */}
                   <div className="mb-2">

@@ -555,20 +555,22 @@ export default function Profile() {
                         </Button>
                       </form>
                     ) : (
-                      <div className="flex items-center justify-center space-x-2">
-                        <p className="text-gray-300 text-sm italic text-center">
-                          {displayUser.motto ? `"${displayUser.motto}"` : "No motto set"}
-                        </p>
-                        {isOwnProfile && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={handleMottoEdit}
-                            className="text-gray-400 hover:text-white"
-                          >
-                            <Edit2 className="h-4 w-4 text-gray-400" />
-                          </Button>
-                        )}
+                      <div className="flex items-center justify-center">
+                        <div className="flex items-center space-x-2 ml-10">
+                          <p className="text-gray-300 text-sm italic text-center">
+                            {displayUser.motto ? `"${displayUser.motto}"` : "No motto set"}
+                          </p>
+                          {isOwnProfile && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={handleMottoEdit}
+                              className="text-gray-400 hover:text-white"
+                            >
+                              <Edit2 className="h-4 w-4 text-gray-400" />
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>

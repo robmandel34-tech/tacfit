@@ -35,7 +35,9 @@ export default function CompetitionPaymentModal({
   const ENTRY_COST_USD = 10;
 
   const pointsPaymentMutation = useMutation({
-    mutationFn: () => apiRequest("POST", `/api/competitions/${competition.id}/enter-with-points`),
+    mutationFn: () => apiRequest("POST", `/api/competitions/${competition.id}/enter-with-points`, {
+      userId: user?.id
+    }),
     onSuccess: (data) => {
       toast({
         title: "Entry Payment Successful!",

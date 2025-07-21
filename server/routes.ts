@@ -1748,13 +1748,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Competition entry with points payment
   app.post("/api/competitions/:id/enter-with-points", async (req, res) => {
-    if (!req.session?.user?.id) {
-      return res.sendStatus(401);
-    }
-
     try {
       const competitionId = parseInt(req.params.id);
-      const user = req.session.user;
+      const { userId } = req.body;
+      
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
       const ENTRY_COST_POINTS = 1000;
 
       // Check if user has enough points
@@ -1799,9 +1805,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         remainingPoints: updatedUser?.points || 0
       });
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Points payment error:', error);
-      res.status(500).json({ message: "Error processing points payment" });
+      res.status(500).json({ message: error.message || "Error processing points payment" });
     }
   });
 

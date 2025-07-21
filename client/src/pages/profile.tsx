@@ -462,6 +462,10 @@ export default function Profile() {
                       )}
                     </div>
                   </div>
+                  
+                  {/* Spacer to push content below profile picture */}
+                  <div className="h-16 mb-4"></div>
+                  
                   {/* User Name */}
                   <div className="mb-2">
                     {isEditingName ? (

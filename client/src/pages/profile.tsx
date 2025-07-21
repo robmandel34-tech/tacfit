@@ -35,6 +35,9 @@ export default function Profile() {
   const [mottoText, setMottoText] = useState("");
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameText, setNameText] = useState("");
+  const [isActivitiesModalOpen, setIsActivitiesModalOpen] = useState(false);
+  const [isCompetitionsModalOpen, setIsCompetitionsModalOpen] = useState(false);
+  const [isWinsModalOpen, setIsWinsModalOpen] = useState(false);
 
   const isOwnProfile = !userId || userId === user?.id?.toString();
   const targetUserId = isOwnProfile ? user?.id : parseInt(userId!);
@@ -54,6 +57,9 @@ export default function Profile() {
     queryKey: ["/api/activities", { userId: targetUserId }],
     enabled: !!targetUserId,
   });
+
+  // Calculate wins (1st place finishes)
+  const wins = history.filter((record: any) => record.finalRank === 1).length;
 
   // Get friends for the current user to check relationships
   const { data: friends = [] } = useQuery({
@@ -776,29 +782,127 @@ export default function Profile() {
           <div className="lg:col-span-2 space-y-6">
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card className="bg-tactical-gray-light border-tactical-gray">
-                <CardContent className="p-4 text-center">
-                  <Target className="mx-auto h-8 w-8 text-military-green mb-2" />
-                  <div className="text-2xl font-bold text-white">{activities.length}</div>
-                  <div className="text-sm text-gray-400">Activities</div>
-                </CardContent>
-              </Card>
+              <Dialog open={isActivitiesModalOpen} onOpenChange={setIsActivitiesModalOpen}>
+                <DialogTrigger asChild>
+                  <Card className="bg-tactical-gray-light border-tactical-gray cursor-pointer hover:bg-tactical-gray transition-colors">
+                    <CardContent className="p-4 text-center">
+                      <Target className="mx-auto h-8 w-8 text-military-green mb-2" />
+                      <div className="text-2xl font-bold text-white">{activities.length}</div>
+                      <div className="text-sm text-gray-400">Activities</div>
+                    </CardContent>
+                  </Card>
+                </DialogTrigger>
+                <DialogContent className="bg-tactical-gray-light border-tactical-gray max-w-2xl max-h-[80vh]">
+                  <DialogHeader>
+                    <DialogTitle className="text-white">Activities ({activities.length})</DialogTitle>
+                  </DialogHeader>
+                  <ScrollArea className="max-h-96">
+                    <div className="space-y-3">
+                      {activities.length === 0 ? (
+                        <p className="text-gray-400 text-center py-8">No activities yet</p>
+                      ) : (
+                        activities.map((activity: any) => (
+                          <div key={activity.id} className="p-3 bg-tactical-gray rounded-lg">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h4 className="text-white font-medium">{activity.type}</h4>
+                                <p className="text-gray-300 text-sm">{activity.description}</p>
+                                <p className="text-gray-400 text-xs">Quantity: {activity.quantity}</p>
+                              </div>
+                              <div className="text-right">
+                                <span className="text-combat-orange font-bold">{activity.points} pts</span>
+                                <p className="text-gray-400 text-xs">{new Date(activity.submittedAt).toLocaleDateString()}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </ScrollArea>
+                </DialogContent>
+              </Dialog>
               
-              <Card className="bg-tactical-gray-light border-tactical-gray">
-                <CardContent className="p-4 text-center">
-                  <Users className="mx-auto h-8 w-8 text-steel-blue mb-2" />
-                  <div className="text-2xl font-bold text-white">{history.length}</div>
-                  <div className="text-sm text-gray-400">Competitions</div>
-                </CardContent>
-              </Card>
+              <Dialog open={isCompetitionsModalOpen} onOpenChange={setIsCompetitionsModalOpen}>
+                <DialogTrigger asChild>
+                  <Card className="bg-tactical-gray-light border-tactical-gray cursor-pointer hover:bg-tactical-gray transition-colors">
+                    <CardContent className="p-4 text-center">
+                      <Users className="mx-auto h-8 w-8 text-steel-blue mb-2" />
+                      <div className="text-2xl font-bold text-white">{history.length}</div>
+                      <div className="text-sm text-gray-400">Competitions</div>
+                    </CardContent>
+                  </Card>
+                </DialogTrigger>
+                <DialogContent className="bg-tactical-gray-light border-tactical-gray max-w-2xl max-h-[80vh]">
+                  <DialogHeader>
+                    <DialogTitle className="text-white">Competitions ({history.length})</DialogTitle>
+                  </DialogHeader>
+                  <ScrollArea className="max-h-96">
+                    <div className="space-y-3">
+                      {history.length === 0 ? (
+                        <p className="text-gray-400 text-center py-8">No competitions yet</p>
+                      ) : (
+                        history.map((record: any) => (
+                          <div key={record.id} className="p-3 bg-tactical-gray rounded-lg">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h4 className="text-white font-medium">{record.competition?.name}</h4>
+                                <p className="text-gray-300 text-sm">Team: {record.team?.name}</p>
+                              </div>
+                              <div className="text-right">
+                                <Badge variant="outline" className="mb-1">
+                                  {record.finalRank ? `#${record.finalRank}` : "Completed"}
+                                </Badge>
+                                <p className="text-combat-orange text-sm font-bold">{record.pointsEarned} pts</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </ScrollArea>
+                </DialogContent>
+              </Dialog>
               
-              <Card className="bg-tactical-gray-light border-tactical-gray">
-                <CardContent className="p-4 text-center">
-                  <Trophy className="mx-auto h-8 w-8 text-combat-orange mb-2" />
-                  <div className="text-2xl font-bold text-white">0</div>
-                  <div className="text-sm text-gray-400">Wins</div>
-                </CardContent>
-              </Card>
+              <Dialog open={isWinsModalOpen} onOpenChange={setIsWinsModalOpen}>
+                <DialogTrigger asChild>
+                  <Card className="bg-tactical-gray-light border-tactical-gray cursor-pointer hover:bg-tactical-gray transition-colors">
+                    <CardContent className="p-4 text-center">
+                      <Trophy className="mx-auto h-8 w-8 text-combat-orange mb-2" />
+                      <div className="text-2xl font-bold text-white">{wins}</div>
+                      <div className="text-sm text-gray-400">Wins</div>
+                    </CardContent>
+                  </Card>
+                </DialogTrigger>
+                <DialogContent className="bg-tactical-gray-light border-tactical-gray max-w-2xl max-h-[80vh]">
+                  <DialogHeader>
+                    <DialogTitle className="text-white">Wins ({wins})</DialogTitle>
+                  </DialogHeader>
+                  <ScrollArea className="max-h-96">
+                    <div className="space-y-3">
+                      {wins === 0 ? (
+                        <p className="text-gray-400 text-center py-8">No wins yet</p>
+                      ) : (
+                        history.filter((record: any) => record.finalRank === 1).map((record: any) => (
+                          <div key={record.id} className="p-3 bg-tactical-gray rounded-lg border border-combat-orange">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h4 className="text-white font-medium">{record.competition?.name}</h4>
+                                <p className="text-gray-300 text-sm">Team: {record.team?.name}</p>
+                              </div>
+                              <div className="text-right">
+                                <Badge className="bg-combat-orange text-white mb-1">
+                                  🏆 1st Place
+                                </Badge>
+                                <p className="text-combat-orange text-sm font-bold">{record.pointsEarned} pts</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </ScrollArea>
+                </DialogContent>
+              </Dialog>
             </div>
 
             {/* Competition History */}

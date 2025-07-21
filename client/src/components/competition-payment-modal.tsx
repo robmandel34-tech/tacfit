@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,13 +26,20 @@ export default function CompetitionPaymentModal({
   onOpenChange, 
   competition 
 }: CompetitionPaymentModalProps) {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [paymentMethod, setPaymentMethod] = useState<'points' | 'stripe' | null>(null);
 
   const ENTRY_COST_POINTS = 1000;
   const ENTRY_COST_USD = 10;
+
+  // Refresh user data when modal opens to get latest points
+  useEffect(() => {
+    if (open) {
+      refreshUser();
+    }
+  }, [open, refreshUser]);
 
   const pointsPaymentMutation = useMutation({
     mutationFn: () => apiRequest("POST", `/api/competitions/${competition.id}/enter-with-points`, {
@@ -68,7 +75,9 @@ export default function CompetitionPaymentModal({
     },
   });
 
-  const handlePointsPayment = () => {
+  const handlePointsPayment = async () => {
+    // Refresh user data to get latest points balance
+    await refreshUser();
     pointsPaymentMutation.mutate();
   };
 

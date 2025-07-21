@@ -1791,6 +1791,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Create competition entry  
+      console.log('Creating entry with data:', {
+        userId: user.id,
+        competitionId: competitionId,
+        paymentType: 'points',
+        paymentStatus: 'completed',
+        paymentMethod: 'points',
+        pointsUsed: ENTRY_COST_POINTS
+      });
+      
       const entry = await storage.createCompetitionEntry({
         userId: user.id,
         competitionId: competitionId,

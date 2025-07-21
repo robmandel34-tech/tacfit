@@ -387,7 +387,7 @@ export default function Profile() {
           <div className="lg:col-span-1">
             <Card className="bg-tactical-gray-light border-tactical-gray overflow-hidden">
               {/* Cover Photo Section */}
-              <div className="relative h-48 bg-gradient-to-r from-military-green to-steel-blue">
+              <div className="relative h-64 bg-gradient-to-r from-military-green to-steel-blue">
                 {displayUser.coverPhoto ? (
                   <img
                     src={`/uploads/${displayUser.coverPhoto}`}
@@ -424,7 +424,7 @@ export default function Profile() {
               
               <CardContent className="pt-6 px-4 flex flex-col items-center">
                 <div className="text-center w-full max-w-sm mx-auto">
-                  <div className="relative inline-block -mt-6 mb-4">
+                  <div className="relative inline-block -mt-12 mb-4">
                     <div className="relative">
                       {displayUser.avatar ? (
                         <img

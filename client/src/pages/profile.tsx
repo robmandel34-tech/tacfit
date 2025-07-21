@@ -502,17 +502,19 @@ export default function Profile() {
                       </form>
                     ) : (
                       <div className="flex items-center justify-center">
-                        <h2 className="text-white font-bold text-xl mr-1">{displayUser.username}</h2>
-                        {isOwnProfile && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={handleNameEdit}
-                            className="text-gray-400 hover:text-white ml-1"
-                          >
-                            <Edit2 className="h-4 w-4 text-gray-400" />
-                          </Button>
-                        )}
+                        <div className="flex items-center ml-6">
+                          <h2 className="text-white font-bold text-xl mr-2">{displayUser.username}</h2>
+                          {isOwnProfile && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={handleNameEdit}
+                              className="text-gray-400 hover:text-white"
+                            >
+                              <Edit2 className="h-4 w-4 text-gray-400" />
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>

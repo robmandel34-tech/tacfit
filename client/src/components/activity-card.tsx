@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ThumbsUp, MessageCircle, Flag, Users, Image, Trophy } from "lucide-react";
+import { ThumbsUp, MessageCircle, Flag, Users, Image, Mountain } from "lucide-react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -253,7 +253,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
               </p>
               {activity.competition && (
                 <p className="text-xs text-military-green mt-1 flex items-center gap-1">
-                  <Trophy className="h-3 w-3" />
+                  <Mountain className="h-3 w-3" />
                   {activity.competition.name}
                 </p>
               )}

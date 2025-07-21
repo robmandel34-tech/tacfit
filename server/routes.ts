@@ -199,6 +199,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Adjust user points endpoint for admin
+  app.post("/api/users/:id/adjust-points", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { points, operation } = req.body;
+      
+      if (!points || typeof points !== 'number') {
+        return res.status(400).json({ message: "Valid points amount is required" });
+      }
+      
+      if (!operation || !['add', 'set'].includes(operation)) {
+        return res.status(400).json({ message: "Operation must be 'add' or 'set'" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      let newPoints;
+      if (operation === 'add') {
+        newPoints = (user.points || 0) + points;
+      } else { // set
+        newPoints = points;
+      }
+
+      // Ensure points don't go negative
+      if (newPoints < 0) {
+        newPoints = 0;
+      }
+
+      const updatedUser = await storage.updateUser(userId, { points: newPoints });
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const { password, ...userWithoutPassword } = updatedUser;
+      res.json({
+        message: `User points ${operation === 'add' ? 'increased' : 'updated'} successfully`,
+        user: userWithoutPassword,
+        oldPoints: user.points || 0,
+        newPoints: newPoints,
+        operation: operation
+      });
+    } catch (error) {
+      console.error('Points adjustment error:', error);
+      res.status(500).json({ message: "Error adjusting user points" });
+    }
+  });
+
   // Update user motto
   app.patch("/api/users/:id/motto", async (req, res) => {
     try {

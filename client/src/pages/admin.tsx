@@ -62,6 +62,8 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<'competitions' | 'users' | 'activities' | 'settings'>('competitions');
   const [isCreateCompetitionOpen, setIsCreateCompetitionOpen] = useState(false);
   const [editingCompetition, setEditingCompetition] = useState<Competition | null>(null);
+  const [pointsAdjustmentUser, setPointsAdjustmentUser] = useState<User | null>(null);
+  const [pointsForm, setPointsForm] = useState({ points: 0, operation: 'add' as 'add' | 'set' });
 
   // Check if user is admin
   if (!user?.isAdmin) {
@@ -232,6 +234,30 @@ export default function AdminPage() {
     onError: (error: any) => {
       toast({
         title: "Failed to update user",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Adjust user points mutation
+  const adjustUserPoints = useMutation({
+    mutationFn: async (data: { userId: number; points: number; operation: 'add' | 'set' }) => {
+      return apiRequest("POST", `/api/users/${data.userId}/adjust-points`, { 
+        points: data.points, 
+        operation: data.operation 
+      });
+    },
+    onSuccess: (_, variables) => {
+      toast({
+        title: "Points updated",
+        description: `User points have been ${variables.operation === 'add' ? 'increased' : 'set'} successfully.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to update points",
         description: error.message,
         variant: "destructive"
       });
@@ -746,6 +772,7 @@ export default function AdminPage() {
                       <TableHead className="text-gray-300">Points</TableHead>
                       <TableHead className="text-gray-300">Competitions</TableHead>
                       <TableHead className="text-gray-300">Admin</TableHead>
+                      <TableHead className="text-gray-300">Actions</TableHead>
                       <TableHead className="text-gray-300">Joined</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -763,6 +790,19 @@ export default function AdminPage() {
                             disabled={u.id === user?.id} // Can't change own admin status
                           />
                         </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setPointsAdjustmentUser(u);
+                              setPointsForm({ points: 0, operation: 'add' });
+                            }}
+                            className="h-8 px-2 text-military-green hover:text-military-green-light"
+                          >
+                            Adjust Points
+                          </Button>
+                        </TableCell>
                         <TableCell className="text-gray-300">
                           {format(new Date(u.createdAt), 'MMM d, yyyy')}
                         </TableCell>
@@ -772,6 +812,78 @@ export default function AdminPage() {
                 </Table>
               </CardContent>
             </Card>
+
+            {/* Points Adjustment Modal */}
+            <Dialog open={!!pointsAdjustmentUser} onOpenChange={() => setPointsAdjustmentUser(null)}>
+              <DialogContent className="bg-tactical-dark border-tactical-gray max-w-md" aria-describedby="points-dialog-description">
+                <DialogHeader>
+                  <DialogTitle className="text-white">
+                    Adjust Points - {pointsAdjustmentUser?.username}
+                  </DialogTitle>
+                </DialogHeader>
+                <div id="points-dialog-description" className="sr-only">
+                  Adjust tactical points for user account management
+                </div>
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  if (pointsAdjustmentUser) {
+                    adjustUserPoints.mutate({
+                      userId: pointsAdjustmentUser.id,
+                      points: pointsForm.points,
+                      operation: pointsForm.operation
+                    });
+                    setPointsAdjustmentUser(null);
+                  }
+                }} className="space-y-4">
+                  <div>
+                    <Label className="text-gray-300">Current Points: {pointsAdjustmentUser?.points || 0}</Label>
+                  </div>
+                  <div>
+                    <Label htmlFor="operation" className="text-gray-300">Operation</Label>
+                    <select
+                      id="operation"
+                      value={pointsForm.operation}
+                      onChange={(e) => setPointsForm(prev => ({ ...prev, operation: e.target.value as 'add' | 'set' }))}
+                      className="w-full p-2 bg-tactical-gray-lighter border border-tactical-gray text-white rounded"
+                    >
+                      <option value="add">Add Points</option>
+                      <option value="set">Set Total Points</option>
+                    </select>
+                  </div>
+                  <div>
+                    <Label htmlFor="points" className="text-gray-300">
+                      {pointsForm.operation === 'add' ? 'Points to Add' : 'New Total Points'}
+                    </Label>
+                    <Input
+                      id="points"
+                      type="number"
+                      min="0"
+                      value={pointsForm.points}
+                      onChange={(e) => setPointsForm(prev => ({ ...prev, points: parseInt(e.target.value) || 0 }))}
+                      className="bg-tactical-gray-lighter border-tactical-gray text-white"
+                      required
+                    />
+                  </div>
+                  <div className="flex space-x-2 pt-4">
+                    <Button
+                      type="submit"
+                      className="bg-military-green hover:bg-military-green-light flex-1"
+                      disabled={adjustUserPoints.isPending}
+                    >
+                      {pointsForm.operation === 'add' ? 'Add Points' : 'Set Points'}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setPointsAdjustmentUser(null)}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
         )}
 

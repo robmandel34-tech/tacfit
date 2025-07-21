@@ -7,6 +7,7 @@ import Navigation from "@/components/navigation";
 import CompetitionCard from "@/components/competition-card";
 import InviteFriendsModal from "@/components/invite-friends-modal";
 import TeamSelectionModal from "@/components/team-selection-modal";
+import CompetitionPaymentModal from "@/components/competition-payment-modal";
 import { Button } from "@/components/ui/button";
 import { Trophy, Plus } from "lucide-react";
 
@@ -14,7 +15,8 @@ export default function Competitions() {
   const { user, isLoading } = useAuthRequired();
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [teamSelectionModalOpen, setTeamSelectionModalOpen] = useState(false);
-  const [selectedCompetition, setSelectedCompetition] = useState<{ id: number; name: string } | null>(null);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [selectedCompetition, setSelectedCompetition] = useState<{ id: number; name: string; description?: string } | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -84,8 +86,17 @@ export default function Competitions() {
   };
 
   const handleJoin = (competitionId: number, competitionName: string) => {
-    setSelectedCompetition({ id: competitionId, name: competitionName });
-    setTeamSelectionModalOpen(true);
+    const competition = competitions.find(c => c.id === competitionId);
+    if (competition) {
+      setSelectedCompetition({ 
+        id: competition.id, 
+        name: competition.name, 
+        description: competition.description 
+      });
+      
+      // Open payment modal to choose payment method (points or stripe)
+      setPaymentModalOpen(true);
+    }
   };
 
   if (isLoading) {
@@ -193,6 +204,15 @@ export default function Competitions() {
             onClose={() => setInviteModalOpen(false)}
             competitionId={selectedCompetition.id}
             competitionName={selectedCompetition.name}
+          />
+        )}
+
+        {/* Competition Payment Modal */}
+        {selectedCompetition && (
+          <CompetitionPaymentModal
+            open={paymentModalOpen}
+            onOpenChange={setPaymentModalOpen}
+            competition={selectedCompetition}
           />
         )}
 

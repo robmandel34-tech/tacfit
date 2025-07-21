@@ -14,10 +14,19 @@ import { and, eq } from "drizzle-orm";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import Stripe from "stripe";
 
 const upload = multer({ 
   dest: 'uploads/',
   limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
+});
+
+// Initialize Stripe
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
+}
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2024-06-20",
 });
 
 // Competition completion and reward logic
@@ -1736,6 +1745,160 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Serve uploaded files
   app.use('/uploads', express.static('uploads'));
+
+  // Competition entry with points payment
+  app.post("/api/competitions/:id/enter-with-points", async (req, res) => {
+    if (!req.isAuthenticated || !req.isAuthenticated()) {
+      return res.sendStatus(401);
+    }
+
+    try {
+      const competitionId = parseInt(req.params.id);
+      const user = (req as any).user;
+      const ENTRY_COST_POINTS = 1000;
+
+      // Check if user has enough points
+      if ((user.points || 0) < ENTRY_COST_POINTS) {
+        return res.status(400).json({ 
+          message: `Insufficient points. You need ${ENTRY_COST_POINTS} points to enter this competition. You have ${user.points || 0} points.`,
+          requiresPayment: true,
+          pointsNeeded: ENTRY_COST_POINTS,
+          currentPoints: user.points || 0
+        });
+      }
+
+      // Check if competition exists
+      const competition = await storage.getCompetition(competitionId);
+      if (!competition) {
+        return res.status(404).json({ message: "Competition not found" });
+      }
+
+      // Check if user already has an entry for this competition
+      const existingEntry = await storage.getCompetitionEntry(user.id, competitionId);
+      if (existingEntry) {
+        return res.status(400).json({ message: "You have already entered this competition" });
+      }
+
+      // Deduct points from user
+      const updatedUser = await storage.updateUser(user.id, {
+        points: (user.points || 0) - ENTRY_COST_POINTS
+      });
+
+      // Create competition entry
+      const entry = await storage.createCompetitionEntry({
+        userId: user.id,
+        competitionId: competitionId,
+        paymentMethod: 'points',
+        pointsUsed: ENTRY_COST_POINTS
+      });
+
+      res.json({
+        message: "Successfully entered competition using points",
+        entry,
+        pointsDeducted: ENTRY_COST_POINTS,
+        remainingPoints: updatedUser?.points || 0
+      });
+
+    } catch (error) {
+      console.error('Points payment error:', error);
+      res.status(500).json({ message: "Error processing points payment" });
+    }
+  });
+
+  // Stripe payment routes
+  
+  // Create payment intent for one-time payments
+  app.post("/api/create-payment-intent", async (req, res) => {
+    try {
+      const { amount } = req.body;
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(amount * 100), // Convert to cents
+        currency: "usd",
+      });
+      res.json({ clientSecret: paymentIntent.client_secret });
+    } catch (error: any) {
+      res
+        .status(500)
+        .json({ message: "Error creating payment intent: " + error.message });
+    }
+  });
+
+  // Get or create subscription for paid features
+  app.post('/api/get-or-create-subscription', async (req, res) => {
+    if (!req.isAuthenticated || !req.isAuthenticated()) {
+      return res.sendStatus(401);
+    }
+
+    let user = (req as any).user;
+
+    // Check if user already has an active subscription
+    if (user.stripeSubscriptionId) {
+      try {
+        const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+        
+        if (subscription.status === 'active') {
+          const invoice = await stripe.invoices.retrieve(subscription.latest_invoice as string, {
+            expand: ['payment_intent']
+          });
+          
+          res.json({
+            subscriptionId: subscription.id,
+            clientSecret: (invoice as any).payment_intent?.client_secret,
+            status: subscription.status
+          });
+          return;
+        }
+      } catch (error) {
+        console.log('Error retrieving existing subscription:', error);
+        // Continue to create new subscription if existing one is invalid
+      }
+    }
+    
+    if (!user.email) {
+      return res.status(400).json({ error: { message: 'No user email on file' } });
+    }
+
+    try {
+      let customerId = user.stripeCustomerId;
+      
+      // Create Stripe customer if doesn't exist
+      if (!customerId) {
+        const customer = await stripe.customers.create({
+          email: user.email,
+          name: user.username,
+        });
+        customerId = customer.id;
+        
+        // Update user with Stripe customer ID
+        await storage.updateUser(user.id, { stripeCustomerId: customerId });
+      }
+
+      // Create subscription - you'll need to replace STRIPE_PRICE_ID with your actual price ID
+      const subscription = await stripe.subscriptions.create({
+        customer: customerId,
+        items: [{
+          // For demo purposes, using a test price. Replace with your actual price ID from Stripe Dashboard
+          price: process.env.STRIPE_PRICE_ID || 'price_1234567890', // Replace with real price ID
+        }],
+        payment_behavior: 'default_incomplete',
+        expand: ['latest_invoice.payment_intent'],
+      });
+
+      // Update user with subscription ID
+      await storage.updateUser(user.id, { 
+        stripeSubscriptionId: subscription.id 
+      });
+  
+      const invoice = subscription.latest_invoice as any;
+      res.json({
+        subscriptionId: subscription.id,
+        clientSecret: invoice.payment_intent?.client_secret,
+      });
+    } catch (error: any) {
+      console.error('Subscription creation error:', error);
+      return res.status(400).json({ error: { message: error.message } });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;

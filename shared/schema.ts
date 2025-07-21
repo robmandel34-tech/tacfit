@@ -13,6 +13,8 @@ export const users = pgTable("users", {
   motto: text("motto"),
   competitionsEntered: integer("competitions_entered").default(0),
   isAdmin: boolean("is_admin").default(false),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -146,7 +148,7 @@ export const competitionEntries = pgTable("competition_entries", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id),
   competitionId: integer("competition_id").references(() => competitions.id),
-  paymentType: text("payment_type").notNull(), // free, stripe, points
+  paymentMethod: text("payment_method").notNull(), // free, stripe, points
   paymentStatus: text("payment_status").default("pending"), // pending, completed, failed
   stripePaymentIntentId: text("stripe_payment_intent_id"),
   pointsUsed: integer("points_used").default(0),

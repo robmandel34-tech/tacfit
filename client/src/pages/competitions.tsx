@@ -34,7 +34,9 @@ export default function Competitions() {
         
         if (comp.joinStartDate && comp.joinEndDate) {
           const joinStart = new Date(comp.joinStartDate);
+          // Set join end to end of day (23:59:59.999) instead of beginning of day
           const joinEnd = new Date(comp.joinEndDate);
+          joinEnd.setHours(23, 59, 59, 999);
           
           if (now < joinStart) {
             joinWindowStatus = 'not-opened';

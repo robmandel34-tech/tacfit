@@ -160,6 +160,13 @@ Preferred communication style: Simple, everyday language.
 - **LOGGING**: Server logs all point awards and completion status for audit trail
 - **RANKING**: Teams ranked by total points with proper tie-breaking logic
 
+### Join Window End Date Fix (July 2025)
+- **FIXED**: Join windows now properly close at end of day (23:59:59.999) instead of beginning of day
+- **CORRECTED**: Competition join windows remain open until 1 second after midnight on the end date
+- **UPDATED**: Both frontend (competitions page) and backend (API validation) use consistent end-of-day logic
+- **VALIDATED**: Database query confirms proper join window status calculation
+- **EXAMPLE**: "Rob's Ranger Rush" with join_end_date of 2025-07-25 stays open until July 25th at 11:59:59 PM
+
 ### Points System Update (July 2025)
 - **UPDATED**: Base activity points adjusted from 20 to 15 points per submission
 - **MAINTAINED**: Dual evidence (video + image) bonus remains at 30 points total

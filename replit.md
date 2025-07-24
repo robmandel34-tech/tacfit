@@ -10,6 +10,23 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### Gamified Onboarding Wizard Implementation (July 2025)
+- **NEW**: Complete gamified onboarding system with 5 progressive checkpoints for new users
+- **NEW**: Progress tracking with visual indicators and point accumulation system
+- **NEW**: Tactical-themed onboarding steps: Set Callsign (50pts), Mission Brief (25pts), Join Fight (100pts), Build Squad (75pts), First Mission (50pts)
+- **NEW**: Profile setup wizard with callsign selection and optional profile picture upload
+- **NEW**: Personal motto setting for mission briefing personalization
+- **NEW**: Competition discovery integration - guides users to join first tactical operation
+- **NEW**: Team formation encouragement with squad-building incentives
+- **NEW**: First activity logging motivation for immediate engagement
+- **NEW**: Onboarding completion tracking in user database schema with onboardingCompleted and onboardingSteps fields
+- **NEW**: Automatic redirection system - new users go to onboarding, returning users with incomplete onboarding are redirected
+- **NEW**: Skip functionality for optional steps while enforcing required checkpoints
+- **ENHANCED**: Authentication flow now includes onboarding status checking and intelligent routing
+- **SECURED**: Onboarding progress saved to database and validated server-side
+- **TACTICAL**: Military-themed language and iconography throughout onboarding experience
+- **POINTS**: 300 total points available through complete onboarding process
+
 ### Profile Competition Participation Display (July 2025)
 - **NEW**: Profile pages now show current competition participation status with detailed information
 - **NEW**: Active competition section displays competition name, description, team, and user role

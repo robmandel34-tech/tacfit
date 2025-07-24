@@ -1,5 +1,7 @@
 import { useAuthRequired } from "@/lib/auth";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { useLocation } from "wouter";
 import Navigation from "@/components/navigation";
 import ActivityCard from "@/components/activity-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +9,14 @@ import { Activity, Users } from "lucide-react";
 
 export default function Dashboard() {
   const { user, isLoading } = useAuthRequired();
+  const [, navigate] = useLocation();
+
+  // Redirect to onboarding if user hasn't completed it
+  useEffect(() => {
+    if (user && !user.onboardingCompleted) {
+      navigate("/onboarding");
+    }
+  }, [user, navigate]);
 
   const { data: activities = [] } = useQuery({
     queryKey: ["/api/activities"],

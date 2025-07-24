@@ -75,20 +75,20 @@ export default function Dashboard() {
       <Navigation />
       
       <main className="container mx-auto px-4 py-6">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="bg-gradient-to-r from-military-green-dark to-military-green tile-card-elevated p-6 text-white">
+        {/* Header Card */}
+        <Card className="bg-gradient-to-r from-military-green-dark to-military-green border-military-green/30 mb-8">
+          <CardHeader>
             <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold mb-2">Activity Feed</h1>
-                <p className="text-gray-200 text-lg">Live updates from all tactical operations</p>
+              <div className="flex items-center space-x-3">
+                <Activity className="h-6 w-6 text-white" />
+                <CardTitle className="text-white text-2xl">Intel Feed</CardTitle>
               </div>
-              <div className="hidden md:block">
-                <Activity className="text-6xl text-military-green-light" />
+              <div className="text-gray-200 text-sm">
+                Live updates from all competitions
               </div>
             </div>
-          </div>
-        </div>
+          </CardHeader>
+        </Card>
 
         {/* Activity Feed */}
         <div className="max-w-2xl mx-auto">

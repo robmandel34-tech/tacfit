@@ -10,6 +10,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### UI Consistency Updates (July 2025)
+- **ENHANCED**: Competitions page header redesigned with green gradient card matching help center style
+- **CHANGED**: "Tactical Operations" text updated to "Join a Competition" with description removed
+- **STYLED**: "Locate Allies" button now white with proper contrast and Users icon
+- **ENHANCED**: Intel Feed header updated to match green card design with consistent styling
+- **CHANGED**: "Activity Feed" renamed to "Intel Feed" throughout interface
+- **UPDATED**: Intel Feed description changed to "Live updates from all competitions"
+- **STANDARDIZED**: Both main pages now use identical Card component structure with military green theming
+- **IMPROVED**: Visual consistency across platform with matching borders, gradients, and typography
+
 ### Onboarding Walkthrough System Implementation (July 2025)
 - **NEW**: Complete interactive onboarding walkthrough with 6-step guided tour
 - **NEW**: Walkthrough covers application features, competition mechanics, team dynamics, activity tracking, and navigation

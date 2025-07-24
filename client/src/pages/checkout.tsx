@@ -57,13 +57,23 @@ const CheckoutForm = ({ onSuccess, competitionId }: { onSuccess: () => void, com
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <PaymentElement />
-      <Button 
-        type="submit" 
-        disabled={!stripe || isLoading} 
-        className="w-full"
-      >
-        {isLoading ? "Processing..." : "Complete Payment"}
-      </Button>
+      <div className="flex gap-3">
+        <Button 
+          type="button"
+          variant="secondary"
+          onClick={() => window.history.back()}
+          className="flex-1"
+        >
+          Cancel
+        </Button>
+        <Button 
+          type="submit" 
+          disabled={!stripe || isLoading} 
+          className="flex-1 bg-military-green hover:bg-military-green-light text-white"
+        >
+          {isLoading ? "Processing..." : "Complete Payment"}
+        </Button>
+      </div>
     </form>
   );
 };

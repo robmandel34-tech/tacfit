@@ -182,9 +182,9 @@ export default function CompetitionPaymentModal({
 
           <div className="flex gap-3">
             <Button 
-              variant="outline" 
+              variant="secondary" 
               onClick={() => onOpenChange(false)}
-              className="flex-1 text-primary hover:text-primary border-border hover:border-military-green/50"
+              className="flex-1"
             >
               Cancel
             </Button>

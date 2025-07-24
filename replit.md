@@ -10,6 +10,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### Payment UI Contrast & Readability Fixes (July 2025)
+- **FIXED**: Payment method selection UI contrast issues - replaced black backgrounds with green border highlights
+- **FIXED**: Cancel button text visibility - switched to secondary variant for proper contrast
+- **ENHANCED**: Payment method cards now use light green tint backgrounds (bg-military-green/10) when selected
+- **ENHANCED**: Green border highlighting instead of dark overlay for selected payment methods
+- **ENHANCED**: Improved button styling with white text on green background for primary actions
+- **ENHANCED**: Smooth hover transitions and consistent military green color theming
+- **IMPROVED**: Better accessibility with proper contrast ratios for all text elements
+- **RESOLVED**: White text on white background issue in payment modal buttons
+
 ### Dashboard Activity Feed Implementation (July 2025)
 - **REDESIGNED**: Home page converted to social activity feed showing all submissions across competitions
 - **NEW**: Live activity feed displaying real-time fitness submissions from all users

@@ -32,7 +32,7 @@ export default function BottomNavigation() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-surface-elevated border-t border-border-subtle z-50 md:hidden shadow-strong">
-      <div className="flex justify-around items-center py-3">
+      <div className="grid grid-cols-3 py-3">
         {navItems.map((item) => {
           const isActive = location === item.path;
           const IconComponent = item.icon;

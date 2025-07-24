@@ -989,13 +989,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
+      // Check if leaving member is team captain and handle succession
+      const isTeamCaptain = memberToRemove.role === 'captain';
+      let captainshipMessage = "";
+      
+      if (isTeamCaptain) {
+        // Get all team members before removing this one
+        const allTeamMembers = await storage.getTeamMembers(memberToRemove.teamId);
+        const otherMembers = allTeamMembers.filter(m => m.userId !== memberToRemove.userId);
+        
+        if (otherMembers.length > 0) {
+          // Promote the first remaining member to captain
+          const newCaptain = otherMembers[0];
+          if (newCaptain.teamId && newCaptain.userId) {
+            await storage.updateTeamMember(newCaptain.teamId, newCaptain.userId, { role: 'captain' });
+            // Get user details for the message
+            const newCaptainUser = await storage.getUser(newCaptain.userId);
+            captainshipMessage = ` Captain role transferred to ${newCaptainUser?.username || 'team member'}.`;
+            console.log(`Team ${teamToLeave.name}: Promoted user ${newCaptain.userId} to captain after creator left`);
+          }
+        }
+      }
+
       // Remove team membership
       const success = await storage.removeTeamMember(memberToRemove.teamId, memberToRemove.userId);
       
       if (success) {
+        // Check if team is now empty and delete it
+        const remainingMembers = await storage.getTeamMembers(memberToRemove.teamId);
+        if (remainingMembers.length === 0) {
+          await storage.deleteTeam(memberToRemove.teamId);
+          captainshipMessage = " Team was disbanded as it became empty.";
+          console.log(`Deleted empty team ${teamToLeave.name} after last member left`);
+        }
+        
         const message = competitionStarted 
-          ? "Successfully left competition (no refund available - competition has started)" 
-          : `Successfully left competition${refundMessage}`;
+          ? `Successfully left competition (no refund available - competition has started)${captainshipMessage}` 
+          : `Successfully left competition${refundMessage}${captainshipMessage}`;
           
         res.json({ 
           success: true, 

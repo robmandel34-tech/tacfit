@@ -30,12 +30,14 @@ export interface IStorage {
   getTeamsByCompetition(competitionId: number): Promise<Team[]>;
   createTeam(team: InsertTeam): Promise<Team>;
   updateTeam(id: number, updates: Partial<Team>): Promise<Team | undefined>;
+  deleteTeam(id: number): Promise<boolean>;
   
   // Team member operations
   getTeamMembers(teamId: number): Promise<TeamMember[]>;
   getTeamMember(teamId: number, userId: number): Promise<TeamMember | undefined>;
   getUserTeam(userId: number, competitionId: number): Promise<TeamMember | undefined>;
   addTeamMember(member: InsertTeamMember): Promise<TeamMember>;
+  updateTeamMember(teamId: number, userId: number, updates: Partial<TeamMember>): Promise<TeamMember | undefined>;
   removeTeamMember(teamId: number, userId: number): Promise<boolean>;
   
   // Activity operations

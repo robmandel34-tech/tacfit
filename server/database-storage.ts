@@ -118,6 +118,11 @@ export class DatabaseStorage implements IStorage {
     return team || undefined;
   }
 
+  async deleteTeam(id: number): Promise<boolean> {
+    const result = await db.delete(teams).where(eq(teams.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
   // Team member operations
   async getTeamMembers(teamId: number): Promise<TeamMember[]> {
     return await db.select().from(teamMembers).where(eq(teamMembers.teamId, teamId));
@@ -146,6 +151,15 @@ export class DatabaseStorage implements IStorage {
       .values(insertMember)
       .returning();
     return member;
+  }
+
+  async updateTeamMember(teamId: number, userId: number, updates: Partial<TeamMember>): Promise<TeamMember | undefined> {
+    const [member] = await db
+      .update(teamMembers)
+      .set(updates)
+      .where(and(eq(teamMembers.teamId, teamId), eq(teamMembers.userId, userId)))
+      .returning();
+    return member || undefined;
   }
 
   async removeTeamMember(teamId: number, userId: number): Promise<boolean> {

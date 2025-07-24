@@ -19,7 +19,6 @@ import TeamInvite from "@/pages/team-invite";
 import AdminPage from "@/pages/admin";
 import Checkout from "@/pages/checkout";
 import Subscribe from "@/pages/subscribe";
-import Onboarding from "@/pages/onboarding";
 import BottomNavigation from "@/components/bottom-navigation";
 import FloatingActionButton from "@/components/floating-action-button";
 
@@ -42,7 +41,6 @@ function Router() {
         <Route path="/admin" component={AdminPage} />
         <Route path="/checkout" component={Checkout} />
         <Route path="/subscribe" component={Subscribe} />
-        <Route path="/onboarding" component={Onboarding} />
         <Route component={NotFound} />
       </Switch>
     </div>

@@ -9,8 +9,6 @@ interface User {
   avatar?: string;
   coverPhoto?: string;
   isAdmin?: boolean;
-  onboardingCompleted?: boolean;
-  onboardingSteps?: string[];
 }
 
 interface AuthContextType {
@@ -77,13 +75,8 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
       console.log("Login response:", userData); // Debug log
       setUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));
-      
-      // Check if user needs onboarding
-      if (!userData.onboardingCompleted) {
-        window.location.href = "/onboarding";
-      } else {
-        window.location.href = "/";
-      }
+      // Force navigation to dashboard
+      window.location.href = "/";
     } catch (error) {
       throw error;
     }
@@ -106,9 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
       const data = await response.json();
       setUser(data.user);
       localStorage.setItem("user", JSON.stringify(data.user));
-      
-      // New users should go through onboarding
-      setLocation("/onboarding");
+      setLocation("/");
       
       // Show referral success message if applicable
       if (data.referralAwarded) {

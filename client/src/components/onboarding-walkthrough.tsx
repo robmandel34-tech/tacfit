@@ -270,7 +270,7 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 rounded-full bg-military-green"></div>
-                <span className="text-sm text-gray-300">Communicate with your squad</span>
+                <span className="text-sm text-gray-300">Communicate with your team</span>
               </div>
             </div>
           </div>

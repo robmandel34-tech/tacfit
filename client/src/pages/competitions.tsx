@@ -64,14 +64,19 @@ export default function Competitions() {
         };
       });
       
+      // Filter out competitions with closed join windows
+      const availableCompetitions = enrichedCompetitions.filter(comp => 
+        comp.joinWindowStatus !== 'closed'
+      );
+      
       // Sort competitions: joinable first, then by join window status, then by start date
-      return enrichedCompetitions.sort((a, b) => {
+      return availableCompetitions.sort((a, b) => {
         // First sort by joinability (joinable competitions first)
         if (a.canJoin && !b.canJoin) return -1;
         if (!a.canJoin && b.canJoin) return 1;
         
         // Then sort by join window status priority
-        const statusPriority: { [key: string]: number } = { 'open': 0, 'not-opened': 1, 'closed': 2, 'unknown': 3 };
+        const statusPriority: { [key: string]: number } = { 'open': 0, 'not-opened': 1, 'unknown': 3 };
         const aPriority = statusPriority[a.joinWindowStatus] || 3;
         const bPriority = statusPriority[b.joinWindowStatus] || 3;
         
@@ -144,9 +149,9 @@ export default function Competitions() {
             <div className="col-span-full text-center py-20">
               <div className="card-modern max-w-md mx-auto">
                 <Trophy className="mx-auto h-20 w-20 text-muted mb-6" />
-                <h2 className="text-2xl font-bold text-heading mb-4">No Competitions Yet</h2>
-                <p className="text-body mb-6">New tactical operations will be created by command staff</p>
-                <p className="text-sm text-muted">Stay ready - operations will be announced soon!</p>
+                <h2 className="text-2xl font-bold text-heading mb-4">No Open Competitions</h2>
+                <p className="text-body mb-6">All competitions have closed their join windows</p>
+                <p className="text-sm text-muted">Check back soon for new tactical operations!</p>
               </div>
             </div>
           ) : (

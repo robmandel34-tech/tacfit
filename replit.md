@@ -167,6 +167,8 @@ Preferred communication style: Simple, everyday language.
 - **UPDATED**: Both frontend (competitions page) and backend (API validation) use consistent end-of-day logic
 - **VALIDATED**: Database query confirms proper join window status calculation with completion status
 - **PREVENTED**: Users can no longer join completed competitions through either join team or create team endpoints
+- **FILTERED**: Competitions with closed join windows are now completely hidden from competitions page
+- **UPDATED**: Empty state message updated to reflect that only competitions with open join windows are displayed
 
 ### Points System Update (July 2025)
 - **UPDATED**: Base activity points adjusted from 20 to 15 points per submission

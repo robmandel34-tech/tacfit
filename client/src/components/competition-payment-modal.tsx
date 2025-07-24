@@ -115,12 +115,12 @@ export default function CompetitionPaymentModal({
             
             {/* Points Payment Option */}
             <Card 
-              className={`cursor-pointer transition-colors ${
+              className={`cursor-pointer transition-all duration-200 border-2 ${
                 paymentMethod === 'points' 
-                  ? 'ring-2 ring-military-green bg-surface-overlay' 
+                  ? 'border-military-green bg-military-green/10 shadow-md' 
                   : hasEnoughPoints 
-                    ? 'hover:bg-surface-overlay' 
-                    : 'opacity-50 cursor-not-allowed'
+                    ? 'border-border hover:border-military-green/50 hover:bg-surface-elevated' 
+                    : 'opacity-50 cursor-not-allowed border-border'
               }`}
               onClick={() => hasEnoughPoints && setPaymentMethod('points')}
             >
@@ -152,10 +152,10 @@ export default function CompetitionPaymentModal({
 
             {/* Stripe Payment Option */}
             <Card 
-              className={`cursor-pointer transition-colors ${
+              className={`cursor-pointer transition-all duration-200 border-2 ${
                 paymentMethod === 'stripe' 
-                  ? 'ring-2 ring-military-green bg-surface-overlay' 
-                  : 'hover:bg-surface-overlay'
+                  ? 'border-military-green bg-military-green/10 shadow-md' 
+                  : 'border-border hover:border-military-green/50 hover:bg-surface-elevated'
               }`}
               onClick={() => setPaymentMethod('stripe')}
             >
@@ -184,14 +184,14 @@ export default function CompetitionPaymentModal({
             <Button 
               variant="outline" 
               onClick={() => onOpenChange(false)}
-              className="flex-1"
+              className="flex-1 text-primary hover:text-primary border-border hover:border-military-green/50"
             >
               Cancel
             </Button>
             <Button 
               onClick={paymentMethod === 'points' ? handlePointsPayment : handleStripePayment}
               disabled={!paymentMethod || (paymentMethod === 'points' && (!hasEnoughPoints || pointsPaymentMutation.isPending))}
-              className="flex-1"
+              className="flex-1 bg-military-green hover:bg-military-green-light text-white disabled:opacity-50"
             >
               {pointsPaymentMutation.isPending ? "Processing..." : 
                paymentMethod === 'points' ? "Pay with Points" : 

@@ -321,9 +321,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Admin users can create competitions without point requirements
-      if (!user.isAdmin && (user.points || 0) < 1000) {
-        return res.status(403).json({ message: "Need at least 1000 points to create a competition" });
+      // Only admin users can create competitions
+      if (!user.isAdmin) {
+        return res.status(403).json({ message: "Only administrators can create competitions" });
       }
 
       // Convert date strings to Date objects

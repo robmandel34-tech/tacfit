@@ -10,6 +10,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### Admin-Only Competition Creation Restriction (July 2025)
+- **RESTRICTED**: Regular users can no longer create competitions through the competitions page
+- **REMOVED**: Create competition button and functionality from competitions page for all regular users
+- **ADMIN-ONLY**: Competition creation now restricted to admin portal only
+- **API PROTECTION**: POST /api/competitions endpoint now requires admin privileges
+- **UI UPDATES**: Empty state message updated to reflect admin-only creation policy
+- **SIMPLIFIED**: Competition page header now only shows "Locate Allies" button for regular users
+- **ENHANCED**: Only administrators can access competition creation, editing, and management features
+
 ### Payment UI Contrast & Readability Fixes (July 2025)
 - **FIXED**: Payment method selection UI contrast issues - replaced black backgrounds with green border highlights
 - **FIXED**: Cancel button text visibility - switched to secondary variant for proper contrast

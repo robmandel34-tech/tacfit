@@ -9,7 +9,7 @@ import InviteFriendsModal from "@/components/invite-friends-modal";
 import TeamSelectionModal from "@/components/team-selection-modal";
 import CompetitionPaymentModal from "@/components/competition-payment-modal";
 import { Button } from "@/components/ui/button";
-import { Trophy, Plus } from "lucide-react";
+import { Trophy } from "lucide-react";
 
 export default function Competitions() {
   const { user, isLoading } = useAuthRequired();
@@ -118,33 +118,13 @@ export default function Competitions() {
             <p className="text-body text-lg">Deploy with squads and dominate the battlefield</p>
           </div>
           <div className="flex flex-col items-end space-y-3 flex-shrink-0">
-            {user && (user.points || 0) < 1000 && (
-              <div className="text-xs text-muted text-right max-w-[140px] bg-surface-overlay px-2 py-1 rounded">
-                Need {1000 - (user.points || 0)} more points
-              </div>
-            )}
             <Button 
               size="sm"
-              className="btn-primary"
-              disabled={!user || (user.points || 0) < 1000}
-              onClick={() => {
-                if ((user.points || 0) < 1000) {
-                  toast({
-                    title: "Insufficient tactical points",
-                    description: "You need at least 1000 tactical points to create an operation. Keep fighting to earn more points!",
-                    variant: "destructive",
-                  });
-                } else {
-                  // TODO: Add competition creation modal/functionality
-                  toast({
-                    title: "Feature Coming Soon",
-                    description: "Competition creation will be available soon!",
-                  });
-                }
-              }}
+              variant="outline" 
+              onClick={() => setInviteModalOpen(true)}
+              className="border-primary/20 text-primary hover:bg-primary/10"
             >
-              <Plus className="mr-2 h-4 w-4" />
-              Create
+              Locate Allies
             </Button>
           </div>
         </div>
@@ -155,34 +135,8 @@ export default function Competitions() {
               <div className="card-modern max-w-md mx-auto">
                 <Trophy className="mx-auto h-20 w-20 text-muted mb-6" />
                 <h2 className="text-2xl font-bold text-heading mb-4">No Competitions Yet</h2>
-                <p className="text-body mb-6">Create your first competition to get started</p>
-                {user && (user.points || 0) < 1000 && (
-                  <div className="text-sm text-muted mb-6 bg-surface-overlay px-3 py-2 rounded-lg">
-                    Need {1000 - (user.points || 0)} more points to create competitions
-                  </div>
-                )}
-                <Button 
-                  className="btn-primary"
-                  disabled={!user || (user.points || 0) < 1000}
-                  onClick={() => {
-                    if ((user.points || 0) < 1000) {
-                      toast({
-                        title: "Insufficient Points",
-                        description: "You need at least 1000 points to create a competition. Keep participating to earn more points!",
-                        variant: "destructive",
-                      });
-                    } else {
-                      // TODO: Add competition creation modal/functionality
-                      toast({
-                        title: "Feature Coming Soon",
-                        description: "Competition creation will be available soon!",
-                      });
-                    }
-                  }}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Competition
-                </Button>
+                <p className="text-body mb-6">New tactical operations will be created by command staff</p>
+                <p className="text-sm text-muted">Stay ready - operations will be announced soon!</p>
               </div>
             </div>
           ) : (

@@ -107,7 +107,7 @@ Preferred communication style: Simple, everyday language.
 - **NEW**: Competitions modal displays participation history with team info and rankings
 - **NEW**: Wins modal highlights 1st place finishes with special trophy styling
 - **FIXED**: Activity submission cache invalidation now updates profile statistics immediately
-- **NEW**: Points display on activity submission modal showing base points (10) and bonus (+5 for dual evidence)
+- **NEW**: Points display on activity submission modal showing base points (20) and bonus (+10 for dual evidence)
 - **NEW**: Competition name displayed on activity cards throughout the application  
 - **NEW**: Points badge shown on activity cards for easy tracking
 - **ENHANCED**: Activity submission modal includes live points calculator with total display
@@ -136,10 +136,11 @@ Preferred communication style: Simple, everyday language.
 - **LOGGING**: Server logs all point awards and completion status for audit trail
 - **RANKING**: Teams ranked by total points with proper tie-breaking logic
 
-### Bonus Points System (July 2025)
-- **IMPLEMENTED**: 50% bonus points awarded when users submit both video AND image evidence
-- **CALCULATION**: Base points (10) + 50% bonus = 15 points total for dual evidence submissions
-- **VISUAL**: Activity submission modal shows bonus indicator when both files are uploaded
+### Points System Update (July 2025)
+- **UPDATED**: Base activity points increased from 10 to 20 points per submission
+- **UPDATED**: Bonus points for dual evidence (video + image) increased from 15 to 30 points total
+- **CALCULATION**: Base points (20) + 50% bonus = 30 points total for dual evidence submissions
+- **VISUAL**: Activity submission modal shows updated point values (20 base, +10 bonus)
 - **INCENTIVE**: Tooltip encourages users to submit both evidence types for maximum points
 - **LOGGING**: Server logs bonus point awards for tracking and debugging
 - **AUTOMATIC**: Bonus calculation applied server-side during activity submission processing
@@ -260,10 +261,11 @@ Preferred communication style: Simple, everyday language.
 - **NEW**: Added topographical progress map to Competition Status page
 - Teams positioned along real Alaska wilderness satellite imagery based on points
 - Interactive team markers with ranking colors (gold, silver, bronze, military green)
-- Hover tooltips showing team name, points, and motto
+- Hover tooltips showing team name, progress percentage, and motto
 - Visual route path with tactical waypoints (Base Camp, ridges, peaks, Victory Point)
 - Enhanced team markers with pulse effects for leaders and military-style flags
 - Real Alaska wilderness background image from Pixabay (public domain)
+- **UPDATED**: Team progress map shows percentages instead of raw points for cleaner competition view
 
 ### Single Competition/Team Restriction (July 2025)
 - **BREAKING CHANGE**: Users can now only be part of one competition + team at a time

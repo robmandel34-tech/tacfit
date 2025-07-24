@@ -1237,7 +1237,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
       
       // Calculate base points
-      let basePoints = 10;
+      let basePoints = 20;
       
       // Check if both video and image evidence are provided for 50% bonus
       const hasVideoEvidence = files['evidence'] && files['evidence'][0];

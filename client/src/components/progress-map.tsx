@@ -227,7 +227,7 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
                         </Badge>
                         <h3 className="font-semibold text-white">{team.name}</h3>
                       </div>
-                      <div className="text-military-green font-bold">{team.points} pts</div>
+                      <div className="text-military-green font-bold">{Math.round(Math.min(team.progress, 100))}%</div>
                     </div>
                     
                     {/* Progress bar */}

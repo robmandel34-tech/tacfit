@@ -812,33 +812,38 @@ export default function Profile() {
                   Current Competition Status
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
                 {currentCompetition && currentTeam ? (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <h3 className="text-white font-semibold">{currentCompetition.name}</h3>
-                        <p className="text-gray-300 text-sm">{currentCompetition.description}</p>
-                        <div className="flex items-center gap-2 mt-2">
-                          <Badge className="bg-military-green text-white">
-                            Team: {currentTeam.name}
-                          </Badge>
-                          <Badge className="bg-steel-blue text-white">
-                            Role: {currentTeamMembership[0]?.role}
-                          </Badge>
+                  <div className="space-y-4">
+                    <div className="space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-white font-semibold text-lg">{currentCompetition.name}</h3>
+                          <p className="text-gray-300 text-sm mt-1 line-clamp-2">{currentCompetition.description}</p>
                         </div>
+                        <Button
+                          onClick={() => window.location.href = "/competition-status"}
+                          className="bg-military-green hover:bg-military-green-dark flex-shrink-0"
+                          size="sm"
+                        >
+                          View Details
+                        </Button>
                       </div>
-                      <Button
-                        onClick={() => window.location.href = "/competition-status"}
-                        className="bg-military-green hover:bg-military-green-dark"
-                      >
-                        View Details
-                      </Button>
+                      
+                      <div className="flex flex-wrap gap-2">
+                        <Badge className="bg-military-green text-white">
+                          Team: {currentTeam.name}
+                        </Badge>
+                        <Badge className="bg-steel-blue text-white">
+                          Role: {currentTeamMembership[0]?.role}
+                        </Badge>
+                      </div>
                     </div>
+                    
                     <div className="bg-tactical-gray rounded-lg p-3">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-400">Competition Period:</span>
-                        <span className="text-white">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                        <span className="text-gray-400 text-sm font-medium">Competition Period:</span>
+                        <span className="text-white text-sm">
                           {new Date(currentCompetition.startDate).toLocaleDateString()} - {new Date(currentCompetition.endDate).toLocaleDateString()}
                         </span>
                       </div>

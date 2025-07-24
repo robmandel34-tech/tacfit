@@ -50,12 +50,13 @@ export default function Login() {
                 fill="none" 
                 xmlns="http://www.w3.org/2000/svg"
               >
-                {/* Outer Shield outline */}
+                {/* Outer Shield with gradient only between outlines */}
                 <path 
                   d="M40 4 L72 16 L72 48 Q72 64 40 92 Q8 64 8 48 L8 16 L40 4 Z" 
                   fill="url(#shieldGradient)"
                   stroke="#2D5A3D"
                   strokeWidth="2"
+                  mask="url(#shieldMask)"
                 />
                 
                 {/* Inner shield outline - no fill, just outline */}
@@ -79,6 +80,15 @@ export default function Login() {
                 
                 {/* Gradient definitions */}
                 <defs>
+                  {/* Mask to exclude inner shield area */}
+                  <mask id="shieldMask">
+                    <rect width="100%" height="100%" fill="white"/>
+                    <path 
+                      d="M40 16 L60 24 L60 44 Q60 56 40 76 Q20 56 20 44 L20 24 L40 16 Z" 
+                      fill="black"
+                    />
+                  </mask>
+                  
                   {/* Shield gradient - only between outlines */}
                   <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor="#6B9080" />

@@ -378,7 +378,7 @@ export default function Team() {
                 </div>
                 <div className="flex items-center">
                   <Target className="mr-1 h-4 w-4 text-military-green" />
-                  <span className="text-military-green font-bold">{team.points} points</span>
+                  <span className="text-military-green font-bold">{team.points} pts</span>
                 </div>
               </div>
               

@@ -1,10 +1,15 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Target } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 import ActivitySubmissionModal from "@/components/activity-submission-modal";
 
 export default function FloatingActionButton() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { user } = useAuth();
+
+  // Don't show the button if user is not authenticated
+  if (!user) return null;
 
   return (
     <>

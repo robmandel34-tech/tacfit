@@ -1,12 +1,19 @@
 import { useAuthRequired } from "@/lib/auth";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Navigation from "@/components/navigation";
 import ActivityCard from "@/components/activity-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { OnboardingWalkthrough } from "@/components/onboarding-walkthrough";
 import { Activity, Users } from "lucide-react";
+import { useState, useEffect } from "react";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Dashboard() {
   const { user, isLoading } = useAuthRequired();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const { data: activities = [] } = useQuery({
     queryKey: ["/api/activities"],
@@ -23,6 +30,35 @@ export default function Dashboard() {
     queryKey: [`/api/team-members/${user?.id}`],
     enabled: !!user?.id,
   });
+
+  const completeOnboardingMutation = useMutation({
+    mutationFn: async () => {
+      if (!user?.id) throw new Error("User not found");
+      return apiRequest("PATCH", `/api/users/${user.id}/onboarding`, {});
+    },
+    onSuccess: () => {
+      toast({
+        title: "Welcome to TacFit!",
+        description: "You're now ready to start your tactical fitness journey.",
+      });
+      // Refresh user data to update onboarding status
+      queryClient.invalidateQueries({ queryKey: [`/api/users/${user?.id}`] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: "Failed to complete onboarding. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Show onboarding to new users who haven't completed it
+  useEffect(() => {
+    if (user && !user.onboardingCompleted) {
+      setShowOnboarding(true);
+    }
+  }, [user]);
 
   if (isLoading) {
     return <div className="min-h-screen bg-tactical-gray flex items-center justify-center">
@@ -84,6 +120,13 @@ export default function Dashboard() {
           )}
         </div>
       </main>
+
+      {/* Onboarding Walkthrough */}
+      <OnboardingWalkthrough
+        isOpen={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
+        onComplete={() => completeOnboardingMutation.mutate()}
+      />
     </div>
   );
 }

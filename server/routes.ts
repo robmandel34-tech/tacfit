@@ -305,6 +305,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Complete user onboarding
+  app.patch("/api/users/:id/onboarding", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Mark onboarding as completed
+      const updatedUser = await storage.updateUser(userId, { onboardingCompleted: true });
+      
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Failed to complete onboarding" });
+      }
+      
+      const { password, ...userWithoutPassword } = updatedUser;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error("Onboarding completion error:", error);
+      res.status(500).json({ message: "Error completing onboarding" });
+    }
+  });
+
   // Competition routes
   app.get("/api/competitions", async (req, res) => {
     try {

@@ -10,6 +10,20 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### Onboarding Walkthrough System Implementation (July 2025)
+- **NEW**: Complete interactive onboarding walkthrough with 6-step guided tour
+- **NEW**: Walkthrough covers application features, competition mechanics, team dynamics, activity tracking, and navigation
+- **NEW**: Database schema updated with onboardingCompleted field to track user progress
+- **NEW**: API endpoint for marking onboarding completion (PATCH /api/users/:id/onboarding)
+- **NEW**: Automatic onboarding display for new users who haven't completed the walkthrough
+- **NEW**: Help modal in navigation with quick access to tutorial and help topics
+- **NEW**: Interactive tutorial can be re-accessed anytime via help center
+- **NEW**: Progress tracking with visual indicators and step completion status
+- **NEW**: Comprehensive coverage of point system (20 base, 30 with video+image evidence)
+- **NEW**: Team formation guidance, competition mechanics, and navigation tutorial
+- **ENHANCED**: New user experience now includes guided introduction to all platform features
+- **ENHANCED**: Help system provides ongoing support with quick tips and feature explanations
+
 ### Profile Competition Participation Display (July 2025)
 - **NEW**: Profile pages now show current competition participation status with detailed information
 - **NEW**: Active competition section displays competition name, description, team, and user role

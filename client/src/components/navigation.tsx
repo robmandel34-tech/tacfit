@@ -1,6 +1,7 @@
 import { useAuth } from "@/hooks/use-auth";
 import { Link, useLocation, useRouter } from "wouter";
 import { Button } from "@/components/ui/button";
+import { HelpModal } from "@/components/help-modal";
 import { Shield, Trophy, MessageCircle, Users, Activity } from "lucide-react";
 
 export default function Navigation() {
@@ -64,6 +65,7 @@ export default function Navigation() {
               <Trophy className="text-combat-orange text-lg" />
               <span className="text-sm font-semibold text-white">{user.points || 0} PTS</span>
             </div>
+            <HelpModal />
             {user.isAdmin && (
               <Link 
                 href="/admin"

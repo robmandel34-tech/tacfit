@@ -15,8 +15,9 @@ export const users = pgTable("users", {
   isAdmin: boolean("is_admin").default(false),
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
-  referredBy: integer("referred_by").references(() => users.id),
+  referredBy: integer("referred_by"),
   referralToken: text("referral_token"),
+  onboardingCompleted: boolean("onboarding_completed").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

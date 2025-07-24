@@ -9,7 +9,8 @@ import InviteFriendsModal from "@/components/invite-friends-modal";
 import TeamSelectionModal from "@/components/team-selection-modal";
 import CompetitionPaymentModal from "@/components/competition-payment-modal";
 import { Button } from "@/components/ui/button";
-import { Trophy } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Trophy, Users } from "lucide-react";
 
 export default function Competitions() {
   const { user, isLoading } = useAuthRequired();
@@ -112,21 +113,25 @@ export default function Competitions() {
       <Navigation />
       
       <main className="container mx-auto px-4 py-8">
-        <div className="flex items-start justify-between mb-12 gap-4">
-          <div className="flex-1">
-            <h1 className="text-4xl font-bold text-heading mb-3 tracking-tight">Tactical Operations</h1>
-            <p className="text-body text-lg">Deploy with squads and dominate the battlefield</p>
-          </div>
-          <div className="flex flex-col items-end space-y-3 flex-shrink-0">
-            <Button 
-              size="sm"
-              onClick={() => setInviteModalOpen(true)}
-              className="bg-tactical-gray-light border border-military-green text-military-green hover:bg-tactical-gray-lighter hover:border-military-green-light hover:text-military-green-light"
-            >
-              Locate Allies
-            </Button>
-          </div>
-        </div>
+        {/* Header Card */}
+        <Card className="bg-gradient-to-r from-military-green-dark to-military-green border-military-green/30 mb-8">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <Trophy className="h-6 w-6 text-white" />
+                <CardTitle className="text-white text-2xl">Join a Competition</CardTitle>
+              </div>
+              <Button 
+                size="sm"
+                onClick={() => setInviteModalOpen(true)}
+                className="bg-white text-black hover:bg-gray-100 font-semibold"
+              >
+                <Users className="h-4 w-4 mr-2" />
+                Locate Allies
+              </Button>
+            </div>
+          </CardHeader>
+        </Card>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {competitions.length === 0 ? (
@@ -150,48 +155,49 @@ export default function Competitions() {
           )}
         </div>
 
-        {/* Invitation Modal */}
-        {selectedCompetition && (
-          <InviteFriendsModal
-            isOpen={inviteModalOpen}
-            onClose={() => setInviteModalOpen(false)}
-            competitionId={selectedCompetition.id}
-            competitionName={selectedCompetition.name}
-          />
-        )}
-
-        {/* Competition Payment Modal */}
-        {selectedCompetition && (
-          <CompetitionPaymentModal
-            open={paymentModalOpen}
-            onOpenChange={setPaymentModalOpen}
-            competition={selectedCompetition}
-            onPaymentSuccess={() => {
-              // After successful payment, open team selection modal
-              setPaymentModalOpen(false);
-              setTeamSelectionModalOpen(true);
-              
-              // Show helpful toast
-              setTimeout(() => {
-                toast({
-                  title: "Choose Your Squad",
-                  description: "Select a team to join or create a new one to complete your entry",
-                });
-              }, 500);
-            }}
-          />
-        )}
-
-        {/* Team Selection Modal */}
-        {selectedCompetition && (
-          <TeamSelectionModal
-            isOpen={teamSelectionModalOpen}
-            onClose={() => setTeamSelectionModalOpen(false)}
-            competitionId={selectedCompetition.id}
-            competitionName={selectedCompetition.name}
-          />
-        )}
       </main>
+
+      {/* Invitation Modal */}
+      {selectedCompetition && (
+        <InviteFriendsModal
+          isOpen={inviteModalOpen}
+          onClose={() => setInviteModalOpen(false)}
+          competitionId={selectedCompetition.id}
+          competitionName={selectedCompetition.name}
+        />
+      )}
+
+      {/* Competition Payment Modal */}
+      {selectedCompetition && (
+        <CompetitionPaymentModal
+          open={paymentModalOpen}
+          onOpenChange={setPaymentModalOpen}
+          competition={selectedCompetition}
+          onPaymentSuccess={() => {
+            // After successful payment, open team selection modal
+            setPaymentModalOpen(false);
+            setTeamSelectionModalOpen(true);
+            
+            // Show helpful toast
+            setTimeout(() => {
+              toast({
+                title: "Choose Your Squad",
+                description: "Select a team to join or create a new one to complete your entry",
+              });
+            }, 500);
+          }}
+        />
+      )}
+
+      {/* Team Selection Modal */}
+      {selectedCompetition && (
+        <TeamSelectionModal
+          isOpen={teamSelectionModalOpen}
+          onClose={() => setTeamSelectionModalOpen(false)}
+          competitionId={selectedCompetition.id}
+          competitionName={selectedCompetition.name}
+        />
+      )}
     </div>
   );
 }

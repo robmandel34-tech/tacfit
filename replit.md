@@ -10,6 +10,26 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### Profile Competition Participation Display (July 2025)
+- **NEW**: Profile pages now show current competition participation status with detailed information
+- **NEW**: Active competition section displays competition name, description, team, and user role
+- **NEW**: Competition period dates shown with direct link to competition details page
+- **NEW**: "Not Currently Participating" state for users without active competition membership
+- **NEW**: Personalized messaging for own profile vs viewing other users' profiles
+- **NEW**: Quick action buttons - "View Details" for active participants, "Browse Competitions" for non-participants
+- **ENHANCED**: Profile pages now provide comprehensive competition engagement overview
+- **INTEGRATED**: Seamless navigation from profile to competition status and competition browsing
+
+### Referral Reward System Implementation (July 2025)
+- **COMPLETED**: 200-point referral reward system for phone number invitations
+- **NEW**: Complete phone invitation tracking database schema with phoneInvitations table
+- **NEW**: Team invitation registration page for new users joining via invitation links
+- **NEW**: Automatic 200-point distribution when invited users create accounts through referral links
+- **NEW**: Dual team invitation system (search existing users OR enter phone numbers)
+- **NEW**: Team invitation tokens with expiration and status tracking
+- **ENHANCED**: Registration system now handles phone number referrals with proper reward distribution
+- **SECURED**: Phone invitation system tracks invitation status and prevents duplicate rewards
+
 ### Admin-Only Competition Creation Restriction (July 2025)
 - **RESTRICTED**: Regular users can no longer create competitions through the competitions page
 - **REMOVED**: Create competition button and functionality from competitions page for all regular users

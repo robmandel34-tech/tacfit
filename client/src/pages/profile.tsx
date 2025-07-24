@@ -65,6 +65,18 @@ export default function Profile() {
     enabled: !!targetUserId,
   });
 
+  // Get current team details if user has active membership
+  const { data: currentTeam } = useQuery({
+    queryKey: ["/api/teams", currentTeamMembership[0]?.teamId],
+    enabled: currentTeamMembership.length > 0 && !!currentTeamMembership[0]?.teamId,
+  });
+
+  // Get current competition details if user has active team
+  const { data: currentCompetition } = useQuery({
+    queryKey: ["/api/competitions", currentTeam?.competitionId],
+    enabled: !!currentTeam?.competitionId,
+  });
+
   // Calculate competitions count (completed + current active participation)
   const completedCompetitions = history.length;
   const activeCompetitions = currentTeamMembership.length > 0 ? 1 : 0;
@@ -792,6 +804,68 @@ export default function Profile() {
 
           {/* Stats and History */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Current Competition Participation */}
+            <Card className="bg-tactical-gray-light border-tactical-gray">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Trophy className="h-5 w-5 text-military-green" />
+                  Current Competition Status
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {currentCompetition && currentTeam ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <h3 className="text-white font-semibold">{currentCompetition.name}</h3>
+                        <p className="text-gray-300 text-sm">{currentCompetition.description}</p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <Badge className="bg-military-green text-white">
+                            Team: {currentTeam.name}
+                          </Badge>
+                          <Badge className="bg-steel-blue text-white">
+                            Role: {currentTeamMembership[0]?.role}
+                          </Badge>
+                        </div>
+                      </div>
+                      <Button
+                        onClick={() => window.location.href = "/competition-status"}
+                        className="bg-military-green hover:bg-military-green-dark"
+                      >
+                        View Details
+                      </Button>
+                    </div>
+                    <div className="bg-tactical-gray rounded-lg p-3">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-400">Competition Period:</span>
+                        <span className="text-white">
+                          {new Date(currentCompetition.startDate).toLocaleDateString()} - {new Date(currentCompetition.endDate).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-6">
+                    <div className="flex items-center justify-center w-16 h-16 bg-tactical-gray rounded-full mx-auto mb-4">
+                      <Trophy className="h-8 w-8 text-gray-500" />
+                    </div>
+                    <h3 className="text-white font-medium mb-2">Not Currently Participating</h3>
+                    <p className="text-gray-400 text-sm">
+                      {isOwnProfile ? "Join a competition to start tracking your progress" : `${displayUser.username} is not actively participating in any competitions`}
+                    </p>
+                    {isOwnProfile && (
+                      <Button
+                        onClick={() => window.location.href = "/competitions"}
+                        className="mt-4 bg-military-green hover:bg-military-green-dark"
+                      >
+                        Browse Competitions
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Dialog open={isActivitiesModalOpen} onOpenChange={setIsActivitiesModalOpen}>

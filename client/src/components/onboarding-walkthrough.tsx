@@ -303,8 +303,8 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl bg-gray-900 border-gray-700">
-        <DialogHeader className="pb-4">
+      <DialogContent className="max-w-3xl max-h-[90vh] bg-gray-900 border-gray-700 flex flex-col">
+        <DialogHeader className="pb-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="flex items-center justify-center w-10 h-10 rounded-full bg-military-green/20">
@@ -321,7 +321,7 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="text-gray-400 hover:text-white"
+              className="text-gray-400 hover:text-white hover:bg-gray-800"
             >
               <X className="h-4 w-4" />
             </Button>
@@ -337,7 +337,7 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
           </div>
         </DialogHeader>
 
-        <div className="py-4">
+        <div className="flex-1 overflow-y-auto py-4">
           <Card className="bg-gray-800/50 border-gray-700">
             <CardContent className="p-6">
               {currentStepData.content}
@@ -345,12 +345,12 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
           </Card>
         </div>
 
-        <div className="flex items-center justify-between pt-4 border-t border-gray-700">
+        <div className="flex items-center justify-between pt-4 border-t border-gray-700 flex-shrink-0">
           <Button
             variant="outline"
             onClick={handlePrevious}
             disabled={currentStep === 0}
-            className="border-gray-600 text-gray-300 hover:bg-gray-800"
+            className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ChevronLeft className="h-4 w-4 mr-2" />
             Previous
@@ -360,11 +360,11 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
             {steps.map((_, index) => (
               <div
                 key={index}
-                className={`w-2 h-2 rounded-full transition-colors ${
+                className={`w-3 h-3 rounded-full transition-all duration-300 ${
                   index === currentStep
-                    ? 'bg-military-green'
-                    : completedSteps.has(index)
-                    ? 'bg-military-green/60'
+                    ? 'bg-military-green scale-125'
+                    : index < currentStep
+                    ? 'bg-military-green/80'
                     : 'bg-gray-600'
                 }`}
               />

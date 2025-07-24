@@ -32,7 +32,7 @@ export default function BottomNavigation() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-surface-elevated border-t border-border-subtle z-50 md:hidden shadow-strong">
-      <div className="grid grid-cols-3 py-3">
+      <div className="grid grid-cols-3">
         {navItems.map((item) => {
           const isActive = location === item.path;
           const IconComponent = item.icon;
@@ -42,7 +42,7 @@ export default function BottomNavigation() {
             return (
               <div 
                 key={item.path}
-                className="flex flex-col items-center justify-center p-3 rounded-lg cursor-not-allowed opacity-40"
+                className="flex flex-col items-center justify-center py-3 px-3 cursor-not-allowed opacity-40"
               >
                 <IconComponent size={22} />
                 <span className="text-xs mt-1 font-semibold">{item.label}</span>
@@ -54,7 +54,7 @@ export default function BottomNavigation() {
             <Link 
               key={item.path} 
               href={item.path}
-              className={`flex flex-col items-center justify-center p-3 rounded-lg transition-all duration-200 ${
+              className={`flex flex-col items-center justify-center py-3 px-3 transition-all duration-200 ${
                 isActive 
                   ? "text-military-green bg-surface-overlay" 
                   : "text-muted hover:text-secondary hover:bg-surface-overlay"

@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
-import { House, Mountain, Shield } from "lucide-react";
+import { Activity, Mountain, Shield } from "lucide-react";
 
 export default function BottomNavigation() {
   const { user } = useAuth();
@@ -20,7 +20,7 @@ export default function BottomNavigation() {
   const hasActiveMembership = userTeamMember && userTeamMember.length > 0;
   
   const navItems = [
-    { path: "/", icon: House, label: "Home", enabled: true },
+    { path: "/", icon: Activity, label: "Intel Feed", enabled: true },
     { 
       path: hasActiveMembership ? "/competition-status" : "/competitions", 
       icon: Mountain, 

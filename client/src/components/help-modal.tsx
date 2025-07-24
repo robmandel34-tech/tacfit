@@ -46,7 +46,7 @@ export function HelpModal() {
     {
       title: "Point System",
       icon: <Target className="h-5 w-5" />,
-      description: "Base points (20), bonus for evidence (30 total), team rewards",
+      description: "Base points (15), bonus for evidence (30 total), team rewards",
       href: "/help/point-system"
     },
     {
@@ -73,7 +73,7 @@ export function HelpModal() {
           <DialogHeader className="flex-shrink-0">
             <DialogTitle className="text-white flex items-center space-x-2">
               <HelpCircle className="h-6 w-6 text-military-green" />
-              <span>TacFit Help Center</span>
+              <span>Tactical Command Center</span>
             </DialogTitle>
           </DialogHeader>
 

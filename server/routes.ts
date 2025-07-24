@@ -1262,15 +1262,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
       
       // Calculate base points
-      let basePoints = 20;
+      let basePoints = 15;
       
-      // Check if both video and image evidence are provided for 50% bonus
+      // Check if both video and image evidence are provided for bonus (30 total)
       const hasVideoEvidence = files['evidence'] && files['evidence'][0];
       const hasImageEvidence = files['image'] && files['image'][0];
       const hasBothEvidenceTypes = hasVideoEvidence && hasImageEvidence;
       
-      // Apply 50% bonus if both video and image are submitted
-      const finalPoints = hasBothEvidenceTypes ? Math.floor(basePoints * 1.5) : basePoints;
+      // Apply bonus to reach 30 total points if both video and image are submitted
+      const finalPoints = hasBothEvidenceTypes ? 30 : basePoints;
       
       const activityData = {
         userId: userId,

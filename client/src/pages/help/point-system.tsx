@@ -61,7 +61,7 @@ export default function PointSystemHelp() {
                   <div className="bg-gray-700/50 border border-gray-600/30 p-4 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium text-white">Base Activity</span>
-                      <span className="font-bold text-military-green text-lg">20 pts</span>
+                      <span className="font-bold text-military-green text-lg">15 pts</span>
                     </div>
                     <p className="text-xs text-gray-400">
                       Submit any fitness activity (cardio, strength, mobility) with quantity measurement
@@ -74,7 +74,7 @@ export default function PointSystemHelp() {
                       <span className="font-bold text-military-green text-lg">30 pts</span>
                     </div>
                     <p className="text-xs text-gray-400">
-                      Include both photo and video evidence for 50% bonus (+10 additional points)
+                      Include both photo and video evidence for bonus (+15 additional points)
                     </p>
                   </div>
 

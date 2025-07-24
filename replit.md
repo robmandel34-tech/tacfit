@@ -161,10 +161,13 @@ Preferred communication style: Simple, everyday language.
 - **RANKING**: Teams ranked by total points with proper tie-breaking logic
 
 ### Points System Update (July 2025)
-- **UPDATED**: Base activity points increased from 10 to 20 points per submission
-- **UPDATED**: Bonus points for dual evidence (video + image) increased from 15 to 30 points total
-- **CALCULATION**: Base points (20) + 50% bonus = 30 points total for dual evidence submissions
-- **VISUAL**: Activity submission modal shows updated point values (20 base, +10 bonus)
+- **UPDATED**: Base activity points adjusted from 20 to 15 points per submission
+- **MAINTAINED**: Dual evidence (video + image) bonus remains at 30 points total
+- **CALCULATION**: Base points (15) + bonus (+15) = 30 points total for dual evidence submissions
+- **VISUAL**: Activity submission modal shows updated point values (15 base, +15 bonus)
+- **UPDATED**: All help pages and onboarding walkthrough reflect new point values
+- **TACTICAL**: Help center renamed from "TacFit Help Center" to "Tactical Command Center"
+- **CONSISTENT**: Point descriptions updated across all help sections and modal components
 - **INCENTIVE**: Tooltip encourages users to submit both evidence types for maximum points
 - **LOGGING**: Server logs bonus point awards for tracking and debugging
 - **AUTOMATIC**: Bonus calculation applied server-side during activity submission processing

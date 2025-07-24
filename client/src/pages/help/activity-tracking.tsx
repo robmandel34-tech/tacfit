@@ -193,7 +193,7 @@ export default function ActivityTrackingHelp() {
                         <span className="text-sm font-medium text-white">Base Activity</span>
                         <p className="text-xs text-gray-400">Activity submission only</p>
                       </div>
-                      <span className="font-bold text-military-green text-lg">20 pts</span>
+                      <span className="font-bold text-military-green text-lg">15 pts</span>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-military-green/10 border border-military-green/30 rounded-lg">
                       <div>
@@ -206,7 +206,7 @@ export default function ActivityTrackingHelp() {
                   <div className="mt-4 bg-yellow-900/20 border border-yellow-600/30 p-3 rounded-lg">
                     <p className="text-sm text-yellow-200">
                       <strong>Pro Tip:</strong> Always submit both photo and video evidence when possible 
-                      to earn 50% more points for your team!
+                      to earn double points (30 vs 15) for your team!
                     </p>
                   </div>
                 </div>

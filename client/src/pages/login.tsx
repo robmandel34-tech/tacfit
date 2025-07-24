@@ -43,86 +43,35 @@ export default function Login() {
           <div className="flex justify-center mb-6">
             <div className="relative flex items-center justify-center">
               <svg 
-                width="140" 
-                height="80" 
-                viewBox="0 0 140 80" 
+                width="80" 
+                height="96" 
+                viewBox="0 0 80 96" 
                 className="drop-shadow-lg"
                 fill="none" 
                 xmlns="http://www.w3.org/2000/svg"
               >
-                {/* Left Wing - Majestic with feather details */}
-                <g className="wing-left">
-                  <path 
-                    d="M5 40 Q15 15 35 25 Q42 30 40 35 Q38 42 30 48 Q20 52 12 48 Q5 45 5 40Z" 
-                    fill="url(#wingGradient)"
-                    stroke="#2D5A3D"
-                    strokeWidth="1.5"
-                  />
-                  {/* Feather details */}
-                  <path 
-                    d="M12 35 Q20 28 28 32 Q25 38 18 42" 
-                    fill="none"
-                    stroke="#A8D5BA"
-                    strokeWidth="1"
-                    opacity="0.8"
-                  />
-                  <path 
-                    d="M15 42 Q22 38 25 44" 
-                    fill="none"
-                    stroke="#A8D5BA"
-                    strokeWidth="0.8"
-                    opacity="0.6"
-                  />
-                </g>
-                
-                {/* Right Wing - Majestic with feather details */}
-                <g className="wing-right">
-                  <path 
-                    d="M115 40 Q105 15 85 25 Q78 30 80 35 Q82 42 90 48 Q100 52 108 48 Q115 45 115 40Z" 
-                    fill="url(#wingGradient)"
-                    stroke="#2D5A3D"
-                    strokeWidth="1.5"
-                  />
-                  {/* Feather details */}
-                  <path 
-                    d="M108 35 Q100 28 92 32 Q95 38 102 42" 
-                    fill="none"
-                    stroke="#A8D5BA"
-                    strokeWidth="1"
-                    opacity="0.8"
-                  />
-                  <path 
-                    d="M105 42 Q98 38 95 44" 
-                    fill="none"
-                    stroke="#A8D5BA"
-                    strokeWidth="0.8"
-                    opacity="0.6"
-                  />
-                </g>
-                
-                {/* Main Shield with gradient - centered for new viewport */}
+                {/* Outer Shield outline */}
                 <path 
-                  d="M70 10 L90 20 L90 45 Q90 60 70 70 Q50 60 50 45 L50 20 L70 10 Z" 
+                  d="M40 4 L72 16 L72 48 Q72 64 40 92 Q8 64 8 48 L8 16 L40 4 Z" 
                   fill="url(#shieldGradient)"
                   stroke="#2D5A3D"
                   strokeWidth="2"
                 />
                 
-                {/* Inner shield detail */}
+                {/* Inner shield outline - no fill, just outline */}
                 <path 
-                  d="M70 18 L82 25 L82 42 Q82 52 70 60 Q58 52 58 42 L58 25 L70 18 Z" 
+                  d="M40 16 L60 24 L60 44 Q60 56 40 76 Q20 56 20 44 L20 24 L40 16 Z" 
                   fill="none"
                   stroke="#A8D5BA"
                   strokeWidth="1.5"
-                  opacity="0.7"
                 />
                 
                 {/* Loading shimmer overlay */}
                 <rect 
-                  x="45" 
-                  y="10" 
-                  width="50" 
-                  height="60" 
+                  x="8" 
+                  y="4" 
+                  width="64" 
+                  height="88" 
                   fill="url(#shimmer)" 
                   opacity="0.3"
                   className="shimmer-overlay"
@@ -130,19 +79,12 @@ export default function Login() {
                 
                 {/* Gradient definitions */}
                 <defs>
-                  {/* Shield gradient */}
+                  {/* Shield gradient - only between outlines */}
                   <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor="#6B9080" />
                     <stop offset="30%" stopColor="#4A7C59" />
                     <stop offset="70%" stopColor="#2D5A3D" />
                     <stop offset="100%" stopColor="#1A3A24" />
-                  </linearGradient>
-                  
-                  {/* Wing gradient */}
-                  <linearGradient id="wingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#A8D5BA" />
-                    <stop offset="50%" stopColor="#6B9080" />
-                    <stop offset="100%" stopColor="#4A7C59" />
                   </linearGradient>
                   
                   {/* Shimmer effect */}
@@ -163,32 +105,10 @@ export default function Login() {
                 </defs>
               </svg>
               
-              {/* CSS for wing flapping animation */}
+              {/* CSS for shimmer animation */}
               <style jsx>{`
-                .wing-left {
-                  animation: flapLeft 3s ease-in-out infinite;
-                  transform-origin: 40px 35px;
-                }
-                .wing-right {
-                  animation: flapRight 3s ease-in-out infinite;
-                  transform-origin: 90px 35px;
-                }
                 .shimmer-overlay {
                   animation: shimmerPulse 3s ease-in-out infinite;
-                }
-                
-                @keyframes flapLeft {
-                  0%, 100% { transform: rotateZ(0deg) scaleY(1) scaleX(1); }
-                  25% { transform: rotateZ(-15deg) scaleY(0.8) scaleX(1.1); }
-                  50% { transform: rotateZ(-5deg) scaleY(1.2) scaleX(0.95); }
-                  75% { transform: rotateZ(10deg) scaleY(0.85) scaleX(1.05); }
-                }
-                
-                @keyframes flapRight {
-                  0%, 100% { transform: rotateZ(0deg) scaleY(1) scaleX(1); }
-                  25% { transform: rotateZ(15deg) scaleY(0.8) scaleX(1.1); }
-                  50% { transform: rotateZ(5deg) scaleY(1.2) scaleX(0.95); }
-                  75% { transform: rotateZ(-10deg) scaleY(0.85) scaleX(1.05); }
                 }
                 
                 @keyframes shimmerPulse {

@@ -136,6 +136,14 @@ export class DatabaseStorage implements IStorage {
     return member || undefined;
   }
 
+  async getTeamMemberByUserAndTeam(userId: number, teamId: number): Promise<TeamMember | undefined> {
+    const [member] = await db
+      .select()
+      .from(teamMembers)
+      .where(and(eq(teamMembers.userId, userId), eq(teamMembers.teamId, teamId)));
+    return member || undefined;
+  }
+
   async getUserTeam(userId: number, competitionId: number): Promise<TeamMember | undefined> {
     const [result] = await db
       .select({ teamMember: teamMembers })
@@ -515,5 +523,24 @@ export class DatabaseStorage implements IStorage {
   async deleteMissionTask(id: string): Promise<boolean> {
     const result = await db.delete(missionTasks).where(eq(missionTasks.id, id));
     return (result.rowCount ?? 0) > 0;
+  }
+
+  // Team invitation operations (simplified implementation)
+  async createInvitation(invitation: any): Promise<any> {
+    // For now, return a mock invitation - this would need proper schema implementation
+    return {
+      id: Date.now(),
+      ...invitation,
+      createdAt: new Date(),
+    };
+  }
+
+  async createUserInvitation(invitation: any): Promise<any> {
+    // For now, return a mock invitation - this would need proper schema implementation
+    return {
+      id: Date.now(),
+      ...invitation,
+      createdAt: new Date(),
+    };
   }
 }

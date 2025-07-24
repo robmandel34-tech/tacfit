@@ -35,6 +35,7 @@ export interface IStorage {
   // Team member operations
   getTeamMembers(teamId: number): Promise<TeamMember[]>;
   getTeamMember(teamId: number, userId: number): Promise<TeamMember | undefined>;
+  getTeamMemberByUserAndTeam(userId: number, teamId: number): Promise<TeamMember | undefined>;
   getUserTeam(userId: number, competitionId: number): Promise<TeamMember | undefined>;
   addTeamMember(member: InsertTeamMember): Promise<TeamMember>;
   updateTeamMember(teamId: number, userId: number, updates: Partial<TeamMember>): Promise<TeamMember | undefined>;
@@ -107,6 +108,10 @@ export interface IStorage {
   createMissionTask(insertTask: InsertMissionTask): Promise<MissionTask>;
   updateMissionTask(id: string, updates: Partial<MissionTask>): Promise<MissionTask | undefined>;
   deleteMissionTask(id: string): Promise<boolean>;
+  
+  // Team invitation operations
+  createInvitation(invitation: any): Promise<any>;
+  createUserInvitation(invitation: any): Promise<any>;
 }
 
 import { DatabaseStorage } from "./database-storage";

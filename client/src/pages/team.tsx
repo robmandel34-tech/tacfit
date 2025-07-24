@@ -10,9 +10,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Users, Crown, Target, Camera, Send, MessageCircle, Edit2, Check, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Users, Crown, Target, Camera, Send, MessageCircle, Edit2, Check, X, ChevronDown, ChevronUp, UserPlus } from "lucide-react";
 import ChatCard from "@/components/chat-card";
 import MissionPlanningBoard from "@/components/mission-planning-board";
+import TeamInviteModal from "@/components/team-invite-modal";
 
 import { useToast } from "@/hooks/use-toast";
 
@@ -29,6 +30,7 @@ export default function Team() {
   const [nameText, setNameText] = useState("");
   const [isProgressExpanded, setIsProgressExpanded] = useState(false);
   const [lastViewedProgress, setLastViewedProgress] = useState<Record<string, number>>({});
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
   // Get user's current team membership
   const { data: userTeamMember } = useQuery({
@@ -611,10 +613,23 @@ export default function Team() {
         {/* Team Members */}
         <Card className="mb-6 tile-card">
           <CardHeader>
-            <CardTitle className="text-white">Team Members</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-white">Team Members</CardTitle>
+              {(userTeamMember?.[0]?.role === 'captain' || team?.captainId === user?.id) && competition && (
+                <Button
+                  size="sm"
+                  onClick={() => setIsInviteModalOpen(true)}
+                  className="bg-military-green hover:bg-military-green-light text-white"
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Invite
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Filled Member Slots */}
               {teamMembers.map((member: any) => (
                 <div key={member.id} className="content-tile p-4">
                   <div className="flex items-start space-x-3">
@@ -660,6 +675,34 @@ export default function Team() {
                   </div>
                 </div>
               ))}
+              
+              {/* Open Member Slots */}
+              {competition && teamMembers.length < competition.maxTeamSize && 
+                Array.from({ length: competition.maxTeamSize - teamMembers.length }).map((_, index) => (
+                  <div key={`open-slot-${index}`} className="content-tile p-4 border-2 border-dashed border-tactical-gray-lighter">
+                    <div className="flex items-center justify-center h-full min-h-[120px]">
+                      <div className="text-center">
+                        <div className="w-12 h-12 mx-auto mb-3 rounded-full border-2 border-dashed border-gray-500 flex items-center justify-center">
+                          <UserPlus className="h-6 w-6 text-gray-500" />
+                        </div>
+                        <p className="text-gray-400 text-sm font-medium mb-2">Open Slot</p>
+                        {(userTeamMember?.[0]?.role === 'captain' || team?.captainId === user?.id) ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setIsInviteModalOpen(true)}
+                            className="border-military-green text-military-green hover:bg-military-green hover:text-white"
+                          >
+                            Invite Member
+                          </Button>
+                        ) : (
+                          <p className="text-xs text-gray-500">Captain can invite</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              }
             </div>
           </CardContent>
         </Card>
@@ -686,6 +729,17 @@ export default function Team() {
           </CardContent>
         </Card>
       </main>
+      
+      {/* Team Invite Modal */}
+      {team && competition && (
+        <TeamInviteModal
+          isOpen={isInviteModalOpen}
+          onClose={() => setIsInviteModalOpen(false)}
+          teamId={team.id}
+          teamName={team.name}
+          competitionName={competition.name}
+        />
+      )}
     </div>
   );
 }

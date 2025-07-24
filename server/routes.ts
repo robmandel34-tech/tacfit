@@ -1697,6 +1697,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Team invitation routes
+  app.post("/api/teams/:teamId/invite-phone", async (req, res) => {
+    try {
+      const { phoneNumber, invitedBy } = req.body;
+      const teamId = parseInt(req.params.teamId);
+      
+      // Create invitation with unique token
+      const inviteToken = Math.random().toString(36).substring(2) + Date.now().toString(36);
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+      
+      const invitation = await storage.createInvitation({
+        phoneNumber,
+        invitedBy,
+        teamId,
+        token: inviteToken,
+        expiresAt,
+        status: 'pending'
+      });
+      
+      const inviteUrl = `${req.protocol}://${req.get('host')}/team-invite/${inviteToken}`;
+      
+      res.json({ inviteUrl, invitation });
+    } catch (error) {
+      res.status(500).json({ message: "Error creating phone invitation" });
+    }
+  });
+
+  app.post("/api/teams/:teamId/invite-user", async (req, res) => {
+    try {
+      const { userId, invitedBy } = req.body;
+      const teamId = parseInt(req.params.teamId);
+      
+      // Check if user is already on this team
+      const existingMember = await storage.getTeamMemberByUserAndTeam(userId, teamId);
+      if (existingMember) {
+        return res.status(400).json({ message: "User is already a team member" });
+      }
+      
+      // Create invitation
+      const invitation = await storage.createUserInvitation({
+        userId,
+        invitedBy,
+        teamId,
+        status: 'pending',
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+      });
+      
+      res.json({ message: "Invitation sent", invitation });
+    } catch (error) {
+      res.status(500).json({ message: "Error sending user invitation" });
+    }
+  });
+
   // Competition entry routes
   app.get("/api/competitions/:id/entry-status/:userId", async (req, res) => {
     try {

@@ -111,7 +111,7 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
     },
     {
       id: 'teams',
-      title: 'Squad Formation',
+      title: 'Team Formation',
       description: 'Building your tactical team',
       icon: <Users className="h-6 w-6" />,
       content: (
@@ -224,7 +224,7 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
                   <Users className="h-4 w-4 text-military-green" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-white">Squad</p>
+                  <p className="text-sm font-medium text-white">Team</p>
                   <p className="text-xs text-gray-400">Manage your team and view progress</p>
                 </div>
               </div>

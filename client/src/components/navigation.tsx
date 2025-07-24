@@ -42,7 +42,7 @@ export default function Navigation() {
                 href="/team"
                 className={`${location === '/team' ? 'text-primary font-semibold' : 'text-gray-300'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay`}
               >
-                Squad
+                Team
               </Link>
               <Link 
                 href="/activity-feed"

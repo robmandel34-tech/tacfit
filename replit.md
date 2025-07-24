@@ -185,7 +185,7 @@ Preferred communication style: Simple, everyday language.
 - **UPDATED**: All interface text made more masculine and tactical throughout the app
 - **CHANGED**: "Dashboard" → "Command Center" for main page and navigation
 - **CHANGED**: "Competitions" → "Operations" or "Tactical Operations" 
-- **CHANGED**: "Teams" → "Squad" in navigation and interface
+- **CHANGED**: Navigation updated to use "Team" terminology
 - **CHANGED**: "Activity Feed" → "Intel Feed" in navigation
 - **CHANGED**: "Find Friends" → "Locate Allies" in dashboard
 - **CHANGED**: "Quick Actions" → "Tactical Commands" section
@@ -196,9 +196,9 @@ Preferred communication style: Simple, everyday language.
 - **CHANGED**: "Create Account" → "Join the Force" button text
 - **CHANGED**: Activity types renamed: "Cardio" → "Cardio Training", "Strength Training" → "Strength Operations", "Flexibility" → "Mobility Training", "Sports" → "Combat Sports", "Other" → "Special Operations"
 - **CHANGED**: "Recent activity" → "Field reports" in dashboard
-- **CHANGED**: "Competition in progress" → "Squad deployed | Mission in progress"
+- **CHANGED**: "Competition in progress" → "Team deployed | Mission in progress"
 - **CHANGED**: "points" → "tactical points" in various contexts
-- **CHANGED**: "Max X teams" → "Max X squads" in competition cards
+- **CHANGED**: "Max X teams" → "Max X teams" in competition cards
 - **CHANGED**: "Required Activities" → "Required Training" in competition details
 - **CHANGED**: Error messages updated with tactical language (e.g., "Access denied", "Invalid credentials")
 - **ENHANCED**: Bottom navigation updated with terms: "Home", "Competitions", "Team"

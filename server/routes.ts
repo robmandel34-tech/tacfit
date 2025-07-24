@@ -650,10 +650,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Generate team name
       const teamNames = [
-        "Alpha Squad", "Bravo Team", "Charlie Unit", "Delta Force", 
+        "Alpha Team", "Bravo Team", "Charlie Unit", "Delta Force", 
         "Echo Battalion", "Foxtrot Division", "Golf Company", "Hotel Platoon",
-        "India Squad", "Juliet Team", "Kilo Warriors", "Lima Force",
-        "Mike Battalion", "November Squad", "Oscar Team", "Papa Unit"
+        "India Team", "Juliet Team", "Kilo Warriors", "Lima Force",
+        "Mike Battalion", "November Team", "Oscar Team", "Papa Unit"
       ];
       const availableNames = teamNames.filter(name => 
         !existingTeams.some(team => team.name === name)

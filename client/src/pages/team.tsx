@@ -376,9 +376,43 @@ export default function Team() {
                     </div>
                   )}
                 </div>
-                <div className="flex items-center">
-                  <Target className="mr-1 h-4 w-4 text-military-green" />
-                  <span className="text-military-green font-bold">{team.points} pts</span>
+                <div className="flex items-center space-x-4">
+                  {competition && competition.requiredActivities && competition.targetGoals && 
+                    competition.requiredActivities.map((activityType: string, index: number) => {
+                      // Calculate progress for this activity type
+                      const activitiesOfType = teamActivities.filter((activity: any) => activity.type === activityType);
+                      const totalQuantity = activitiesOfType.reduce((sum: number, activity: any) => {
+                        const quantity = parseInt(activity.quantity || '0');
+                        return sum + quantity;
+                      }, 0);
+                      
+                      // Get target goal for this activity type
+                      const targetGoal = competition.targetGoals?.[index] || '';
+                      const targetNumber = parseInt(targetGoal.replace(/[^0-9]/g, '')) || 0;
+                      
+                      // Get unit from target goal
+                      const unit = targetGoal.includes('steps') ? 'steps' : 
+                                  targetGoal.includes('minutes') ? 'min' : 
+                                  targetGoal.includes('reps') ? 'reps' : 
+                                  targetGoal.includes('miles') ? 'mi' : 
+                                  targetGoal.includes('chapters') ? 'ch' : 'units';
+                      
+                      return (
+                        <div key={activityType} className="flex items-center">
+                          <Target className="mr-1 h-3 w-3 text-military-green" />
+                          <span className="text-military-green font-bold text-sm">
+                            {totalQuantity.toLocaleString()}/{targetNumber.toLocaleString()} {unit}
+                          </span>
+                        </div>
+                      );
+                    })
+                  }
+                  {(!competition?.requiredActivities || competition.requiredActivities.length === 0) && (
+                    <div className="flex items-center">
+                      <Target className="mr-1 h-4 w-4 text-military-green" />
+                      <span className="text-military-green font-bold">{team.points} pts</span>
+                    </div>
+                  )}
                 </div>
               </div>
               

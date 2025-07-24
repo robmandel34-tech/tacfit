@@ -10,8 +10,10 @@ import {
   Users, 
   Activity, 
   MessageSquare,
-  Target
+  Target,
+  ExternalLink
 } from 'lucide-react';
+import { Link } from 'wouter';
 
 export function HelpModal() {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -20,32 +22,38 @@ export function HelpModal() {
     {
       title: "Getting Started",
       icon: <BookOpen className="h-5 w-5" />,
-      description: "Learn the basics of TacFit and how competitions work"
+      description: "Learn the basics of TacFit and how competitions work",
+      href: "/help/navigation"
     },
     {
       title: "Competition System",
       icon: <Trophy className="h-5 w-5" />,
-      description: "Understand join windows, team formation, and victory conditions"
+      description: "Understand join windows, team formation, and victory conditions",
+      href: "/help/competition-system"
     },
     {
-      title: "Team Dynamics",
+      title: "Team Formation",
       icon: <Users className="h-5 w-5" />,
-      description: "Squad formation, roles, and collaboration strategies"
+      description: "Team formation, roles, and collaboration strategies",
+      href: "/help/team-formation"
     },
     {
       title: "Activity Tracking",
       icon: <Activity className="h-5 w-5" />,
-      description: "Submit training activities and earn points for your team"
+      description: "Submit training activities and earn points for your team",
+      href: "/help/activity-tracking"
     },
     {
       title: "Point System",
       icon: <Target className="h-5 w-5" />,
-      description: "Base points (20), bonus for evidence (30 total), team rewards"
+      description: "Base points (20), bonus for evidence (30 total), team rewards",
+      href: "/help/point-system"
     },
     {
-      title: "Communication",
+      title: "Navigation Guide",
       icon: <MessageSquare className="h-5 w-5" />,
-      description: "Team chat, mission planning, and coordination tools"
+      description: "Learn to navigate TacFit's interface and features efficiently",
+      href: "/help/navigation"
     }
   ];
 
@@ -94,21 +102,26 @@ export function HelpModal() {
             {/* Help Topics */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {helpSections.map((section, index) => (
-                <Card key={index} className="bg-gray-800/50 border-gray-700 hover:bg-gray-800/70 transition-colors">
-                  <CardContent className="p-4">
-                    <div className="flex items-start space-x-3">
-                      <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-military-green/20 flex items-center justify-center">
-                        <div className="text-military-green">
-                          {section.icon}
+                <Link key={index} href={section.href}>
+                  <Card className="bg-gray-800/50 border-gray-700 hover:bg-gray-800/70 transition-colors cursor-pointer group">
+                    <CardContent className="p-4">
+                      <div className="flex items-start space-x-3">
+                        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-military-green/20 flex items-center justify-center group-hover:bg-military-green/30 transition-colors">
+                          <div className="text-military-green">
+                            {section.icon}
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <h3 className="font-semibold text-white mb-1 group-hover:text-military-green transition-colors">{section.title}</h3>
+                            <ExternalLink className="h-4 w-4 text-gray-500 group-hover:text-military-green transition-colors" />
+                          </div>
+                          <p className="text-sm text-gray-400">{section.description}</p>
                         </div>
                       </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-white mb-1">{section.title}</h3>
-                        <p className="text-sm text-gray-400">{section.description}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </Link>
               ))}
             </div>
 

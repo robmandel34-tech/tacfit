@@ -15,8 +15,10 @@ import {
   MapPin,
   CheckCircle,
   Play,
-  X
+  X,
+  ExternalLink
 } from 'lucide-react';
+import { Link } from 'wouter';
 
 interface OnboardingStep {
   id: string;
@@ -64,6 +66,18 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
               <p className="text-sm text-gray-300">Goal-oriented</p>
             </div>
           </div>
+          <div className="flex justify-center mt-6">
+            <Link href="/help/navigation">
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="border-military-green/50 text-military-green hover:bg-military-green/10"
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Learn More About Navigation
+              </Button>
+            </Link>
+          </div>
         </div>
       )
     },
@@ -105,6 +119,18 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
               <strong>Pro Tip:</strong> Competitions have specific activity requirements like cardio training, 
               strength operations, and mobility training.
             </p>
+          </div>
+          <div className="flex justify-center mt-4">
+            <Link href="/help/competition-system">
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="border-military-green/50 text-military-green hover:bg-military-green/10"
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Learn More About Competitions
+              </Button>
+            </Link>
           </div>
         </div>
       )
@@ -149,6 +175,18 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
             Teams work together to complete training goals and climb the leaderboard. 
             Communication and coordination are key to victory.
           </p>
+          <div className="flex justify-center mt-4">
+            <Link href="/help/team-formation">
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="border-military-green/50 text-military-green hover:bg-military-green/10"
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Learn More About Teams
+              </Button>
+            </Link>
+          </div>
         </div>
       )
     },
@@ -188,6 +226,18 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
             Submit your training activities with evidence to earn points for your team. 
             The more evidence you provide, the more points you earn!
           </p>
+          <div className="flex justify-center mt-4">
+            <Link href="/help/activity-tracking">
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="border-military-green/50 text-military-green hover:bg-military-green/10"
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Learn More About Activities
+              </Button>
+            </Link>
+          </div>
         </div>
       )
     },
@@ -235,6 +285,18 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
               <strong>Navigation Tip:</strong> The bottom navigation will appear after you join a competition and team.
             </p>
           </div>
+          <div className="flex justify-center mt-4">
+            <Link href="/help/navigation">
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="border-military-green/50 text-military-green hover:bg-military-green/10"
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Learn More About Navigation
+              </Button>
+            </Link>
+          </div>
         </div>
       )
     },
@@ -273,6 +335,18 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
                 <span className="text-sm text-gray-300">Communicate with your team</span>
               </div>
             </div>
+          </div>
+          <div className="flex justify-center mt-4">
+            <Link href="/help/point-system">
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="border-military-green/50 text-military-green hover:bg-military-green/10"
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Learn More About Points
+              </Button>
+            </Link>
           </div>
         </div>
       )

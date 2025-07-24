@@ -19,6 +19,11 @@ import TeamInvite from "@/pages/team-invite";
 import AdminPage from "@/pages/admin";
 import Checkout from "@/pages/checkout";
 import Subscribe from "@/pages/subscribe";
+import CompetitionSystemHelp from "@/pages/help/competition-system";
+import TeamFormationHelp from "@/pages/help/team-formation";
+import ActivityTrackingHelp from "@/pages/help/activity-tracking";
+import PointSystemHelp from "@/pages/help/point-system";
+import NavigationHelp from "@/pages/help/navigation";
 import BottomNavigation from "@/components/bottom-navigation";
 import FloatingActionButton from "@/components/floating-action-button";
 
@@ -41,6 +46,11 @@ function Router() {
         <Route path="/admin" component={AdminPage} />
         <Route path="/checkout" component={Checkout} />
         <Route path="/subscribe" component={Subscribe} />
+        <Route path="/help/competition-system" component={CompetitionSystemHelp} />
+        <Route path="/help/team-formation" component={TeamFormationHelp} />
+        <Route path="/help/activity-tracking" component={ActivityTrackingHelp} />
+        <Route path="/help/point-system" component={PointSystemHelp} />
+        <Route path="/help/navigation" component={NavigationHelp} />
         <Route component={NotFound} />
       </Switch>
     </div>

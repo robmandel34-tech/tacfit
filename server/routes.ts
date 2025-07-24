@@ -538,6 +538,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Competition is not active" });
       }
 
+      // Check if competition is completed
+      if (competition.isCompleted) {
+        return res.status(400).json({ message: "Competition has already ended" });
+      }
+
       // Check join window if dates are set
       const now = new Date();
       if (competition.joinStartDate && competition.joinEndDate) {
@@ -616,6 +621,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const competition = await storage.getCompetition(competitionId);
       if (!competition || !competition.isActive) {
         return res.status(400).json({ message: "Competition not available" });
+      }
+
+      // Check if competition is completed
+      if (competition.isCompleted) {
+        return res.status(400).json({ message: "Competition has already ended" });
       }
 
       // Check join window if dates are set

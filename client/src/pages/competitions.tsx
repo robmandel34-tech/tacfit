@@ -30,9 +30,13 @@ export default function Competitions() {
       // Add computed join window status to each competition
       const enrichedCompetitions = data.map(comp => {
         let joinWindowStatus = 'unknown';
-        let canJoin = comp.isActive;
+        let canJoin = comp.isActive && !comp.isCompleted;
         
-        if (comp.joinStartDate && comp.joinEndDate) {
+        // If competition is completed, it should not be joinable
+        if (comp.isCompleted) {
+          joinWindowStatus = 'closed';
+          canJoin = false;
+        } else if (comp.joinStartDate && comp.joinEndDate) {
           const joinStart = new Date(comp.joinStartDate);
           // Set join end to end of day (23:59:59.999) instead of beginning of day
           const joinEnd = new Date(comp.joinEndDate);
@@ -46,9 +50,9 @@ export default function Competitions() {
             canJoin = false;
           } else {
             joinWindowStatus = 'open';
-            canJoin = comp.isActive;
+            canJoin = comp.isActive && !comp.isCompleted;
           }
-        } else if (comp.isActive) {
+        } else if (comp.isActive && !comp.isCompleted) {
           joinWindowStatus = 'open';
           canJoin = true;
         }

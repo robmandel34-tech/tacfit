@@ -45,7 +45,7 @@ export default function Login() {
           </div>
           <CardTitle className="text-3xl font-bold text-heading tracking-tight">TacFit</CardTitle>
           <CardDescription className="text-body text-lg">
-            Access your tactical command center
+            Find your team, get fit, win.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">

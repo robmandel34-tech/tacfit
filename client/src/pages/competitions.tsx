@@ -122,7 +122,7 @@ export default function Competitions() {
               size="sm"
               variant="outline" 
               onClick={() => setInviteModalOpen(true)}
-              className="border-military-green text-military-green hover:bg-military-green hover:text-white"
+              className="border-military-green text-military-green hover:border-military-green-light hover:text-military-green-light"
             >
               Locate Allies
             </Button>

@@ -28,9 +28,10 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
   // Calculate progress percentage for each team
   const teamsWithProgress = useMemo(() => {
     const maxPoints = Math.max(...teams.map(t => t.points), 1);
+    // Only apply minimum if team has points, otherwise start at 0%
     return sortedTeams.map((team, index) => ({
       ...team,
-      progress: Math.max((team.points / maxPoints) * 85, 5), // 5% minimum, 85% maximum
+      progress: team.points === 0 ? 0 : Math.max((team.points / maxPoints) * 85, 5), // Start at 0% for no points, 5% minimum for teams with points, 85% maximum
       rank: index + 1
     }));
   }, [sortedTeams, teams]);

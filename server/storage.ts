@@ -90,6 +90,7 @@ export interface IStorage {
   createCompetitionEntry(entry: InsertCompetitionEntry): Promise<CompetitionEntry>;
   getCompetitionEntry(userId: number, competitionId: number): Promise<CompetitionEntry | undefined>;
   updateCompetitionEntry(id: number, updates: Partial<CompetitionEntry>): Promise<CompetitionEntry | undefined>;
+  deleteCompetitionEntry(id: number): Promise<boolean>;
   getUserCompetitionEntries(userId: number): Promise<CompetitionEntry[]>;
   
   // Whiteboard operations

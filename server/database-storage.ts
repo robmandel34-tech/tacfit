@@ -434,6 +434,11 @@ export class DatabaseStorage implements IStorage {
       .where(eq(competitionEntries.userId, userId));
   }
 
+  async deleteCompetitionEntry(id: number): Promise<boolean> {
+    const result = await db.delete(competitionEntries).where(eq(competitionEntries.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
   // Whiteboard operations
   async getWhiteboardItems(teamId: number): Promise<WhiteboardItem[]> {
     return await db.select().from(whiteboardItems).where(eq(whiteboardItems.teamId, teamId));

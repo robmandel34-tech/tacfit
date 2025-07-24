@@ -922,17 +922,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get all user team memberships to find the one to remove
       const teams = await storage.getTeams();
       let memberToRemove = null;
+      let teamToLeave = null;
       
       for (const team of teams) {
         const teamMembers = await storage.getTeamMembers(team.id);
         const member = teamMembers.find(m => m.id === membershipId);
         if (member) {
           memberToRemove = member;
+          teamToLeave = team;
           break;
         }
       }
       
-      if (!memberToRemove) {
+      if (!memberToRemove || !teamToLeave) {
         return res.status(404).json({ message: "Team membership not found" });
       }
 
@@ -940,14 +942,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid team membership data" });
       }
 
+      // Get competition details to check if it has started
+      const competition = await storage.getCompetition(teamToLeave.competitionId!);
+      if (!competition) {
+        return res.status(404).json({ message: "Competition not found" });
+      }
+
+      // Check if competition has started
+      const now = new Date();
+      const competitionStarted = new Date(competition.startDate) <= now;
+      
+      let refundMessage = "";
+      
+      // Handle refunds only if competition hasn't started
+      if (!competitionStarted) {
+        // Find the user's competition entry
+        const entry = await storage.getCompetitionEntry(memberToRemove.userId!, teamToLeave.competitionId!);
+        
+        if (entry && entry.paymentStatus === 'completed' && entry.pointsUsed && entry.pointsUsed > 0) {
+          // Get user and refund points
+          const user = await storage.getUser(memberToRemove.userId!);
+          if (user) {
+            const currentPoints = user.points || 0;
+            const refundAmount = entry.pointsUsed;
+            
+            // Refund points to user
+            await storage.updateUser(user.id, {
+              points: currentPoints + refundAmount
+            });
+            
+            // Update entry status to refunded
+            await storage.updateCompetitionEntry(entry.id, {
+              paymentStatus: 'refunded',
+              refundedAt: new Date(),
+              refundAmount: refundAmount
+            });
+            
+            refundMessage = ` and received ${refundAmount} points refund`;
+            console.log(`Refunded ${refundAmount} points to user ${user.username} for leaving competition ${competition.name}`);
+          }
+        }
+        
+        // Remove the competition entry
+        if (entry) {
+          await storage.deleteCompetitionEntry(entry.id);
+        }
+      }
+
+      // Remove team membership
       const success = await storage.removeTeamMember(memberToRemove.teamId, memberToRemove.userId);
       
       if (success) {
-        res.json({ success: true, message: "Successfully left competition" });
+        const message = competitionStarted 
+          ? "Successfully left competition (no refund available - competition has started)" 
+          : `Successfully left competition${refundMessage}`;
+          
+        res.json({ 
+          success: true, 
+          message,
+          refunded: !competitionStarted && refundMessage.length > 0
+        });
       } else {
         res.status(500).json({ message: "Failed to leave competition" });
       }
     } catch (error: any) {
+      console.error("Error leaving competition:", error);
       res.status(500).json({ message: error.message });
     }
   });

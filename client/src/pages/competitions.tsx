@@ -120,9 +120,8 @@ export default function Competitions() {
           <div className="flex flex-col items-end space-y-3 flex-shrink-0">
             <Button 
               size="sm"
-              variant="outline" 
               onClick={() => setInviteModalOpen(true)}
-              className="border-military-green text-military-green hover:border-military-green-light hover:text-military-green-light"
+              className="bg-tactical-gray-light border border-military-green text-military-green hover:bg-tactical-gray-lighter hover:border-military-green-light hover:text-military-green-light"
             >
               Locate Allies
             </Button>

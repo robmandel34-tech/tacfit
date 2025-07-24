@@ -33,8 +33,8 @@ export default function CompetitionPaymentModal({
   const [, setLocation] = useLocation();
   const [paymentMethod, setPaymentMethod] = useState<'points' | 'stripe' | null>(null);
 
-  const ENTRY_COST_POINTS = 1000;
-  const ENTRY_COST_USD = 10;
+  const ENTRY_COST_POINTS = 1000;  // Change this number to adjust point cost
+  const ENTRY_COST_USD = 10;       // Change this number to adjust dollar cost
 
   // Refresh user data when modal opens to get latest points
   useEffect(() => {

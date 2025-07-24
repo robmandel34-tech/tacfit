@@ -51,7 +51,7 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
             <h3 className="text-xl font-bold text-white mb-2">Mission Briefing</h3>
             <p className="text-gray-300">
               TacFit is a team-based fitness competition platform where you'll join teams, 
-              complete tactical training challenges, and compete for victory.
+              complete fitness activities, and compete for victory.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-4 mt-6">

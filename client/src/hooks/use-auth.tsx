@@ -14,7 +14,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (username: string, email: string, password: string) => Promise<void>;
+  register: (username: string, email: string, password: string, phoneNumber?: string) => Promise<void>;
   logout: () => void;
   updateUser: (updatedUser: Partial<User>) => void;
   refreshUser: () => Promise<void>;
@@ -82,24 +82,29 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
     }
   };
 
-  const register = async (username: string, email: string, password: string) => {
+  const register = async (username: string, email: string, password: string, phoneNumber?: string) => {
     try {
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username, email, password }),
+        body: JSON.stringify({ username, email, password, phoneNumber }),
       });
 
       if (!response.ok) {
         throw new Error("Registration failed");
       }
 
-      const userData = await response.json();
-      setUser(userData);
-      localStorage.setItem("user", JSON.stringify(userData));
+      const data = await response.json();
+      setUser(data.user);
+      localStorage.setItem("user", JSON.stringify(data.user));
       setLocation("/");
+      
+      // Show referral success message if applicable
+      if (data.referralAwarded) {
+        console.log("Referral bonus awarded to inviter!");
+      }
     } catch (error) {
       throw error;
     }

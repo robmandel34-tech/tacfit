@@ -4,11 +4,12 @@ import {
   InsertActivityComment, ActivityLike, ActivityFlag, InsertActivityFlag, 
   ChatMessage, InsertChatMessage, Friendship, InsertFriendship, CompetitionHistory, 
   CompetitionInvitation, InsertCompetitionInvitation, CompetitionEntry, 
-  InsertCompetitionEntry, WhiteboardItem, InsertWhiteboardItem, MissionTask, InsertMissionTask,
-  ActivityType, InsertActivityType,
+  InsertCompetitionEntry, PhoneInvitation, InsertPhoneInvitation, WhiteboardItem, 
+  InsertWhiteboardItem, MissionTask, InsertMissionTask, ActivityType, InsertActivityType,
   users, competitions, teams, teamMembers, activities, activityTypes,
   activityComments, activityLikes, activityFlags, chatMessages, friendships, 
-  competitionHistory, competitionInvitations, competitionEntries, whiteboardItems, missionTasks
+  competitionHistory, competitionInvitations, competitionEntries, phoneInvitations, 
+  whiteboardItems, missionTasks
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc } from "drizzle-orm";
@@ -542,5 +543,39 @@ export class DatabaseStorage implements IStorage {
       ...invitation,
       createdAt: new Date(),
     };
+  }
+
+  // Phone invitation operations for referral system
+  async createPhoneInvitation(invitation: InsertPhoneInvitation): Promise<PhoneInvitation> {
+    const [phoneInvitation] = await db
+      .insert(phoneInvitations)
+      .values(invitation)
+      .returning();
+    return phoneInvitation;
+  }
+
+  async getPhoneInvitationByToken(token: string): Promise<PhoneInvitation | undefined> {
+    const [invitation] = await db
+      .select()
+      .from(phoneInvitations)
+      .where(eq(phoneInvitations.inviteToken, token));
+    return invitation || undefined;
+  }
+
+  async getPhoneInvitationsByPhone(phoneNumber: string): Promise<PhoneInvitation[]> {
+    return await db
+      .select()
+      .from(phoneInvitations)
+      .where(eq(phoneInvitations.phoneNumber, phoneNumber))
+      .orderBy(desc(phoneInvitations.createdAt));
+  }
+
+  async updatePhoneInvitation(id: number, updates: Partial<PhoneInvitation>): Promise<PhoneInvitation | undefined> {
+    const [invitation] = await db
+      .update(phoneInvitations)
+      .set(updates)
+      .where(eq(phoneInvitations.id, id))
+      .returning();
+    return invitation || undefined;
   }
 }

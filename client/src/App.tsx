@@ -15,6 +15,7 @@ import ActivityFeed from "@/pages/activity-feed";
 import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
 import Invitation from "@/pages/invitation";
+import TeamInvite from "@/pages/team-invite";
 import AdminPage from "@/pages/admin";
 import Checkout from "@/pages/checkout";
 import Subscribe from "@/pages/subscribe";
@@ -36,6 +37,7 @@ function Router() {
         <Route path="/profile" component={Profile} />
         <Route path="/profile/:userId" component={Profile} />
         <Route path="/invite/:token" component={Invitation} />
+        <Route path="/team-invite/:token" component={TeamInvite} />
         <Route path="/admin" component={AdminPage} />
         <Route path="/checkout" component={Checkout} />
         <Route path="/subscribe" component={Subscribe} />

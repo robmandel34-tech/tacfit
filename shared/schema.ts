@@ -15,6 +15,8 @@ export const users = pgTable("users", {
   isAdmin: boolean("is_admin").default(false),
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
+  referredBy: integer("referred_by").references(() => users.id),
+  referralToken: text("referral_token"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -144,6 +146,18 @@ export const competitionInvitations = pgTable("competition_invitations", {
   expiresAt: timestamp("expires_at").notNull(),
 });
 
+export const phoneInvitations = pgTable("phone_invitations", {
+  id: serial("id").primaryKey(),
+  phoneNumber: text("phone_number").notNull(),
+  invitedBy: integer("invited_by").references(() => users.id),
+  teamId: integer("team_id").references(() => teams.id),
+  competitionId: integer("competition_id").references(() => competitions.id),
+  inviteToken: text("invite_token").notNull().unique(),
+  status: text("status").default("pending"), // pending, completed, expired
+  createdAt: timestamp("created_at").defaultNow(),
+  expiresAt: timestamp("expires_at").notNull(),
+});
+
 export const competitionEntries = pgTable("competition_entries", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id),
@@ -245,6 +259,11 @@ export const insertCompetitionInvitationSchema = createInsertSchema(competitionI
   createdAt: true,
 });
 
+export const insertPhoneInvitationSchema = createInsertSchema(phoneInvitations).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertCompetitionEntrySchema = createInsertSchema(competitionEntries).omit({
   id: true,
   createdAt: true,
@@ -286,6 +305,8 @@ export type CompetitionInvitation = typeof competitionInvitations.$inferSelect;
 export type InsertCompetitionInvitation = z.infer<typeof insertCompetitionInvitationSchema>;
 export type CompetitionEntry = typeof competitionEntries.$inferSelect;
 export type InsertCompetitionEntry = z.infer<typeof insertCompetitionEntrySchema>;
+export type PhoneInvitation = typeof phoneInvitations.$inferSelect;
+export type InsertPhoneInvitation = z.infer<typeof insertPhoneInvitationSchema>;
 export type WhiteboardItem = typeof whiteboardItems.$inferSelect;
 export type InsertWhiteboardItem = z.infer<typeof insertWhiteboardItemSchema>;
 export type ActivityType = typeof activityTypes.$inferSelect;

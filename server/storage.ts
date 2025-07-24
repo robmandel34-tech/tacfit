@@ -4,8 +4,8 @@ import {
   InsertActivityComment, ActivityLike, ActivityFlag, ChatMessage, InsertChatMessage, 
   Friendship, InsertFriendship, CompetitionHistory, CompetitionInvitation,
   InsertCompetitionInvitation, CompetitionEntry, InsertCompetitionEntry,
-  WhiteboardItem, InsertWhiteboardItem, MissionTask, InsertMissionTask,
-  ActivityType, InsertActivityType
+  PhoneInvitation, InsertPhoneInvitation, WhiteboardItem, InsertWhiteboardItem, 
+  MissionTask, InsertMissionTask, ActivityType, InsertActivityType
 } from "@shared/schema";
 
 export interface IStorage {
@@ -112,6 +112,12 @@ export interface IStorage {
   // Team invitation operations
   createInvitation(invitation: any): Promise<any>;
   createUserInvitation(invitation: any): Promise<any>;
+  
+  // Phone invitation operations
+  createPhoneInvitation(invitation: InsertPhoneInvitation): Promise<PhoneInvitation>;
+  getPhoneInvitationByToken(token: string): Promise<PhoneInvitation | undefined>;
+  getPhoneInvitationsByPhone(phoneNumber: string): Promise<PhoneInvitation[]>;
+  updatePhoneInvitation(id: number, updates: Partial<PhoneInvitation>): Promise<PhoneInvitation | undefined>;
 }
 
 import { DatabaseStorage } from "./database-storage";

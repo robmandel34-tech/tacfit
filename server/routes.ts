@@ -98,19 +98,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
   app.post("/api/auth/register", async (req, res) => {
     try {
-      const userData = insertUserSchema.parse(req.body);
+      const { phoneNumber, ...userData } = req.body;
+      const parsedData = insertUserSchema.parse(userData);
       
       // Check if user exists
-      const existingUser = await storage.getUserByEmail(userData.email);
+      const existingUser = await storage.getUserByEmail(parsedData.email);
       if (existingUser) {
         return res.status(400).json({ message: "User already exists" });
       }
       
-      const user = await storage.createUser(userData);
+      let referredBy = null;
+      
+      // Check for phone number referral if provided
+      if (phoneNumber) {
+        const phoneInvitations = await storage.getPhoneInvitationsByPhone(phoneNumber);
+        const pendingInvitation = phoneInvitations.find(inv => inv.status === 'pending');
+        
+        if (pendingInvitation) {
+          referredBy = pendingInvitation.invitedBy;
+          
+          // Mark invitation as completed
+          await storage.updatePhoneInvitation(pendingInvitation.id, { status: 'completed' });
+          
+          // Award 200 points to the person who invited them
+          const referrer = await storage.getUser(pendingInvitation.invitedBy);
+          if (referrer) {
+            await storage.updateUser(pendingInvitation.invitedBy, {
+              points: (referrer.points || 0) + 200
+            });
+            console.log(`Awarded 200 referral points to user ${referrer.username} (ID: ${referrer.id})`);
+          }
+        }
+      }
+      
+      const user = await storage.createUser({
+        ...parsedData,
+        referredBy,
+        points: 100, // Starting points for new users
+      });
       
       // Don't send password back
       const { password, ...userWithoutPassword } = user;
-      res.json(userWithoutPassword);
+      res.json({ user: userWithoutPassword, referralAwarded: !!referredBy });
     } catch (error) {
       res.status(400).json({ message: "Invalid user data" });
     }
@@ -1697,21 +1726,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Team invitation routes
+  // Team invitation routes  
   app.post("/api/teams/:teamId/invite-phone", async (req, res) => {
     try {
       const { phoneNumber, invitedBy } = req.body;
       const teamId = parseInt(req.params.teamId);
       
+      // Get team to find competition
+      const team = await storage.getTeam(teamId);
+      if (!team) {
+        return res.status(404).json({ message: "Team not found" });
+      }
+      
       // Create invitation with unique token
       const inviteToken = Math.random().toString(36).substring(2) + Date.now().toString(36);
       const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
       
-      const invitation = await storage.createInvitation({
+      const invitation = await storage.createPhoneInvitation({
         phoneNumber,
         invitedBy,
         teamId,
-        token: inviteToken,
+        competitionId: team.competitionId,
+        inviteToken,
         expiresAt,
         status: 'pending'
       });
@@ -1747,6 +1783,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Invitation sent", invitation });
     } catch (error) {
       res.status(500).json({ message: "Error sending user invitation" });
+    }
+  });
+
+  // Get team invitation by token
+  app.get("/api/team-invitations/:token", async (req, res) => {
+    try {
+      const invitation = await storage.getPhoneInvitationByToken(req.params.token);
+      
+      if (!invitation) {
+        return res.status(404).json({ message: "Invitation not found" });
+      }
+      
+      // Get additional details
+      const inviter = await storage.getUser(invitation.invitedBy);
+      const team = await storage.getTeam(invitation.teamId);
+      const competition = await storage.getCompetition(invitation.competitionId);
+      
+      res.json({
+        ...invitation,
+        inviter: inviter ? { username: inviter.username, avatar: inviter.avatar } : null,
+        team: team ? { name: team.name, motto: team.motto } : null,
+        competition: competition ? { name: competition.name, description: competition.description } : null
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching invitation" });
     }
   });
 

@@ -61,15 +61,15 @@ export function HelpModal() {
             <HelpCircle className="h-5 w-5" />
           </Button>
         </DialogTrigger>
-        <DialogContent className="max-w-2xl bg-gray-900 border-gray-700">
-          <DialogHeader>
+        <DialogContent className="max-w-2xl max-h-[90vh] bg-gray-900 border-gray-700 overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle className="text-white flex items-center space-x-2">
               <HelpCircle className="h-6 w-6 text-military-green" />
               <span>TacFit Help Center</span>
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-6">
+          <div className="space-y-6 overflow-y-auto flex-1 pr-2 py-4">
             {/* Interactive Walkthrough */}
             <Card className="bg-gradient-to-r from-military-green-dark to-military-green border-military-green/30">
               <CardHeader>

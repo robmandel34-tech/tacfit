@@ -46,15 +46,13 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
       {/* Tab-like header for Team Progress Map */}
       <div className="relative">
         <div className="flex justify-center mb-0">
-          <div className="bg-tactical-gray-light border-tactical-gray border-t border-l border-r rounded-t-xl px-4 py-1 shadow-lg">
+          <div className="bg-tactical-gray-light border-tactical-gray border-t border-l border-r rounded-t-xl px-4 py-1 tile-card">
             <h3 className="text-sm font-semibold text-white">Team Progress Map</h3>
           </div>
         </div>
         
         {/* Map Container */}
-        <Card className="w-full bg-tactical-gray-light border-tactical-gray rounded-xl shadow-lg" style={{
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15), 0 2px 6px rgba(0,0,0,0.1)'
-        }}>
+        <Card className="w-full tile-card-elevated">
           <CardContent className="p-6">
             <div className="relative">
               {/* Map Background */}

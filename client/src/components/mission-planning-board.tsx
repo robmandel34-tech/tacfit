@@ -49,7 +49,7 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
   
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [newTask, setNewTask] = useState({
     title: '',
     description: '',

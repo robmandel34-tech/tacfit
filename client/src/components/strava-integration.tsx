@@ -1,0 +1,196 @@
+import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import { Activity, RotateCcw, Link, Unlink, Zap } from "lucide-react";
+
+export default function StravaIntegration() {
+  const { toast } = useToast();
+  const [isConnecting, setIsConnecting] = useState(false);
+
+  // Get Strava connection status
+  const { data: stravaStatus, isLoading } = useQuery({
+    queryKey: ["/api/strava/status"],
+  });
+
+  // Connect to Strava
+  const connectStrava = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("GET", "/api/strava/auth");
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setIsConnecting(true);
+      window.location.href = data.authUrl;
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Connection Failed",
+        description: error.message || "Failed to connect to Strava",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Disconnect from Strava
+  const disconnectStrava = useMutation({
+    mutationFn: async () => {
+      return apiRequest("POST", "/api/strava/disconnect");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/strava/status"] });
+      toast({
+        title: "Disconnected",
+        description: "Successfully disconnected from Strava",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Disconnection Failed",
+        description: error.message || "Failed to disconnect from Strava",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Sync Strava activities
+  const syncActivities = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/strava/sync");
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
+      toast({
+        title: "Sync Complete",
+        description: `Synced ${data.syncedCount} activities from Strava`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Sync Failed",
+        description: error.message || "Failed to sync Strava activities",
+        variant: "destructive",
+      });
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="h-5 w-5" />
+            Strava Integration
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin w-6 h-6 border-2 border-military-green border-t-transparent rounded-full" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const isConnected = stravaStatus?.isConnected;
+  const tokenExpired = stravaStatus?.tokenExpired;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Activity className="h-5 w-5 text-orange-500" />
+          Strava Integration
+        </CardTitle>
+        <CardDescription>
+          Connect your Strava account to automatically sync your fitness activities
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="text-sm">
+              <div className="font-medium">Connection Status</div>
+              <div className="text-gray-500">
+                {isConnected ? "Connected to Strava" : "Not connected"}
+              </div>
+            </div>
+            <Badge 
+              variant={isConnected ? (tokenExpired ? "destructive" : "default") : "secondary"}
+              className={isConnected ? (tokenExpired ? "" : "bg-green-100 text-green-800") : ""}
+            >
+              {isConnected ? (tokenExpired ? "Token Expired" : "Connected") : "Disconnected"}
+            </Badge>
+          </div>
+        </div>
+
+        {isConnected && stravaStatus?.athleteId && (
+          <div className="text-sm text-gray-600">
+            <strong>Athlete ID:</strong> {stravaStatus.athleteId}
+          </div>
+        )}
+
+        <div className="flex gap-2">
+          {!isConnected ? (
+            <Button 
+              onClick={() => connectStrava.mutate()}
+              disabled={connectStrava.isPending || isConnecting}
+              className="bg-orange-500 hover:bg-orange-600 text-white"
+            >
+              <Link className="h-4 w-4 mr-2" />
+              {connectStrava.isPending || isConnecting ? "Connecting..." : "Connect Strava"}
+            </Button>
+          ) : (
+            <>
+              <Button 
+                onClick={() => syncActivities.mutate()}
+                disabled={syncActivities.isPending || tokenExpired}
+                className="bg-military-green hover:bg-military-green-light text-white"
+              >
+                <Zap className="h-4 w-4 mr-2" />
+                {syncActivities.isPending ? "Syncing..." : "Sync Activities"}
+              </Button>
+              
+              <Button 
+                onClick={() => disconnectStrava.mutate()}
+                disabled={disconnectStrava.isPending}
+                variant="outline"
+                className="border-red-300 text-red-600 hover:bg-red-50"
+              >
+                <Unlink className="h-4 w-4 mr-2" />
+                {disconnectStrava.isPending ? "Disconnecting..." : "Disconnect"}
+              </Button>
+            </>
+          )}
+        </div>
+
+        {tokenExpired && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+            <div className="flex items-center gap-2 text-yellow-800 text-sm">
+              <RotateCcw className="h-4 w-4" />
+              <div>
+                <div className="font-medium">Token Expired</div>
+                <div>Please reconnect to Strava to continue syncing activities</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="bg-gray-50 border rounded-lg p-4 text-sm text-gray-600">
+          <div className="font-medium mb-2">How it works:</div>
+          <ul className="space-y-1 list-disc list-inside">
+            <li>Connect your Strava account securely</li>
+            <li>Your activities from the last 30 days will be synced</li>
+            <li>Activities automatically map to TacFit activity types</li>
+            <li>Each synced activity earns 15 base points</li>
+            <li>You must be in a competition to sync activities</li>
+          </ul>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

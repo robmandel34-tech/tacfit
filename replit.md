@@ -34,6 +34,21 @@ Preferred communication style: Simple, everyday language.
 - **FIXED**: Activity feed page now uses dynamic activity type display names instead of hardcoded raw field names
 - **REMOVED**: Point totals from activity cards in the Intel Feed for cleaner UI
 
+### Strava API Integration Implementation (July 2025)
+- **NEW**: Complete Strava API integration for automated activity submissions
+- **NEW**: OAuth 2.0 authentication flow with secure token management and refresh
+- **NEW**: Database schema updated with Strava credentials (access token, refresh token, athlete ID, expiration)
+- **NEW**: Automatic activity syncing from Strava with intelligent type mapping (runs→cardio, weightlifting→strength, yoga→flexibility)
+- **NEW**: Activity deduplication prevents duplicate entries from manual and Strava submissions
+- **NEW**: Strava integration UI component with connection status, sync controls, and disconnect functionality
+- **NEW**: Profile page integration - Strava controls only visible on user's own profile for privacy
+- **NEW**: 15 base points awarded per synced Strava activity with team point accumulation
+- **NEW**: Token refresh handling for expired Strava credentials with automatic re-authentication
+- **NEW**: Comprehensive error handling and user feedback for connection issues
+- **SECURED**: User must be in active competition to sync activities, preventing point farming
+- **ENHANCED**: Activity descriptions include Strava source identification and unique activity IDs
+- **INTEGRATED**: Synced activities appear in Intel Feed alongside manually submitted activities
+
 ### User Suspension System Implementation (July 2025)
 - **NEW**: Complete user suspension functionality for administrative moderation
 - **NEW**: Database schema updated with isSuspended, suspendedAt, and suspensionReason fields

@@ -34,6 +34,7 @@ export interface IStorage {
   
   // Team member operations
   getTeamMembers(teamId: number): Promise<TeamMember[]>;
+  getTeamMembersByUser(userId: number): Promise<TeamMember[]>;
   getTeamMember(teamId: number, userId: number): Promise<TeamMember | undefined>;
   getTeamMemberByUserAndTeam(userId: number, teamId: number): Promise<TeamMember | undefined>;
   getUserTeam(userId: number, competitionId: number): Promise<TeamMember | undefined>;

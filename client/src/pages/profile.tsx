@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import DirectMessageModal from "@/components/direct-message-modal";
 import FindFriendsModal from "@/components/find-friends-modal";
+import StravaIntegration from "@/components/strava-integration";
 
 export default function Profile() {
   const { user, isLoading } = useAuthRequired();
@@ -995,6 +996,9 @@ export default function Profile() {
                 </DialogContent>
               </Dialog>
             </div>
+
+            {/* Strava Integration - Only show on own profile */}
+            {isOwnProfile && <StravaIntegration />}
 
             {/* Competition History */}
             <Card className="bg-tactical-gray-light border-tactical-gray">

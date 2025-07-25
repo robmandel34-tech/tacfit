@@ -124,25 +124,23 @@ export default function Competitions() {
       <Navigation />
       
       <main className="container mx-auto px-4 py-8">
-        {/* Header Card */}
-        <Card className="bg-gradient-to-r from-military-green-dark to-military-green border-military-green/30 mb-8">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <Trophy className="h-6 w-6 text-white" />
-                <CardTitle className="text-white text-2xl">Join a Competition</CardTitle>
-              </div>
-              <Button 
-                size="sm"
-                onClick={() => setInviteModalOpen(true)}
-                className="bg-white text-black hover:bg-gray-100 font-semibold"
-              >
-                <Users className="h-4 w-4 mr-2" />
-                Locate Buddies
-              </Button>
+        {/* Compact Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Trophy className="h-6 w-6 text-military-green" />
+              <h1 className="text-2xl font-bold text-white">Join a Competition</h1>
             </div>
-          </CardHeader>
-        </Card>
+            <Button 
+              size="sm"
+              onClick={() => setInviteModalOpen(true)}
+              className="bg-military-green hover:bg-military-green-dark text-white font-semibold"
+            >
+              <Users className="h-4 w-4 mr-2" />
+              Locate Buddies
+            </Button>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {competitions.length === 0 ? (

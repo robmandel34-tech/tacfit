@@ -25,10 +25,10 @@ Preferred communication style: Simple, everyday language.
 - **UPDATED**: Replaced hardcoded activity type mappings with dynamic database lookups
 - **FIXED**: Database activity types updated to match design specifications
 - **REMOVED**: Inconsistent "Reading" activity type from database
-- **UPDATED**: "Strength Training" changed to "Strength Operations" for tactical theme
+- **UPDATED**: "Strength Operations" changed back to "Strength Training" for better clarity
 - **ADDED**: "Mobility Training" activity type (flexibility) with proper measurement units
 - **ENHANCED**: Activity cards, team progress, help pages, and admin portal all use same display names
-- **CURRENT**: Three core activity types: Cardio Training (minutes), Strength Operations (reps), Mobility Training (minutes)
+- **CURRENT**: Three core activity types: Cardio Training (minutes), Strength Training (reps), Mobility Training (minutes)
 - **TECHNICAL**: Dynamic activity type fetching ensures consistency when admin updates activity types
 - **RESOLVED**: Activity type tags on Intel Feed now show correct display names from database
 - **FIXED**: Activity feed page now uses dynamic activity type display names instead of hardcoded raw field names

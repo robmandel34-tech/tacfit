@@ -16,6 +16,9 @@ export default function ActivityFeed() {
   // Force refresh when navigating to this page
   useEffect(() => {
     setForceRefresh(prev => prev + 1);
+    // Force invalidate cache to ensure fresh data
+    queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/activity-types'] });
   }, [location]);
 
   const { data: activities, isLoading } = useQuery({

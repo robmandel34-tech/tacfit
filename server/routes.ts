@@ -1337,14 +1337,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Apply bonus to reach 30 total points if both video and image are submitted
       const finalPoints = hasBothEvidenceTypes ? 30 : basePoints;
       
+      // Handle Strava activity ID if provided
+      let description = req.body.description;
+      let evidenceType = null;
+      
+      if (req.body.stravaActivityId) {
+        description = `${req.body.description} (Imported from Strava - ID: ${req.body.stravaActivityId})`;
+        evidenceType = "strava_import";
+      }
+
       const activityData = {
         userId: userId,
         competitionId: userTeam?.competitionId,
         teamId: userTeam?.id,
         type: req.body.type,
-        description: req.body.description,
+        description: description,
         quantity: req.body.quantity,
-        points: finalPoints
+        points: finalPoints,
+        evidenceType: evidenceType
       };
       
       console.log("Processed activity data:", activityData);
@@ -2620,6 +2630,165 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Strava sync error:", error);
       res.status(500).json({ message: "Error syncing Strava activities" });
+    }
+  });
+
+  // Get recent Strava activities for activity selection
+  app.get("/api/strava/recent-activities", async (req: any, res) => {
+    try {
+      const userId = req.query.userId;
+      if (!userId) {
+        return res.status(400).json({ message: "User ID required" });
+      }
+
+      const user = await storage.getUser(parseInt(userId));
+      if (!user || !user.stravaAccessToken) {
+        return res.status(400).json({ message: "Strava not connected" });
+      }
+
+      // Refresh token if needed
+      let accessToken = user.stravaAccessToken;
+      if (user.stravaTokenExpiresAt && new Date() > user.stravaTokenExpiresAt) {
+        const refreshResponse = await fetch("https://www.strava.com/oauth/token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            client_id: process.env.STRAVA_CLIENT_ID,
+            client_secret: process.env.STRAVA_CLIENT_SECRET,
+            refresh_token: user.stravaRefreshToken,
+            grant_type: "refresh_token",
+          }),
+        });
+
+        if (refreshResponse.ok) {
+          const refreshData = await refreshResponse.json();
+          accessToken = refreshData.access_token;
+          
+          await storage.updateUser(user.id, {
+            stravaAccessToken: accessToken,
+            stravaRefreshToken: refreshData.refresh_token,
+            stravaTokenExpiresAt: new Date(refreshData.expires_at * 1000),
+          });
+        } else {
+          return res.status(400).json({ message: "Strava token refresh failed" });
+        }
+      }
+
+      // Get recent activities from Strava (last 7 days for selection)
+      const sevenDaysAgo = Math.floor((Date.now() - 7 * 24 * 60 * 60 * 1000) / 1000);
+      const activitiesResponse = await fetch(
+        `https://www.strava.com/api/v3/athlete/activities?after=${sevenDaysAgo}&per_page=20`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      if (!activitiesResponse.ok) {
+        return res.status(400).json({ message: "Failed to fetch Strava activities" });
+      }
+
+      const stravaActivities = await activitiesResponse.json();
+      
+      // Map activities with TacFit types and quantities
+      const mappedActivities = stravaActivities.map((activity: any) => {
+        const activityType = activity.type?.toLowerCase().replace(/\s+/g, '_');
+        
+        // Create mapping from Strava types to TacFit activity types
+        const stravaToTacfitMapping: { [key: string]: { type: string; unit: string } } = {
+          // Running activities
+          'run': { type: 'run', unit: 'minutes' },
+          'trailrun': { type: 'trail_run', unit: 'minutes' },
+          'virtualrun': { type: 'virtual_run', unit: 'minutes' },
+          'walk': { type: 'walk', unit: 'minutes' },
+          'hike': { type: 'hike', unit: 'minutes' },
+          'wheelchair': { type: 'wheelchair', unit: 'minutes' },
+          
+          // Cycling activities
+          'ride': { type: 'ride', unit: 'minutes' },
+          'mountainbikeride': { type: 'mountain_bike_ride', unit: 'minutes' },
+          'gravelride': { type: 'gravel_ride', unit: 'minutes' },
+          'ebikeride': { type: 'e_bike_ride', unit: 'minutes' },
+          'emountainbikeride': { type: 'e_mountain_bike_ride', unit: 'minutes' },
+          'virtualride': { type: 'virtual_ride', unit: 'minutes' },
+          'handcycle': { type: 'handcycle', unit: 'minutes' },
+          'velomobile': { type: 'velomobile', unit: 'minutes' },
+          
+          // Water sports
+          'swim': { type: 'swim', unit: 'minutes' },
+          'canoe': { type: 'canoe', unit: 'minutes' },
+          'kayaking': { type: 'kayak', unit: 'minutes' },
+          'kitesurf': { type: 'kitesurf', unit: 'minutes' },
+          'rowing': { type: 'rowing', unit: 'minutes' },
+          'standuppaddling': { type: 'stand_up_paddling', unit: 'minutes' },
+          'surf': { type: 'surf', unit: 'minutes' },
+          'windsurf': { type: 'windsurf', unit: 'minutes' },
+          'sail': { type: 'sail', unit: 'minutes' },
+          
+          // Winter sports
+          'iceskate': { type: 'ice_skate', unit: 'minutes' },
+          'alpinesky': { type: 'alpine_ski', unit: 'minutes' },
+          'backcountryski': { type: 'backcountry_ski', unit: 'minutes' },
+          'nordicski': { type: 'nordic_ski', unit: 'minutes' },
+          'snowboard': { type: 'snowboard', unit: 'minutes' },
+          'snowshoe': { type: 'snowshoe', unit: 'minutes' },
+          'rollerski': { type: 'roller_ski', unit: 'minutes' },
+          
+          // Gym/indoor activities
+          'crossfit': { type: 'crossfit', unit: 'reps' },
+          'elliptical': { type: 'elliptical', unit: 'minutes' },
+          'stairstepper': { type: 'stair_stepper', unit: 'minutes' },
+          'weighttraining': { type: 'weight_training', unit: 'reps' },
+          'yoga': { type: 'yoga', unit: 'minutes' },
+          'workout': { type: 'workout', unit: 'minutes' },
+          
+          // Other sports
+          'inlineskate': { type: 'inline_skate', unit: 'minutes' },
+          'rockclimbing': { type: 'rock_climb', unit: 'minutes' },
+          'golf': { type: 'golf', unit: 'minutes' },
+          'skateboard': { type: 'skateboard', unit: 'minutes' },
+          'soccer': { type: 'football', unit: 'minutes' },
+          'football': { type: 'football', unit: 'minutes' },
+          'badminton': { type: 'badminton', unit: 'minutes' },
+          'tennis': { type: 'tennis', unit: 'minutes' },
+          'pickleball': { type: 'pickleball', unit: 'minutes' },
+          
+          // Meditation activities
+          'meditation': { type: 'meditation', unit: 'minutes' },
+          'mindfulness': { type: 'mindfulness', unit: 'minutes' },
+          'yoga': { type: 'yoga', unit: 'minutes' },
+        };
+        
+        const mapping = stravaToTacfitMapping[activityType];
+        let mappedType = null;
+        let mappedQuantity = null;
+        
+        if (mapping) {
+          mappedType = mapping.type;
+          
+          if (mapping.unit === 'minutes') {
+            mappedQuantity = Math.round(activity.moving_time / 60); // Convert seconds to minutes
+          } else if (mapping.unit === 'reps') {
+            // For strength/reps activities, estimate reps based on duration (rough approximation)
+            mappedQuantity = Math.round(activity.moving_time / 30); // ~2 seconds per rep
+          } else {
+            mappedQuantity = Math.round(activity.moving_time / 60); // Default to minutes
+          }
+        }
+        
+        return {
+          ...activity,
+          mappedType,
+          mappedQuantity,
+          formattedDate: new Date(activity.start_date).toLocaleDateString(),
+        };
+      }).filter(activity => activity.mappedType); // Only return activities that can be mapped
+
+      res.json(mappedActivities);
+    } catch (error) {
+      console.error("Strava recent activities error:", error);
+      res.status(500).json({ message: "Error fetching recent Strava activities" });
     }
   });
 

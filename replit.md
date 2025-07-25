@@ -183,6 +183,19 @@ Preferred communication style: Simple, everyday language.
 - **STRATEGY**: Indirect integration approach since major meditation apps (Headspace, Calm, Insight Timer) don't offer public APIs
 - **HOLISTIC**: Expanded platform from pure fitness to comprehensive wellness including mental health and mindfulness tracking
 
+### Strava Activity Import System (July 2025)
+- **NEW**: Manual Strava activity import functionality in activity submission modal
+- **NEW**: "Import from Strava" section with recent activities display (last 7 days)
+- **NEW**: Real-time Strava activity fetching with activity type mapping and quantity calculation
+- **NEW**: Activity selection interface showing activity name, type, duration, distance, and mapped TacFit type
+- **NEW**: Automatic form population when Strava activity is selected (type, description, quantity)
+- **NEW**: API endpoint `/api/strava/recent-activities` for fetching mappable activities
+- **NEW**: Enhanced activity submission to handle Strava activity IDs with proper identification
+- **NEW**: Strava import tracking in activity descriptions with unique activity ID references
+- **ENHANCED**: Activity submission modal now includes orange-themed Strava integration section
+- **ENHANCED**: Comprehensive activity type mapping covering all 44 Strava activity types plus meditation
+- **INTEGRATED**: Seamless workflow allowing users to select recent Strava activities during manual submission
+
 ### Mission Planning Board Updates (July 2025)
 - **RESTORED**: Mission Planning Board brought back with collapsible format matching Team Comms card
 - **ENHANCED**: Added proper Card wrapper with header structure and collapsible trigger

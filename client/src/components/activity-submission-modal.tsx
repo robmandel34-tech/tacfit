@@ -7,8 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Camera, X } from "lucide-react";
+import { Camera, X, Activity, Clock, MapPin, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 interface ActivitySubmissionModalProps {
   isOpen: boolean;
@@ -24,6 +26,8 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   const [quantity, setQuantity] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [selectedStravaActivity, setSelectedStravaActivity] = useState<any>(null);
+  const [showStravaActivities, setShowStravaActivities] = useState(false);
 
   // Get user's current team membership
   const { data: userTeamMember } = useQuery({
@@ -54,6 +58,13 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   
   // Get filtered activity types that are available for this competition
   const competitionActivityTypes = activityTypes.filter(at => availableActivityTypes.includes(at.name));
+
+  // Get recent Strava activities if user is connected
+  const { data: stravaActivities, isLoading: stravaLoading } = useQuery({
+    queryKey: ["/api/strava/recent-activities", user?.id],
+    queryFn: () => fetch(`/api/strava/recent-activities?userId=${user?.id}`).then(res => res.json()),
+    enabled: !!user && showStravaActivities,
+  });
 
   const submitActivity = useMutation({
     mutationFn: async (data: FormData) => {
@@ -111,6 +122,16 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     setQuantity("");
     setImageFile(null);
     setVideoFile(null);
+    setSelectedStravaActivity(null);
+    setShowStravaActivities(false);
+  };
+
+  const handleStravaActivitySelect = (stravaActivity: any) => {
+    setSelectedStravaActivity(stravaActivity);
+    setType(stravaActivity.mappedType || "");
+    setDescription(`${stravaActivity.name} - Imported from Strava`);
+    setQuantity(stravaActivity.mappedQuantity?.toString() || "");
+    setShowStravaActivities(false);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -133,6 +154,11 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     formData.append("type", type);
     formData.append("description", description);
     formData.append("quantity", quantity);
+    
+    // Include Strava activity ID if selected from Strava
+    if (selectedStravaActivity) {
+      formData.append("stravaActivityId", selectedStravaActivity.id.toString());
+    }
     
     if (videoFile) {
       formData.append("evidence", videoFile);
@@ -204,6 +230,97 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
         
         <div className="max-h-[70vh] overflow-y-auto pr-2">
           <form id="activity-form" onSubmit={handleSubmit} className="space-y-4">
+            
+            {/* Strava Integration Section */}
+            <div className="border-2 border-dashed border-tactical-gray rounded-lg p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Activity className="h-5 w-5 text-orange-500" />
+                  <span className="text-gray-300 font-medium">Import from Strava</span>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowStravaActivities(!showStravaActivities)}
+                  className="text-orange-500 border-orange-500 hover:bg-orange-500/10"
+                >
+                  <Zap className="h-4 w-4 mr-1" />
+                  {showStravaActivities ? "Hide" : "Load"} Recent Activities
+                </Button>
+              </div>
+              
+              {selectedStravaActivity && (
+                <div className="mb-3 p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-sm font-medium text-orange-100">Selected from Strava:</div>
+                      <div className="text-xs text-orange-200">{selectedStravaActivity.name}</div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedStravaActivity(null)}
+                      className="text-orange-400 hover:text-orange-300"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+              
+              {showStravaActivities && (
+                <div className="space-y-2">
+                  {stravaLoading ? (
+                    <div className="flex items-center justify-center py-4">
+                      <div className="animate-spin w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full" />
+                      <span className="ml-2 text-sm text-gray-400">Loading Strava activities...</span>
+                    </div>
+                  ) : stravaActivities && stravaActivities.length > 0 ? (
+                    <div className="max-h-40 overflow-y-auto space-y-2">
+                      {stravaActivities.map((activity: any) => (
+                        <Card 
+                          key={activity.id} 
+                          className="cursor-pointer hover:border-orange-500/50 transition-colors p-2"
+                          onClick={() => handleStravaActivitySelect(activity)}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <div className="text-sm font-medium text-white">{activity.name}</div>
+                              <div className="flex items-center gap-3 text-xs text-gray-400 mt-1">
+                                <span className="flex items-center gap-1">
+                                  <Activity className="h-3 w-3" />
+                                  {activity.type}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  {Math.round(activity.moving_time / 60)} min
+                                </span>
+                                {activity.distance && (
+                                  <span className="flex items-center gap-1">
+                                    <MapPin className="h-3 w-3" />
+                                    {(activity.distance / 1000).toFixed(1)} km
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <Badge variant="secondary" className="text-xs">
+                              {activity.mappedType}
+                            </Badge>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-4 text-gray-400 text-sm">
+                      No recent Strava activities found or Strava not connected
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            
             <div>
             <Label className="text-gray-300 font-medium mb-2">Activity Type</Label>
             <Select value={type} onValueChange={setType}>

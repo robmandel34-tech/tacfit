@@ -2266,8 +2266,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Strava OAuth authorization URL
   app.get("/api/strava/auth", async (req: any, res) => {
     try {
-      if (!req.isAuthenticated || !req.isAuthenticated()) {
-        return res.status(401).json({ message: "Unauthorized" });
+      // Get user ID from query parameter since this app doesn't use session auth
+      const userId = req.query.userId;
+      if (!userId) {
+        return res.status(400).json({ message: "User ID required" });
       }
 
       const clientId = process.env.STRAVA_CLIENT_ID;
@@ -2277,7 +2279,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const redirectUri = `${req.protocol}://${req.get('host')}/api/strava/callback`;
       const scope = "read,activity:read_all";
-      const state = req.user.id.toString(); // Use user ID as state for security
+      const state = userId.toString(); // Use user ID as state for security
 
       const authUrl = `https://www.strava.com/oauth/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&approval_prompt=force&scope=${scope}&state=${state}`;
 
@@ -2346,11 +2348,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get user's Strava connection status
   app.get("/api/strava/status", async (req: any, res) => {
     try {
-      if (!req.isAuthenticated || !req.isAuthenticated()) {
-        return res.status(401).json({ message: "Unauthorized" });
+      const userId = req.query.userId;
+      if (!userId) {
+        return res.status(400).json({ message: "User ID required" });
       }
 
-      const user = await storage.getUser(req.user.id);
+      const user = await storage.getUser(parseInt(userId));
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -2373,11 +2376,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Disconnect Strava account
   app.post("/api/strava/disconnect", async (req: any, res) => {
     try {
-      if (!req.isAuthenticated || !req.isAuthenticated()) {
-        return res.status(401).json({ message: "Unauthorized" });
+      const { userId } = req.body;
+      if (!userId) {
+        return res.status(400).json({ message: "User ID required" });
       }
 
-      await storage.updateUser(req.user.id, {
+      await storage.updateUser(parseInt(userId), {
         stravaAccessToken: null,
         stravaRefreshToken: null,
         stravaAthleteId: null,
@@ -2394,11 +2398,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Sync Strava activities for authenticated user
   app.post("/api/strava/sync", async (req: any, res) => {
     try {
-      if (!req.isAuthenticated || !req.isAuthenticated()) {
-        return res.status(401).json({ message: "Unauthorized" });
+      const { userId } = req.body;
+      if (!userId) {
+        return res.status(400).json({ message: "User ID required" });
       }
 
-      const user = await storage.getUser(req.user.id);
+      const user = await storage.getUser(parseInt(userId));
       if (!user || !user.stravaAccessToken) {
         return res.status(400).json({ message: "Strava not connected" });
       }

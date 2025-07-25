@@ -4,22 +4,26 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Activity, RotateCcw, Link, Unlink, Zap } from "lucide-react";
 
 export default function StravaIntegration() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isConnecting, setIsConnecting] = useState(false);
 
   // Get Strava connection status
   const { data: stravaStatus, isLoading } = useQuery({
-    queryKey: ["/api/strava/status"],
+    queryKey: ["/api/strava/status", user?.id],
+    queryFn: () => fetch(`/api/strava/status?userId=${user?.id}`).then(res => res.json()),
+    enabled: !!user?.id,
   });
 
   // Connect to Strava
   const connectStrava = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("GET", "/api/strava/auth");
+      const response = await fetch(`/api/strava/auth?userId=${user?.id}`);
       return response.json();
     },
     onSuccess: (data) => {
@@ -38,10 +42,10 @@ export default function StravaIntegration() {
   // Disconnect from Strava
   const disconnectStrava = useMutation({
     mutationFn: async () => {
-      return apiRequest("POST", "/api/strava/disconnect");
+      return apiRequest("POST", "/api/strava/disconnect", { userId: user?.id });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/strava/status"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/strava/status", user?.id] });
       toast({
         title: "Disconnected",
         description: "Successfully disconnected from Strava",
@@ -59,7 +63,7 @@ export default function StravaIntegration() {
   // Sync Strava activities
   const syncActivities = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/strava/sync");
+      const response = await apiRequest("POST", "/api/strava/sync", { userId: user?.id });
       return response.json();
     },
     onSuccess: (data) => {

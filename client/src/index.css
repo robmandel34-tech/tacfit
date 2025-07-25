@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Cache bust for green banner fix */
+
 :root {
   --background: hsl(0, 0%, 100%);
   --foreground: hsl(20, 14.3%, 4.1%);

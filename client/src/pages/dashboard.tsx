@@ -55,9 +55,10 @@ export default function Dashboard() {
 
   // Show onboarding to new users who haven't completed it
   useEffect(() => {
-    if (user && !user.onboardingCompleted) {
-      setShowOnboarding(true);
-    }
+    // Temporarily disabled to debug green banner issue
+    // if (user && !user.onboardingCompleted) {
+    //   setShowOnboarding(true);
+    // }
   }, [user]);
 
   if (isLoading) {

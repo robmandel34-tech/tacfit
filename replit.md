@@ -175,6 +175,14 @@ Preferred communication style: Simple, everyday language.
 - **ENHANCED**: More accurate point allocation based on specific activity types
 - **COMPREHENSIVE**: System now supports every official Strava activity type with proper categorization and measurement units
 
+### Meditation & Mindfulness Integration (July 2025)
+- **NEW**: Added 6 comprehensive meditation activity types: Meditation, Mindfulness, Breathing Exercises, Sleep Meditation, Body Scan, Loving Kindness
+- **NEW**: Meditation activity types optimized for Terra API integration to capture data from popular apps (Headspace, Calm, Insight Timer)
+- **NEW**: Proper measurement units (minutes) and realistic default quantities for meditation sessions
+- **READY**: Platform prepared for meditation app integration through Terra API's HealthKit/Google Fit connections
+- **STRATEGY**: Indirect integration approach since major meditation apps (Headspace, Calm, Insight Timer) don't offer public APIs
+- **HOLISTIC**: Expanded platform from pure fitness to comprehensive wellness including mental health and mindfulness tracking
+
 ### Mission Planning Board Updates (July 2025)
 - **RESTORED**: Mission Planning Board brought back with collapsible format matching Team Comms card
 - **ENHANCED**: Added proper Card wrapper with header structure and collapsible trigger

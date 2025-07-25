@@ -5,7 +5,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/navigation";
 import CompetitionCard from "@/components/competition-card";
-import InviteFriendsModal from "@/components/invite-friends-modal";
+import InviteBuddiesModal from "@/components/invite-friends-modal";
 import TeamSelectionModal from "@/components/team-selection-modal";
 import CompetitionPaymentModal from "@/components/competition-payment-modal";
 import { Button } from "@/components/ui/button";
@@ -170,7 +170,7 @@ export default function Competitions() {
 
       {/* Invitation Modal */}
       {selectedCompetition && (
-        <InviteFriendsModal
+        <InviteBuddiesModal
           isOpen={inviteModalOpen}
           onClose={() => setInviteModalOpen(false)}
           competitionId={selectedCompetition.id}

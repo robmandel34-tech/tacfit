@@ -105,7 +105,7 @@ export default function InviteFriendsModal({
         <DialogHeader>
           <DialogTitle className="text-white flex items-center gap-2">
             <Share2 className="h-5 w-5" />
-            Invite Friends to {competitionName}
+            Invite Buddies to {competitionName}
           </DialogTitle>
         </DialogHeader>
 

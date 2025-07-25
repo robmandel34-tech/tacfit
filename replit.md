@@ -12,7 +12,10 @@ Preferred communication style: Simple, everyday language.
 
 ### User Interface Text Updates (July 2025)
 - **UPDATED**: "Locate Allies" renamed to "Locate Buddies" throughout the application
+- **UPDATED**: "Friends" replaced with "Buddies" throughout the entire application
 - **CHANGED**: Competition page header button text and replit.md documentation updated
+- **CHANGED**: All user-facing text now uses "buddies" instead of "friends"
+- **UPDATED**: Modal titles, button text, and help documentation all use buddy terminology
 - **CONSISTENT**: All references to finding friends/allies now use "Locate Buddies" terminology
 
 ### Activity Type Display Name Standardization (July 2025)
@@ -239,7 +242,7 @@ Preferred communication style: Simple, everyday language.
 - **CHANGED**: "Competitions" → "Operations" or "Tactical Operations" 
 - **CHANGED**: Navigation updated to use "Team" terminology
 - **CHANGED**: "Activity Feed" → "Intel Feed" in navigation
-- **CHANGED**: "Find Friends" → "Locate Buddies" in dashboard
+- **CHANGED**: "Find Friends" → "Find Buddies" in dashboard
 - **CHANGED**: "Quick Actions" → "Tactical Commands" section
 - **CHANGED**: "Welcome back!" → "Mission briefing ready" on login
 - **CHANGED**: "Sign in to your account" → "Access your tactical command center"
@@ -282,15 +285,15 @@ Preferred communication style: Simple, everyday language.
 - **ENHANCED**: Authentication system now handles database sync automatically
 
 ### Social Features Implementation (July 2025)
-- **NEW**: Dynamic user profiles with friend request system
+- **NEW**: Dynamic user profiles with buddy request system
 - Clickable profile pictures throughout the app navigate to user profiles
-- Friend request functionality with "Send Friend Request" button on other users' profiles
-- Friends list modal showing accepted friends with messaging capability
+- Buddy request functionality with "Send Buddy Request" button on other users' profiles
+- Buddies list modal showing accepted buddies with messaging capability
 - Direct messaging interface (UI ready, backend to be implemented)
 - Profile pictures clickable in activity cards, team member displays, and chat messages
 - Dynamic profile URLs support viewing any user's profile via /profile/:userId route
 - Friend management with status tracking (pending, accepted, rejected)
-- **NEW**: Friend request notification system with approval/denial interface
+- **NEW**: Buddy request notification system with approval/denial interface
 - **NEW**: Profile customization with uploadable profile pictures and cover photos
 - **NEW**: Clickable camera icons on profile and cover photos for easy uploading
 - **NEW**: Real-time profile photo updates with loading states and error handling
@@ -304,10 +307,10 @@ Preferred communication style: Simple, everyday language.
 - **NEW**: Users can now view all teams, member counts, and open slots before joining
 - **NEW**: Dedicated "Join Here" buttons for each open team slot
 - **NEW**: Option to create new teams when joining competitions
-- **NEW**: Find Friends modal with comprehensive user search functionality
+- **NEW**: Find Buddies modal with comprehensive user search functionality
 - **NEW**: Search users by username or email with live filtering
-- **NEW**: Send friend requests with status tracking (pending, accepted, rejected)
-- **NEW**: Accept/reject friend requests with real-time updates
+- **NEW**: Send buddy requests with status tracking (pending, accepted, rejected)
+- **NEW**: Accept/reject buddy requests with real-time updates
 - **NEW**: Display user points and competition history in search results
 - **NEW**: Competition-specific activity requirements (3 activity types per competition)
 - **NEW**: Team target goals displayed on competition cards (e.g., "100,000 steps as a team")

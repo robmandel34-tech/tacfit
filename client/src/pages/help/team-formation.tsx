@@ -39,7 +39,7 @@ export default function TeamFormationHelp() {
                   <li>• <strong>Accountability:</strong> Team members motivate each other to stay active</li>
                   <li>• <strong>Support System:</strong> Share challenges and celebrate victories together</li>
                   <li>• <strong>Strategic Planning:</strong> Coordinate efforts for maximum team points</li>
-                  <li>• <strong>Social Connection:</strong> Build friendships through shared fitness goals</li>
+                  <li>• <strong>Social Connection:</strong> Build buddy relationships through shared fitness goals</li>
                 </ul>
               </div>
             </CardContent>

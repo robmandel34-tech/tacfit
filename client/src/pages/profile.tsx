@@ -674,7 +674,7 @@ export default function Profile() {
                             <DialogTrigger asChild>
                               <Button className="flex-1 bg-steel-blue hover:bg-blue-600">
                                 <Users className="mr-2 h-4 w-4" />
-                                Friends ({friends.filter((f: any) => f.status === "accepted").length})
+                                Buddies ({friends.filter((f: any) => f.status === "accepted").length})
                               </Button>
                             </DialogTrigger>
                           </Dialog>
@@ -684,19 +684,19 @@ export default function Profile() {
                             className="flex-1 bg-military-green hover:bg-military-green-light"
                           >
                             <Search className="mr-2 h-4 w-4" />
-                            Find Friends
+                            Find Buddies
                           </Button>
                         </div>
                         
                         <Dialog open={isFriendsModalOpen} onOpenChange={setIsFriendsModalOpen}>
                           <DialogContent className="bg-tactical-gray-light border-tactical-gray max-w-md">
                             <DialogHeader>
-                              <DialogTitle className="text-white">Your Friends</DialogTitle>
+                              <DialogTitle className="text-white">Your Buddies</DialogTitle>
                             </DialogHeader>
                             <ScrollArea className="max-h-96">
                               <div className="space-y-3">
                                 {friends.filter((f: any) => f.status === "accepted").length === 0 ? (
-                                  <p className="text-gray-400 text-center py-8">No friends yet</p>
+                                  <p className="text-gray-400 text-center py-8">No buddies yet</p>
                                 ) : (
                                   friends.filter((f: any) => f.status === "accepted").map((friendship: any) => (
                                     <div key={friendship.id} className="flex items-center justify-between p-3 bg-tactical-gray rounded-lg">
@@ -760,7 +760,7 @@ export default function Profile() {
                                         </Avatar>
                                         <div>
                                           <p className="text-white font-medium">{request.requester?.username}</p>
-                                          <p className="text-gray-400 text-sm">wants to be friends</p>
+                                          <p className="text-gray-400 text-sm">wants to be buddies</p>
                                         </div>
                                       </div>
                                       <div className="flex space-x-2">
@@ -1045,7 +1045,7 @@ export default function Profile() {
         />
       )}
 
-      {/* Find Friends Modal */}
+      {/* Find Buddies Modal */}
       <FindFriendsModal
         isOpen={isFindFriendsModalOpen}
         onClose={() => setIsFindFriendsModalOpen(false)}

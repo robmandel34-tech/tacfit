@@ -104,7 +104,7 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
     onSuccess: () => {
       toast({
         title: "Friend Request Accepted!",
-        description: "You are now friends!",
+        description: "You are now buddies!",
       });
       queryClient.invalidateQueries({ queryKey: [`/api/friends/${user?.id}`] });
     },
@@ -256,7 +256,7 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-tactical-gray-light border-tactical-gray">
           <DialogHeader>
-            <DialogTitle className="text-white">Find Friends</DialogTitle>
+            <DialogTitle className="text-white">Find Buddies</DialogTitle>
           </DialogHeader>
           <div className="flex items-center justify-center p-8">
             <div className="text-white">Loading users...</div>

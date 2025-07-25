@@ -245,9 +245,9 @@ export default function PointSystemHelp() {
                       </p>
                     </div>
                     <div className="bg-gray-700/50 p-3 rounded-lg">
-                      <h5 className="font-medium text-military-green mb-2">Invite Friends</h5>
+                      <h5 className="font-medium text-military-green mb-2">Invite Buddies</h5>
                       <p className="text-xs text-gray-400">
-                        Use phone invitations to bring friends to TacFit. Each successful 
+                        Use phone invitations to bring buddies to TacFit. Each successful 
                         invitation earns 200 points and grows the community.
                       </p>
                     </div>

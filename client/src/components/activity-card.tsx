@@ -236,11 +236,6 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
                 <Badge variant="outline" className="text-xs border-gray-600 text-gray-300 whitespace-nowrap">
                   {getActivityIcon(activity.type)} {getActivityTypeDisplayName(activity.type)}
                 </Badge>
-                {activity.points && (
-                  <Badge variant="outline" className="text-xs border-steel-blue text-steel-blue whitespace-nowrap">
-                    {activity.points} pts
-                  </Badge>
-                )}
               </div>
               <p className="text-gray-300 text-sm">
                 {activity.quantity && (

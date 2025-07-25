@@ -32,6 +32,7 @@ Preferred communication style: Simple, everyday language.
 - **TECHNICAL**: Dynamic activity type fetching ensures consistency when admin updates activity types
 - **RESOLVED**: Activity type tags on Intel Feed now show correct display names from database
 - **FIXED**: Activity feed page now uses dynamic activity type display names instead of hardcoded raw field names
+- **REMOVED**: Point totals from activity cards in the Intel Feed for cleaner UI
 
 ### User Suspension System Implementation (July 2025)
 - **NEW**: Complete user suspension functionality for administrative moderation

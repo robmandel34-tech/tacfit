@@ -84,6 +84,17 @@ export default function ActivityFeed() {
     }
   };
 
+  const getActivityTypeDisplayName = (type: string) => {
+    if (activityTypes && Array.isArray(activityTypes)) {
+      const activityType = activityTypes.find((at: any) => at.name === type);
+      if (activityType) {
+        return activityType.displayName;
+      }
+    }
+    // Fallback for unknown types
+    return type.charAt(0).toUpperCase() + type.slice(1);
+  };
+
   const isVideoFile = (url: string) => {
     const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv'];
     return videoExtensions.some(ext => url.toLowerCase().includes(ext));
@@ -148,7 +159,7 @@ export default function ActivityFeed() {
                   {/* Activity Type Badge */}
                   <div className="mb-4">
                     <span className="text-xs border border-gray-600 text-gray-300 bg-transparent px-2 py-1 rounded">
-                      {getActivityIcon(activity.type)} {activity.type}
+                      {getActivityIcon(activity.type)} {getActivityTypeDisplayName(activity.type)}
                     </span>
                   </div>
                   

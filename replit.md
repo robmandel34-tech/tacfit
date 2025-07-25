@@ -31,6 +31,7 @@ Preferred communication style: Simple, everyday language.
 - **CURRENT**: Three core activity types: Cardio Training (minutes), Strength Operations (reps), Mobility Training (minutes)
 - **TECHNICAL**: Dynamic activity type fetching ensures consistency when admin updates activity types
 - **RESOLVED**: Activity type tags on Intel Feed now show correct display names from database
+- **FIXED**: Activity feed page now uses dynamic activity type display names instead of hardcoded raw field names
 
 ### User Suspension System Implementation (July 2025)
 - **NEW**: Complete user suspension functionality for administrative moderation

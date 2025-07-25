@@ -138,7 +138,7 @@ export default function Competitions() {
                 className="bg-white text-black hover:bg-gray-100 font-semibold"
               >
                 <Users className="h-4 w-4 mr-2" />
-                Locate Allies
+                Locate Buddies
               </Button>
             </div>
           </CardHeader>

@@ -10,6 +10,11 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### User Interface Text Updates (July 2025)
+- **UPDATED**: "Locate Allies" renamed to "Locate Buddies" throughout the application
+- **CHANGED**: Competition page header button text and replit.md documentation updated
+- **CONSISTENT**: All references to finding friends/allies now use "Locate Buddies" terminology
+
 ### Activity Type Display Name Standardization (July 2025)
 - **FIXED**: Activity type display names now consistent throughout the entire application
 - **UPDATED**: Replaced hardcoded activity type mappings with dynamic database lookups
@@ -37,7 +42,7 @@ Preferred communication style: Simple, everyday language.
 ### UI Consistency Updates (July 2025)
 - **ENHANCED**: Competitions page header redesigned with green gradient card matching help center style
 - **CHANGED**: "Tactical Operations" text updated to "Join a Competition" with description removed
-- **STYLED**: "Locate Allies" button now white with proper contrast and Users icon
+- **STYLED**: "Locate Buddies" button now white with proper contrast and Users icon
 - **ENHANCED**: Intel Feed header updated to match green card design with consistent styling
 - **CHANGED**: "Activity Feed" renamed to "Intel Feed" throughout interface
 - **UPDATED**: Intel Feed description changed to "Live updates from all competitions"
@@ -84,7 +89,7 @@ Preferred communication style: Simple, everyday language.
 - **ADMIN-ONLY**: Competition creation now restricted to admin portal only
 - **API PROTECTION**: POST /api/competitions endpoint now requires admin privileges
 - **UI UPDATES**: Empty state message updated to reflect admin-only creation policy
-- **SIMPLIFIED**: Competition page header now only shows "Locate Allies" button for regular users
+- **SIMPLIFIED**: Competition page header now only shows "Locate Buddies" button for regular users
 - **ENHANCED**: Only administrators can access competition creation, editing, and management features
 
 ### Payment UI Contrast & Readability Fixes (July 2025)
@@ -234,7 +239,7 @@ Preferred communication style: Simple, everyday language.
 - **CHANGED**: "Competitions" → "Operations" or "Tactical Operations" 
 - **CHANGED**: Navigation updated to use "Team" terminology
 - **CHANGED**: "Activity Feed" → "Intel Feed" in navigation
-- **CHANGED**: "Find Friends" → "Locate Allies" in dashboard
+- **CHANGED**: "Find Friends" → "Locate Buddies" in dashboard
 - **CHANGED**: "Quick Actions" → "Tactical Commands" section
 - **CHANGED**: "Welcome back!" → "Mission briefing ready" on login
 - **CHANGED**: "Sign in to your account" → "Access your tactical command center"

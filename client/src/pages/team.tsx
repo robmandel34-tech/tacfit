@@ -50,6 +50,12 @@ export default function Team() {
     enabled: !!userTeamMember?.[0]?.teamId,
   });
 
+  // Get activity types for display names
+  const { data: activityTypes } = useQuery({
+    queryKey: ['/api/activity-types'],
+    enabled: !!user,
+  });
+
   // Get team activities
   const { data: teamActivities = [] } = useQuery({
     queryKey: [`/api/activities/team/${userTeamMember?.[0]?.teamId}`],
@@ -586,10 +592,16 @@ export default function Team() {
                               <div className="flex justify-between items-center">
                                 <div className="flex items-center">
                                   <span className="text-sm text-gray-300 capitalize font-medium">
-                                    {activityType === 'cardio' ? 'Cardio Training' :
-                                     activityType === 'strength' ? 'Strength Operations' :
-                                     activityType === 'flexibility' ? 'Mobility Training' :
-                                     activityType === 'sports' ? 'Combat Sports' : 'Special Operations'}
+                                    {(() => {
+                                      if (activityTypes && Array.isArray(activityTypes)) {
+                                        const activityTypeObj = activityTypes.find((at: any) => at.name === activityType);
+                                        if (activityTypeObj) {
+                                          return activityTypeObj.displayName;
+                                        }
+                                      }
+                                      // Fallback for unknown types
+                                      return activityType.charAt(0).toUpperCase() + activityType.slice(1);
+                                    })()}
                                   </span>
                                   {hasNewProgressForType && (
                                     <div className="ml-2 w-1.5 h-1.5 bg-military-green rounded-full animate-pulse" />

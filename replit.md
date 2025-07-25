@@ -10,6 +10,18 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### Activity Type Display Name Standardization (July 2025)
+- **FIXED**: Activity type display names now consistent throughout the entire application
+- **UPDATED**: Replaced hardcoded activity type mappings with dynamic database lookups
+- **FIXED**: Database activity types updated to match design specifications
+- **REMOVED**: Inconsistent "Reading" activity type from database
+- **UPDATED**: "Strength Training" changed to "Strength Operations" for tactical theme
+- **ADDED**: "Mobility Training" activity type (flexibility) with proper measurement units
+- **ENHANCED**: Activity cards, team progress, help pages, and admin portal all use same display names
+- **CURRENT**: Three core activity types: Cardio Training (minutes), Strength Operations (reps), Mobility Training (minutes)
+- **TECHNICAL**: Dynamic activity type fetching ensures consistency when admin updates activity types
+- **RESOLVED**: Activity type tags on Intel Feed now show correct display names from database
+
 ### User Suspension System Implementation (July 2025)
 - **NEW**: Complete user suspension functionality for administrative moderation
 - **NEW**: Database schema updated with isSuspended, suspendedAt, and suspensionReason fields

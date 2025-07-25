@@ -23,6 +23,12 @@ export default function ActivityFeed() {
     enabled: !!user,
   });
 
+  // Get activity types for display names
+  const { data: activityTypes } = useQuery({
+    queryKey: ['/api/activity-types'],
+    enabled: !!user,
+  });
+
   const likeActivity = useMutation({
     mutationFn: async (activityId: number) => {
       const response = await fetch(`/api/activities/${activityId}/like`, {

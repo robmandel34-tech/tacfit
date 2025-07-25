@@ -47,6 +47,12 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
   const [showComments, setShowComments] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   
+  // Get activity types for display names
+  const { data: activityTypes } = useQuery({
+    queryKey: ['/api/activity-types'],
+    enabled: !!user,
+  });
+  
   // Get current likes for this activity
   const { data: activityLikes } = useQuery({
     queryKey: [`/api/activities/${activity.id}/likes`],
@@ -100,31 +106,25 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
   };
 
   const getActivityTypeDisplayName = (type: string) => {
-    switch (type) {
-      case 'cardio':
-        return 'Cardio Training';
-      case 'strength':
-        return 'Strength Operations';
-      case 'flexibility':
-        return 'Mobility Training';
-      case 'sports':
-        return 'Combat Sports';
-      default:
-        return 'Special Operations';
+    if (activityTypes && Array.isArray(activityTypes)) {
+      const activityType = activityTypes.find((at: any) => at.name === type);
+      if (activityType) {
+        return activityType.displayName;
+      }
     }
+    // Fallback for unknown types
+    return type.charAt(0).toUpperCase() + type.slice(1);
   };
 
   const getActivityMeasurement = (type: string) => {
-    switch (type) {
-      case 'cardio':
-        return 'minutes';
-      case 'strength':
-        return 'reps';
-      case 'flexibility':
-        return 'minutes';
-      default:
-        return 'units';
+    if (activityTypes && Array.isArray(activityTypes)) {
+      const activityType = activityTypes.find((at: any) => at.name === type);
+      if (activityType) {
+        return activityType.measurementUnit;
+      }
     }
+    // Fallback for unknown types
+    return 'units';
   };
 
   const isVideoFile = (url: string) => {

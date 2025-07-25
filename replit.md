@@ -196,13 +196,6 @@ Preferred communication style: Simple, everyday language.
 - **ENHANCED**: Comprehensive activity type mapping covering all 44 Strava activity types plus meditation
 - **INTEGRATED**: Seamless workflow allowing users to select recent Strava activities during manual submission
 
-### UI Header Banner Fix (July 2025)
-- **FIXED**: Removed large green gradient banner blocks from Intel Feed and Competitions pages
-- **REPLACED**: Bulky Card components with clean, compact headers for better visual balance
-- **IMPROVED**: Page layouts now focus on content rather than overwhelming header banners
-- **ENHANCED**: "Locate Buddies" button styling updated to proper military green theme
-- **RESOLVED**: Large green UI blocks that were dominating page layout and creating visual clutter
-
 ### Mission Planning Board Updates (July 2025)
 - **RESTORED**: Mission Planning Board brought back with collapsible format matching Team Comms card
 - **ENHANCED**: Added proper Card wrapper with header structure and collapsible trigger

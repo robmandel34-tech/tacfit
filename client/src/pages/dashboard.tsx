@@ -55,10 +55,9 @@ export default function Dashboard() {
 
   // Show onboarding to new users who haven't completed it
   useEffect(() => {
-    // Temporarily disabled to debug green banner issue
-    // if (user && !user.onboardingCompleted) {
-    //   setShowOnboarding(true);
-    // }
+    if (user && !user.onboardingCompleted) {
+      setShowOnboarding(true);
+    }
   }, [user]);
 
   if (isLoading) {
@@ -76,18 +75,20 @@ export default function Dashboard() {
       <Navigation />
       
       <main className="container mx-auto px-4 py-6">
-        {/* Compact Header */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Activity className="h-6 w-6 text-military-green" />
-              <h1 className="text-2xl font-bold text-white">Intel Feed</h1>
+        {/* Header Card */}
+        <Card className="bg-gradient-to-r from-military-green-dark to-military-green border-military-green/30 mb-8">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <Activity className="h-6 w-6 text-white" />
+                <CardTitle className="text-white text-2xl">Intel Feed</CardTitle>
+              </div>
+              <div className="text-gray-200 text-sm">
+                Live updates from all competitions
+              </div>
             </div>
-            <div className="text-gray-400 text-sm">
-              Live updates from all competitions
-            </div>
-          </div>
-        </div>
+          </CardHeader>
+        </Card>
 
         {/* Activity Feed */}
         <div className="max-w-2xl mx-auto">

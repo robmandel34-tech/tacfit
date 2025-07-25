@@ -39,6 +39,9 @@ interface User {
   email: string;
   points: number;
   isAdmin: boolean;
+  isSuspended?: boolean;
+  suspendedAt?: string;
+  suspensionReason?: string;
   competitionsEntered: number;
   createdAt: string;
 }
@@ -64,6 +67,8 @@ export default function AdminPage() {
   const [editingCompetition, setEditingCompetition] = useState<Competition | null>(null);
   const [pointsAdjustmentUser, setPointsAdjustmentUser] = useState<User | null>(null);
   const [pointsForm, setPointsForm] = useState({ points: '', operation: 'add' as 'add' | 'set' });
+  const [suspensionUser, setSuspensionUser] = useState<User | null>(null);
+  const [suspensionReason, setSuspensionReason] = useState('');
 
   // Check if user is admin
   if (!user?.isAdmin) {
@@ -258,6 +263,32 @@ export default function AdminPage() {
     onError: (error: any) => {
       toast({
         title: "Failed to update points",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Suspend/unsuspend user mutation
+  const suspendUser = useMutation({
+    mutationFn: async (data: { userId: number; isSuspended: boolean; suspensionReason?: string }) => {
+      return apiRequest("POST", `/api/users/${data.userId}/suspend`, { 
+        isSuspended: data.isSuspended,
+        suspensionReason: data.suspensionReason 
+      });
+    },
+    onSuccess: (_, variables) => {
+      toast({
+        title: `User ${variables.isSuspended ? 'suspended' : 'unsuspended'}`,
+        description: `User has been ${variables.isSuspended ? 'suspended' : 'reactivated'} successfully.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      setSuspensionUser(null);
+      setSuspensionReason('');
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to update suspension status",
         description: error.message,
         variant: "destructive"
       });
@@ -772,6 +803,7 @@ export default function AdminPage() {
                       <TableHead className="text-gray-300">Points</TableHead>
                       <TableHead className="text-gray-300">Competitions</TableHead>
                       <TableHead className="text-gray-300">Admin</TableHead>
+                      <TableHead className="text-gray-300">Status</TableHead>
                       <TableHead className="text-gray-300">Actions</TableHead>
                       <TableHead className="text-gray-300">Joined</TableHead>
                     </TableRow>
@@ -791,17 +823,35 @@ export default function AdminPage() {
                           />
                         </TableCell>
                         <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setPointsAdjustmentUser(u);
-                              setPointsForm({ points: '', operation: 'add' });
-                            }}
-                            className="h-8 px-2 text-military-green hover:text-military-green-light"
-                          >
-                            Adjust Points
-                          </Button>
+                          <Badge variant={u.isSuspended ? 'destructive' : 'default'}>
+                            {u.isSuspended ? 'Suspended' : 'Active'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setPointsAdjustmentUser(u);
+                                setPointsForm({ points: '', operation: 'add' });
+                              }}
+                              className="h-8 px-2 text-military-green hover:text-military-green-light"
+                            >
+                              Adjust Points
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setSuspensionUser(u);
+                                setSuspensionReason('');
+                              }}
+                              className="h-8 px-2 text-red-400 hover:text-red-300"
+                            >
+                              {u.isSuspended ? 'Unsuspend' : 'Suspend'}
+                            </Button>
+                          </div>
                         </TableCell>
                         <TableCell className="text-gray-300">
                           {format(new Date(u.createdAt), 'MMM d, yyyy')}
@@ -880,6 +930,74 @@ export default function AdminPage() {
                       className="flex-1"
                     >
                       Cancel
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+
+            {/* Suspension Modal */}
+            <Dialog open={!!suspensionUser} onOpenChange={() => setSuspensionUser(null)}>
+              <DialogContent className="bg-tactical-dark border-tactical-gray max-w-md" aria-describedby="suspension-dialog-description">
+                <DialogHeader>
+                  <DialogTitle className="text-white">
+                    {suspensionUser?.isSuspended ? 'Unsuspend' : 'Suspend'} User - {suspensionUser?.username}
+                  </DialogTitle>
+                </DialogHeader>
+                <div id="suspension-dialog-description" className="sr-only">
+                  Manage user suspension status for account moderation
+                </div>
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  if (suspensionUser) {
+                    suspendUser.mutate({
+                      userId: suspensionUser.id,
+                      isSuspended: !suspensionUser.isSuspended,
+                      suspensionReason: !suspensionUser.isSuspended ? suspensionReason : undefined
+                    });
+                  }
+                }} className="space-y-4">
+                  {!suspensionUser?.isSuspended && (
+                    <div>
+                      <Label htmlFor="suspensionReason" className="text-gray-300">
+                        Suspension Reason (Optional)
+                      </Label>
+                      <Textarea
+                        id="suspensionReason"
+                        value={suspensionReason}
+                        onChange={(e) => setSuspensionReason(e.target.value)}
+                        placeholder="Enter reason for suspension..."
+                        className="bg-tactical-gray-lighter border-tactical-gray text-white mt-2"
+                        rows={3}
+                      />
+                    </div>
+                  )}
+                  
+                  {suspensionUser?.isSuspended && suspensionUser.suspensionReason && (
+                    <div>
+                      <Label className="text-gray-300">Current Suspension Reason:</Label>
+                      <p className="text-gray-400 mt-1 p-2 bg-tactical-gray-lighter rounded border border-tactical-gray">
+                        {suspensionUser.suspensionReason}
+                      </p>
+                    </div>
+                  )}
+                  
+                  <div className="flex space-x-4 pt-4">
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      onClick={() => setSuspensionUser(null)}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      type="submit" 
+                      disabled={suspendUser.isPending}
+                      variant={suspensionUser?.isSuspended ? "default" : "destructive"}
+                      className="flex-1"
+                    >
+                      {suspensionUser?.isSuspended ? 'Unsuspend' : 'Suspend'} User
                     </Button>
                   </div>
                 </form>

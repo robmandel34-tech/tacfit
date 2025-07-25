@@ -154,6 +154,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid credentials" });
       }
       
+      // Check if user is suspended
+      if (user.isSuspended) {
+        return res.status(403).json({ 
+          message: "Account suspended", 
+          suspensionReason: user.suspensionReason || "No reason provided" 
+        });
+      }
+      
       // Don't send password back
       const { password: _, ...userWithoutPassword } = user;
       res.json(userWithoutPassword);
@@ -175,6 +183,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         points: user.points || 0,
         competitionsEntered: user.competitionsEntered || 0,
         isAdmin: user.isAdmin || false,
+        isSuspended: user.isSuspended || false,
+        suspendedAt: user.suspendedAt,
+        suspensionReason: user.suspensionReason,
         createdAt: user.createdAt
       }));
       res.json(publicUsers);
@@ -276,6 +287,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Points adjustment error:', error);
       res.status(500).json({ message: "Error adjusting user points" });
+    }
+  });
+
+  // Suspend/unsuspend user endpoint for admin
+  app.post("/api/users/:id/suspend", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { isSuspended, suspensionReason } = req.body;
+      
+      if (typeof isSuspended !== 'boolean') {
+        return res.status(400).json({ message: "isSuspended (boolean) is required" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const updateData = {
+        isSuspended,
+        suspendedAt: isSuspended ? new Date() : null,
+        suspensionReason: isSuspended ? suspensionReason || null : null
+      };
+      
+      const updatedUser = await storage.updateUser(userId, updateData);
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const { password, ...userWithoutPassword } = updatedUser;
+      res.json({
+        message: `User ${isSuspended ? 'suspended' : 'unsuspended'} successfully`,
+        user: userWithoutPassword
+      });
+    } catch (error) {
+      console.error("User suspension error:", error);
+      res.status(500).json({ message: "Error updating user suspension status" });
     }
   });
 

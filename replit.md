@@ -10,6 +10,18 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### User Suspension System Implementation (July 2025)
+- **NEW**: Complete user suspension functionality for administrative moderation
+- **NEW**: Database schema updated with isSuspended, suspendedAt, and suspensionReason fields
+- **NEW**: Admin portal suspension controls with reason tracking and status management
+- **NEW**: API endpoint for suspending/unsuspending users (POST /api/users/:id/suspend)
+- **NEW**: Login protection preventing suspended users from accessing the system
+- **NEW**: Suspension status display in admin user management table with status badges
+- **NEW**: Suspension modal with optional reason field for documentation and audit trail
+- **ENHANCED**: Admins can suspend users with custom reasons and unsuspend when appropriate
+- **SECURED**: Suspended users receive clear error message with suspension reason on login attempts
+- **TRACKED**: Suspension timestamps and reasons stored for audit trail and transparency
+
 ### UI Consistency Updates (July 2025)
 - **ENHANCED**: Competitions page header redesigned with green gradient card matching help center style
 - **CHANGED**: "Tactical Operations" text updated to "Join a Competition" with description removed

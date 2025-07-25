@@ -2500,19 +2500,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
         let quantity = null;
 
         // Map Strava activity types to TacFit types
-        const activityType = stravaActivity.type?.toLowerCase();
+        const activityType = stravaActivity.type?.toLowerCase().replace(/\s+/g, '_');
         
-        if (["run", "ride", "swim", "walk", "hike", "elliptical", "rowing", "kayaking", "canoeing", "workout"].includes(activityType)) {
-          tacfitType = "cardio";
-          quantity = Math.round(stravaActivity.moving_time / 60).toString(); // Convert seconds to minutes
-        } else if (["weighttraining", "workout", "crossfit", "yoga"].includes(activityType)) {
-          if (activityType === "yoga") {
-            tacfitType = "flexibility";
-            quantity = Math.round(stravaActivity.moving_time / 60).toString();
-          } else {
-            tacfitType = "strength";
-            // For strength, estimate reps based on duration (rough approximation)
+        // Create mapping from Strava types to TacFit activity types
+        const stravaToTacfitMapping: { [key: string]: { type: string; unit: string } } = {
+          // Running activities
+          'run': { type: 'run', unit: 'minutes' },
+          'trailrun': { type: 'trail_run', unit: 'minutes' },
+          'virtualrun': { type: 'virtual_run', unit: 'minutes' },
+          'walk': { type: 'walk', unit: 'minutes' },
+          'hike': { type: 'hike', unit: 'minutes' },
+          'wheelchair': { type: 'wheelchair', unit: 'minutes' },
+          
+          // Cycling activities
+          'ride': { type: 'ride', unit: 'minutes' },
+          'mountainbikeride': { type: 'mountain_bike_ride', unit: 'minutes' },
+          'gravelride': { type: 'gravel_ride', unit: 'minutes' },
+          'ebikeride': { type: 'e_bike_ride', unit: 'minutes' },
+          'emountainbikeride': { type: 'e_mountain_bike_ride', unit: 'minutes' },
+          'virtualride': { type: 'virtual_ride', unit: 'minutes' },
+          'handcycle': { type: 'handcycle', unit: 'minutes' },
+          'velomobile': { type: 'velomobile', unit: 'minutes' },
+          
+          // Water sports
+          'swim': { type: 'swim', unit: 'minutes' },
+          'canoe': { type: 'canoe', unit: 'minutes' },
+          'kayaking': { type: 'kayak', unit: 'minutes' },
+          'kitesurf': { type: 'kitesurf', unit: 'minutes' },
+          'rowing': { type: 'rowing', unit: 'minutes' },
+          'standuppaddling': { type: 'stand_up_paddling', unit: 'minutes' },
+          'surf': { type: 'surf', unit: 'minutes' },
+          'windsurf': { type: 'windsurf', unit: 'minutes' },
+          'sail': { type: 'sail', unit: 'minutes' },
+          
+          // Winter sports
+          'iceskate': { type: 'ice_skate', unit: 'minutes' },
+          'alpinesky': { type: 'alpine_ski', unit: 'minutes' },
+          'backcountryski': { type: 'backcountry_ski', unit: 'minutes' },
+          'nordicski': { type: 'nordic_ski', unit: 'minutes' },
+          'snowboard': { type: 'snowboard', unit: 'minutes' },
+          'snowshoe': { type: 'snowshoe', unit: 'minutes' },
+          'rollerski': { type: 'roller_ski', unit: 'minutes' },
+          
+          // Gym/indoor activities
+          'crossfit': { type: 'crossfit', unit: 'reps' },
+          'elliptical': { type: 'elliptical', unit: 'minutes' },
+          'stairstepper': { type: 'stair_stepper', unit: 'minutes' },
+          'weighttraining': { type: 'weight_training', unit: 'reps' },
+          'yoga': { type: 'yoga', unit: 'minutes' },
+          'workout': { type: 'workout', unit: 'minutes' },
+          
+          // Other sports
+          'inlineskate': { type: 'inline_skate', unit: 'minutes' },
+          'rockclimbing': { type: 'rock_climb', unit: 'minutes' },
+          'golf': { type: 'golf', unit: 'minutes' },
+          'skateboard': { type: 'skateboard', unit: 'minutes' },
+          'soccer': { type: 'football', unit: 'minutes' },
+          'football': { type: 'football', unit: 'minutes' },
+          'badminton': { type: 'badminton', unit: 'minutes' },
+          'tennis': { type: 'tennis', unit: 'minutes' },
+          'pickleball': { type: 'pickleball', unit: 'minutes' },
+        };
+        
+        const mapping = stravaToTacfitMapping[activityType];
+        if (mapping) {
+          tacfitType = mapping.type;
+          
+          if (mapping.unit === 'minutes') {
+            quantity = Math.round(stravaActivity.moving_time / 60).toString(); // Convert seconds to minutes
+          } else if (mapping.unit === 'reps') {
+            // For strength/reps activities, estimate reps based on duration (rough approximation)
             quantity = Math.round(stravaActivity.moving_time / 30).toString(); // ~2 seconds per rep
+          } else {
+            quantity = Math.round(stravaActivity.moving_time / 60).toString(); // Default to minutes
           }
         }
 

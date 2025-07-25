@@ -164,6 +164,17 @@ Preferred communication style: Simple, everyday language.
 - **ENHANCED**: Default quantity values help with consistent goal setting across competitions
 - **ENHANCED**: Activity submission modal displays helpful descriptions when selecting activity types
 
+### Complete Strava Activity Types Integration (July 2025)
+- **NEW**: Added all 44 official Strava activity types to admin portal
+- **NEW**: Comprehensive activity type coverage: Running (6 types), Cycling (8 types), Water Sports (9 types), Winter Sports (7 types), Indoor/Gym (6 types), Other Sports (8 types)
+- **NEW**: Enhanced Strava activity mapping with direct type-to-type correspondence instead of generic cardio/strength/flexibility categories
+- **NEW**: Intelligent measurement unit mapping (minutes for cardio activities, reps for strength activities)
+- **NEW**: Activity types include: Run, Trail Run, Virtual Run, Walk, Hike, Wheelchair, Ride, Mountain Bike Ride, Gravel Ride, E-Bike Ride, Swim, Canoe, Kayak, Rowing, Alpine Ski, Snowboard, CrossFit, Weight Training, Yoga, Tennis, Golf, and many more
+- **ENHANCED**: Strava sync now preserves specific activity types (e.g., Trail Run stays as Trail Run instead of generic Cardio)
+- **ENHANCED**: Better activity classification for competitions and team tracking
+- **ENHANCED**: More accurate point allocation based on specific activity types
+- **COMPREHENSIVE**: System now supports every official Strava activity type with proper categorization and measurement units
+
 ### Mission Planning Board Updates (July 2025)
 - **RESTORED**: Mission Planning Board brought back with collapsible format matching Team Comms card
 - **ENHANCED**: Added proper Card wrapper with header structure and collapsible trigger

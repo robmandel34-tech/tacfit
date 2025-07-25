@@ -2264,9 +2264,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Strava API Integration Routes
   
   // Strava OAuth authorization URL
-  app.get("/api/strava/auth", async (req, res) => {
+  app.get("/api/strava/auth", async (req: any, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      if (!req.isAuthenticated || !req.isAuthenticated()) {
         return res.status(401).json({ message: "Unauthorized" });
       }
 
@@ -2344,9 +2344,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get user's Strava connection status
-  app.get("/api/strava/status", async (req, res) => {
+  app.get("/api/strava/status", async (req: any, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      if (!req.isAuthenticated || !req.isAuthenticated()) {
         return res.status(401).json({ message: "Unauthorized" });
       }
 
@@ -2371,9 +2371,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Disconnect Strava account
-  app.post("/api/strava/disconnect", async (req, res) => {
+  app.post("/api/strava/disconnect", async (req: any, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      if (!req.isAuthenticated || !req.isAuthenticated()) {
         return res.status(401).json({ message: "Unauthorized" });
       }
 
@@ -2392,9 +2392,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Sync Strava activities for authenticated user
-  app.post("/api/strava/sync", async (req, res) => {
+  app.post("/api/strava/sync", async (req: any, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      if (!req.isAuthenticated || !req.isAuthenticated()) {
         return res.status(401).json({ message: "Unauthorized" });
       }
 

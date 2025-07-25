@@ -2277,7 +2277,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ message: "Strava client ID not configured" });
       }
 
-      const redirectUri = `${req.protocol}://${req.get('host')}/api/strava/callback`;
+      // Use the correct Replit domain for redirect URI
+      const host = req.get('host');
+      let redirectUri;
+      
+      if (host && host.includes('replit')) {
+        // Use the replit domain
+        redirectUri = `https://${host}/api/strava/callback`;
+      } else {
+        // Fallback to localhost for development
+        redirectUri = `${req.protocol}://${req.get('host')}/api/strava/callback`;
+      }
+      
+      console.log('Generated redirect URI:', redirectUri);
       const scope = "read,activity:read_all";
       const state = userId.toString(); // Use user ID as state for security
 
@@ -2310,6 +2322,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.redirect("/?strava_error=invalid_user");
       }
 
+      // Get the same redirect URI used for auth
+      const host = req.get('host');
+      let redirectUri;
+      
+      if (host && host.includes('replit')) {
+        redirectUri = `https://${host}/api/strava/callback`;
+      } else {
+        redirectUri = `${req.protocol}://${req.get('host')}/api/strava/callback`;
+      }
+
       // Exchange authorization code for access token
       const tokenResponse = await fetch("https://www.strava.com/oauth/token", {
         method: "POST",
@@ -2321,6 +2343,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           client_secret: process.env.STRAVA_CLIENT_SECRET,
           code,
           grant_type: "authorization_code",
+          redirect_uri: redirectUri,
         }),
       });
 

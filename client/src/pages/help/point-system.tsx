@@ -213,7 +213,7 @@ export default function PointSystemHelp() {
                     <div className="bg-gray-700/50 p-3 rounded-lg">
                       <h5 className="font-medium text-military-green mb-2">Always Include Evidence</h5>
                       <p className="text-xs text-gray-400">
-                        The 10-point evidence bonus adds up quickly. Make it a habit to 
+                        The 15-point evidence bonus adds up quickly. Make it a habit to 
                         capture both photo and video proof of your activities.
                       </p>
                     </div>
@@ -274,7 +274,7 @@ export default function PointSystemHelp() {
                     <ul className="text-xs text-gray-400 space-y-1">
                       <li>• 3 activities per week</li>
                       <li>• No evidence uploaded</li>
-                      <li>• 20 pts × 3 = 60 pts/week</li>
+                      <li>• 15 pts × 3 = 45 pts/week</li>
                     </ul>
                   </div>
                   <div className="bg-yellow-900/20 border border-yellow-600/30 p-3 rounded-lg">

@@ -205,7 +205,7 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
                 <Badge variant="secondary" className="text-xs">Minutes</Badge>
               </div>
               <div className="flex items-center justify-between p-2 bg-gray-700/30 rounded">
-                <span className="text-sm text-white">Strength Operations</span>
+                <span className="text-sm text-white">Strength Training</span>
                 <Badge variant="secondary" className="text-xs">Reps</Badge>
               </div>
               <div className="flex items-center justify-between p-2 bg-gray-700/30 rounded">

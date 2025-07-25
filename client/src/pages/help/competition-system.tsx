@@ -194,7 +194,7 @@ export default function CompetitionSystemHelp() {
                 </div>
 
                 <div className="bg-blue-900/20 border border-blue-600/30 p-4 rounded-lg">
-                  <h4 className="font-semibold text-blue-300 mb-2">Strength Operations</h4>
+                  <h4 className="font-semibold text-blue-300 mb-2">Strength Training</h4>
                   <p className="text-sm text-gray-300 mb-2">Measured in repetitions</p>
                   <ul className="text-xs text-gray-400 space-y-1">
                     <li>• Weight lifting, resistance training</li>
@@ -233,7 +233,7 @@ export default function CompetitionSystemHelp() {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
                       <span className="text-sm">Base Activity Submission</span>
-                      <span className="font-semibold text-military-green">20 points</span>
+                      <span className="font-semibold text-military-green">15 points</span>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
                       <span className="text-sm">With Photo + Video Evidence</span>

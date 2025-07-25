@@ -298,14 +298,14 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
               <Label className="text-gray-300 font-medium mb-2">Evidence (Photo + Video)</Label>
               {imageFile && videoFile && (
                 <div className="text-xs text-military-green font-medium bg-military-green/10 px-2 py-1 rounded">
-                  +50% Bonus Points!
+                  Double Points!
                 </div>
               )}
             </div>
             
             {!imageFile || !videoFile ? (
               <div className="text-xs text-gray-400 mb-2">
-                💡 Submit both image and video evidence to earn 50% bonus points
+                💡 Submit both image and video evidence to earn double points (30 total)
               </div>
             ) : null}
             

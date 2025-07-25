@@ -1,5 +1,6 @@
-import type { Express } from "express";
+import type { Express, Request } from "express";
 import express from "express";
+import session from "express-session";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { 
@@ -7,7 +8,7 @@ import {
   insertTeamMemberSchema, insertActivitySchema, insertActivityCommentSchema,
   insertChatMessageSchema, insertFriendshipSchema, insertCompetitionInvitationSchema,
   insertCompetitionEntrySchema, insertMissionTaskSchema, insertActivityTypeSchema,
-  friendships
+  friendships, type User
 } from "@shared/schema";
 import { db } from "./db";
 import { and, eq } from "drizzle-orm";
@@ -15,6 +16,13 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import Stripe from "stripe";
+
+// Extend the Request interface to include session
+declare module 'express-session' {
+  interface SessionData {
+    user?: User;
+  }
+}
 
 const upload = multer({ 
   dest: 'uploads/',
@@ -26,7 +34,7 @@ if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
 }
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2023-10-16",
+  apiVersion: "2025-06-30.basil",
 });
 
 // Competition completion and reward logic
@@ -90,6 +98,14 @@ async function completeCompetition(competitionId: number) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Configure session middleware
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'your-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false, maxAge: 1000 * 60 * 60 * 24 * 7 } // 7 days
+  }));
+
   // Create uploads directory if it doesn't exist
   if (!fs.existsSync('uploads')) {
     fs.mkdirSync('uploads');
@@ -121,12 +137,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await storage.updatePhoneInvitation(pendingInvitation.id, { status: 'completed' });
           
           // Award 200 points to the person who invited them
-          const referrer = await storage.getUser(pendingInvitation.invitedBy);
-          if (referrer) {
-            await storage.updateUser(pendingInvitation.invitedBy, {
-              points: (referrer.points || 0) + 200
-            });
-            console.log(`Awarded 200 referral points to user ${referrer.username} (ID: ${referrer.id})`);
+          if (pendingInvitation.invitedBy) {
+            const referrer = await storage.getUser(pendingInvitation.invitedBy);
+            if (referrer) {
+              await storage.updateUser(pendingInvitation.invitedBy, {
+                points: (referrer.points || 0) + 200
+              });
+              console.log(`Awarded 200 referral points to user ${referrer.username} (ID: ${referrer.id})`);
+            }
           }
         }
       }
@@ -1896,9 +1914,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Get additional details
-      const inviter = await storage.getUser(invitation.invitedBy);
-      const team = await storage.getTeam(invitation.teamId);
-      const competition = await storage.getCompetition(invitation.competitionId);
+      const inviter = invitation.invitedBy ? await storage.getUser(invitation.invitedBy) : null;
+      const team = invitation.teamId ? await storage.getTeam(invitation.teamId) : null;
+      const competition = invitation.competitionId ? await storage.getCompetition(invitation.competitionId) : null;
       
       res.json({
         ...invitation,
@@ -2757,7 +2775,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Meditation activities
           'meditation': { type: 'meditation', unit: 'minutes' },
           'mindfulness': { type: 'mindfulness', unit: 'minutes' },
-          'yoga': { type: 'yoga', unit: 'minutes' },
         };
         
         const mapping = stravaToTacfitMapping[activityType];
@@ -2783,7 +2800,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           mappedQuantity,
           formattedDate: new Date(activity.start_date).toLocaleDateString(),
         };
-      }).filter(activity => activity.mappedType); // Only return activities that can be mapped
+      }).filter((activity: any) => activity.mappedType); // Only return activities that can be mapped
 
       res.json(mappedActivities);
     } catch (error) {

@@ -17,6 +17,8 @@ Preferred communication style: Simple, everyday language.
 - **CHANGED**: All user-facing text now uses "buddies" instead of "friends"
 - **UPDATED**: Modal titles, button text, and help documentation all use buddy terminology
 - **CONSISTENT**: All references to finding friends/allies now use "Locate Buddies" terminology
+- **FIXED**: Profile cover photo height reduced from h-64 to h-32 for better proportions
+- **ADJUSTED**: Profile picture positioning updated to align with shorter cover photo
 
 ### Activity Type Display Name Standardization (July 2025)
 - **FIXED**: Activity type display names now consistent throughout the entire application

@@ -2281,9 +2281,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const host = req.get('host');
       let redirectUri;
       
-      if (host && host.includes('replit')) {
-        // Use the replit domain
+      // Check if running on Replit
+      if (host && (host.includes('replit.app') || host.includes('repl.co'))) {
         redirectUri = `https://${host}/api/strava/callback`;
+      } else if (process.env.REPL_SLUG && process.env.REPL_OWNER) {
+        // Construct Replit URL from environment variables
+        redirectUri = `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.app/api/strava/callback`;
       } else {
         // Fallback to localhost for development
         redirectUri = `${req.protocol}://${req.get('host')}/api/strava/callback`;
@@ -2326,8 +2329,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const host = req.get('host');
       let redirectUri;
       
-      if (host && host.includes('replit')) {
+      if (host && (host.includes('replit.app') || host.includes('repl.co'))) {
         redirectUri = `https://${host}/api/strava/callback`;
+      } else if (process.env.REPL_SLUG && process.env.REPL_OWNER) {
+        redirectUri = `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.app/api/strava/callback`;
       } else {
         redirectUri = `${req.protocol}://${req.get('host')}/api/strava/callback`;
       }

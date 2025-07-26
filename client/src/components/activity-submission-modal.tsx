@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Camera, X, Activity, Clock, MapPin, Zap } from "lucide-react";
+import { Camera, X, Activity, Clock, MapPin, Zap, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -305,17 +305,29 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                       <span className="ml-2 text-sm text-gray-400">Loading Strava activities...</span>
                     </div>
                   ) : stravaActivities && stravaActivities.length > 0 ? (
-                    <div className="max-h-40 overflow-y-auto space-y-2">
+                    <div className="max-h-48 overflow-y-auto space-y-3">
                       {stravaActivities.map((activity: any) => (
                         <Card 
                           key={activity.id} 
-                          className="cursor-pointer hover:border-orange-500/50 transition-colors p-2"
+                          className={`cursor-pointer transition-all duration-200 p-3 ${
+                            activity.mapImageUrl 
+                              ? 'border-orange-500/50 bg-orange-500/5 hover:border-orange-500 hover:bg-orange-500/10' 
+                              : 'border-tactical-gray hover:border-orange-500/30'
+                          }`}
                           onClick={() => handleStravaActivitySelect(activity)}
                         >
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <div className="text-sm font-medium text-white">{activity.name}</div>
-                              <div className="flex items-center gap-3 text-xs text-gray-400 mt-1">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="text-sm font-medium text-white truncate">{activity.name}</div>
+                                {activity.mapImageUrl && (
+                                  <div className="flex items-center gap-1 text-xs text-orange-400 bg-orange-500/20 px-2 py-1 rounded-full">
+                                    <MapPin className="h-3 w-3" />
+                                    Route
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-3 text-xs text-gray-400">
                                 <span className="flex items-center gap-1">
                                   <Activity className="h-3 w-3" />
                                   {activity.type}
@@ -330,18 +342,15 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                                     {(activity.distance / 1000).toFixed(1)} km
                                   </span>
                                 )}
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="h-3 w-3" />
+                                  {activity.formattedDate}
+                                </span>
                               </div>
                             </div>
-                            <div className="flex flex-col items-end gap-1">
-                              <Badge variant="secondary" className="text-xs">
-                                {activity.mappedType}
-                              </Badge>
-                              {activity.mapImageUrl && (
-                                <Badge variant="outline" className="text-xs text-orange-500 border-orange-500">
-                                  Map
-                                </Badge>
-                              )}
-                            </div>
+                            <Badge variant="secondary" className="text-xs ml-2 shrink-0">
+                              {activity.mappedType}
+                            </Badge>
                           </div>
                         </Card>
                       ))}

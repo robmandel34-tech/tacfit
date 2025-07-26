@@ -3215,9 +3215,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
         
-        // Check for valid polyline data
-        const hasValidPolyline = detailedActivity.map?.summary_polyline && detailedActivity.map.summary_polyline.length > 0;
-        console.log(`Activity ${activity.name} valid polyline: ${hasValidPolyline}`);
+        // Check for valid polyline data (try both summary_polyline and polyline)
+        const summaryPolyline = detailedActivity.map?.summary_polyline;
+        const fullPolyline = detailedActivity.map?.polyline;
+        const polylineToUse = (summaryPolyline && summaryPolyline.length > 0) ? summaryPolyline : 
+                             (fullPolyline && fullPolyline.length > 0) ? fullPolyline : null;
+        const hasValidPolyline = !!polylineToUse;
+        console.log(`Activity ${activity.name} valid polyline: ${hasValidPolyline} (using ${summaryPolyline ? 'summary' : fullPolyline ? 'full' : 'none'})`);
         
         return {
           id: activity.id,
@@ -3232,7 +3236,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           mappedUnit: mappedType?.measurementUnit,
           formattedDate: new Date(activity.start_date).toLocaleDateString(),
           mapImageUrl: hasValidPolyline ? 
-            `https://maps.googleapis.com/maps/api/staticmap?size=600x400&path=enc:${detailedActivity.map.summary_polyline}&maptype=terrain&key=${process.env.GOOGLE_MAPS_API_KEY || 'demo'}` : 
+            `https://maps.googleapis.com/maps/api/staticmap?size=600x400&path=enc:${polylineToUse}&maptype=terrain&key=${process.env.GOOGLE_MAPS_API_KEY || 'demo'}` : 
             null,
         };
       }));

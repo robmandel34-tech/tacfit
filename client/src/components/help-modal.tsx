@@ -11,12 +11,14 @@ import {
   Activity, 
   MessageSquare,
   Target,
-  ExternalLink
+  ExternalLink,
+  ArrowLeft
 } from 'lucide-react';
 import { Link } from 'wouter';
 
 export function HelpModal() {
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [currentView, setCurrentView] = useState<string | null>(null);
 
   const helpSections = [
     {
@@ -66,12 +68,38 @@ export function HelpModal() {
         <DialogContent className="max-w-2xl max-h-[90vh] bg-gray-900 border-gray-700 overflow-hidden flex flex-col">
           <DialogHeader className="flex-shrink-0">
             <DialogTitle className="text-white flex items-center space-x-2">
-              <HelpCircle className="h-6 w-6 text-military-green" />
-              <span>TacFit Help Center</span>
+              {currentView ? (
+                <>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setCurrentView(null)}
+                    className="text-gray-400 hover:text-white mr-2 p-1"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                  <span>{helpSections.find(s => s.href === currentView)?.title || 'Help'}</span>
+                </>
+              ) : (
+                <>
+                  <HelpCircle className="h-6 w-6 text-military-green" />
+                  <span>TacFit Help Center</span>
+                </>
+              )}
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-6 overflow-y-auto flex-1 pr-2 py-4">
+            {currentView ? (
+              <div className="text-gray-300">
+                <iframe 
+                  src={currentView} 
+                  className="w-full h-full min-h-[500px] border-0 rounded"
+                  title="Help Content"
+                />
+              </div>
+            ) : (
+              <>
             {/* Interactive Walkthrough */}
             <Card className="bg-gradient-to-r from-military-green-dark to-military-green border-military-green/30">
               <CardHeader>
@@ -96,26 +124,28 @@ export function HelpModal() {
             {/* Help Topics */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {helpSections.map((section, index) => (
-                <a key={index} href={section.href} target="_blank" rel="noopener noreferrer">
-                  <Card className="bg-gray-800/50 border-gray-700 hover:bg-gray-800/70 transition-colors cursor-pointer group">
-                    <CardContent className="p-4">
-                      <div className="flex items-start space-x-3">
-                        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-military-green/20 flex items-center justify-center group-hover:bg-military-green/30 transition-colors">
-                          <div className="text-military-green">
-                            {section.icon}
-                          </div>
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <h3 className="font-semibold text-white mb-1 group-hover:text-military-green transition-colors">{section.title}</h3>
-                            <ExternalLink className="h-4 w-4 text-gray-500 group-hover:text-military-green transition-colors" />
-                          </div>
-                          <p className="text-sm text-gray-400">{section.description}</p>
+                <Card 
+                  key={index} 
+                  className="bg-gray-800/50 border-gray-700 hover:bg-gray-800/70 transition-colors cursor-pointer group"
+                  onClick={() => setCurrentView(section.href)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-start space-x-3">
+                      <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-military-green/20 flex items-center justify-center group-hover:bg-military-green/30 transition-colors">
+                        <div className="text-military-green">
+                          {section.icon}
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                </a>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-semibold text-white mb-1 group-hover:text-military-green transition-colors">{section.title}</h3>
+                          <ExternalLink className="h-4 w-4 text-gray-500 group-hover:text-military-green transition-colors" />
+                        </div>
+                        <p className="text-sm text-gray-400">{section.description}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
 
@@ -145,6 +175,8 @@ export function HelpModal() {
                 </div>
               </CardContent>
             </Card>
+            </>
+            )}
           </div>
         </DialogContent>
       </Dialog>

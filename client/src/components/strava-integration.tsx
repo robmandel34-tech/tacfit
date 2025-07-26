@@ -194,7 +194,11 @@ export default function StravaIntegration() {
                 </div>
                 
                 <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-                  <p className="font-medium">Step 2: After clicking "Authorize" on Strava:</p>
+                  <p className="font-medium">Step 2: First, check your Strava app settings:</p>
+                  <p>• Go to <a href="https://www.strava.com/settings/api" target="_blank" className="text-orange-600 underline">Strava API Settings</a></p>
+                  <p>• Add this to "Authorization Callback Domain": <code className="bg-gray-200 px-1 rounded">workspace.rmandel20.replit.app</code></p>
+                  
+                  <p className="font-medium mt-3">Step 3: After clicking "Authorize" on Strava:</p>
                   <p>• You'll see an error page (this is expected)</p>
                   <p>• Copy the long code from the URL after "code=" (before any "&")</p>
                   <p>• Paste it below and click Connect</p>

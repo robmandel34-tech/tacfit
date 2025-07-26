@@ -2702,8 +2702,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const authUrl = `https://www.strava.com/oauth/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&approval_prompt=force&scope=read,activity:read_all&state=${userId}`;
       
+      console.log("Generated auth URL:", authUrl);
+      console.log("Redirect URI being used:", redirectUri);
+      
       res.json({ 
         authUrl,
+        redirectUri, // Include this so we can see what URL to register
         instructions: "Click 'Connect with Strava', authorize the app, then copy the authorization code from the error page URL and enter it in the app."
       });
     } catch (error) {

@@ -2418,7 +2418,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Found admin user:", adminUser.username, "with ID:", adminUser.id);
 
       console.log("Admin post request body:", req.body);
-      const validationResult = insertAdminPostSchema.safeParse(req.body);
+      
+      // Transform the request body to handle empty expiresAt
+      const requestBody = {
+        ...req.body,
+        expiresAt: req.body.expiresAt && req.body.expiresAt.trim() !== '' 
+          ? new Date(req.body.expiresAt) 
+          : null
+      };
+      
+      const validationResult = insertAdminPostSchema.safeParse(requestBody);
       if (!validationResult.success) {
         console.log("Validation errors:", validationResult.error.errors);
         return res.status(400).json({ 

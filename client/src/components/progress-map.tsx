@@ -272,12 +272,12 @@ export default function ProgressMap({ teams, competitionName, competition, activ
                           />
                         ) : (
                           <div className={`w-full h-full flex items-center justify-center ${
-                            index === 0 ? 'bg-yellow-500' : 
+                            index === 0 ? 'bg-emerald-600' : 
                             index === 1 ? 'bg-gray-400' : 
                             index === 2 ? 'bg-amber-600' : 
                             'bg-military-green'
                           }`} style={{
-                            background: index === 0 ? 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%)' :
+                            background: index === 0 ? 'linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%)' :
                                        index === 1 ? 'linear-gradient(135deg, #9ca3af 0%, #6b7280 50%, #4b5563 100%)' :
                                        index === 2 ? 'linear-gradient(135deg, #d97706 0%, #b45309 50%, #92400e 100%)' :
                                        'linear-gradient(135deg, #6b8e6b 0%, #5a7a5a 50%, #4a6a4a 100%)'
@@ -294,13 +294,13 @@ export default function ProgressMap({ teams, competitionName, competition, activ
                       
                       {/* Rank indicator */}
                       <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-full border border-white flex items-center justify-center text-xs font-bold ${
-                        index === 0 ? 'bg-yellow-500 text-black' : 
+                        index === 0 ? 'bg-emerald-600 text-white' : 
                         index === 1 ? 'bg-gray-400 text-black' : 
                         index === 2 ? 'bg-amber-600 text-black' : 
                         'bg-military-green text-white'
                       }`} style={{
                         boxShadow: '0 2px 4px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2)',
-                        background: index === 0 ? 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)' :
+                        background: index === 0 ? 'linear-gradient(135deg, #059669 0%, #047857 100%)' :
                                    index === 1 ? 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)' :
                                    index === 2 ? 'linear-gradient(135deg, #d97706 0%, #b45309 100%)' :
                                    'linear-gradient(135deg, #6b8e6b 0%, #5a7a5a 100%)'

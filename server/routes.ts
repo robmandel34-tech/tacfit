@@ -3068,6 +3068,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Strava not connected" });
       }
 
+      console.log(`Fetching Strava recent activities for user ${userId}, token exists: ${!!user.stravaAccessToken}`);
+
+      // Check if user is in a competition team
+      const userTeamMembers = await storage.getTeamMembersByUser(user.id);
+      if (!userTeamMembers || userTeamMembers.length === 0) {
+        console.log(`User ${userId} not in any team, returning empty activities`);
+        return res.json([]);
+      }
+
       // Refresh token if needed
       let accessToken = user.stravaAccessToken;
       if (user.stravaTokenExpiresAt && new Date() > user.stravaTokenExpiresAt) {
@@ -3112,9 +3121,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const stravaActivities = await activitiesResponse.json();
+      console.log(`Fetched ${stravaActivities.length} raw activities from Strava API`);
       
       // Get available activity types from database first
       const availableActivityTypes = await storage.getActivityTypes();
+      console.log(`Found ${availableActivityTypes.length} activity types in database`);
       
       // Map activities with TacFit types and quantities
       const mappedActivities = stravaActivities.map((activity: any) => {
@@ -3184,6 +3195,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
       }).filter((activity: any) => activity.mappedType); // Only return activities that can be mapped
 
+      console.log(`Returning ${mappedActivities.length} mapped Strava activities for user ${userId}`);
       res.json(mappedActivities);
     } catch (error) {
       console.error("Strava recent activities error:", error);

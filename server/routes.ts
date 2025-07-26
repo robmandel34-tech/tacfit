@@ -2488,6 +2488,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const authUrl = `https://www.strava.com/oauth/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&approval_prompt=force&scope=${scope}&state=${state}`;
 
+      console.log('Full auth URL:', authUrl);
       res.json({ authUrl });
     } catch (error) {
       console.error("Strava auth URL error:", error);
@@ -2495,10 +2496,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test endpoint to verify callback route is accessible
+  app.get("/api/strava/test", (req, res) => {
+    res.json({ message: "Strava test endpoint working", timestamp: new Date().toISOString() });
+  });
+
+  // Simple callback test without async
+  app.get("/api/strava/callback-test", (req, res) => {
+    console.log("Simple callback test hit");
+    res.send("Callback test working");
+  });
+
   // Strava OAuth callback
   app.get("/api/strava/callback", async (req, res) => {
     try {
       console.log("Strava callback hit with query:", req.query);
+      console.log("Strava callback headers:", req.headers);
       const { code, state, error } = req.query;
 
       if (error) {

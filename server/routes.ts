@@ -8,7 +8,7 @@ import {
   insertTeamMemberSchema, insertActivitySchema, insertActivityCommentSchema,
   insertChatMessageSchema, insertFriendshipSchema, insertCompetitionInvitationSchema,
   insertCompetitionEntrySchema, insertMissionTaskSchema, insertActivityTypeSchema,
-  friendships, type User
+  insertAdminPostSchema, friendships, type User
 } from "@shared/schema";
 import { db } from "./db";
 import { and, eq } from "drizzle-orm";
@@ -2342,6 +2342,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Task deleted successfully" });
     } catch (error) {
       res.status(500).json({ message: "Error deleting task" });
+    }
+  });
+
+  // Admin post routes
+  app.get("/api/admin-posts", async (req, res) => {
+    try {
+      const posts = await storage.getAdminPosts();
+      res.json(posts);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching admin posts" });
+    }
+  });
+
+  app.get("/api/admin-posts/active", async (req, res) => {
+    try {
+      const posts = await storage.getActiveAdminPosts();
+      res.json(posts);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching active admin posts" });
+    }
+  });
+
+  app.get("/api/admin-posts/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const post = await storage.getAdminPost(id);
+      if (!post) {
+        return res.status(404).json({ message: "Admin post not found" });
+      }
+      res.json(post);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching admin post" });
+    }
+  });
+
+  app.post("/api/admin-posts", async (req, res) => {
+    try {
+      // Check if user is admin
+      if (!req.session?.user?.isAdmin) {
+        return res.status(403).json({ message: "Admin privileges required" });
+      }
+
+      const validationResult = insertAdminPostSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          message: "Invalid admin post data",
+          errors: validationResult.error.errors
+        });
+      }
+
+      const postData = {
+        ...validationResult.data,
+        authorId: req.session.user.id
+      };
+
+      const post = await storage.createAdminPost(postData);
+      res.json(post);
+    } catch (error) {
+      res.status(400).json({ message: "Error creating admin post" });
+    }
+  });
+
+  app.patch("/api/admin-posts/:id", async (req, res) => {
+    try {
+      // Check if user is admin
+      if (!req.session?.user?.isAdmin) {
+        return res.status(403).json({ message: "Admin privileges required" });
+      }
+
+      const id = parseInt(req.params.id);
+      const post = await storage.updateAdminPost(id, req.body);
+      if (!post) {
+        return res.status(404).json({ message: "Admin post not found" });
+      }
+      res.json(post);
+    } catch (error) {
+      res.status(500).json({ message: "Error updating admin post" });
+    }
+  });
+
+  app.delete("/api/admin-posts/:id", async (req, res) => {
+    try {
+      // Check if user is admin
+      if (!req.session?.user?.isAdmin) {
+        return res.status(403).json({ message: "Admin privileges required" });
+      }
+
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteAdminPost(id);
+      if (!success) {
+        return res.status(404).json({ message: "Admin post not found" });
+      }
+      res.json({ message: "Admin post deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Error deleting admin post" });
     }
   });
 

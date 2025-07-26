@@ -6,13 +6,14 @@ import {
   CompetitionInvitation, InsertCompetitionInvitation, CompetitionEntry, 
   InsertCompetitionEntry, PhoneInvitation, InsertPhoneInvitation, WhiteboardItem, 
   InsertWhiteboardItem, MissionTask, InsertMissionTask, ActivityType, InsertActivityType,
+  AdminPost, InsertAdminPost,
   users, competitions, teams, teamMembers, activities, activityTypes,
   activityComments, activityLikes, activityFlags, chatMessages, friendships, 
   competitionHistory, competitionInvitations, competitionEntries, phoneInvitations, 
-  whiteboardItems, missionTasks
+  whiteboardItems, missionTasks, adminPosts
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, or, desc } from "drizzle-orm";
+import { eq, and, or, desc, isNull, gt } from "drizzle-orm";
 import { IStorage } from "./storage";
 
 export class DatabaseStorage implements IStorage {
@@ -653,5 +654,62 @@ export class DatabaseStorage implements IStorage {
       .where(eq(phoneInvitations.id, id))
       .returning();
     return invitation || undefined;
+  }
+
+  // Admin post operations
+  async getAdminPosts(): Promise<AdminPost[]> {
+    return await db
+      .select()
+      .from(adminPosts)
+      .orderBy(desc(adminPosts.createdAt));
+  }
+
+  async getActiveAdminPosts(): Promise<AdminPost[]> {
+    const now = new Date();
+    return await db
+      .select()
+      .from(adminPosts)
+      .where(
+        and(
+          eq(adminPosts.isActive, true),
+          or(
+            isNull(adminPosts.expiresAt),
+            gt(adminPosts.expiresAt, now)
+          )
+        )
+      )
+      .orderBy(desc(adminPosts.createdAt));
+  }
+
+  async getAdminPost(id: number): Promise<AdminPost | undefined> {
+    const [post] = await db
+      .select()
+      .from(adminPosts)
+      .where(eq(adminPosts.id, id));
+    return post || undefined;
+  }
+
+  async createAdminPost(post: InsertAdminPost): Promise<AdminPost> {
+    const [newPost] = await db
+      .insert(adminPosts)
+      .values(post)
+      .returning();
+    return newPost;
+  }
+
+  async updateAdminPost(id: number, updates: Partial<AdminPost>): Promise<AdminPost | undefined> {
+    const [post] = await db
+      .update(adminPosts)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(adminPosts.id, id))
+      .returning();
+    return post || undefined;
+  }
+
+  async deleteAdminPost(id: number): Promise<boolean> {
+    const result = await db
+      .delete(adminPosts)
+      .where(eq(adminPosts.id, id));
+    return result.rowCount > 0;
   }
 }

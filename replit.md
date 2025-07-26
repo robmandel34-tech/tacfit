@@ -439,6 +439,22 @@ Preferred communication style: Simple, everyday language.
 - **SECURED**: Activity deletion requires admin privileges and user authentication
 - **LOGGED**: Admin activity deletions logged to console for audit trail with admin and activity details
 
+### Admin Post System for Intel Feed (July 2025)
+- **NEW**: Complete admin post management system for Intel Feed announcements
+- **NEW**: Database schema with adminPosts table including type, priority, expiration, and status fields
+- **NEW**: Six post types: announcement, alert, news, competition_update, maintenance, promotion
+- **NEW**: Four priority levels: low, medium, high, urgent with color-coded badges
+- **NEW**: Optional expiration dates for time-sensitive posts with automatic filtering
+- **NEW**: Admin-only post creation, editing, and deletion with privilege verification
+- **NEW**: Intel Posts tab in admin portal with comprehensive management interface
+- **NEW**: Post creation form with title, content, type selector, priority selector, and expiration date
+- **NEW**: Active/inactive status toggle for controlling post visibility
+- **NEW**: Admin posts table with sorting, editing, and deletion controls
+- **NEW**: API endpoints: GET /api/admin-posts, GET /api/admin-posts/active, POST /api/admin-posts, PATCH/DELETE /api/admin-posts/:id
+- **ENHANCED**: Real-time post management with proper cache invalidation and toast notifications
+- **SECURED**: All admin post operations require admin privileges with session validation
+- **PREPARED**: Database and API ready for Intel Feed integration to display active admin posts
+
 ### Admin Portal Implementation (July 2025)
 - **NEW**: Complete admin portal for competition creation and management
 - **ACCESS**: Admin users can access portal via /admin route in main navigation

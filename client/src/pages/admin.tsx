@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { Plus, Edit2, Trash2, Users, Trophy, Calendar, Settings, X, Activity, AlertTriangle } from "lucide-react";
+import { Plus, Edit2, Trash2, Users, Trophy, Calendar, Settings, X, Activity, AlertTriangle, MessageSquare } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 
@@ -57,12 +57,25 @@ interface ActivityType {
   createdAt: string;
 }
 
+interface AdminPost {
+  id: number;
+  title: string;
+  content: string;
+  type: 'announcement' | 'alert' | 'news' | 'competition_update' | 'maintenance' | 'promotion';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  isActive: boolean;
+  authorId: number;
+  expiresAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export default function AdminPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
-  const [activeTab, setActiveTab] = useState<'competitions' | 'users' | 'activities' | 'settings'>('competitions');
+  const [activeTab, setActiveTab] = useState<'competitions' | 'users' | 'activities' | 'posts' | 'settings'>('competitions');
   const [isCreateCompetitionOpen, setIsCreateCompetitionOpen] = useState(false);
   const [editingCompetition, setEditingCompetition] = useState<Competition | null>(null);
   const [pointsAdjustmentUser, setPointsAdjustmentUser] = useState<User | null>(null);
@@ -108,6 +121,12 @@ export default function AdminPage() {
     select: (data: ActivityType[]) => data.sort((a, b) => a.name.localeCompare(b.name))
   });
 
+  // Fetch admin posts
+  const { data: adminPosts = [], isLoading: postsLoading } = useQuery({
+    queryKey: ["/api/admin-posts"],
+    select: (data: AdminPost[]) => data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  });
+
   // Competition form state
   const [competitionForm, setCompetitionForm] = useState({
     name: '',
@@ -133,6 +152,19 @@ export default function AdminPage() {
 
   const [editingActivityType, setEditingActivityType] = useState<ActivityType | null>(null);
   const [isCreateActivityTypeOpen, setIsCreateActivityTypeOpen] = useState(false);
+
+  // Admin post form state
+  const [adminPostForm, setAdminPostForm] = useState({
+    title: '',
+    content: '',
+    type: 'announcement' as AdminPost['type'],
+    priority: 'medium' as AdminPost['priority'],
+    isActive: true,
+    expiresAt: ''
+  });
+
+  const [editingAdminPost, setEditingAdminPost] = useState<AdminPost | null>(null);
+  const [isCreateAdminPostOpen, setIsCreateAdminPostOpen] = useState(false);
 
   // Create competition mutation
   const createCompetition = useMutation({
@@ -409,6 +441,107 @@ export default function AdminPage() {
     });
   };
 
+  // Admin post mutations
+  const createAdminPost = useMutation({
+    mutationFn: async (data: typeof adminPostForm) => {
+      return apiRequest("POST", "/api/admin-posts", data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Admin post created successfully",
+        description: "The new post is now active.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin-posts"] });
+      setIsCreateAdminPostOpen(false);
+      resetAdminPostForm();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to create admin post",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  const updateAdminPost = useMutation({
+    mutationFn: async (data: { id: number; updates: Partial<AdminPost> }) => {
+      return apiRequest("PATCH", `/api/admin-posts/${data.id}`, data.updates);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Admin post updated",
+        description: "Changes have been saved.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin-posts"] });
+      setEditingAdminPost(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to update admin post",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  const deleteAdminPost = useMutation({
+    mutationFn: async (id: number) => {
+      return apiRequest("DELETE", `/api/admin-posts/${id}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Admin post deleted",
+        description: "The post has been removed.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin-posts"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to delete admin post",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  const resetAdminPostForm = () => {
+    setAdminPostForm({
+      title: '',
+      content: '',
+      type: 'announcement',
+      priority: 'medium',
+      isActive: true,
+      expiresAt: ''
+    });
+  };
+
+  const handleAdminPostSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (editingAdminPost) {
+      updateAdminPost.mutate({
+        id: editingAdminPost.id,
+        updates: adminPostForm
+      });
+    } else {
+      createAdminPost.mutate(adminPostForm);
+    }
+  };
+
+  const handleEditAdminPost = (post: AdminPost) => {
+    setEditingAdminPost(post);
+    setAdminPostForm({
+      title: post.title,
+      content: post.content,
+      type: post.type,
+      priority: post.priority,
+      isActive: post.isActive,
+      expiresAt: post.expiresAt ? format(new Date(post.expiresAt), 'yyyy-MM-dd') : ''
+    });
+    setIsCreateAdminPostOpen(true);
+  };
+
   const handleActivityTypeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -514,6 +647,14 @@ export default function AdminPage() {
           >
             <Activity className="h-4 w-4" />
             <span>Activity Types</span>
+          </Button>
+          <Button
+            variant={activeTab === 'posts' ? 'default' : 'ghost'}
+            onClick={() => setActiveTab('posts')}
+            className="flex items-center space-x-2"
+          >
+            <MessageSquare className="h-4 w-4" />
+            <span>Intel Posts</span>
           </Button>
           <Button
             variant={activeTab === 'settings' ? 'default' : 'ghost'}
@@ -1263,6 +1404,225 @@ export default function AdminPage() {
                     ))}
                   </TableBody>
                 </Table>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Admin Posts Tab */}
+        {activeTab === 'posts' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Intel Posts Management</h2>
+              <Dialog open={isCreateAdminPostOpen} onOpenChange={setIsCreateAdminPostOpen}>
+                <DialogTrigger asChild>
+                  <Button 
+                    className="bg-military-green hover:bg-military-green-light"
+                    onClick={() => {
+                      setEditingAdminPost(null);
+                      resetAdminPostForm();
+                    }}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Intel Post
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-tactical-dark border-tactical-gray max-w-2xl" aria-describedby="admin-post-dialog-description">
+                  <DialogHeader>
+                    <DialogTitle className="text-white">
+                      {editingAdminPost ? 'Edit Intel Post' : 'Create New Intel Post'}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div id="admin-post-dialog-description" className="sr-only">
+                    {editingAdminPost ? 'Edit existing admin announcement post' : 'Create a new admin announcement for the Intel Feed'}
+                  </div>
+                  <form onSubmit={handleAdminPostSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto">
+                    <div>
+                      <Label htmlFor="title" className="text-gray-300">Post Title</Label>
+                      <Input
+                        id="title"
+                        value={adminPostForm.title}
+                        onChange={(e) => setAdminPostForm(prev => ({ ...prev, title: e.target.value }))}
+                        className="bg-tactical-gray-lighter border-tactical-gray text-white"
+                        placeholder="Enter post title..."
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="content" className="text-gray-300">Post Content</Label>
+                      <Textarea
+                        id="content"
+                        value={adminPostForm.content}
+                        onChange={(e) => setAdminPostForm(prev => ({ ...prev, content: e.target.value }))}
+                        className="bg-tactical-gray-lighter border-tactical-gray text-white min-h-[120px]"
+                        placeholder="Enter post content..."
+                        required
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="type" className="text-gray-300">Post Type</Label>
+                        <select
+                          id="type"
+                          value={adminPostForm.type}
+                          onChange={(e) => setAdminPostForm(prev => ({ ...prev, type: e.target.value as AdminPost['type'] }))}
+                          className="w-full px-3 py-2 bg-tactical-gray-lighter border border-tactical-gray text-white rounded-md focus:outline-none focus:ring-2 focus:ring-military-green"
+                        >
+                          <option value="announcement">📢 Announcement</option>
+                          <option value="alert">⚠️ Alert</option>
+                          <option value="news">📰 News</option>
+                          <option value="competition_update">🏆 Competition Update</option>
+                          <option value="maintenance">🔧 Maintenance</option>
+                          <option value="promotion">🎉 Promotion</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="priority" className="text-gray-300">Priority Level</Label>
+                        <select
+                          id="priority"
+                          value={adminPostForm.priority}
+                          onChange={(e) => setAdminPostForm(prev => ({ ...prev, priority: e.target.value as AdminPost['priority'] }))}
+                          className="w-full px-3 py-2 bg-tactical-gray-lighter border border-tactical-gray text-white rounded-md focus:outline-none focus:ring-2 focus:ring-military-green"
+                        >
+                          <option value="low">🟢 Low</option>
+                          <option value="medium">🟡 Medium</option>
+                          <option value="high">🟠 High</option>
+                          <option value="urgent">🔴 Urgent</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="expiresAt" className="text-gray-300">Expiration Date (Optional)</Label>
+                      <Input
+                        id="expiresAt"
+                        type="date"
+                        value={adminPostForm.expiresAt}
+                        onChange={(e) => setAdminPostForm(prev => ({ ...prev, expiresAt: e.target.value }))}
+                        className="bg-tactical-gray-lighter border-tactical-gray text-white"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Leave empty for posts that never expire</p>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="isActive"
+                        checked={adminPostForm.isActive}
+                        onCheckedChange={(checked) => setAdminPostForm(prev => ({ ...prev, isActive: checked }))}
+                      />
+                      <Label htmlFor="isActive" className="text-gray-300">Post is Active</Label>
+                    </div>
+
+                    <div className="flex space-x-4 pt-4">
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        onClick={() => setIsCreateAdminPostOpen(false)}
+                        className="flex-1"
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        type="submit" 
+                        disabled={createAdminPost.isPending || updateAdminPost.isPending}
+                        className="flex-1 bg-military-green hover:bg-military-green-light"
+                      >
+                        {createAdminPost.isPending || updateAdminPost.isPending ? 'Saving...' : (editingAdminPost ? 'Update Post' : 'Create Post')}
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            {/* Admin Posts Table */}
+            <Card className="bg-tactical-gray border-tactical-gray-light">
+              <CardHeader>
+                <CardTitle className="text-white">Intel Posts</CardTitle>
+                <CardDescription className="text-gray-400">
+                  Manage announcement posts for the Intel Feed
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {postsLoading ? (
+                  <div className="text-center py-8">
+                    <div className="text-gray-400">Loading posts...</div>
+                  </div>
+                ) : adminPosts.length === 0 ? (
+                  <div className="text-center py-8">
+                    <div className="text-gray-400">No admin posts created yet</div>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-tactical-gray hover:bg-tactical-gray-lighter">
+                        <TableHead className="text-gray-300">Title</TableHead>
+                        <TableHead className="text-gray-300">Type</TableHead>
+                        <TableHead className="text-gray-300">Priority</TableHead>
+                        <TableHead className="text-gray-300">Status</TableHead>
+                        <TableHead className="text-gray-300">Created</TableHead>
+                        <TableHead className="text-gray-300">Expires</TableHead>
+                        <TableHead className="text-gray-300">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {adminPosts.map((post) => (
+                        <TableRow key={post.id} className="border-tactical-gray hover:bg-tactical-gray-lighter">
+                          <TableCell className="text-white font-medium">{post.title}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="text-xs">
+                              {post.type.replace('_', ' ')}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant={post.priority === 'urgent' ? 'destructive' : 
+                                     post.priority === 'high' ? 'secondary' : 'default'}
+                              className="text-xs"
+                            >
+                              {post.priority}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={post.isActive ? 'default' : 'secondary'} className="text-xs">
+                              {post.isActive ? 'Active' : 'Inactive'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-gray-300">
+                            {format(new Date(post.createdAt), 'MMM d, yyyy')}
+                          </TableCell>
+                          <TableCell className="text-gray-300">
+                            {post.expiresAt ? format(new Date(post.expiresAt), 'MMM d, yyyy') : 'Never'}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleEditAdminPost(post)}
+                                className="h-8 w-8 p-0 hover:bg-tactical-gray-lighter"
+                              >
+                                <Edit2 className="h-4 w-4 text-gray-400" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => deleteAdminPost.mutate(post.id)}
+                                disabled={deleteAdminPost.isPending}
+                                className="h-8 w-8 p-0 hover:bg-red-900/20"
+                              >
+                                <Trash2 className="h-4 w-4 text-red-400" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </div>

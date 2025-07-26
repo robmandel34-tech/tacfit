@@ -1527,29 +1527,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // manual activities get 30 only if both evidence types are provided
       const finalPoints = isStravaActivity ? 30 : (hasBothEvidenceTypes ? 30 : basePoints);
 
-      const activityData = {
-        userId: userId,
-        competitionId: userTeam?.competitionId,
-        teamId: userTeam?.id,
-        type: req.body.type,
-        description: description,
-        quantity: req.body.quantity,
-        points: finalPoints,
-        evidenceType: evidenceType,
-        imageUrls: stravaMapUrl ? [stravaMapUrl] : [] // Add Strava map URL if available
-      };
-      
-      console.log("Processed activity data:", activityData);
-      
-      if (isStravaActivity) {
-        console.log(`Strava activity import! Automatically awarded full 30 points for verified Strava activity.`);
-      } else if (hasBothEvidenceTypes) {
-        console.log(`Bonus points awarded! User submitted both video and image evidence. Points: ${basePoints} + bonus = ${finalPoints}`);
-      }
-      
-      const validatedData = insertActivitySchema.parse(activityData);
-      
-      // Handle video file (primary evidence)
+      // Handle video file (primary evidence) first
+      let evidenceUrl = '';
       if (files['evidence'] && files['evidence'][0]) {
         const videoFile = files['evidence'][0];
         const fileExtension = path.extname(videoFile.originalname);
@@ -1557,8 +1536,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const filePath = path.join('uploads', fileName);
         
         fs.renameSync(videoFile.path, filePath);
-        validatedData.evidenceUrl = `/uploads/${fileName}`;
-        validatedData.evidenceType = videoFile.mimetype.startsWith('video/') ? 'video' : 'photo';
+        evidenceUrl = `/uploads/${fileName}`;
+        evidenceType = videoFile.mimetype.startsWith('video/') ? 'video' : 'photo';
       }
       
       // Handle multiple image files
@@ -1573,13 +1552,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
           fs.renameSync(imageFile.path, filePath);
           imageUrls.push(`/uploads/${fileName}`);
         }
-        validatedData.imageUrls = imageUrls;
       }
       
       // Handle Strava map image URL if provided
       if (req.body.mapImageUrl && isStravaActivity) {
-        validatedData.imageUrls = [req.body.mapImageUrl];
+        imageUrls.push(req.body.mapImageUrl);
+      } else if (stravaMapUrl) {
+        imageUrls.push(stravaMapUrl);
       }
+
+      const activityData = {
+        userId: userId,
+        competitionId: userTeam?.competitionId,
+        teamId: userTeam?.id,
+        type: req.body.type,
+        description: description,
+        quantity: req.body.quantity,
+        points: finalPoints,
+        evidenceType: evidenceType,
+        evidenceUrl: evidenceUrl,
+        imageUrls: imageUrls
+      };
+      
+      console.log("Processed activity data:", activityData);
+      
+      if (isStravaActivity) {
+        console.log(`Strava activity import! Automatically awarded full 30 points for verified Strava activity.`);
+      } else if (hasBothEvidenceTypes) {
+        console.log(`Bonus points awarded! User submitted both video and image evidence. Points: ${basePoints} + bonus = ${finalPoints}`);
+      }
+      
+      const validatedData = insertActivitySchema.parse(activityData);
       
       const activity = await storage.createActivity(validatedData);
       

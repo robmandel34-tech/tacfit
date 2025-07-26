@@ -39,38 +39,25 @@ export default function MediaSlideshow({ images, videoUrl }: MediaSlideshowProps
             }}
           />
         ) : (
-          <div className="w-full h-full relative">
-            <video
-              className="w-full h-full object-cover"
-              controls
-              preload="metadata"
-              playsInline
-              onError={(e) => {
-                console.error("Evidence video failed to load:", media.url);
-                console.error("Video error details:", e);
-                // Show fallback instead of hiding
-                const parent = e.currentTarget.parentElement;
-                if (parent) {
-                  parent.innerHTML = `
-                    <div class="w-full h-full bg-tactical-gray-light flex flex-col items-center justify-center">
-                      <div class="text-4xl mb-2">🎥</div>
-                      <div class="text-white text-sm mb-2">Video Available</div>
-                      <div class="text-gray-400 text-xs mb-3">Browser doesn't support this format</div>
-                      <a href="${media.url}" target="_blank" class="bg-military-green hover:bg-military-green-light text-white px-3 py-1 rounded text-sm">
-                        Download Video
-                      </a>
-                    </div>
-                  `;
-                }
-              }}
-              onLoadStart={() => console.log("Video load started:", media.url)}
-              onCanPlay={() => console.log("Video can play:", media.url)}
-            >
-              <source src={media.url} type="video/quicktime" />
-              <source src={media.url} type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-          </div>
+          <video
+            key={media.url} // Force re-render when URL changes
+            src={media.url}
+            className="w-full h-full object-cover"
+            controls
+            preload="metadata"
+            playsInline
+            onError={(e) => {
+              console.error("Video error for:", media.url);
+              const videoElement = e.currentTarget as HTMLVideoElement;
+              console.error("Video error code:", videoElement.error?.code);
+              console.error("Video error message:", videoElement.error?.message);
+              e.currentTarget.style.display = 'none';
+            }}
+            onLoadStart={() => console.log("✓ Video load started:", media.url)}
+            onCanPlay={() => console.log("✓ Video can play:", media.url)}
+            onLoadedData={() => console.log("✓ Video loaded and ready to play:", media.url)}
+            onPlay={() => console.log("✓ Video started playing:", media.url)}
+          />
         )}
       </div>
     );
@@ -104,38 +91,25 @@ export default function MediaSlideshow({ images, videoUrl }: MediaSlideshowProps
           }}
         />
       ) : (
-        <div className="w-full h-full relative">
-          <video
-            className="w-full h-full object-cover"
-            controls
-            preload="metadata"
-            playsInline
-            onError={(e) => {
-              console.error("Evidence video failed to load:", currentMedia.url);
-              console.error("Video error details:", e);
-              // Show fallback instead of hiding
-              const parent = e.currentTarget.parentElement;
-              if (parent) {
-                parent.innerHTML = `
-                  <div class="w-full h-full bg-tactical-gray-light flex flex-col items-center justify-center">
-                    <div class="text-4xl mb-2">🎥</div>
-                    <div class="text-white text-sm mb-2">Video Available</div>
-                    <div class="text-gray-400 text-xs mb-3">Browser doesn't support this format</div>
-                    <a href="${currentMedia.url}" target="_blank" class="bg-military-green hover:bg-military-green-light text-white px-3 py-1 rounded text-sm">
-                      Download Video
-                    </a>
-                  </div>
-                `;
-              }
-            }}
-            onLoadStart={() => console.log("Video load started:", currentMedia.url)}
-            onCanPlay={() => console.log("Video can play:", currentMedia.url)}
-          >
-            <source src={currentMedia.url} type="video/quicktime" />
-            <source src={currentMedia.url} type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-        </div>
+        <video
+          key={currentMedia.url} // Force re-render when URL changes
+          src={currentMedia.url}
+          className="w-full h-full object-cover"
+          controls
+          preload="metadata"
+          playsInline
+          onError={(e) => {
+            console.error("Video error for:", currentMedia.url);
+            const videoElement = e.currentTarget as HTMLVideoElement;
+            console.error("Video error code:", videoElement.error?.code);
+            console.error("Video error message:", videoElement.error?.message);
+            e.currentTarget.style.display = 'none';
+          }}
+          onLoadStart={() => console.log("✓ Video load started:", currentMedia.url)}
+          onCanPlay={() => console.log("✓ Video can play:", currentMedia.url)}
+          onLoadedData={() => console.log("✓ Video loaded and ready to play:", currentMedia.url)}
+          onPlay={() => console.log("✓ Video started playing:", currentMedia.url)}
+        />
       )}
 
       {/* Navigation Arrows */}

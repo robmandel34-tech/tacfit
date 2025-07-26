@@ -24,16 +24,26 @@ const execAsync = promisify(exec);
 // Video conversion function to convert videos to web-compatible MP4
 async function convertVideoToMp4(inputPath: string, outputPath: string): Promise<boolean> {
   try {
-    const ffmpegCommand = `ffmpeg -i "${inputPath}" -c:v libx264 -c:a aac -movflags +faststart -f mp4 "${outputPath}"`;
+    // Use maximally compatible settings for web playback
+    const ffmpegCommand = `ffmpeg -i "${inputPath}" -c:v libx264 -profile:v baseline -level 3.0 -pix_fmt yuv420p -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart -preset fast -crf 23 -maxrate 1000k -bufsize 2000k -f mp4 "${outputPath}"`;
     console.log(`Converting video: ${ffmpegCommand}`);
     
     const { stdout, stderr } = await execAsync(ffmpegCommand);
     console.log(`Video conversion completed: ${outputPath}`);
+    console.log(`FFmpeg output:`, stderr); // FFmpeg writes info to stderr
     
-    // Remove original file after successful conversion
+    // Check if output file exists and has content
     if (fs.existsSync(outputPath)) {
-      fs.unlinkSync(inputPath);
-      return true;
+      const stats = fs.statSync(outputPath);
+      if (stats.size > 0) {
+        console.log(`Converted video size: ${stats.size} bytes`);
+        fs.unlinkSync(inputPath);
+        return true;
+      } else {
+        console.error(`Converted video file is empty`);
+      }
+    } else {
+      console.error(`Converted video file does not exist: ${outputPath}`);
     }
     
     return false;

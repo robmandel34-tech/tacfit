@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Video Test</title>
+</head>
+<body>
+    <h1>Video Playback Test</h1>
+    <video controls width="400" height="300">
+        <source src="http://localhost:5000/uploads/1753547817856.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    
+    <p>If this video plays, the MP4 conversion is working correctly.</p>
+    
+    <script>
+        const video = document.querySelector('video');
+        video.addEventListener('loadstart', () => console.log('Video load started'));
+        video.addEventListener('canplay', () => console.log('Video can play'));
+        video.addEventListener('error', (e) => console.error('Video error:', e));
+    </script>
+</body>
+</html>

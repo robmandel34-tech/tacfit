@@ -100,19 +100,19 @@ export default function CompetitionStatus() {
         {/* Header Card */}
         {competition && (
           <Card className="bg-gradient-to-r from-military-green-dark to-military-green border-military-green/30 mb-8">
-            <CardHeader>
-              {/* Top Row: Title, Status, and Actions */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <Trophy className="h-6 w-6 text-white" />
-                  <div>
-                    <CardTitle className="text-white text-2xl">{competition.name}</CardTitle>
-                    <div className="text-gray-200 text-sm mt-1">
-                      {competition.description}
-                    </div>
+            <CardHeader className="pb-4">
+              {/* Top Row: Title and Actions */}
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center space-x-3 flex-1">
+                  <Trophy className="h-6 w-6 text-white flex-shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="text-white text-xl font-semibold leading-tight">{competition.name}</CardTitle>
+                    {competition.description && (
+                      <p className="text-gray-200 text-sm mt-1 line-clamp-1">{competition.description}</p>
+                    )}
                   </div>
                 </div>
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2 flex-shrink-0 ml-4">
                   <Badge 
                     className={`${
                       new Date() < new Date(competition.startDate) 
@@ -120,7 +120,7 @@ export default function CompetitionStatus() {
                         : new Date() > new Date(competition.endDate)
                         ? "bg-gray-500/20 text-gray-200 border-gray-400/30"
                         : "bg-white/20 text-white border-white/30"
-                    }`}
+                    } text-xs font-medium`}
                   >
                     {new Date() < new Date(competition.startDate) ? (
                       <>
@@ -144,7 +144,7 @@ export default function CompetitionStatus() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-white hover:bg-white/10"
+                        className="text-white hover:bg-white/10 hover:text-red-200 transition-colors p-2"
                         disabled={leaveCompetitionMutation.isPending}
                       >
                         <LogOut className="h-4 w-4" />
@@ -173,24 +173,22 @@ export default function CompetitionStatus() {
                 </div>
               </div>
 
-              {/* Bottom Row: Competition Info */}
-              <div className="flex items-center justify-between mt-4 text-sm text-gray-200">
-                <div className="flex items-center space-x-6">
-                  <div className="flex items-center space-x-2">
-                    <Calendar className="h-4 w-4" />
-                    <span>{new Date(competition.startDate).toLocaleDateString()} - {new Date(competition.endDate).toLocaleDateString()}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Users className="h-4 w-4" />
-                    <span>{teams.length} teams</span>
-                  </div>
-                  {competition.requiredActivities && competition.requiredActivities.length > 0 && (
-                    <div className="flex items-center space-x-2">
-                      <Target className="h-4 w-4" />
-                      <span>{competition.requiredActivities.join(", ")}</span>
-                    </div>
-                  )}
+              {/* Bottom Row: Competition Details */}
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-200">
+                <div className="flex items-center space-x-2">
+                  <Calendar className="h-4 w-4 text-gray-300" />
+                  <span>{new Date(competition.startDate).toLocaleDateString()} - {new Date(competition.endDate).toLocaleDateString()}</span>
                 </div>
+                <div className="flex items-center space-x-2">
+                  <Users className="h-4 w-4 text-gray-300" />
+                  <span>{teams.length} teams competing</span>
+                </div>
+                {competition.requiredActivities && competition.requiredActivities.length > 0 && (
+                  <div className="flex items-center space-x-2">
+                    <Target className="h-4 w-4 text-gray-300" />
+                    <span>{competition.requiredActivities.join(", ")}</span>
+                  </div>
+                )}
               </div>
             </CardHeader>
           </Card>

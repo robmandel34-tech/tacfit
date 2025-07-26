@@ -3222,6 +3222,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                              (fullPolyline && fullPolyline.length > 0) ? fullPolyline : null;
         const hasValidPolyline = !!polylineToUse;
         console.log(`Activity ${activity.name} valid polyline: ${hasValidPolyline} (using ${summaryPolyline ? 'summary' : fullPolyline ? 'full' : 'none'})`);
+        console.log(`Environment GOOGLE_MAPS_API_KEY: ${process.env.GOOGLE_MAPS_API_KEY ? 'EXISTS' : 'MISSING'}`);
         
         return {
           id: activity.id,

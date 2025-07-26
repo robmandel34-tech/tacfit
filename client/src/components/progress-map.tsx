@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, MapPin, Mountain, Flag, Shield, Target, Zap, Compass, Flame, Crown, Sword, Star } from "lucide-react";
+import { Trophy, MapPin, Mountain, Flag, Shield, Target, Sword, Crosshair, Flame, Zap, Swords, Users } from "lucide-react";
 
 interface Team {
   id: number;
@@ -31,9 +31,9 @@ interface ProgressMapProps {
 export default function ProgressMap({ teams, competitionName, competition, activities = [] }: ProgressMapProps) {
   const [, navigate] = useLocation();
   
-  // Default tactical icons for teams without custom pictures
+  // Default warrior/tactical icons for teams without custom pictures
   const getDefaultIcon = (teamId: number) => {
-    const icons = [Shield, Target, Zap, Compass, Flame, Crown, Sword, Star];
+    const icons = [Shield, Sword, Target, Crosshair, Swords, Flame, Zap, Users];
     const IconComponent = icons[teamId % icons.length];
     return IconComponent;
   };

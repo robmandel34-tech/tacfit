@@ -236,6 +236,15 @@ Preferred communication style: Simple, everyday language.
 - **DISABLED**: Checkbox becomes disabled for users without task completion permissions
 - **VISUAL**: Added visual indicators (opacity, cursor) for disabled task completion states
 
+### Progress Map Warrior Icons Enhancement (July 2025)
+- **ENHANCED**: Team icons on progress map now display warrior/tactical themed default icons instead of numbers
+- **NEW**: Default icon set includes: Shield, Sword, Target, Crosshair, Swords, Flame, Zap, Users
+- **IMPROVED**: Icons cycle based on team ID ensuring unique visual identity for each team
+- **ENHANCED**: 3D visual effects applied to all team icons with multi-layered shadows and gradients
+- **STYLED**: Icons maintain proper contrast with drop-shadows and white coloring for visibility
+- **TACTICAL**: Warrior-themed iconography aligns with military fitness platform aesthetic
+- **CONSISTENT**: Icons work seamlessly with existing ranking color system (gold, silver, bronze, military green)
+
 ### Profile Activity Statistics Implementation (July 2025)
 - **NEW**: Real-time activity, competition, and wins counting on profile pages
 - **NEW**: Clickable statistics cards that open detailed modal lists

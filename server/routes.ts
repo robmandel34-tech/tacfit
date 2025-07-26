@@ -3133,8 +3133,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`Found ${availableActivityTypes.length} activity types in database`);
       console.log('Available activity types:', availableActivityTypes.map(at => `${at.name} -> ${at.displayName}`));
       
-      // Map activities with TacFit types and quantities
-      const mappedActivities = stravaActivities.map((activity: any) => {
+      // Map activities with TacFit types and quantities, fetching detailed data for GPS activities
+      const mappedActivities = await Promise.all(stravaActivities.map(async (activity: any) => {
         const activityType = activity.type?.toLowerCase().replace(/\s+/g, '');
         console.log(`Processing Strava activity: ${activity.name} (type: "${activity.type}" -> "${activityType}")`);
         
@@ -3195,8 +3195,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`No mapping found for Strava type "${activityType}"`);
         }
         
-        // Debug map data
-        console.log(`Activity ${activity.name} map data:`, activity.map);
+        // For GPS-enabled activities, fetch detailed data to get polyline
+        let detailedActivity = activity;
+        if (activity.distance && activity.distance > 0) {
+          try {
+            console.log(`Fetching detailed data for GPS activity: ${activity.name}`);
+            const detailResponse = await fetch(`https://www.strava.com/api/v3/activities/${activity.id}`, {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+            });
+            
+            if (detailResponse.ok) {
+              detailedActivity = await detailResponse.json();
+              console.log(`Activity ${activity.name} detailed map data:`, detailedActivity.map);
+            }
+          } catch (error) {
+            console.log(`Failed to fetch detailed data for activity ${activity.id}:`, error);
+          }
+        }
+        
+        // Check for valid polyline data
+        const hasValidPolyline = detailedActivity.map?.summary_polyline && detailedActivity.map.summary_polyline.length > 0;
+        console.log(`Activity ${activity.name} valid polyline: ${hasValidPolyline}`);
         
         return {
           id: activity.id,
@@ -3210,14 +3231,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           mappedQuantity,
           mappedUnit: mappedType?.measurementUnit,
           formattedDate: new Date(activity.start_date).toLocaleDateString(),
-          mapImageUrl: activity.map?.summary_polyline ? 
-            `https://maps.googleapis.com/maps/api/staticmap?size=600x400&path=enc:${activity.map.summary_polyline}&maptype=terrain&key=${process.env.GOOGLE_MAPS_API_KEY || 'demo'}` : 
+          mapImageUrl: hasValidPolyline ? 
+            `https://maps.googleapis.com/maps/api/staticmap?size=600x400&path=enc:${detailedActivity.map.summary_polyline}&maptype=terrain&key=${process.env.GOOGLE_MAPS_API_KEY || 'demo'}` : 
             null,
         };
-      }).filter((activity: any) => activity.mappedType); // Only return activities that can be mapped
+      }));
+      
+      // Filter to only return activities that can be mapped
+      const filteredActivities = mappedActivities.filter((activity: any) => activity.mappedType);
 
-      console.log(`Returning ${mappedActivities.length} mapped Strava activities for user ${userId}`);
-      res.json(mappedActivities);
+      console.log(`Returning ${filteredActivities.length} mapped Strava activities for user ${userId}`);
+      res.json(filteredActivities);
     } catch (error) {
       console.error("Strava recent activities error:", error);
       res.status(500).json({ message: "Error fetching recent Strava activities" });

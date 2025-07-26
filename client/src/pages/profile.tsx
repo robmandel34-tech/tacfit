@@ -891,62 +891,62 @@ export default function Profile() {
           <div className="lg:col-span-2 space-y-6">
             {/* Current Competition Participation */}
             <Card className="bg-tactical-gray-light border-tactical-gray">
-              <CardHeader>
+              <CardHeader className="pb-4">
                 <CardTitle className="text-white flex items-center gap-2">
                   <Trophy className="h-5 w-5 text-military-green" />
                   Current Competition Status
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent>
                 {currentCompetition && currentTeam ? (
-                  <div className="space-y-4">
-                    <div className="space-y-3">
-                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-white font-semibold text-lg">{currentCompetition.name}</h3>
-                          <p className="text-gray-300 text-sm mt-1 line-clamp-2">{currentCompetition.description}</p>
-                        </div>
-                        <Button
-                          onClick={() => window.location.href = "/competition-status"}
-                          className="bg-military-green hover:bg-military-green-dark flex-shrink-0"
-                          size="sm"
-                        >
-                          View Details
-                        </Button>
-                      </div>
-                      
-                      <div className="flex flex-wrap gap-2">
-                        <Badge className="bg-military-green text-white">
-                          Team: {currentTeam.name}
-                        </Badge>
-                        <Badge className="bg-steel-blue text-white">
-                          Role: {currentTeamMembership[0]?.role}
-                        </Badge>
-                      </div>
+                  <div className="space-y-6">
+                    {/* Competition Header */}
+                    <div className="space-y-2">
+                      <h3 className="text-white font-semibold text-xl">{currentCompetition.name}</h3>
+                      <p className="text-gray-300 text-sm leading-relaxed">{currentCompetition.description}</p>
                     </div>
                     
-                    <div className="bg-tactical-gray rounded-lg p-3">
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-                        <span className="text-gray-400 text-sm font-medium">Competition Period:</span>
-                        <span className="text-white text-sm">
+                    {/* Team and Role Info */}
+                    <div className="flex flex-wrap gap-3">
+                      <Badge className="bg-military-green/20 text-military-green border border-military-green/30 px-3 py-1">
+                        Team: {currentTeam.name}
+                      </Badge>
+                      <Badge className="bg-steel-blue/20 text-steel-blue border border-steel-blue/30 px-3 py-1">
+                        Role: {currentTeamMembership[0]?.role}
+                      </Badge>
+                    </div>
+                    
+                    {/* Competition Period */}
+                    <div className="bg-tactical-gray rounded-lg p-4 border border-tactical-gray">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400 text-sm font-medium">Competition Period</span>
+                        <span className="text-white text-sm font-medium">
                           {new Date(currentCompetition.startDate).toLocaleDateString()} - {new Date(currentCompetition.endDate).toLocaleDateString()}
                         </span>
                       </div>
                     </div>
+                    
+                    {/* Action Button */}
+                    <Button
+                      onClick={() => window.location.href = "/competition-status"}
+                      className="w-full bg-military-green hover:bg-military-green-dark text-white font-medium py-2"
+                    >
+                      View Details
+                    </Button>
                   </div>
                 ) : (
-                  <div className="text-center py-6">
+                  <div className="text-center py-8">
                     <div className="flex items-center justify-center w-16 h-16 bg-tactical-gray rounded-full mx-auto mb-4">
                       <Trophy className="h-8 w-8 text-gray-500" />
                     </div>
-                    <h3 className="text-white font-medium mb-2">Not Currently Participating</h3>
-                    <p className="text-gray-400 text-sm">
+                    <h3 className="text-white font-semibold text-lg mb-2">Not Currently Participating</h3>
+                    <p className="text-gray-400 text-sm mb-6">
                       {isOwnProfile ? "Join a competition to start tracking your progress" : `${displayUser.username} is not actively participating in any competitions`}
                     </p>
                     {isOwnProfile && (
                       <Button
                         onClick={() => window.location.href = "/competitions"}
-                        className="mt-4 bg-military-green hover:bg-military-green-dark"
+                        className="bg-military-green hover:bg-military-green-dark text-white px-6 py-2"
                       >
                         Browse Competitions
                       </Button>

@@ -357,6 +357,7 @@ Preferred communication style: Simple, everyday language.
 - **FIXED**: Back navigation now properly returns to main page instead of closing help modal
 - **ENHANCED**: Help cards now open in new tabs to preserve help center modal state
 - **FIXED**: Quick tip point values corrected to show 30 vs 15 instead of 30 vs 20
+- **UPDATED**: Back buttons in help pages now close tabs instead of navigating away from help content
 
 ### Admin Portal Implementation (July 2025)
 - **NEW**: Complete admin portal for competition creation and management

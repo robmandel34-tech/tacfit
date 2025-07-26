@@ -20,12 +20,6 @@ export function HelpModal() {
 
   const helpSections = [
     {
-      title: "Getting Started",
-      icon: <BookOpen className="h-5 w-5" />,
-      description: "Learn the basics of TacFit and how competitions work",
-      href: "/help/navigation"
-    },
-    {
       title: "Competition System",
       icon: <Trophy className="h-5 w-5" />,
       description: "Understand join windows, team formation, and victory conditions",

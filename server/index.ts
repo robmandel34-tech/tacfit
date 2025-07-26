@@ -22,32 +22,52 @@ app.use((req, res, next) => {
   }
 });
 
-// Custom static file serving with proper MIME types for videos
+// Enhanced static file serving optimized for video playback
 app.use('/uploads', (req, res, next) => {
   const filePath = path.join(process.cwd(), 'uploads', req.path);
   const ext = path.extname(req.path).toLowerCase();
   
-  // Set proper MIME types for video files
-  switch (ext) {
-    case '.mov':
-      res.setHeader('Content-Type', 'video/quicktime');
-      break;
-    case '.mp4':
-      res.setHeader('Content-Type', 'video/mp4');
-      break;
-    case '.webm':
-      res.setHeader('Content-Type', 'video/webm');
-      break;
-    case '.avi':
-      res.setHeader('Content-Type', 'video/x-msvideo');
-      break;
-    default:
-      // Let express handle other files normally
-      break;
+  // Set comprehensive headers for video files to improve browser compatibility
+  if (['.mov', '.mp4', '.webm', '.avi'].includes(ext)) {
+    // Enable range requests for progressive video loading
+    res.setHeader('Accept-Ranges', 'bytes');
+    
+    // Set proper MIME types
+    switch (ext) {
+      case '.mov':
+        res.setHeader('Content-Type', 'video/quicktime');
+        break;
+      case '.mp4':
+        res.setHeader('Content-Type', 'video/mp4');
+        break;
+      case '.webm':
+        res.setHeader('Content-Type', 'video/webm');
+        break;
+      case '.avi':
+        res.setHeader('Content-Type', 'video/x-msvideo');
+        break;
+    }
+    
+    // Add headers for better video streaming
+    res.setHeader('Cache-Control', 'public, max-age=31536000'); // 1 year cache
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    
+    // Enable CORS for video elements
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
   }
   
   next();
-}, express.static('uploads'));
+}, express.static('uploads', {
+  // Additional static file options for better video serving
+  setHeaders: (res, path, stat) => {
+    const ext = path.split('.').pop()?.toLowerCase();
+    if (['mp4', 'webm', 'mov', 'avi'].includes(ext || '')) {
+      res.setHeader('Accept-Ranges', 'bytes');
+    }
+  }
+}));
 
 app.use((req, res, next) => {
   const start = Date.now();

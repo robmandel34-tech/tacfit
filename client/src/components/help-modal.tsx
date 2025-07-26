@@ -78,7 +78,7 @@ export function HelpModal() {
                   >
                     <ArrowLeft className="h-4 w-4" />
                   </Button>
-                  <span>{helpSections.find(s => s.href === currentView)?.title || 'Help'}</span>
+                  <span>Back to Help Portal</span>
                 </>
               ) : (
                 <>

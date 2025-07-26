@@ -360,6 +360,8 @@ Preferred communication style: Simple, everyday language.
 - **UPDATED**: Back buttons in help pages now use browser history and are simply labeled "Back"
 - **REDESIGNED**: Help center now loads help content within modal using iframe instead of new tabs
 - **ENHANCED**: Back navigation in help modal header returns to help center main view
+- **CLEANED**: Removed redundant back buttons from help pages since navigation now handled by modal header
+- **UPDATED**: Modal header back button text changed to "Back to Help Portal"
 
 ### Admin Portal Implementation (July 2025)
 - **NEW**: Complete admin portal for competition creation and management

@@ -2403,6 +2403,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin-posts", async (req, res) => {
     try {
+      console.log("Session data:", req.session);
+      console.log("User in session:", req.session?.user);
+      console.log("User admin status:", req.session?.user?.isAdmin);
+      
       // Check if user is admin
       if (!req.session?.user?.isAdmin) {
         return res.status(403).json({ message: "Admin privileges required" });

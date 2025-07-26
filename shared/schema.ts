@@ -303,6 +303,7 @@ export const insertMissionTaskSchema = createInsertSchema(missionTasks).omit({
 
 export const insertAdminPostSchema = createInsertSchema(adminPosts).omit({
   id: true,
+  createdBy: true,
   createdAt: true,
   updatedAt: true,
 });

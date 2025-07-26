@@ -2394,7 +2394,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const postData = {
         ...validationResult.data,
-        authorId: req.session.user.id
+        createdBy: req.session.user.id
       };
 
       const post = await storage.createAdminPost(postData);

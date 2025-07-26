@@ -348,6 +348,9 @@ Preferred communication style: Simple, everyday language.
 - **IMPROVED**: Profile text spacing - increased distance between profile picture and name/email/motto text
 - **REMOVED**: Profile page header text ("Your Profile" and description) for cleaner layout
 - **IMPROVED**: Reduced top padding on profile pages to move content up
+- **UPDATED**: Help center renamed from "Tactical Command Center" to "TacFit Help Center"
+- **CORRECTED**: Help documentation updated to reflect admin-only competition creation policy
+- **FIXED**: Activity type names in help pages now use "Strength Training" instead of "Strength Operations"
 
 ### Admin Portal Implementation (July 2025)
 - **NEW**: Complete admin portal for competition creation and management

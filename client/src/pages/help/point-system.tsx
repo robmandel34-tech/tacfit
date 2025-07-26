@@ -160,12 +160,12 @@ export default function PointSystemHelp() {
                   </h4>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-300">Required Points:</span>
-                      <span className="font-bold text-red-300 text-lg">1,000 pts</span>
+                      <span className="text-sm text-gray-300">Access Level:</span>
+                      <span className="font-bold text-red-300 text-lg">Admin Only</span>
                     </div>
                     <p className="text-xs text-gray-400">
-                      Create your own competitions with custom activities, team limits, and duration. 
-                      Points are not consumed - this is a minimum balance requirement.
+                      Competition creation is restricted to administrators only. Regular users can join 
+                      competitions and teams but cannot create new competitions.
                     </p>
                   </div>
                 </div>
@@ -231,10 +231,10 @@ export default function PointSystemHelp() {
                   <h4 className="font-semibold text-white mb-3">Long-term Point Goals:</h4>
                   <div className="space-y-3">
                     <div className="bg-gray-700/50 p-3 rounded-lg">
-                      <h5 className="font-medium text-military-green mb-2">Reach 1,000 Points</h5>
+                      <h5 className="font-medium text-military-green mb-2">Build Your Reputation</h5>
                       <p className="text-xs text-gray-400">
-                        Unlock competition creation rights. This typically requires 
-                        33-50 activity submissions with evidence over several weeks.
+                        Higher point totals demonstrate your commitment to the TacFit community 
+                        and help establish you as a dedicated fitness enthusiast.
                       </p>
                     </div>
                     <div className="bg-gray-700/50 p-3 rounded-lg">

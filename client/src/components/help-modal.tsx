@@ -73,7 +73,7 @@ export function HelpModal() {
           <DialogHeader className="flex-shrink-0">
             <DialogTitle className="text-white flex items-center space-x-2">
               <HelpCircle className="h-6 w-6 text-military-green" />
-              <span>Tactical Command Center</span>
+              <span>TacFit Help Center</span>
             </DialogTitle>
           </DialogHeader>
 

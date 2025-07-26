@@ -83,7 +83,7 @@ export default function ActivityTrackingHelp() {
                 <div className="bg-blue-900/20 border border-blue-600/30 p-4 rounded-lg">
                   <h4 className="font-semibold text-blue-300 mb-3 flex items-center">
                     <Award className="h-5 w-5 mr-2" />
-                    Strength Operations
+                    Strength Training
                   </h4>
                   <p className="text-sm text-gray-300 mb-3">Measured in repetitions</p>
                   <div className="space-y-2">

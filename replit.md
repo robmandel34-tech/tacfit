@@ -281,6 +281,15 @@ Preferred communication style: Simple, everyday language.
 - **SECURED**: Teams cannot make progress or earn points before their competition officially begins
 - **USER-FRIENDLY**: Visual indicators and disabled states prevent user confusion about submission timing
 
+### Progress Map Pre-Competition Restrictions (July 2025)
+- **NEW**: Progress map shows all teams at Base Camp (0% progress) when competition hasn't started
+- **NEW**: Warning banner displays on progress map when competition is awaiting start
+- **NEW**: Team leaderboard shows "At Base Camp" and "Awaiting competition start" status messages
+- **NEW**: Team icons remain at starting position regardless of accumulated points until competition begins
+- **ENHANCED**: Progress tracking and map movement only begin when competition officially starts
+- **SECURED**: Visual progress indicators prevent confusion about competition timing and fairness
+- **CONSISTENT**: Both activity submission and progress visualization respect competition start dates
+
 ### Admin Portal Implementation (July 2025)
 - **NEW**: Complete admin portal for competition creation and management
 - **ACCESS**: Admin users can access portal via /admin route in main navigation

@@ -12,13 +12,24 @@ interface Team {
   pictureUrl?: string;
 }
 
+interface Competition {
+  id: number;
+  name: string;
+  startDate: string;
+  endDate: string;
+}
+
 interface ProgressMapProps {
   teams: Team[];
   competitionName: string;
+  competition?: Competition;
 }
 
-export default function ProgressMap({ teams, competitionName }: ProgressMapProps) {
+export default function ProgressMap({ teams, competitionName, competition }: ProgressMapProps) {
   const [, navigate] = useLocation();
+  
+  // Check if competition has started
+  const competitionHasStarted = competition ? new Date() >= new Date(competition.startDate) : true;
   
   // Sort teams by points to determine their position on the route
   const sortedTeams = useMemo(() => {
@@ -27,6 +38,15 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
 
   // Calculate progress percentage for each team
   const teamsWithProgress = useMemo(() => {
+    // If competition hasn't started, all teams stay at base camp (0% progress)
+    if (!competitionHasStarted) {
+      return sortedTeams.map((team, index) => ({
+        ...team,
+        progress: 0, // All teams stay at base camp until competition starts
+        rank: index + 1
+      }));
+    }
+    
     const maxPoints = Math.max(...teams.map(t => t.points), 1);
     // Only apply minimum if team has points, otherwise start at 0%
     return sortedTeams.map((team, index) => ({
@@ -34,7 +54,7 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
       progress: team.points === 0 ? 0 : Math.max((team.points / maxPoints) * 85, 5), // Start at 0% for no points, 5% minimum for teams with points, 85% maximum
       rank: index + 1
     }));
-  }, [sortedTeams, teams]);
+  }, [sortedTeams, teams, competitionHasStarted]);
 
   // Generate topographical features along the route
   const features = [
@@ -59,6 +79,19 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
         {/* Map Container */}
         <Card className="w-full tile-card-elevated">
           <CardContent className="p-6">
+            {/* Competition Not Started Warning */}
+            {!competitionHasStarted && competition && (
+              <div className="mb-4 bg-orange-500/10 border border-orange-500/20 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Flag className="h-5 w-5 text-orange-500" />
+                  <h3 className="font-semibold text-orange-100">Competition Awaiting Start</h3>
+                </div>
+                <p className="text-sm text-orange-200">
+                  Teams are assembled at Base Camp. Progress tracking begins when the competition starts on {new Date(competition.startDate).toLocaleDateString()}.
+                </p>
+              </div>
+            )}
+            
             <div className="relative">
               {/* Map Background */}
               <div className="relative h-96 rounded-xl overflow-visible shadow-lg" style={{
@@ -227,7 +260,9 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
                         </Badge>
                         <h3 className="font-semibold text-white">{team.name}</h3>
                       </div>
-                      <div className="text-military-green font-bold">{Math.round(Math.min(team.progress, 100))}%</div>
+                      <div className="text-military-green font-bold">
+                        {!competitionHasStarted ? "At Base Camp" : `${Math.round(Math.min(team.progress, 100))}%`}
+                      </div>
                     </div>
                     
                     {/* Progress bar */}
@@ -239,7 +274,7 @@ export default function ProgressMap({ teams, competitionName }: ProgressMapProps
                     </div>
                     
                     <div className="text-sm text-gray-400">
-                      {Math.round(Math.min(team.progress, 100))}% complete
+                      {!competitionHasStarted ? "Awaiting competition start" : `${Math.round(Math.min(team.progress, 100))}% complete`}
                     </div>
                     
                     {team.motto && (

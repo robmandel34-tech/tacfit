@@ -370,7 +370,7 @@ Preferred communication style: Simple, everyday language.
 - **ENHANCED**: Previous/Next buttons now have better contrast and hover states
 - **IMPROVED**: All interactive elements now have clear visual distinction from background
 - **FIXED**: Navigation icons corrected in walkthrough - Competitions now shows Mountain icon, Team shows Shield icon to match actual navigation
-- **FIXED**: Previous button text contrast improved - balanced light gray text (text-gray-200) with proper border for optimal visibility without being too bright
+- **FIXED**: Previous button contrast improved - added dark background (bg-gray-800) with white text for clear visibility and proper disabled states
 
 ### Admin Portal Implementation (July 2025)
 - **NEW**: Complete admin portal for competition creation and management

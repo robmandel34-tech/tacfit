@@ -21,16 +21,16 @@ import Stripe from "stripe";
 
 const execAsync = promisify(exec);
 
-// Video conversion function to convert videos to web-compatible WebM
-async function convertVideoToWebM(inputPath: string, outputPath: string): Promise<boolean> {
+// Video conversion function to convert videos to basic MP4 with maximum compatibility
+async function convertVideoToMp4(inputPath: string, outputPath: string): Promise<boolean> {
   try {
-    // Use WebM format which has excellent browser support
-    const ffmpegCommand = `ffmpeg -i "${inputPath}" -c:v libvpx-vp9 -crf 30 -b:v 1000k -c:a libopus -b:a 128k -f webm "${outputPath}"`;
-    console.log(`Converting video to WebM: ${ffmpegCommand}`);
+    // Use most basic MP4 settings for guaranteed browser compatibility
+    const ffmpegCommand = `ffmpeg -i "${inputPath}" -c:v libx264 -preset ultrafast -profile:v baseline -level 3.0 -pix_fmt yuv420p -crf 28 -maxrate 800k -bufsize 1600k -c:a aac -ac 2 -ar 44100 -b:a 96k -movflags +faststart -f mp4 "${outputPath}"`;
+    console.log(`Converting video to basic MP4: ${ffmpegCommand}`);
     
     const { stdout, stderr } = await execAsync(ffmpegCommand);
     console.log(`Video conversion completed: ${outputPath}`);
-    console.log(`FFmpeg output:`, stderr.substring(0, 500)); // Show partial output
+    console.log(`FFmpeg output:`, stderr.substring(0, 300)); // Show partial output
     
     // Check if output file exists and has content
     if (fs.existsSync(outputPath)) {
@@ -1573,24 +1573,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (videoFile.mimetype.startsWith('video/')) {
           evidenceType = 'video';
           
-          // For non-WebM videos, convert to WebM for better browser compatibility
-          if (originalExtension.toLowerCase() === '.mov' || originalExtension.toLowerCase() === '.avi' || originalExtension.toLowerCase() === '.mp4') {
+          // For non-MP4 videos, convert to MP4 for better browser compatibility
+          if (originalExtension.toLowerCase() === '.mov' || originalExtension.toLowerCase() === '.avi' || originalExtension.toLowerCase() === '.webm') {
             const tempFileName = `${timestamp}_temp${originalExtension}`;
             const tempFilePath = path.join('uploads', tempFileName);
-            const webmFileName = `${timestamp}.webm`;
-            const webmFilePath = path.join('uploads', webmFileName);
+            const mp4FileName = `${timestamp}.mp4`;
+            const mp4FilePath = path.join('uploads', mp4FileName);
             
             // Move uploaded file to temp location
             fs.renameSync(videoFile.path, tempFilePath);
             
-            console.log(`Converting ${originalExtension} video to WebM for better browser compatibility...`);
+            console.log(`Converting ${originalExtension} video to MP4 for maximum browser compatibility...`);
             
-            // Convert to WebM
-            const conversionSuccess = await convertVideoToWebM(tempFilePath, webmFilePath);
+            // Convert to MP4
+            const conversionSuccess = await convertVideoToMp4(tempFilePath, mp4FilePath);
             
             if (conversionSuccess) {
-              evidenceUrl = `/uploads/${webmFileName}`;
-              console.log(`Video conversion successful: ${webmFileName}`);
+              evidenceUrl = `/uploads/${mp4FileName}`;
+              console.log(`Video conversion successful: ${mp4FileName}`);
             } else {
               // If conversion fails, use original file
               fs.renameSync(tempFilePath, path.join('uploads', `${timestamp}${originalExtension}`));

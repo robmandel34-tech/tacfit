@@ -39,28 +39,50 @@ export default function MediaSlideshow({ images, videoUrl }: MediaSlideshowProps
             }}
           />
         ) : (
-          <video
-            key={media.url} // Force re-render when URL changes
-            className="w-full h-full object-cover"
-            controls
-            preload="metadata"
-            playsInline
-            onError={(e) => {
-              console.error("Video error for:", media.url);
-              const videoElement = e.currentTarget as HTMLVideoElement;
-              console.error("Video error code:", videoElement.error?.code);
-              console.error("Video error message:", videoElement.error?.message);
-              e.currentTarget.style.display = 'none';
-            }}
-            onLoadStart={() => console.log("✓ Video load started:", media.url)}
-            onCanPlay={() => console.log("✓ Video can play:", media.url)}
-            onLoadedData={() => console.log("✓ Video loaded and ready to play:", media.url)}
-            onPlay={() => console.log("✓ Video started playing:", media.url)}
-          >
-            <source src={media.url} type="video/webm" />
-            <source src={media.url} type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
+          <div className="relative w-full h-full bg-gray-800 flex items-center justify-center">
+            <video
+              key={`video-${media.url}`}
+              src={media.url}
+              className="w-full h-full object-cover"
+              controls
+              preload="metadata"
+              playsInline
+              muted
+              onError={(e) => {
+                console.error("Video playback failed for:", media.url);
+                const videoElement = e.currentTarget as HTMLVideoElement;
+                console.error("Video error code:", videoElement.error?.code);
+                // Hide video and show fallback
+                videoElement.style.display = 'none';
+                const fallback = videoElement.nextElementSibling as HTMLElement;
+                if (fallback) fallback.style.display = 'flex';
+              }}
+              onLoadStart={() => console.log("✓ Video load started:", media.url)}
+              onCanPlay={() => console.log("✓ Video can play:", media.url)}
+            />
+            {/* Fallback UI for when video fails to play */}
+            <div 
+              className="absolute inset-0 bg-gray-800 flex flex-col items-center justify-center text-white p-4 rounded hidden"
+              style={{ display: 'none' }}
+            >
+              <div className="text-center">
+                <svg className="w-12 h-12 mx-auto mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-1 0V1.5a.5.5 0 00-.5-.5h-7a.5.5 0 00-.5.5V4m-6 4h16l-1 10H4L3 8z" />
+                </svg>
+                <p className="text-sm text-gray-300 mb-3">Video preview unavailable</p>
+                <a 
+                  href={media.url} 
+                  download 
+                  className="inline-flex items-center px-3 py-2 bg-military-green text-white rounded-md text-sm hover:bg-military-green/80 transition-colors"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Download Video
+                </a>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     );
@@ -94,28 +116,50 @@ export default function MediaSlideshow({ images, videoUrl }: MediaSlideshowProps
           }}
         />
       ) : (
-        <video
-          key={currentMedia.url} // Force re-render when URL changes
-          className="w-full h-full object-cover"
-          controls
-          preload="metadata"
-          playsInline
-          onError={(e) => {
-            console.error("Video error for:", currentMedia.url);
-            const videoElement = e.currentTarget as HTMLVideoElement;
-            console.error("Video error code:", videoElement.error?.code);
-            console.error("Video error message:", videoElement.error?.message);
-            e.currentTarget.style.display = 'none';
-          }}
-          onLoadStart={() => console.log("✓ Video load started:", currentMedia.url)}
-          onCanPlay={() => console.log("✓ Video can play:", currentMedia.url)}
-          onLoadedData={() => console.log("✓ Video loaded and ready to play:", currentMedia.url)}
-          onPlay={() => console.log("✓ Video started playing:", currentMedia.url)}
-        >
-          <source src={currentMedia.url} type="video/webm" />
-          <source src={currentMedia.url} type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
+        <div className="relative w-full h-full bg-gray-800 flex items-center justify-center">
+          <video
+            key={`video-${currentMedia.url}`}
+            src={currentMedia.url}
+            className="w-full h-full object-cover"
+            controls
+            preload="metadata"
+            playsInline
+            muted
+            onError={(e) => {
+              console.error("Video playback failed for:", currentMedia.url);
+              const videoElement = e.currentTarget as HTMLVideoElement;
+              console.error("Video error code:", videoElement.error?.code);
+              // Hide video and show fallback
+              videoElement.style.display = 'none';
+              const fallback = videoElement.nextElementSibling as HTMLElement;
+              if (fallback) fallback.style.display = 'flex';
+            }}
+            onLoadStart={() => console.log("✓ Video load started:", currentMedia.url)}
+            onCanPlay={() => console.log("✓ Video can play:", currentMedia.url)}
+          />
+          {/* Fallback UI for when video fails to play */}
+          <div 
+            className="absolute inset-0 bg-gray-800 flex flex-col items-center justify-center text-white p-4 rounded hidden"
+            style={{ display: 'none' }}
+          >
+            <div className="text-center">
+              <svg className="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              <p className="text-gray-300 mb-4">Video preview unavailable</p>
+              <a 
+                href={currentMedia.url} 
+                download 
+                className="inline-flex items-center px-4 py-2 bg-military-green text-white rounded-md hover:bg-military-green/80 transition-colors"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Download Video
+              </a>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Navigation Arrows */}

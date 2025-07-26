@@ -2467,19 +2467,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ message: "Strava client ID not configured" });
       }
 
-      // Use the correct Replit domain for redirect URI
+      // Use the correct Replit domain for redirect URI - try exact domain without subdomain
       const host = req.get('host');
       let redirectUri;
       
-      // Check if running on Replit
-      if (host && (host.includes('replit.app') || host.includes('repl.co'))) {
-        redirectUri = `https://${host}/api/strava/callback`;
+      // Try different callback URL formats for Strava compatibility
+      if (host && host.includes('replit.app')) {
+        // Try without api prefix first
+        redirectUri = `https://${host}/strava/callback`;
       } else if (process.env.REPL_SLUG && process.env.REPL_OWNER) {
-        // Construct Replit URL from environment variables
-        redirectUri = `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.app/api/strava/callback`;
+        redirectUri = `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.app/strava/callback`;
       } else {
-        // Fallback to localhost for development
-        redirectUri = `${req.protocol}://${req.get('host')}/api/strava/callback`;
+        redirectUri = `${req.protocol}://${req.get('host')}/strava/callback`;
       }
       
       console.log('Generated redirect URI:', redirectUri);
@@ -2521,7 +2520,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ routes });
   });
 
-  // Strava OAuth callback - simplified for debugging
+  // Alternative Strava callback without /api prefix
+  app.get("/strava/callback", (req, res) => {
+    console.log("=== STRAVA CALLBACK HIT (NO API PREFIX) ===");
+    console.log("Query params:", req.query);
+    console.log("Headers:", req.headers);
+    console.log("Method:", req.method);
+    console.log("URL:", req.url);
+    
+    const { code, state, error } = req.query;
+
+    if (error) {
+      console.error("Strava OAuth error:", error);
+      return res.redirect(`/?strava_error=${encodeURIComponent(error as string)}`);
+    }
+
+    if (!code || !state) {
+      console.error("Missing code or state in Strava callback");
+      return res.redirect("/?strava_error=missing_parameters");
+    }
+
+    console.log("Callback working (no api prefix) - would process code:", code);
+    return res.redirect("/?strava_test=callback_hit_no_api");
+  });
+
+  // Original Strava OAuth callback - simplified for debugging
   app.get("/api/strava/callback", (req, res) => {
     console.log("=== STRAVA CALLBACK HIT ===");
     console.log("Query params:", req.query);

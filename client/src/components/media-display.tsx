@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import * as React from 'react';
 import { X, ChevronLeft, ChevronRight, Images } from 'lucide-react';
 
 interface MediaDisplayProps {
@@ -14,16 +15,46 @@ interface ImageGalleryModalProps {
 }
 
 function ImageGalleryModal({ images, currentIndex, setCurrentIndex, onClose }: ImageGalleryModalProps) {
+  const [slideDirection, setSlideDirection] = React.useState<'left' | 'right'>('right');
+  
   const goToPrevious = () => {
+    setSlideDirection('left');
     setCurrentIndex(currentIndex === 0 ? images.length - 1 : currentIndex - 1);
   };
 
   const goToNext = () => {
+    setSlideDirection('right');
     setCurrentIndex(currentIndex === images.length - 1 ? 0 : currentIndex + 1);
   };
 
+  // Handle keyboard navigation
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      goToPrevious();
+    }
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      goToNext();
+    }
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      onClose();
+    }
+  };
+
+  // Add keyboard listeners
+  React.useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [currentIndex]);
+
   return (
-    <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50" onClick={onClose}>
+    <div 
+      className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 backdrop-blur-sm transition-all duration-300 ease-out" 
+      onClick={onClose}
+      style={{ animation: 'fadeIn 0.2s ease-out' }}
+    >
       <div className="relative max-w-4xl max-h-[90vh] w-full mx-4" onClick={(e) => e.stopPropagation()}>
         {/* Close Button */}
         <button
@@ -36,9 +67,11 @@ function ImageGalleryModal({ images, currentIndex, setCurrentIndex, onClose }: I
         {/* Main Image */}
         <div className="relative bg-black rounded-lg overflow-hidden">
           <img
+            key={currentIndex} // Force re-render for smooth transition
             src={images[currentIndex]}
             alt={`Evidence image ${currentIndex + 1}`}
-            className="w-full h-auto max-h-[80vh] object-contain"
+            className="w-full h-auto max-h-[80vh] object-contain transition-all duration-300 ease-out transform"
+            style={{ animation: `${slideDirection === 'left' ? 'slideInLeft' : 'slideInRight'} 0.3s ease-out` }}
             onError={(e) => {
               console.error("Gallery image failed to load:", images[currentIndex]);
               e.currentTarget.style.display = 'none';
@@ -50,13 +83,13 @@ function ImageGalleryModal({ images, currentIndex, setCurrentIndex, onClose }: I
             <>
               <button
                 onClick={goToPrevious}
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-3 rounded-full hover:bg-black/70 transition-colors"
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-3 rounded-full hover:bg-black/70 hover:scale-110 transition-all duration-200 ease-out shadow-lg hover:shadow-xl"
               >
                 <ChevronLeft className="w-6 h-6" />
               </button>
               <button
                 onClick={goToNext}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-3 rounded-full hover:bg-black/70 transition-colors"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-3 rounded-full hover:bg-black/70 hover:scale-110 transition-all duration-200 ease-out shadow-lg hover:shadow-xl"
               >
                 <ChevronRight className="w-6 h-6" />
               </button>
@@ -65,7 +98,11 @@ function ImageGalleryModal({ images, currentIndex, setCurrentIndex, onClose }: I
 
           {/* Image Counter */}
           {images.length > 1 && (
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+            <div 
+              key={currentIndex} 
+              className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-sm transition-all duration-200 ease-out"
+              style={{ animation: 'fadeIn 0.2s ease-out' }}
+            >
               {currentIndex + 1} / {images.length}
             </div>
           )}
@@ -73,13 +110,13 @@ function ImageGalleryModal({ images, currentIndex, setCurrentIndex, onClose }: I
 
         {/* Thumbnail Strip (only show if multiple images) */}
         {images.length > 1 && (
-          <div className="flex justify-center mt-4 space-x-2 overflow-x-auto">
+          <div className="flex justify-center mt-4 space-x-2 overflow-x-auto pb-2 px-4" style={{ scrollBehavior: 'smooth' }}>
             {images.map((image, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentIndex(index)}
-                className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-colors ${
-                  index === currentIndex ? 'border-military-green' : 'border-transparent hover:border-gray-400'
+                className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-200 ease-out transform ${
+                  index === currentIndex ? 'border-military-green scale-110 shadow-lg' : 'border-transparent hover:border-gray-400 hover:scale-105'
                 }`}
               >
                 <img

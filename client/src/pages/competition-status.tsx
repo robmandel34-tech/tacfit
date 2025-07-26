@@ -97,44 +97,106 @@ export default function CompetitionStatus() {
       <Navigation />
       
       <main className="container mx-auto px-4 py-6">
-        {/* Competition Header - Above Map */}
+        {/* Header Card */}
+        {competition && (
+          <Card className="bg-gradient-to-r from-military-green-dark to-military-green border-military-green/30 mb-8">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <Trophy className="h-6 w-6 text-white" />
+                  <CardTitle className="text-white text-2xl">{competition.name}</CardTitle>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <Badge 
+                    variant={new Date() < new Date(competition.startDate) ? "secondary" : new Date() > new Date(competition.endDate) ? "outline" : "default"}
+                    className={`${
+                      new Date() < new Date(competition.startDate) 
+                        ? "bg-orange-500/20 text-orange-300 border-orange-500/30" 
+                        : new Date() > new Date(competition.endDate)
+                        ? "bg-gray-500/20 text-gray-300 border-gray-500/30"
+                        : "bg-military-green/20 text-military-green border-military-green/30"
+                    }`}
+                  >
+                    {new Date() < new Date(competition.startDate) ? (
+                      <>
+                        <Clock className="h-3 w-3 mr-1" />
+                        Starts in {Math.ceil((new Date(competition.startDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days
+                      </>
+                    ) : new Date() > new Date(competition.endDate) ? (
+                      <>
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Completed
+                      </>
+                    ) : (
+                      <>
+                        <Activity className="h-3 w-3 mr-1" />
+                        {Math.ceil((new Date(competition.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days left
+                      </>
+                    )}
+                  </Badge>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-white hover:bg-white/10"
+                        disabled={leaveCompetitionMutation.isPending}
+                      >
+                        <LogOut className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="bg-tactical-gray-light border-tactical-gray-lighter">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="text-white">Leave Competition</AlertDialogTitle>
+                        <AlertDialogDescription className="text-gray-300">
+                          Are you sure you want to leave this competition? You will lose your team membership and progress.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className="bg-tactical-gray border-tactical-gray-lighter text-white hover:bg-tactical-gray-light">
+                          Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => leaveCompetitionMutation.mutate()}
+                          className="bg-red-600 hover:bg-red-700 text-white"
+                        >
+                          Leave Competition
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </div>
+              <div className="text-gray-200 text-sm mt-2">
+                {competition.description}
+              </div>
+              <div className="flex items-center space-x-6 mt-4 text-sm text-gray-200">
+                <div className="flex items-center space-x-2">
+                  <Calendar className="h-4 w-4" />
+                  <span>{new Date(competition.startDate).toLocaleDateString()} - {new Date(competition.endDate).toLocaleDateString()}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Users className="h-4 w-4" />
+                  <span>{teams.length} teams</span>
+                </div>
+                {competition.requiredActivities && competition.requiredActivities.length > 0 && (
+                  <div className="flex items-center space-x-2">
+                    <Target className="h-4 w-4" />
+                    <span>{competition.requiredActivities.join(", ")}</span>
+                  </div>
+                )}
+              </div>
+            </CardHeader>
+          </Card>
+        )}
+
+        {/* Competition Content - Now below the header card */}
         {competition && (
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
-              <h1 className="text-3xl font-bold text-white flex-1 mr-4">
-                {competition.name}
-              </h1>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    disabled={leaveCompetitionMutation.isPending}
-                    className="text-red-500 hover:text-red-600 hover:bg-transparent p-2 flex-shrink-0"
-                  >
-                    <LogOut className="h-5 w-5" />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="bg-tactical-gray-light border-tactical-gray">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle className="text-white">Leave Competition</AlertDialogTitle>
-                    <AlertDialogDescription className="text-gray-300">
-                      Are you sure you want to leave this competition? You will not be able to rejoin once you leave.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel className="bg-tactical-gray border-tactical-gray text-gray-300 hover:bg-tactical-gray-light">
-                      Cancel
-                    </AlertDialogCancel>
-                    <AlertDialogAction 
-                      onClick={() => leaveCompetitionMutation.mutate()}
-                      className="bg-red-600 hover:bg-red-700 text-white"
-                    >
-                      Leave Competition
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <h2 className="text-xl font-bold text-white flex-1 mr-4">
+                Progress Map
+              </h2>
             </div>
             <div className="text-sm text-gray-400 mb-2">
               <div className="flex items-center justify-between">

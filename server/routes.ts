@@ -180,12 +180,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // Set session
+      req.session.userId = user.id;
+      req.session.user = user;
+      
       // Don't send password back
       const { password: _, ...userWithoutPassword } = user;
       res.json(userWithoutPassword);
     } catch (error) {
       res.status(500).json({ message: "Login failed" });
     }
+  });
+
+  app.post("/api/auth/logout", async (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Could not log out" });
+      }
+      res.clearCookie('connect.sid'); // Clear the session cookie
+      res.json({ message: "Logged out successfully" });
+    });
   });
 
   // User routes

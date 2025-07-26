@@ -96,7 +96,7 @@ export function HelpModal() {
             {/* Help Topics */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {helpSections.map((section, index) => (
-                <Link key={index} href={section.href}>
+                <a key={index} href={section.href} target="_blank" rel="noopener noreferrer">
                   <Card className="bg-gray-800/50 border-gray-700 hover:bg-gray-800/70 transition-colors cursor-pointer group">
                     <CardContent className="p-4">
                       <div className="flex items-start space-x-3">
@@ -115,7 +115,7 @@ export function HelpModal() {
                       </div>
                     </CardContent>
                   </Card>
-                </Link>
+                </a>
               ))}
             </div>
 
@@ -128,7 +128,7 @@ export function HelpModal() {
                 <div className="space-y-3 text-sm">
                   <div className="flex items-start space-x-2">
                     <div className="w-2 h-2 rounded-full bg-military-green mt-2 flex-shrink-0"></div>
-                    <p className="text-gray-300">Submit activities with both photo and video evidence to earn maximum points (30 vs 20)</p>
+                    <p className="text-gray-300">Submit activities with both photo and video evidence to earn maximum points (30 vs 15)</p>
                   </div>
                   <div className="flex items-start space-x-2">
                     <div className="w-2 h-2 rounded-full bg-military-green mt-2 flex-shrink-0"></div>

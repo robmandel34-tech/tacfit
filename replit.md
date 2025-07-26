@@ -355,6 +355,8 @@ Preferred communication style: Simple, everyday language.
 - **REMOVED**: Activity requirements section removed from competition overview help popup
 - **ENHANCED**: Help pages now have back navigation to help center instead of main feed
 - **FIXED**: Back navigation now properly returns to main page instead of closing help modal
+- **ENHANCED**: Help cards now open in new tabs to preserve help center modal state
+- **FIXED**: Quick tip point values corrected to show 30 vs 15 instead of 30 vs 20
 
 ### Admin Portal Implementation (July 2025)
 - **NEW**: Complete admin portal for competition creation and management

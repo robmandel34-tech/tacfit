@@ -42,7 +42,7 @@ Preferred communication style: Simple, everyday language.
 - **NEW**: Activity deduplication prevents duplicate entries from manual and Strava submissions
 - **NEW**: Strava integration UI component with connection status, sync controls, and disconnect functionality
 - **NEW**: Profile page integration - Strava controls only visible on user's own profile for privacy
-- **NEW**: 15 base points awarded per synced Strava activity with team point accumulation
+- **NEW**: 30 points awarded per synced Strava activity (automatic evidence verification) with team point accumulation
 - **NEW**: Token refresh handling for expired Strava credentials with automatic re-authentication
 - **NEW**: Comprehensive error handling and user feedback for connection issues
 - **SECURED**: User must be in active competition to sync activities, preventing point farming
@@ -275,6 +275,13 @@ Preferred communication style: Simple, everyday language.
 - **IMPROVED**: Time display logic differentiates between pre-start (starts in X days) and active (X days left) competitions
 - **FIXED**: Competition status display now properly handles competition start dates vs end dates
 - **USER-FRIENDLY**: Clearer messaging helps users understand when competitions begin vs when they end
+
+### Strava Points System Enhancement (July 2025)
+- **UPDATED**: Strava activities now automatically receive full 30 points (instead of 15 base points)
+- **AUTOMATIC**: Both Strava sync and manual Strava imports award maximum points due to verified evidence
+- **ENHANCED**: Point calculation logic distinguishes between manual submissions (15 base + 15 bonus for dual evidence) and Strava activities (automatic 30 points)
+- **CONSISTENT**: All Strava-sourced activities receive the same point value regardless of import method
+- **JUSTIFIED**: Full points awarded because Strava provides automatic activity verification and evidence
 
 ### Activity Submission Pre-Competition Restrictions (July 2025)
 - **NEW**: Backend validation prevents activity submissions before competition start date

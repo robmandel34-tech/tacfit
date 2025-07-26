@@ -1388,17 +1388,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const hasImageEvidence = files['image'] && files['image'][0];
       const hasBothEvidenceTypes = hasVideoEvidence && hasImageEvidence;
       
-      // Apply bonus to reach 30 total points if both video and image are submitted
-      const finalPoints = hasBothEvidenceTypes ? 30 : basePoints;
-      
       // Handle Strava activity ID if provided
       let description = req.body.description;
       let evidenceType = null;
+      let isStravaActivity = false;
       
       if (req.body.stravaActivityId) {
         description = `${req.body.description} (Imported from Strava - ID: ${req.body.stravaActivityId})`;
         evidenceType = "strava_import";
+        isStravaActivity = true;
       }
+      
+      // Apply points logic: Strava activities get full 30 points automatically, 
+      // manual activities get 30 only if both evidence types are provided
+      const finalPoints = isStravaActivity ? 30 : (hasBothEvidenceTypes ? 30 : basePoints);
 
       const activityData = {
         userId: userId,
@@ -1413,8 +1416,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log("Processed activity data:", activityData);
       
-      if (hasBothEvidenceTypes) {
-        console.log(`Bonus points awarded! User submitted both video and image evidence. Points: ${basePoints} + 50% bonus = ${finalPoints}`);
+      if (isStravaActivity) {
+        console.log(`Strava activity import! Automatically awarded full 30 points for verified Strava activity.`);
+      } else if (hasBothEvidenceTypes) {
+        console.log(`Bonus points awarded! User submitted both video and image evidence. Points: ${basePoints} + bonus = ${finalPoints}`);
       }
       
       const validatedData = insertActivitySchema.parse(activityData);
@@ -2742,7 +2747,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               evidenceType: "strava_sync",
               evidenceUrl: null,
               imageUrl: null,
-              points: 15, // Base points for Strava sync
+              points: 30, // Full points for Strava sync (verified activity)
               isFlagged: false,
             };
 
@@ -2752,7 +2757,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               
               // Update team points
               await storage.updateTeam(team.id, {
-                points: (team.points || 0) + 15
+                points: (team.points || 0) + 30
               });
             }
           }

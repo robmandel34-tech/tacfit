@@ -6,7 +6,7 @@ import {
   InsertCompetitionInvitation, CompetitionEntry, InsertCompetitionEntry,
   PhoneInvitation, InsertPhoneInvitation, WhiteboardItem, InsertWhiteboardItem, 
   MissionTask, InsertMissionTask, ActivityType, InsertActivityType,
-  AdminPost, InsertAdminPost
+  AdminPost, InsertAdminPost, MoodLog, InsertMoodLog
 } from "@shared/schema";
 
 export interface IStorage {
@@ -131,6 +131,12 @@ export interface IStorage {
   createAdminPost(post: InsertAdminPost): Promise<AdminPost>;
   updateAdminPost(id: number, updates: Partial<AdminPost>): Promise<AdminPost | undefined>;
   deleteAdminPost(id: number): Promise<boolean>;
+  
+  // Mood log operations
+  createMoodLog(moodLog: InsertMoodLog): Promise<MoodLog>;
+  getUserMoodLogs(userId: number, limit?: number): Promise<MoodLog[]>;
+  getLatestMoodLog(userId: number): Promise<MoodLog | undefined>;
+  hasLoggedMoodToday(userId: number): Promise<boolean>;
 }
 
 import { DatabaseStorage } from "./database-storage";

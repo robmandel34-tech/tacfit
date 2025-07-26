@@ -6,11 +6,11 @@ import {
   CompetitionInvitation, InsertCompetitionInvitation, CompetitionEntry, 
   InsertCompetitionEntry, PhoneInvitation, InsertPhoneInvitation, WhiteboardItem, 
   InsertWhiteboardItem, MissionTask, InsertMissionTask, ActivityType, InsertActivityType,
-  AdminPost, InsertAdminPost,
+  AdminPost, InsertAdminPost, MoodLog, InsertMoodLog,
   users, competitions, teams, teamMembers, activities, activityTypes,
   activityComments, activityLikes, activityFlags, chatMessages, friendships, 
   competitionHistory, competitionInvitations, competitionEntries, phoneInvitations, 
-  whiteboardItems, missionTasks, adminPosts
+  whiteboardItems, missionTasks, adminPosts, moodLogs
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc, isNull, gt } from "drizzle-orm";
@@ -711,5 +711,54 @@ export class DatabaseStorage implements IStorage {
       .delete(adminPosts)
       .where(eq(adminPosts.id, id));
     return result.rowCount > 0;
+  }
+
+  // Mood log operations
+  async createMoodLog(moodLog: InsertMoodLog): Promise<MoodLog> {
+    const [log] = await db
+      .insert(moodLogs)
+      .values(moodLog)
+      .returning();
+    return log;
+  }
+
+  async getUserMoodLogs(userId: number, limit?: number): Promise<MoodLog[]> {
+    const query = db
+      .select()
+      .from(moodLogs)
+      .where(eq(moodLogs.userId, userId))
+      .orderBy(desc(moodLogs.loggedAt));
+    
+    if (limit) {
+      return await query.limit(limit);
+    }
+    return await query;
+  }
+
+  async getLatestMoodLog(userId: number): Promise<MoodLog | undefined> {
+    const [log] = await db
+      .select()
+      .from(moodLogs)
+      .where(eq(moodLogs.userId, userId))
+      .orderBy(desc(moodLogs.loggedAt))
+      .limit(1);
+    return log || undefined;
+  }
+
+  async hasLoggedMoodToday(userId: number): Promise<boolean> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const [log] = await db
+      .select()
+      .from(moodLogs)
+      .where(
+        and(
+          eq(moodLogs.userId, userId),
+          gt(moodLogs.loggedAt, today)
+        )
+      )
+      .limit(1);
+    return !!log;
   }
 }

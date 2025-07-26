@@ -224,6 +224,14 @@ export const adminPosts = pgTable("admin_posts", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const moodLogs = pgTable("mood_logs", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  mood: text("mood").notNull(), // excellent, good, okay, stressed, down
+  note: text("note"), // optional user note
+  loggedAt: timestamp("logged_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -308,6 +316,11 @@ export const insertAdminPostSchema = createInsertSchema(adminPosts).omit({
   updatedAt: true,
 });
 
+export const insertMoodLogSchema = createInsertSchema(moodLogs).omit({
+  id: true,
+  loggedAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -343,3 +356,5 @@ export type MissionTask = typeof missionTasks.$inferSelect;
 export type InsertMissionTask = z.infer<typeof insertMissionTaskSchema>;
 export type AdminPost = typeof adminPosts.$inferSelect;
 export type InsertAdminPost = z.infer<typeof insertAdminPostSchema>;
+export type MoodLog = typeof moodLogs.$inferSelect;
+export type InsertMoodLog = z.infer<typeof insertMoodLogSchema>;

@@ -8,7 +8,7 @@ import {
   insertTeamMemberSchema, insertActivitySchema, insertActivityCommentSchema,
   insertChatMessageSchema, insertFriendshipSchema, insertCompetitionInvitationSchema,
   insertCompetitionEntrySchema, insertMissionTaskSchema, insertActivityTypeSchema,
-  insertAdminPostSchema, friendships, type User
+  insertAdminPostSchema, insertMoodLogSchema, friendships, type User
 } from "@shared/schema";
 import { db } from "./db";
 import { and, eq } from "drizzle-orm";
@@ -3499,6 +3499,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
       hasApiKey: !!apiKey,
       apiKeyPrefix: apiKey ? apiKey.substring(0, 10) + '...' : 'MISSING'
     });
+  });
+
+  // Mood logging routes
+
+  // Create a mood log entry
+  app.post("/api/mood-logs", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.sendStatus(401);
+      }
+
+      const validationResult = insertMoodLogSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        return res.status(400).json({ message: "Invalid mood log data", errors: validationResult.error.errors });
+      }
+
+      const moodLogData = {
+        ...validationResult.data,
+        userId: req.session.user.id,
+        loggedAt: new Date()
+      };
+
+      const moodLog = await storage.createMoodLog(moodLogData);
+      console.log('Mood log created:', moodLog);
+      res.status(201).json(moodLog);
+    } catch (error: any) {
+      console.error('Mood log creation error:', error);
+      res.status(500).json({ message: error.message || "Error creating mood log" });
+    }
+  });
+
+  // Get user's mood logs
+  app.get("/api/mood-logs/user/:userId", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.sendStatus(401);
+      }
+
+      const userId = parseInt(req.params.userId);
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+
+      // Users can only access their own mood logs
+      if (req.session.user.id !== userId) {
+        return res.sendStatus(403);
+      }
+
+      const moodLogs = await storage.getUserMoodLogs(userId, limit);
+      res.json(moodLogs);
+    } catch (error: any) {
+      console.error('Get mood logs error:', error);
+      res.status(500).json({ message: error.message || "Error fetching mood logs" });
+    }
+  });
+
+  // Get user's latest mood log
+  app.get("/api/mood-logs/user/:userId/latest", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.sendStatus(401);
+      }
+
+      const userId = parseInt(req.params.userId);
+
+      // Users can only access their own mood logs
+      if (req.session.user.id !== userId) {
+        return res.sendStatus(403);
+      }
+
+      const latestMoodLog = await storage.getLatestMoodLog(userId);
+      res.json(latestMoodLog || null);
+    } catch (error: any) {
+      console.error('Get latest mood log error:', error);
+      res.status(500).json({ message: error.message || "Error fetching latest mood log" });
+    }
+  });
+
+  // Check if user has logged mood today
+  app.get("/api/mood-logs/user/:userId/today", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.sendStatus(401);
+      }
+
+      const userId = parseInt(req.params.userId);
+
+      // Users can only check their own mood logs
+      if (req.session.user.id !== userId) {
+        return res.sendStatus(403);
+      }
+
+      const hasLoggedToday = await storage.hasLoggedMoodToday(userId);
+      res.json({ hasLoggedToday });
+    } catch (error: any) {
+      console.error('Check mood today error:', error);
+      res.status(500).json({ message: error.message || "Error checking mood log status" });
+    }
   });
 
   const httpServer = createServer(app);

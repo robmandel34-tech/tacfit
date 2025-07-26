@@ -271,7 +271,7 @@ export default function StravaIntegration() {
                 className="bg-military-green hover:bg-military-green-light text-white"
               >
                 <Zap className="h-4 w-4 mr-2" />
-                {syncActivities.isPending ? "Syncing..." : "Sync Activities"}
+                {syncActivities.isPending ? "Syncing Historical Activities..." : "Sync 18 Months of Activities"}
               </Button>
               
               <Button 
@@ -303,9 +303,9 @@ export default function StravaIntegration() {
           <div className="font-medium mb-2">How it works:</div>
           <ul className="space-y-1 list-disc list-inside">
             <li>Connect your Strava account securely</li>
-            <li>Your activities from the last 30 days will be synced</li>
+            <li>Your activities from the last 18 months will be synced</li>
             <li>Activities automatically map to TacFit activity types</li>
-            <li>Each synced activity earns 15 base points</li>
+            <li>Each synced activity earns 30 points (verified evidence)</li>
             <li>You must be in a competition to sync activities</li>
           </ul>
         </div>

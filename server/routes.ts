@@ -2893,22 +2893,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // Get recent activities from Strava (last 30 days)
-      const thirtyDaysAgo = Math.floor((Date.now() - 30 * 24 * 60 * 60 * 1000) / 1000);
-      const activitiesResponse = await fetch(
-        `https://www.strava.com/api/v3/athlete/activities?after=${thirtyDaysAgo}&per_page=50`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      // Get activities from last 18 months (548 days)
+      const eighteenMonthsAgo = Math.floor((Date.now() - 548 * 24 * 60 * 60 * 1000) / 1000);
+      console.log(`Fetching Strava activities since ${new Date(eighteenMonthsAgo * 1000).toISOString()}`);
+      
+      // Fetch activities in batches (Strava limits to 200 per request)
+      let allActivities = [];
+      let page = 1;
+      const perPage = 200;
+      
+      while (true) {
+        const activitiesResponse = await fetch(
+          `https://www.strava.com/api/v3/athlete/activities?after=${eighteenMonthsAgo}&per_page=${perPage}&page=${page}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
 
-      if (!activitiesResponse.ok) {
-        return res.status(400).json({ message: "Failed to fetch Strava activities" });
+        if (!activitiesResponse.ok) {
+          return res.status(400).json({ message: "Failed to fetch Strava activities" });
+        }
+
+        const pageActivities = await activitiesResponse.json();
+        
+        // If we get less than perPage activities, we've reached the end
+        if (pageActivities.length === 0) {
+          break;
+        }
+        
+        allActivities.push(...pageActivities);
+        
+        // If we got less than perPage, this is the last page
+        if (pageActivities.length < perPage) {
+          break;
+        }
+        
+        page++;
+        console.log(`Fetched page ${page - 1}, total activities so far: ${allActivities.length}`);
+        
+        // Prevent infinite loops and respect Strava rate limits
+        if (page > 50) {
+          console.log(`Stopping after 50 pages to respect rate limits`);
+          break;
+        }
       }
 
-      const stravaActivities = await activitiesResponse.json();
+      console.log(`Total Strava activities fetched: ${allActivities.length}`);
+
+      const stravaActivities = allActivities;
       const syncedActivities = [];
 
       // Map Strava activities to TacFit activity types

@@ -154,8 +154,8 @@ export default function ProgressMap({ teams, competitionName, competition, activ
                   <div 
                     className="w-full h-full bg-cover bg-center"
                     style={{
-                      backgroundImage: `url('/user-terrain-image.jpeg')`,
-                      filter: 'brightness(1.3) contrast(1.1) saturate(1.2)'
+                      backgroundImage: `url('/terrain-background.png')`,
+                      filter: 'brightness(1.1) contrast(1.2) saturate(1.1)'
                     }}
                   />
                   

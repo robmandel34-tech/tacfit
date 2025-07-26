@@ -2088,6 +2088,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get pending tasks for a specific user
+  app.get("/api/mission-tasks/user/:userId/pending", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const pendingTasks = await storage.getUserPendingTasks(userId);
+      res.json(pendingTasks);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching pending tasks" });
+    }
+  });
+
   app.post("/api/mission-tasks", async (req, res) => {
     try {
       // Create task with generated ID

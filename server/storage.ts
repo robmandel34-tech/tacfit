@@ -106,6 +106,7 @@ export interface IStorage {
   
   // Mission task operations
   getMissionTasks(teamId: number): Promise<MissionTask[]>;
+  getUserPendingTasks(userId: number): Promise<MissionTask[]>;
   createMissionTask(insertTask: InsertMissionTask): Promise<MissionTask>;
   updateMissionTask(id: string, updates: Partial<MissionTask>): Promise<MissionTask | undefined>;
   deleteMissionTask(id: string): Promise<boolean>;

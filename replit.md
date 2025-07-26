@@ -300,6 +300,20 @@ Preferred communication style: Simple, everyday language.
 - **CONSISTENT**: Activity progress cards now align with submission restrictions and progress map limitations
 - **USER-FRIENDLY**: Clear messaging indicates when progress tracking will begin with competition start date
 
+### Mission Task Notification System (July 2025)
+- **NEW**: Profile icon in top navigation shows red notification badge when user has pending tasks
+- **NEW**: Notification count displays actual number of pending tasks (1-9, or 9+ for higher counts)
+- **NEW**: API endpoint for fetching user-specific pending tasks (/api/mission-tasks/user/:userId/pending)
+- **NEW**: Profile page shows dedicated "Pending Mission Tasks" section for task notifications
+- **NEW**: Task notification section displays on user's own profile only when pending tasks exist
+- **NEW**: Orange-themed notification design with task details, descriptions, and due dates
+- **NEW**: Profile notification shows up to 3 tasks with summary and link to team page
+- **NEW**: Real-time task count updates as tasks are completed or assigned
+- **NEW**: Database storage method for efficiently querying user pending tasks
+- **ENHANCED**: Task notification system provides immediate visibility of assigned responsibilities
+- **USER-FRIENDLY**: Clear call-to-action directing users to team page for task management
+- **SECURED**: Task notifications only visible to assigned user on their own profile page
+
 ### Admin Portal Implementation (July 2025)
 - **NEW**: Complete admin portal for competition creation and management
 - **ACCESS**: Admin users can access portal via /admin route in main navigation

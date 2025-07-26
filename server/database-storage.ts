@@ -508,6 +508,20 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(missionTasks.createdAt));
   }
 
+  async getUserPendingTasks(userId: number): Promise<MissionTask[]> {
+    return await db
+      .select()
+      .from(missionTasks)
+      .where(
+        and(
+          eq(missionTasks.assignedTo, userId.toString()),
+          eq(missionTasks.completed, false),
+          eq(missionTasks.status, 'pending')
+        )
+      )
+      .orderBy(desc(missionTasks.createdAt));
+  }
+
   async createMissionTask(insertTask: InsertMissionTask): Promise<MissionTask> {
     const [task] = await db
       .insert(missionTasks)

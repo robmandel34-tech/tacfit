@@ -2,7 +2,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { Link, useLocation, useRouter } from "wouter";
 import { Button } from "@/components/ui/button";
 import { HelpModal } from "@/components/help-modal";
-import { Shield, Trophy, MessageCircle, Users, Activity } from "lucide-react";
+import { Shield, Trophy, MessageCircle, Users, Activity, Bell } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Navigation() {
   const { user, logout } = useAuth();
@@ -10,7 +11,13 @@ export default function Navigation() {
 
   if (!user) return null;
 
+  // Get pending tasks for notification count
+  const { data: pendingTasks = [] } = useQuery({
+    queryKey: [`/api/mission-tasks/user/${user.id}/pending`],
+    enabled: !!user.id,
+  });
 
+  const pendingTasksCount = pendingTasks.length;
 
   const getInitials = (username: string) => {
     return username.split(' ').map(word => word[0]).join('').toUpperCase() || username.slice(0, 2).toUpperCase();
@@ -79,17 +86,25 @@ export default function Navigation() {
                 className="flex items-center space-x-3 hover:opacity-80 transition-opacity duration-200"
                 onClick={() => navigate('/profile')}
               >
-                {user.avatar ? (
-                  <img
-                    src={`/uploads/${user.avatar}`}
-                    alt="Profile picture"
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="w-10 h-10 bg-military-green rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">{getInitials(user.username)}</span>
-                  </div>
-                )}
+                <div className="relative">
+                  {user.avatar ? (
+                    <img
+                      src={`/uploads/${user.avatar}`}
+                      alt="Profile picture"
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 bg-military-green rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold text-sm">{getInitials(user.username)}</span>
+                    </div>
+                  )}
+                  {/* Task notification indicator */}
+                  {pendingTasksCount > 0 && (
+                    <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                      {pendingTasksCount > 9 ? '9+' : pendingTasksCount}
+                    </div>
+                  )}
+                </div>
                 <span className="hidden md:block text-white font-semibold">{user.username}</span>
               </button>
             </div>

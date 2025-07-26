@@ -98,6 +98,12 @@ export default function Profile() {
     enabled: !!user?.id && isOwnProfile,
   });
 
+  // Get pending tasks for the current user (only on own profile)
+  const { data: pendingTasks = [] } = useQuery({
+    queryKey: [`/api/mission-tasks/user/${user?.id}/pending`],
+    enabled: !!user?.id && isOwnProfile,
+  });
+
   // Friend request mutation
   const sendFriendRequest = useMutation({
     mutationFn: async () => {
@@ -871,6 +877,57 @@ export default function Profile() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Task Notifications - Only show on own profile if there are pending tasks */}
+            {isOwnProfile && pendingTasks.length > 0 && (
+              <Card className="bg-tactical-gray-light border-tactical-gray border-orange-500/50">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Bell className="h-5 w-5 text-orange-500" />
+                    Pending Mission Tasks
+                    <Badge className="bg-orange-500 text-white ml-2">
+                      {pendingTasks.length}
+                    </Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Bell className="h-4 w-4 text-orange-500" />
+                      <h3 className="font-semibold text-orange-100">You have {pendingTasks.length} pending {pendingTasks.length === 1 ? 'task' : 'tasks'}</h3>
+                    </div>
+                    <p className="text-sm text-orange-200 mb-3">
+                      Your team captain has assigned tasks that need your attention.
+                    </p>
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {pendingTasks.slice(0, 3).map((task: any) => (
+                        <div key={task.id} className="flex items-center justify-between bg-orange-500/5 rounded p-2">
+                          <div className="flex-1">
+                            <p className="text-orange-100 font-medium text-sm">{task.title}</p>
+                            {task.description && (
+                              <p className="text-orange-200 text-xs mt-1">{task.description}</p>
+                            )}
+                            {task.dueDate && (
+                              <p className="text-orange-300 text-xs mt-1">Due: {new Date(task.dueDate).toLocaleDateString()}</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                      {pendingTasks.length > 3 && (
+                        <p className="text-orange-300 text-xs text-center">And {pendingTasks.length - 3} more...</p>
+                      )}
+                    </div>
+                    <Button
+                      onClick={() => window.location.href = "/team"}
+                      className="w-full mt-3 bg-orange-500 hover:bg-orange-600 text-white"
+                      size="sm"
+                    >
+                      View All Tasks on Team Page
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

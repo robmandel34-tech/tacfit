@@ -135,7 +135,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   const handleStravaActivitySelect = (stravaActivity: any) => {
     setSelectedStravaActivity(stravaActivity);
     setType(stravaActivity.mappedType || "");
-    setDescription(`${stravaActivity.name} - Imported from Strava`);
+    setDescription(stravaActivity.name);
     setQuantity(stravaActivity.mappedQuantity?.toString() || "");
     setShowStravaActivities(false);
   };

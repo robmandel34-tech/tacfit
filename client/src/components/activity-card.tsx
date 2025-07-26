@@ -11,6 +11,7 @@ import { useState } from "react";
 import ActivityCommentsModal from "./activity-comments-modal";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { StravaBadge } from "@/components/strava-badge";
 
 interface ActivityCardProps {
   activity: {
@@ -22,6 +23,7 @@ interface ActivityCardProps {
     imageUrl?: string;
     points?: number;
     createdAt: string;
+    stravaActivityId?: string; // Add Strava ID field
     user: {
       id: number;
       username: string;
@@ -134,6 +136,25 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
   const isVideoFile = (url: string) => {
     const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv'];
     return videoExtensions.some(ext => url.toLowerCase().includes(ext));
+  };
+
+  const isStravaActivity = () => {
+    return activity.stravaActivityId || 
+           activity.description?.includes('Strava ID:') ||
+           activity.description?.includes('strava.com/activities/');
+  };
+
+  const getCleanDescription = () => {
+    if (!activity.description) return '';
+    
+    // Remove Strava-related text patterns
+    let cleanDescription = activity.description
+      .replace(/\s*-\s*Imported from Strava.*$/i, '')
+      .replace(/\s*\(Strava ID:.*?\).*$/i, '')
+      .replace(/\s*https:\/\/www\.strava\.com\/activities\/\d+.*$/i, '')
+      .trim();
+    
+    return cleanDescription;
   };
 
   const likeActivity = useMutation({
@@ -275,6 +296,9 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
                 <Badge variant="outline" className="text-xs border-gray-600 text-gray-300 whitespace-nowrap">
                   {getActivityIcon(activity.type)} {getActivityTypeDisplayName(activity.type)}
                 </Badge>
+                {isStravaActivity() && (
+                  <StravaBadge size="sm" />
+                )}
               </div>
               <p className="text-gray-300 text-sm">
                 {activity.quantity && (
@@ -282,8 +306,8 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
                     {activity.quantity} {getActivityMeasurement(activity.type)}
                   </span>
                 )}
-                {activity.quantity && activity.description && ' - '}
-                {activity.description}
+                {activity.quantity && getCleanDescription() && ' - '}
+                {getCleanDescription()}
               </p>
               {activity.competition && (
                 <p className="text-xs text-military-green mt-1 flex items-center gap-1">

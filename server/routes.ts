@@ -2500,6 +2500,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ message: "Strava test endpoint working", timestamp: new Date().toISOString() });
   });
 
+  // Test Strava credentials
+  app.get("/api/strava/test-credentials", async (req, res) => {
+    try {
+      const clientId = process.env.STRAVA_CLIENT_ID;
+      const clientSecret = process.env.STRAVA_CLIENT_SECRET;
+      
+      console.log("Testing Strava credentials...");
+      console.log("Client ID exists:", !!clientId);
+      console.log("Client Secret exists:", !!clientSecret);
+      console.log("Client ID value:", clientId);
+      
+      if (!clientId || !clientSecret) {
+        return res.json({ 
+          error: "Missing credentials", 
+          hasClientId: !!clientId, 
+          hasClientSecret: !!clientSecret 
+        });
+      }
+
+      // Test token endpoint with invalid but real request
+      const testResponse = await fetch("https://www.strava.com/oauth/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          client_id: clientId,
+          client_secret: clientSecret,
+          grant_type: "authorization_code",
+          code: "test", // This will fail but shows if credentials are valid format
+        }),
+      });
+
+      const responseText = await testResponse.text();
+      console.log("Strava API response:", testResponse.status, responseText);
+
+      res.json({
+        status: testResponse.status,
+        response: responseText,
+        credentialsValid: testResponse.status !== 401,
+      });
+    } catch (error) {
+      console.error("Credential test error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Simple callback test without async
   app.get("/api/strava/callback-test", (req, res) => {
     console.log("Simple callback test hit");

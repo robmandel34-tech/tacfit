@@ -224,6 +224,10 @@ Preferred communication style: Simple, everyday language.
 - **ENHANCED**: Activity submission modal now includes orange-themed Strava integration section
 - **ENHANCED**: Comprehensive activity type mapping covering all 44 Strava activity types plus meditation
 - **INTEGRATED**: Seamless workflow allowing users to select recent Strava activities during manual submission
+- **NEW**: Official Strava branded badges automatically appear on imported activities in the Intel Feed
+- **NEW**: StravaBadge component with official Strava orange color (#FC4C02) and mountain logo
+- **NEW**: Automatic detection of Strava activities by description patterns and stravaActivityId
+- **ENHANCED**: Clean activity descriptions with Strava text removed but badge identification preserved
 
 ### Mission Planning Board Updates (July 2025)
 - **RESTORED**: Mission Planning Board brought back with collapsible format matching Team Comms card

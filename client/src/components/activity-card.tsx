@@ -187,6 +187,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // This ensures session cookies are sent
       });
 
       if (!response.ok) {

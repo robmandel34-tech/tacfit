@@ -161,9 +161,12 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     formData.append("description", description);
     formData.append("quantity", quantity);
     
-    // Include Strava activity ID if selected from Strava
+    // Include Strava activity ID and map image if selected from Strava
     if (selectedStravaActivity) {
       formData.append("stravaActivityId", selectedStravaActivity.id.toString());
+      if (selectedStravaActivity.mapImageUrl) {
+        formData.append("mapImageUrl", selectedStravaActivity.mapImageUrl);
+      }
     }
     
     if (videoFile) {
@@ -329,9 +332,16 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                                 )}
                               </div>
                             </div>
-                            <Badge variant="secondary" className="text-xs">
-                              {activity.mappedType}
-                            </Badge>
+                            <div className="flex flex-col items-end gap-1">
+                              <Badge variant="secondary" className="text-xs">
+                                {activity.mappedType}
+                              </Badge>
+                              {activity.mapImageUrl && (
+                                <Badge variant="outline" className="text-xs text-orange-500 border-orange-500">
+                                  Map
+                                </Badge>
+                              )}
+                            </div>
                           </div>
                         </Card>
                       ))}

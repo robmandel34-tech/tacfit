@@ -1485,6 +1485,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         validatedData.imageUrl = `/uploads/${fileName}`;
       }
       
+      // Handle Strava map image URL if provided
+      if (req.body.mapImageUrl && isStravaActivity) {
+        validatedData.imageUrl = req.body.mapImageUrl;
+      }
+      
       const activity = await storage.createActivity(validatedData);
       
       // Update user and team points
@@ -3202,6 +3207,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           mappedQuantity,
           mappedUnit: mappedType?.measurementUnit,
           formattedDate: new Date(activity.start_date).toLocaleDateString(),
+          mapImageUrl: activity.map?.summary_polyline ? 
+            `https://maps.googleapis.com/maps/api/staticmap?size=600x400&path=enc:${activity.map.summary_polyline}&maptype=terrain&key=${process.env.GOOGLE_MAPS_API_KEY || 'demo'}` : 
+            null,
         };
       }).filter((activity: any) => activity.mappedType); // Only return activities that can be mapped
 

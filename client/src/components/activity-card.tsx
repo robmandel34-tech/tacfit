@@ -139,9 +139,25 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
   };
 
   const isStravaActivity = () => {
-    return activity.stravaActivityId || 
-           activity.description?.includes('Strava ID:') ||
-           activity.description?.includes('strava.com/activities/');
+    const hasStravaId = activity.stravaActivityId;
+    const hasStravaText = activity.description?.includes('Strava ID:');
+    const hasStravaUrl = activity.description?.includes('strava.com/activities/');
+    const hasImportedText = activity.description?.includes('Imported from Strava');
+    
+    const isStrava = hasStravaId || hasStravaText || hasStravaUrl || hasImportedText;
+    
+    // Debug logging
+    console.log('Activity detection:', {
+      id: activity.id,
+      description: activity.description,
+      hasStravaId,
+      hasStravaText,
+      hasStravaUrl,
+      hasImportedText,
+      isStrava
+    });
+    
+    return isStrava;
   };
 
   const getCleanDescription = () => {
@@ -298,6 +314,10 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
                 </Badge>
                 {isStravaActivity() && (
                   <StravaBadge size="sm" />
+                )}
+                {/* Temporary debug indicator */}
+                {activity.description?.includes('Imported from Strava') && (
+                  <div className="bg-red-500 text-white text-xs px-2 py-1 rounded">DEBUG: STRAVA</div>
                 )}
               </div>
               <p className="text-gray-300 text-sm">

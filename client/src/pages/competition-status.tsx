@@ -190,12 +190,7 @@ export default function CompetitionStatus() {
           </Card>
         )}
 
-        {/* Progress Map Section */}
-        {competition && (
-          <div className="mb-6">
-            <h2 className="text-xl font-bold text-white mb-4">Progress Map</h2>
-          </div>
-        )}
+
 
         {/* Progress Map */}
         {competition && teams.length > 0 && (

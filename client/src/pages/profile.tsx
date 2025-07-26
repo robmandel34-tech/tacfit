@@ -439,16 +439,7 @@ export default function Profile() {
     <div className="min-h-screen bg-tactical-gray">
       <Navigation />
       
-      <main className="container mx-auto px-4 py-6">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
-            {isOwnProfile ? "Your Profile" : `${displayUser.username}'s Profile`}
-          </h1>
-          <p className="text-gray-300">
-            {isOwnProfile ? "Your fitness journey and achievements" : "View fitness journey and achievements"}
-          </p>
-        </div>
-
+      <main className="container mx-auto px-4 py-4">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Profile Info */}
           <div className="lg:col-span-1">

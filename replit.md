@@ -346,6 +346,8 @@ Preferred communication style: Simple, everyday language.
 - **ENHANCED**: Buddies list now shows message and remove buttons with proper red styling for remove action
 - **FIXED**: Profile name and motto centering issues when viewing other users' profiles
 - **IMPROVED**: Profile text spacing - increased distance between profile picture and name/email/motto text
+- **REMOVED**: Profile page header text ("Your Profile" and description) for cleaner layout
+- **IMPROVED**: Reduced top padding on profile pages to move content up
 
 ### Admin Portal Implementation (July 2025)
 - **NEW**: Complete admin portal for competition creation and management

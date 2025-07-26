@@ -103,10 +103,9 @@ export default function StravaIntegration() {
       return response.json();
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
       toast({
-        title: "Sync Complete",
-        description: `Synced ${data.syncedCount} activities from Strava`,
+        title: "Activities Found",
+        description: `Found ${data.availableCount} Strava activities available for manual submission`,
       });
     },
     onError: (error: any) => {
@@ -271,7 +270,7 @@ export default function StravaIntegration() {
                 className="bg-military-green hover:bg-military-green-light text-white"
               >
                 <Zap className="h-4 w-4 mr-2" />
-                {syncActivities.isPending ? "Syncing Historical Activities..." : "Sync 18 Months of Activities"}
+                {syncActivities.isPending ? "Loading Activities..." : "Load 18 Months of Activities"}
               </Button>
               
               <Button 
@@ -305,7 +304,7 @@ export default function StravaIntegration() {
             <li>Connect your Strava account securely</li>
             <li>Your activities from the last 18 months will be synced</li>
             <li>Activities automatically map to TacFit activity types</li>
-            <li>Each synced activity earns 30 points (verified evidence)</li>
+            <li>Activities are available for manual submission during competitions</li>
             <li>You must be in a competition to sync activities</li>
           </ul>
         </div>

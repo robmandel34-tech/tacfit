@@ -42,7 +42,7 @@ Preferred communication style: Simple, everyday language.
 - **NEW**: Activity deduplication prevents duplicate entries from manual and Strava submissions
 - **NEW**: User-friendly manual connection flow with direct authorization links (no popups required)
 - **NEW**: Profile page integration - Strava controls only visible on user's own profile for privacy
-- **NEW**: 30 points awarded per synced Strava activity (automatic evidence verification) with team point accumulation
+- **NEW**: Strava activities loaded as available options for manual submission during competitions (no automatic points)
 - **NEW**: Token refresh handling for expired Strava credentials with automatic re-authentication
 - **NEW**: Comprehensive error handling and user feedback for connection issues
 - **SECURED**: User must be in active competition to sync activities, preventing point farming

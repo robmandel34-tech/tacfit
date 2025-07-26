@@ -3028,44 +3028,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         if (tacfitType) {
-          // Check if activity already exists
-          const existingActivities = await storage.getActivitiesByUser(user.id);
-          const alreadyExists = existingActivities.some(a => 
-            a.description?.includes(`Strava: ${stravaActivity.name}`) ||
-            a.description?.includes(`strava_id:${stravaActivity.id}`)
-          );
+          // Store activity info for potential manual submission (don't auto-create)
+          syncedActivities.push({
+            id: stravaActivity.id,
+            name: stravaActivity.name,
+            type: tacfitType.displayName,
+            quantity,
+            date: stravaActivity.start_date,
+            duration: stravaActivity.moving_time,
+            distance: stravaActivity.distance,
+            stravaId: stravaActivity.id,
+          });
 
-          if (!alreadyExists) {
-            const activityData = {
-              userId: user.id,
-              competitionId: team.competitionId!,
-              teamId: team.id,
-              type: tacfitType,
-              description: `Strava: ${stravaActivity.name} (strava_id:${stravaActivity.id})`,
-              quantity,
-              evidenceType: "strava_sync",
-              evidenceUrl: null,
-              imageUrl: null,
-              points: 30, // Full points for Strava sync (verified activity)
-              isFlagged: false,
-            };
-
-            const newActivity = await storage.createActivity(activityData);
-            if (newActivity) {
-              syncedActivities.push(newActivity);
-              
-              // Update team points
-              await storage.updateTeam(team.id, {
-                points: (team.points || 0) + 30
-              });
-            }
-          }
+          console.log(`Found Strava activity: ${stravaActivity.name} (${tacfitType.displayName}, ${quantity} ${tacfitType.measurementUnit})`);
         }
       }
 
       res.json({
-        message: `Synced ${syncedActivities.length} activities from Strava`,
-        syncedCount: syncedActivities.length,
+        message: `Found ${syncedActivities.length} Strava activities available for manual submission`,
+        availableCount: syncedActivities.length,
         activities: syncedActivities,
       });
     } catch (error) {

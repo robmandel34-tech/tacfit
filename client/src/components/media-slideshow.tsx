@@ -43,6 +43,8 @@ export default function MediaSlideshow({ images, videoUrl }: MediaSlideshowProps
             src={media.url}
             className="w-full h-full object-cover"
             controls
+            preload="metadata"
+            playsInline
             onError={(e) => {
               console.error("Evidence video failed to load:", media.url);
               e.currentTarget.style.display = 'none';
@@ -85,6 +87,8 @@ export default function MediaSlideshow({ images, videoUrl }: MediaSlideshowProps
           src={currentMedia.url}
           className="w-full h-full object-cover"
           controls
+          preload="metadata"
+          playsInline
           onError={(e) => {
             console.error("Evidence video failed to load:", currentMedia.url);
             e.currentTarget.style.display = 'none';

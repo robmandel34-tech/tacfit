@@ -13,10 +13,10 @@ export default function TeamFormationHelp() {
           <Button 
             variant="ghost" 
             className="text-gray-400 hover:text-white mb-4"
-            onClick={() => window.close()}
+            onClick={() => window.history.back()}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Close Tab
+            Back
           </Button>
           <h1 className="text-3xl font-bold text-white mb-2">Team Formation</h1>
           <p className="text-gray-400">Complete guide to building and managing your tactical fitness team</p>

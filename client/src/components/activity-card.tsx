@@ -312,13 +312,19 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
                 src={activity.evidenceUrl} 
                 alt="Activity evidence" 
                 className="w-full h-64 object-cover border-t border-b border-gray-600"
+                onError={(e) => console.error('Evidence image failed to load:', e.currentTarget.src)}
               />
             ) : activity.imageUrl ? (
-              <img 
-                src={activity.imageUrl} 
-                alt="Activity evidence" 
-                className="w-full h-64 object-cover border-t border-b border-gray-600"
-              />
+              <div>
+                <img 
+                  src={activity.imageUrl} 
+                  alt="Route map" 
+                  className="w-full h-64 object-cover border-t border-b border-gray-600"
+                  onLoad={() => console.log('Route map loaded successfully:', activity.imageUrl)}
+                  onError={(e) => console.error('Route map failed to load:', e.currentTarget.src)}
+                />
+                {console.log('Rendering route map for activity:', activity.id, 'URL:', activity.imageUrl)}
+              </div>
             ) : null}
             
             {/* Show image icon when both video and image are present */}

@@ -15,7 +15,33 @@ import { and, eq } from "drizzle-orm";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { exec } from "child_process";
+import { promisify } from "util";
 import Stripe from "stripe";
+
+const execAsync = promisify(exec);
+
+// Video conversion function to convert videos to web-compatible MP4
+async function convertVideoToMp4(inputPath: string, outputPath: string): Promise<boolean> {
+  try {
+    const ffmpegCommand = `ffmpeg -i "${inputPath}" -c:v libx264 -c:a aac -movflags +faststart -f mp4 "${outputPath}"`;
+    console.log(`Converting video: ${ffmpegCommand}`);
+    
+    const { stdout, stderr } = await execAsync(ffmpegCommand);
+    console.log(`Video conversion completed: ${outputPath}`);
+    
+    // Remove original file after successful conversion
+    if (fs.existsSync(outputPath)) {
+      fs.unlinkSync(inputPath);
+      return true;
+    }
+    
+    return false;
+  } catch (error) {
+    console.error(`Video conversion failed:`, error);
+    return false;
+  }
+}
 
 // Extend the Request interface to include session
 declare module 'express-session' {
@@ -1531,13 +1557,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let evidenceUrl = '';
       if (files['evidence'] && files['evidence'][0]) {
         const videoFile = files['evidence'][0];
-        const fileExtension = path.extname(videoFile.originalname);
-        const fileName = `${Date.now()}${fileExtension}`;
-        const filePath = path.join('uploads', fileName);
+        const originalExtension = path.extname(videoFile.originalname);
+        const timestamp = Date.now();
         
-        fs.renameSync(videoFile.path, filePath);
-        evidenceUrl = `/uploads/${fileName}`;
-        evidenceType = videoFile.mimetype.startsWith('video/') ? 'video' : 'photo';
+        if (videoFile.mimetype.startsWith('video/')) {
+          evidenceType = 'video';
+          
+          // For non-MP4 videos, convert to MP4 for better browser compatibility
+          if (originalExtension.toLowerCase() === '.mov' || originalExtension.toLowerCase() === '.avi' || originalExtension.toLowerCase() === '.webm') {
+            const tempFileName = `${timestamp}_temp${originalExtension}`;
+            const tempFilePath = path.join('uploads', tempFileName);
+            const mp4FileName = `${timestamp}.mp4`;
+            const mp4FilePath = path.join('uploads', mp4FileName);
+            
+            // Move uploaded file to temp location
+            fs.renameSync(videoFile.path, tempFilePath);
+            
+            console.log(`Converting ${originalExtension} video to MP4 for better browser compatibility...`);
+            
+            // Convert to MP4
+            const conversionSuccess = await convertVideoToMp4(tempFilePath, mp4FilePath);
+            
+            if (conversionSuccess) {
+              evidenceUrl = `/uploads/${mp4FileName}`;
+              console.log(`Video conversion successful: ${mp4FileName}`);
+            } else {
+              // If conversion fails, use original file
+              fs.renameSync(tempFilePath, path.join('uploads', `${timestamp}${originalExtension}`));
+              evidenceUrl = `/uploads/${timestamp}${originalExtension}`;
+              console.log(`Video conversion failed, using original format`);
+            }
+          } else {
+            // For MP4 and other formats, use directly
+            const fileName = `${timestamp}${originalExtension}`;
+            const filePath = path.join('uploads', fileName);
+            fs.renameSync(videoFile.path, filePath);
+            evidenceUrl = `/uploads/${fileName}`;
+          }
+        } else {
+          // Handle non-video files as photos
+          evidenceType = 'photo';
+          const fileName = `${timestamp}${originalExtension}`;
+          const filePath = path.join('uploads', fileName);
+          fs.renameSync(videoFile.path, filePath);
+          evidenceUrl = `/uploads/${fileName}`;
+        }
       }
       
       // Handle multiple image files

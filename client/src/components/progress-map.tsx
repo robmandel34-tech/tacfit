@@ -254,7 +254,9 @@ export default function ProgressMap({ teams, competitionName, competition, activ
                     {/* Team marker */}
                     <div className="relative group cursor-pointer" onClick={() => navigate(`/team/${team.id}`)}>
                       {/* Team picture or default icon */}
-                      <div className="w-8 h-8 rounded-full border-2 border-white shadow-lg overflow-hidden bg-tactical-gray hover:ring-2 hover:ring-military-green transition-all">
+                      <div className="w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-tactical-gray hover:ring-2 hover:ring-military-green transition-all" style={{
+                        boxShadow: '0 4px 8px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.2), 0 1px 0 rgba(255,255,255,0.3)'
+                      }}>
                         {team.pictureUrl ? (
                           <img 
                             src={team.pictureUrl} 
@@ -267,8 +269,15 @@ export default function ProgressMap({ teams, competitionName, competition, activ
                             index === 1 ? 'bg-gray-400' : 
                             index === 2 ? 'bg-amber-600' : 
                             'bg-military-green'
-                          }`}>
-                            <span className="text-white font-bold text-xs">{team.rank}</span>
+                          }`} style={{
+                            background: index === 0 ? 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%)' :
+                                       index === 1 ? 'linear-gradient(135deg, #9ca3af 0%, #6b7280 50%, #4b5563 100%)' :
+                                       index === 2 ? 'linear-gradient(135deg, #d97706 0%, #b45309 50%, #92400e 100%)' :
+                                       'linear-gradient(135deg, #6b8e6b 0%, #5a7a5a 50%, #4a6a4a 100%)'
+                          }}>
+                            <span className="text-white font-bold text-xs" style={{
+                              filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.3))'
+                            }}>{team.rank}</span>
                           </div>
                         )}
                       </div>
@@ -279,7 +288,13 @@ export default function ProgressMap({ teams, competitionName, competition, activ
                         index === 1 ? 'bg-gray-400 text-black' : 
                         index === 2 ? 'bg-amber-600 text-black' : 
                         'bg-military-green text-white'
-                      }`}>
+                      }`} style={{
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2)',
+                        background: index === 0 ? 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)' :
+                                   index === 1 ? 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)' :
+                                   index === 2 ? 'linear-gradient(135deg, #d97706 0%, #b45309 100%)' :
+                                   'linear-gradient(135deg, #6b8e6b 0%, #5a7a5a 100%)'
+                      }}>
                         {team.rank}
                       </div>
                       

@@ -70,6 +70,11 @@ Preferred communication style: Simple, everyday language.
 - **UPDATED**: Intel Feed description changed to "Live updates from all competitions"
 - **STANDARDIZED**: Both main pages now use identical Card component structure with military green theming
 - **IMPROVED**: Visual consistency across platform with matching borders, gradients, and typography
+- **ENHANCED**: Competition tab now features green gradient header card with comprehensive competition information
+- **CONSOLIDATED**: All competition details (name, status, dates, teams, activities) moved to header card for cleaner layout
+- **MOVED**: Leave competition button integrated into header card with proper styling
+- **REMOVED**: Duplicate competition information sections below header for streamlined design
+- **SIMPLIFIED**: Progress Map section now has clean layout without redundant competition details
 
 ### Onboarding Walkthrough System Implementation (July 2025)
 - **NEW**: Complete interactive onboarding walkthrough with 6-step guided tour

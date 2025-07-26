@@ -190,65 +190,10 @@ export default function CompetitionStatus() {
           </Card>
         )}
 
-        {/* Competition Content - Now below the header card */}
+        {/* Progress Map Section */}
         {competition && (
           <div className="mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-xl font-bold text-white flex-1 mr-4">
-                Progress Map
-              </h2>
-            </div>
-            <div className="text-sm text-gray-400 mb-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  <span>
-                    {new Date(competition.startDate).toLocaleDateString()} - {new Date(competition.endDate).toLocaleDateString()}
-                  </span>
-                </div>
-                <div className="flex items-center bg-tactical-gray-light rounded-lg px-3 py-1 border border-tactical-gray">
-                  <Clock className="mr-2 h-4 w-4 text-orange-500" />
-                  <span className="font-medium text-gray-300">
-                    {(() => {
-                      const startDate = new Date(competition.startDate);
-                      const endDate = new Date(competition.endDate);
-                      const today = new Date();
-                      
-                      // Check if competition hasn't started yet
-                      if (today < startDate) {
-                        const timeDiffStart = startDate.getTime() - today.getTime();
-                        const daysUntilStart = Math.ceil(timeDiffStart / (1000 * 3600 * 24));
-                        return `starts in ${daysUntilStart} days`;
-                      }
-                      
-                      // Competition has started, show days left
-                      const timeDiff = endDate.getTime() - today.getTime();
-                      const daysRemaining = Math.ceil(timeDiff / (1000 * 3600 * 24));
-                      return daysRemaining > 0 ? `${daysRemaining} days left` : 'Completed';
-                    })()}
-                  </span>
-                </div>
-              </div>
-            </div>
-            {competition.requiredActivities && competition.requiredActivities.length > 0 && (
-              <div className="mb-4">
-                <div className="flex items-center text-sm text-gray-300 mb-3">
-                  <Activity className="mr-2 h-4 w-4 text-military-green" />
-                  <span className="font-semibold">Required Training:</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {competition.requiredActivities.map((activity: string, index: number) => (
-                    <Badge 
-                      key={index} 
-                      variant="outline" 
-                      className="text-xs capitalize bg-tactical-gray-light border-tactical-gray text-gray-300 hover:bg-military-green hover:text-white transition-colors"
-                    >
-                      {activity}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
+            <h2 className="text-xl font-bold text-white mb-4">Progress Map</h2>
           </div>
         )}
 
@@ -259,23 +204,7 @@ export default function CompetitionStatus() {
           </div>
         )}
 
-        {/* Team Goals Section */}
-        {competition && competition.targetGoals && competition.targetGoals.length > 0 && (
-          <div className="mb-6">
-            <div className="flex items-center text-sm text-gray-300 mb-3">
-              <Target className="mr-2 h-4 w-4 text-orange-500" />
-              <span className="font-semibold">Team Goals:</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {competition.targetGoals.map((goal: string, index: number) => (
-                <div key={index} className="flex items-center text-xs text-gray-300 bg-tactical-gray-light rounded-lg px-3 py-2 border border-tactical-gray">
-                  <CheckCircle className="mr-2 h-3 w-3 text-military-green flex-shrink-0" />
-                  <span className="font-medium">{goal}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+
 
         {/* Activity Feed */}
         <Card className="sharp-card bg-tactical-gray-light border-tactical-gray">

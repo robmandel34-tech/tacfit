@@ -84,6 +84,28 @@ export default function AdminPage() {
   const [suspensionReason, setSuspensionReason] = useState('');
   const [deleteUser, setDeleteUser] = useState<User | null>(null);
 
+  // Session refresh mutation
+  const refreshSession = useMutation({
+    mutationFn: async () => {
+      return apiRequest("POST", "/api/auth/refresh-session");
+    },
+    onSuccess: (userData) => {
+      toast({
+        title: "Session refreshed",
+        description: `Admin status: ${userData.isAdmin ? 'Active' : 'Not active'}`,
+      });
+      // Force page reload to update user context
+      window.location.reload();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to refresh session",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
   // Check if user is admin
   if (!user?.isAdmin) {
     return (
@@ -93,8 +115,15 @@ export default function AdminPage() {
             <CardTitle className="text-red-400">Access Denied</CardTitle>
             <CardDescription>You don't have administrative privileges.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <Button onClick={() => navigate("/")} className="w-full">
+          <CardContent className="space-y-4">
+            <Button 
+              onClick={() => refreshSession.mutate()}
+              disabled={refreshSession.isPending}
+              className="w-full bg-military-green hover:bg-military-green-light"
+            >
+              {refreshSession.isPending ? 'Refreshing...' : 'Refresh Admin Status'}
+            </Button>
+            <Button onClick={() => navigate("/")} className="w-full" variant="outline">
               Return to Command Center
             </Button>
           </CardContent>

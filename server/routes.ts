@@ -202,6 +202,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Refresh user session from database
+  app.post("/api/auth/refresh-session", async (req, res) => {
+    try {
+      if (!req.session?.userId) {
+        return res.status(401).json({ message: "Not logged in" });
+      }
+
+      // Get fresh user data from database
+      const user = await storage.getUser(req.session.userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Update session with fresh user data
+      req.session.user = user;
+      
+      // Return user data without password
+      const { password: _, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to refresh session" });
+    }
+  });
+
   // User routes
   app.get("/api/users", async (req, res) => {
     try {

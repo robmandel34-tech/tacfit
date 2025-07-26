@@ -1,9 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Target, Users, Trophy, Calendar, Activity } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 
 export default function CompetitionSystemHelp() {
+  const [, setLocation] = useLocation();
+  
   return (
     <div className="min-h-screen bg-tactical-gray">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -11,7 +13,7 @@ export default function CompetitionSystemHelp() {
           <Button 
             variant="ghost" 
             className="text-gray-400 hover:text-white mb-4"
-            onClick={() => window.history.back()}
+            onClick={() => setLocation('/')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Help Center

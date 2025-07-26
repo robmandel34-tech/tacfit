@@ -32,10 +32,20 @@ export default function StravaIntegration() {
       const response = await fetch(`/api/strava/auth-url?userId=${user?.id}`);
       
       console.log("Response status:", response.status);
-      console.log("Response headers:", response.headers);
+      console.log("Response content-type:", response.headers.get('content-type'));
       
-      const data = await response.json();
-      console.log("Response data:", data);
+      // Get the raw text first to see what we're actually receiving
+      const rawText = await response.text();
+      console.log("Raw response text:", rawText);
+      
+      let data;
+      try {
+        data = JSON.parse(rawText);
+        console.log("Parsed response data:", data);
+      } catch (parseError) {
+        console.error("JSON parse error:", parseError);
+        throw new Error(`Invalid response from server: ${rawText}`);
+      }
       
       if (!response.ok) {
         throw new Error(data.message || "Failed to generate Strava auth URL");

@@ -3126,36 +3126,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get available activity types from database first
       const availableActivityTypes = await storage.getActivityTypes();
       console.log(`Found ${availableActivityTypes.length} activity types in database`);
+      console.log('Available activity types:', availableActivityTypes.map(at => `${at.name} -> ${at.displayName}`));
       
       // Map activities with TacFit types and quantities
       const mappedActivities = stravaActivities.map((activity: any) => {
         const activityType = activity.type?.toLowerCase().replace(/\s+/g, '');
         console.log(`Processing Strava activity: ${activity.name} (type: "${activity.type}" -> "${activityType}")`);
         
-        // Create mapping from Strava types to TacFit activity types (using database names)
+        // Create mapping from Strava types to TacFit activity types (using correct database display names)
         const stravaToTacfitMapping: { [key: string]: string } = {
-          // Map to Cardio
-          'run': 'Cardio',
-          'trailrun': 'Cardio', 
-          'virtualrun': 'Cardio',
-          'walk': 'Cardio',
-          'hike': 'Cardio',
-          'ride': 'Cardio',
-          'mountainbikeride': 'Cardio',
-          'gravelride': 'Cardio',
-          'ebikeride': 'Cardio',
-          'virtualride': 'Cardio',
-          'swim': 'Cardio',
-          'rowing': 'Cardio',
-          'elliptical': 'Cardio',
+          // Map to Cardio Training (the actual display name in DB)
+          'run': 'Cardio Training',
+          'trailrun': 'Cardio Training', 
+          'virtualrun': 'Cardio Training',
+          'walk': 'Cardio Training',
+          'hike': 'Cardio Training',
+          'ride': 'Cardio Training',
+          'mountainbikeride': 'Cardio Training',
+          'gravelride': 'Cardio Training',
+          'ebikeride': 'Cardio Training',
+          'virtualride': 'Cardio Training',
+          'swim': 'Cardio Training',
+          'rowing': 'Cardio Training',
+          'elliptical': 'Cardio Training',
           
-          // Map to Strength
-          'weighttraining': 'Strength',
-          'crossfit': 'Strength',
-          'workout': 'Strength',
+          // Map to Strength Training (the actual display name in DB)
+          'weighttraining': 'Strength Training',
+          'crossfit': 'Strength Training',
+          'workout': 'Strength Training',
           
-          // Map to Flexibility  
-          'yoga': 'Flexibility',
+          // Map to Mobility Training (the actual display name in DB)
+          'yoga': 'Mobility Training',
           'meditation': 'Meditation',
           'mindfulness': 'Mindfulness',
         };

@@ -199,7 +199,7 @@ export default function CompetitionStatus() {
         {/* Progress Map */}
         {competition && teams.length > 0 && (
           <div className="mb-6">
-            <ProgressMap teams={teams} competitionName="" competition={competition} />
+            <ProgressMap teams={teams} competitionName="" competition={competition} activities={activities} />
           </div>
         )}
 

@@ -17,44 +17,96 @@ interface Competition {
   name: string;
   startDate: string;
   endDate: string;
+  requiredActivities?: string[];
+  targetGoals?: string[];
 }
 
 interface ProgressMapProps {
   teams: Team[];
   competitionName: string;
   competition?: Competition;
+  activities?: any[];
 }
 
-export default function ProgressMap({ teams, competitionName, competition }: ProgressMapProps) {
+export default function ProgressMap({ teams, competitionName, competition, activities = [] }: ProgressMapProps) {
   const [, navigate] = useLocation();
   
   // Check if competition has started
   const competitionHasStarted = competition ? new Date() >= new Date(competition.startDate) : true;
   
-  // Sort teams by points to determine their position on the route
-  const sortedTeams = useMemo(() => {
-    return [...teams].sort((a, b) => b.points - a.points);
-  }, [teams]);
-
-  // Calculate progress percentage for each team
-  const teamsWithProgress = useMemo(() => {
-    // If competition hasn't started, all teams stay at base camp (0% progress)
-    if (!competitionHasStarted) {
-      return sortedTeams.map((team, index) => ({
-        ...team,
-        progress: 0, // All teams stay at base camp until competition starts
-        rank: index + 1
-      }));
+  // Calculate actual progress based on target goals like the team page does
+  const calculateTeamProgress = useMemo(() => {
+    if (!competition || !competition.requiredActivities || !competition.targetGoals) {
+      return (teamId: number) => 0;
     }
-    
-    const maxPoints = Math.max(...teams.map(t => t.points), 1);
-    // Only apply minimum if team has points, otherwise start at 0%
-    return sortedTeams.map((team, index) => ({
-      ...team,
-      progress: team.points === 0 ? 0 : Math.max((team.points / maxPoints) * 85, 5), // Start at 0% for no points, 5% minimum for teams with points, 85% maximum
-      rank: index + 1
-    }));
-  }, [sortedTeams, teams, competitionHasStarted]);
+
+    return (teamId: number) => {
+      // If competition hasn't started, all teams stay at base camp (0% progress)
+      if (!competitionHasStarted) {
+        return 0;
+      }
+
+      // Get activities for this team that were submitted after competition start
+      const teamActivities = activities.filter(activity => {
+        const isTeamActivity = activity.teamId === teamId;
+        const submittedAfterStart = new Date(activity.createdAt) >= new Date(competition.startDate);
+        return isTeamActivity && submittedAfterStart;
+      });
+
+      let totalProgress = 0;
+      let activityCount = 0;
+
+      competition.requiredActivities.forEach((activityType: string, index: number) => {
+        // Get activities of this type for the team
+        const activitiesOfType = teamActivities.filter(activity => activity.type === activityType);
+        
+        // Calculate total quantity for this activity type
+        const totalQuantity = activitiesOfType.reduce((sum: number, activity: any) => {
+          const quantity = parseInt(activity.quantity || '0');
+          return sum + quantity;
+        }, 0);
+
+        // Get target goal for this activity type
+        const targetGoal = competition.targetGoals?.[index] || '';
+        const targetNumber = parseInt(targetGoal.replace(/[^0-9]/g, '')) || 0;
+        
+        if (targetNumber > 0) {
+          const percentage = Math.min((totalQuantity / targetNumber) * 100, 100);
+          totalProgress += percentage;
+          activityCount++;
+        }
+      });
+
+      return activityCount > 0 ? Math.round(totalProgress / activityCount) : 0;
+    };
+  }, [activities, competition, competitionHasStarted]);
+
+  // Sort teams by progress percentage, then by points as tiebreaker
+  const sortedTeams = useMemo(() => {
+    return [...teams].sort((a, b) => {
+      const progressA = calculateTeamProgress(a.id);
+      const progressB = calculateTeamProgress(b.id);
+      
+      if (progressA !== progressB) {
+        return progressB - progressA; // Higher progress first
+      }
+      
+      return b.points - a.points; // Points as tiebreaker
+    });
+  }, [teams, calculateTeamProgress]);
+
+  // Calculate progress percentage for each team using target goals
+  const teamsWithProgress = useMemo(() => {
+    return sortedTeams.map((team, index) => {
+      const progressPercentage = calculateTeamProgress(team.id);
+      
+      return {
+        ...team,
+        progress: progressPercentage, // Use actual progress based on target goals
+        rank: index + 1
+      };
+    });
+  }, [sortedTeams, calculateTeamProgress]);
 
   // Generate topographical features along the route
   const features = [

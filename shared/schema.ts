@@ -215,8 +215,8 @@ export const adminPosts = pgTable("admin_posts", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   content: text("content").notNull(),
-  type: text("type").default("announcement"), // announcement, news, alert, maintenance
-  priority: text("priority").default("normal"), // high, normal, low
+  type: text("type").default("announcement"), // announcement, alert, news, competition_update, maintenance, promotion
+  priority: text("priority").default("medium"), // low, medium, high, urgent
   isActive: boolean("is_active").default(true),
   expiresAt: timestamp("expires_at"),
   createdBy: integer("created_by").references(() => users.id).notNull(),

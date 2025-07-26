@@ -2408,8 +2408,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Admin privileges required" });
       }
 
+      console.log("Admin post request body:", req.body);
       const validationResult = insertAdminPostSchema.safeParse(req.body);
       if (!validationResult.success) {
+        console.log("Validation errors:", validationResult.error.errors);
         return res.status(400).json({ 
           message: "Invalid admin post data",
           errors: validationResult.error.errors

@@ -74,11 +74,7 @@ export default function Team() {
     enabled: !!userTeamMember?.[0]?.teamId,
   });
 
-  // Debug API status (temporary)
-  const { data: debugStatus } = useQuery({
-    queryKey: ['/api/debug/env'],
-    enabled: !!user,
-  });
+
 
   // Load last viewed progress from localStorage
   useEffect(() => {
@@ -337,12 +333,7 @@ export default function Team() {
       <Navigation />
       
       <main className="container mx-auto px-4 py-6">
-        {/* Temporary Debug Info */}
-        {debugStatus && (
-          <div className="mb-4 p-3 bg-blue-900/50 rounded border border-blue-600">
-            <p className="text-blue-200 text-sm">Debug: {JSON.stringify(debugStatus)}</p>
-          </div>
-        )}
+
         {/* Team Header */}
         {team && (
           <Card className="mb-6 tile-card-elevated">

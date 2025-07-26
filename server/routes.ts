@@ -3129,7 +3129,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Map activities with TacFit types and quantities
       const mappedActivities = stravaActivities.map((activity: any) => {
-        const activityType = activity.type?.toLowerCase().replace(/\s+/g, '_');
+        const activityType = activity.type?.toLowerCase().replace(/\s+/g, '');
+        console.log(`Processing Strava activity: ${activity.name} (type: "${activity.type}" -> "${activityType}")`);
         
         // Create mapping from Strava types to TacFit activity types (using database names)
         const stravaToTacfitMapping: { [key: string]: string } = {
@@ -3159,13 +3160,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           'mindfulness': 'Mindfulness',
         };
         
+        console.log(`Looking for mapping for "${activityType}" in`, Object.keys(stravaToTacfitMapping));
+        
         const mappedTypeName = stravaToTacfitMapping[activityType];
         let mappedType = null;
         let mappedQuantity = null;
         
+        console.log(`Mapped type name: "${mappedTypeName}" for activity type "${activityType}"`);
+        
         if (mappedTypeName) {
           // Find the actual activity type from database
           const dbActivityType = availableActivityTypes.find(at => at.displayName === mappedTypeName);
+          console.log(`Found DB activity type:`, dbActivityType ? `${dbActivityType.displayName} (${dbActivityType.measurementUnit})` : 'none');
+          
           if (dbActivityType) {
             mappedType = dbActivityType;
             
@@ -3178,6 +3185,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               mappedQuantity = Math.round(activity.moving_time / 60); // Default to minutes
             }
           }
+        } else {
+          console.log(`No mapping found for Strava type "${activityType}"`);
         }
         
         return {

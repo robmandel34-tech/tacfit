@@ -395,6 +395,11 @@ export class DatabaseStorage implements IStorage {
     return friendship || undefined;
   }
 
+  async deleteFriendship(id: number): Promise<boolean> {
+    await db.delete(friendships).where(eq(friendships.id, id));
+    return true;
+  }
+
   // Competition history operations
   async getCompetitionHistory(userId: number): Promise<CompetitionHistory[]> {
     return await db

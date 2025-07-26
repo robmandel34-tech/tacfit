@@ -1720,6 +1720,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/friends/:id", async (req, res) => {
+    try {
+      await storage.deleteFriendship(parseInt(req.params.id));
+      res.json({ message: "Friendship removed successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Error removing friendship" });
+    }
+  });
+
   // Get incoming friend requests for a user
   app.get("/api/friends/:userId/requests", async (req, res) => {
     try {

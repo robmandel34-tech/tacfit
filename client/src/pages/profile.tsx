@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Target, Users, Calendar, UserPlus, MessageCircle, Send, Clock, Check, X, Bell, Camera, Upload, Search, Edit2 } from "lucide-react";
+import { Trophy, Target, Users, Calendar, UserPlus, MessageCircle, Send, Clock, Check, X, Bell, Camera, Upload, Search, Edit2, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import DirectMessageModal from "@/components/direct-message-modal";
@@ -40,6 +40,8 @@ export default function Profile() {
   const [isActivitiesModalOpen, setIsActivitiesModalOpen] = useState(false);
   const [isCompetitionsModalOpen, setIsCompetitionsModalOpen] = useState(false);
   const [isWinsModalOpen, setIsWinsModalOpen] = useState(false);
+  const [isConfirmRemoveOpen, setIsConfirmRemoveOpen] = useState(false);
+  const [friendToRemove, setFriendToRemove] = useState<any>(null);
 
   const isOwnProfile = !userId || userId === user?.id?.toString();
   const targetUserId = isOwnProfile ? user?.id : parseInt(userId!);
@@ -347,6 +349,33 @@ export default function Profile() {
     setIsEditingName(false);
     setNameText("");
   };
+
+  // Remove buddy mutation
+  const removeBuddy = useMutation({
+    mutationFn: async (friendshipId: number) => {
+      const response = await apiRequest(`/api/friends/${friendshipId}`, {
+        method: "DELETE",
+      });
+      return response;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Buddy removed",
+        description: "Buddy has been removed from your list.",
+      });
+      // Invalidate friends queries to update the list
+      queryClient.invalidateQueries({ queryKey: ["/api/friends", targetUserId] });
+      setIsConfirmRemoveOpen(false);
+      setFriendToRemove(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to remove buddy",
+        variant: "destructive",
+      });
+    },
+  });
 
   // Update user name mutation
   const updateUserName = useMutation({
@@ -733,17 +762,30 @@ export default function Profile() {
                                           <p className="text-gray-400 text-sm capitalize">{friendship.status}</p>
                                         </div>
                                       </div>
-                                      <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        className="text-steel-blue hover:bg-steel-blue hover:text-white"
-                                        onClick={() => {
-                                          setSelectedFriend(friendship.friend);
-                                          setIsDMModalOpen(true);
-                                        }}
-                                      >
-                                        <MessageCircle className="h-4 w-4" />
-                                      </Button>
+                                      <div className="flex space-x-2">
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          className="text-steel-blue hover:bg-steel-blue hover:text-white"
+                                          onClick={() => {
+                                            setSelectedFriend(friendship.friend);
+                                            setIsDMModalOpen(true);
+                                          }}
+                                        >
+                                          <MessageCircle className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          className="text-red-400 hover:bg-red-500 hover:text-white"
+                                          onClick={() => {
+                                            setFriendToRemove(friendship);
+                                            setIsConfirmRemoveOpen(true);
+                                          }}
+                                        >
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                      </div>
                                     </div>
                                   ))
                                 )}
@@ -1126,6 +1168,39 @@ export default function Profile() {
         isOpen={isFindFriendsModalOpen}
         onClose={() => setIsFindFriendsModalOpen(false)}
       />
+
+      {/* Remove Buddy Confirmation Dialog */}
+      <Dialog open={isConfirmRemoveOpen} onOpenChange={setIsConfirmRemoveOpen}>
+        <DialogContent className="bg-tactical-gray-light border-tactical-gray max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white">Remove Buddy</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-gray-300">
+              Are you sure you want to remove <span className="text-white font-medium">{friendToRemove?.friend?.username}</span> from your buddies list?
+            </p>
+            <div className="flex space-x-3 justify-end">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setIsConfirmRemoveOpen(false);
+                  setFriendToRemove(null);
+                }}
+                className="text-gray-400 hover:text-white"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => removeBuddy.mutate(friendToRemove?.id)}
+                disabled={removeBuddy.isPending}
+                className="bg-red-500 hover:bg-red-600 text-white"
+              >
+                {removeBuddy.isPending ? "Removing..." : "Remove Buddy"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

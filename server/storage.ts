@@ -79,6 +79,7 @@ export interface IStorage {
   getFriendships(userId: number): Promise<Friendship[]>;
   createFriendship(friendship: InsertFriendship): Promise<Friendship>;
   updateFriendship(id: number, status: string): Promise<Friendship | undefined>;
+  deleteFriendship(id: number): Promise<boolean>;
   
   // Competition history operations
   getCompetitionHistory(userId: number): Promise<CompetitionHistory[]>;

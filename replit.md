@@ -50,6 +50,10 @@ Preferred communication style: Simple, everyday language.
 - **INTEGRATED**: Synced activities appear in Intel Feed alongside manually submitted activities
 - **WORKAROUND**: Manual authorization code exchange resolves external service callback accessibility limitations
 - **UI**: Clear step-by-step instructions guide users through authorization process without technical complexity
+- **FIXED**: Strava connections now work regardless of competition membership - users can connect anytime
+- **ENHANCED**: Automatic domain detection for deployed apps with fallback to development domain
+- **DOCUMENTED**: Created comprehensive setup guide for Strava integration with deployed applications
+- **IMPROVED**: Better error messages guide users on domain configuration for deployed apps
 
 ### User Suspension System Implementation (July 2025)
 - **NEW**: Complete user suspension functionality for administrative moderation

@@ -44,9 +44,17 @@ export default function StravaIntegration() {
     },
     onError: (error: any) => {
       console.error("Strava connection error:", error);
+      
+      let errorMessage = error.message || "Failed to generate Strava auth URL";
+      
+      // Check if this might be a redirect URI configuration issue
+      if (window.location.hostname.includes('.replit.app') || window.location.hostname.includes('replit.dev')) {
+        errorMessage = `Connection failed. If you're using a deployed app, you need to configure the Strava app settings with your domain: ${window.location.hostname}`;
+      }
+      
       toast({
         title: "Connection Failed",
-        description: error.message || "Failed to generate Strava auth URL",
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -168,7 +176,7 @@ export default function StravaIntegration() {
           Strava Integration
         </CardTitle>
         <CardDescription>
-          Connect your Strava account to automatically sync your fitness activities
+          Connect your Strava account to import activities for manual submission during competitions
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

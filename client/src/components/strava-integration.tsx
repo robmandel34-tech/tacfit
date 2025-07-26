@@ -16,6 +16,7 @@ export default function StravaIntegration() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [showManualFlow, setShowManualFlow] = useState(false);
   const [authCode, setAuthCode] = useState("");
+  const [authUrl, setAuthUrl] = useState("");
 
   // Get Strava connection status
   const { data: stravaStatus, isLoading } = useQuery({
@@ -32,20 +33,11 @@ export default function StravaIntegration() {
     },
     onSuccess: (data) => {
       setShowManualFlow(true);
-      // Create a clickable link instead of automatic popup
-      const authWindow = window.open(data.authUrl, '_blank', 'width=600,height=700,scrollbars=yes');
-      if (!authWindow) {
-        toast({
-          title: "Popup Blocked",
-          description: "Please allow popups and try again, or manually copy the authorization link",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Strava Authorization Opened",
-          description: "Complete authorization in the new window, then copy the code from the error page",
-        });
-      }
+      setAuthUrl(data.authUrl);
+      toast({
+        title: "Ready to Connect",
+        description: "Click the Strava authorization link below to complete the connection",
+      });
     },
     onError: (error: any) => {
       toast({
@@ -185,17 +177,28 @@ export default function StravaIntegration() {
         {!isConnected && showManualFlow && (
           <div className="space-y-4 p-4 bg-orange-50 dark:bg-orange-950 rounded-lg border border-orange-200 dark:border-orange-800">
             <div className="space-y-3">
-              <Label className="text-sm font-medium text-orange-800 dark:text-orange-200">Manual Strava Connection</Label>
+              <Label className="text-sm font-medium text-orange-800 dark:text-orange-200">Strava Connection Steps</Label>
               
-              <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-                <p className="font-medium">Step 1: Authorize TacFit on Strava</p>
-                <p>1. A new window should have opened with Strava authorization</p>
-                <p>2. Click "Authorize" to grant TacFit access to your activities</p>
-                <p>3. You'll see an error page - this is normal!</p>
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <p className="font-medium text-sm text-gray-800 dark:text-gray-200">Step 1: Click to Authorize</p>
+                  <Button
+                    asChild
+                    className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+                  >
+                    <a href={authUrl} target="_blank" rel="noopener noreferrer">
+                      <Link className="h-4 w-4 mr-2" />
+                      Open Strava Authorization
+                    </a>
+                  </Button>
+                </div>
                 
-                <p className="font-medium mt-3">Step 2: Copy the Authorization Code</p>
-                <p>4. From the error page URL, copy the code after "code=" (before "&")</p>
-                <p>5. Paste it in the field below and click Connect</p>
+                <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                  <p className="font-medium">Step 2: After clicking "Authorize" on Strava:</p>
+                  <p>• You'll see an error page (this is expected)</p>
+                  <p>• Copy the long code from the URL after "code=" (before any "&")</p>
+                  <p>• Paste it below and click Connect</p>
+                </div>
               </div>
               
               <div className="flex gap-2">
@@ -217,7 +220,11 @@ export default function StravaIntegration() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setShowManualFlow(false)}
+                onClick={() => {
+                  setShowManualFlow(false);
+                  setAuthUrl("");
+                  setAuthCode("");
+                }}
                 className="text-gray-600"
               >
                 Cancel
@@ -239,7 +246,7 @@ export default function StravaIntegration() {
               </Button>
               {showManualFlow && (
                 <p className="text-sm text-gray-600 mt-2">
-                  Authorization window opened. Follow the steps above to complete connection.
+                  Follow the steps above to complete Strava connection.
                 </p>
               )}
             </>

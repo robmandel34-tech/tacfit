@@ -36,11 +36,11 @@ Preferred communication style: Simple, everyday language.
 
 ### Strava API Integration Implementation (July 2025)
 - **NEW**: Complete Strava API integration for automated activity submissions
-- **NEW**: OAuth 2.0 authentication flow with secure token management and refresh
+- **NEW**: Manual OAuth 2.0 flow bypassing callback URL accessibility issues with Replit domains
 - **NEW**: Database schema updated with Strava credentials (access token, refresh token, athlete ID, expiration)
 - **NEW**: Automatic activity syncing from Strava with intelligent type mapping (runs→cardio, weightlifting→strength, yoga→flexibility)
 - **NEW**: Activity deduplication prevents duplicate entries from manual and Strava submissions
-- **NEW**: Strava integration UI component with connection status, sync controls, and disconnect functionality
+- **NEW**: User-friendly manual connection flow with direct authorization links (no popups required)
 - **NEW**: Profile page integration - Strava controls only visible on user's own profile for privacy
 - **NEW**: 30 points awarded per synced Strava activity (automatic evidence verification) with team point accumulation
 - **NEW**: Token refresh handling for expired Strava credentials with automatic re-authentication
@@ -48,6 +48,8 @@ Preferred communication style: Simple, everyday language.
 - **SECURED**: User must be in active competition to sync activities, preventing point farming
 - **ENHANCED**: Activity descriptions include Strava source identification and unique activity IDs
 - **INTEGRATED**: Synced activities appear in Intel Feed alongside manually submitted activities
+- **WORKAROUND**: Manual authorization code exchange resolves external service callback accessibility limitations
+- **UI**: Clear step-by-step instructions guide users through authorization process without technical complexity
 
 ### User Suspension System Implementation (July 2025)
 - **NEW**: Complete user suspension functionality for administrative moderation

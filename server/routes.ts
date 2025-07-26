@@ -1433,7 +1433,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/activities", upload.fields([
     { name: 'evidence', maxCount: 1 },
-    { name: 'image', maxCount: 1 }
+    { name: 'images', maxCount: 5 }
   ]), async (req, res) => {
     try {
       console.log("Activity submission request body:", req.body);
@@ -1489,7 +1489,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Check if both video and image evidence are provided for bonus (30 total)
       const hasVideoEvidence = files['evidence'] && files['evidence'][0];
-      const hasImageEvidence = files['image'] && files['image'][0];
+      const hasImageEvidence = files['images'] && files['images'].length > 0;
       const hasBothEvidenceTypes = hasVideoEvidence && hasImageEvidence;
       
       // Handle Strava activity ID if provided
@@ -1536,7 +1536,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         quantity: req.body.quantity,
         points: finalPoints,
         evidenceType: evidenceType,
-        imageUrl: stravaMapUrl // Add Strava map URL if available
+        imageUrls: stravaMapUrl ? [stravaMapUrl] : [] // Add Strava map URL if available
       };
       
       console.log("Processed activity data:", activityData);
@@ -1561,20 +1561,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         validatedData.evidenceType = videoFile.mimetype.startsWith('video/') ? 'video' : 'photo';
       }
       
-      // Handle image file (secondary evidence)
-      if (files['image'] && files['image'][0]) {
-        const imageFile = files['image'][0];
-        const fileExtension = path.extname(imageFile.originalname);
-        const fileName = `${Date.now()}_img${fileExtension}`;
-        const filePath = path.join('uploads', fileName);
-        
-        fs.renameSync(imageFile.path, filePath);
-        validatedData.imageUrl = `/uploads/${fileName}`;
+      // Handle multiple image files
+      const imageUrls: string[] = [];
+      if (files['images'] && files['images'].length > 0) {
+        for (let i = 0; i < files['images'].length; i++) {
+          const imageFile = files['images'][i];
+          const fileExtension = path.extname(imageFile.originalname);
+          const fileName = `${Date.now()}_img${i}${fileExtension}`;
+          const filePath = path.join('uploads', fileName);
+          
+          fs.renameSync(imageFile.path, filePath);
+          imageUrls.push(`/uploads/${fileName}`);
+        }
+        validatedData.imageUrls = imageUrls;
       }
       
       // Handle Strava map image URL if provided
       if (req.body.mapImageUrl && isStravaActivity) {
-        validatedData.imageUrl = req.body.mapImageUrl;
+        validatedData.imageUrls = [req.body.mapImageUrl];
       }
       
       const activity = await storage.createActivity(validatedData);

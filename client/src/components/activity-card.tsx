@@ -12,6 +12,7 @@ import ActivityCommentsModal from "./activity-comments-modal";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { StravaBadge } from "@/components/strava-badge";
+import MediaSlideshow from "@/components/media-slideshow";
 
 interface ActivityCardProps {
   activity: {
@@ -21,6 +22,7 @@ interface ActivityCardProps {
     quantity?: string;
     evidenceUrl?: string;
     imageUrl?: string;
+    imageUrls?: string[]; // New field for multiple images
     points?: number;
     createdAt: string;
     stravaActivityId?: string; // Add Strava ID field
@@ -51,7 +53,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
   const { user } = useAuth();
   const { toast } = useToast();
   const [showComments, setShowComments] = useState(false);
-  const [showImageModal, setShowImageModal] = useState(false);
+
   
   // Get activity types for display names
   const { data: activityTypes } = useQuery({
@@ -322,42 +324,21 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
           </div>
         </div>
         
-        {/* Full-width media */}
-        {(activity.evidenceUrl || activity.imageUrl) && (
-          <div className="mb-0 relative">
-            {activity.evidenceUrl && isVideoFile(activity.evidenceUrl) ? (
-              <video 
-                src={activity.evidenceUrl} 
-                className="w-full h-64 object-cover border-t border-b border-gray-600"
-                controls
-                preload="metadata"
-              >
-                Your browser does not support the video tag.
-              </video>
-            ) : activity.evidenceUrl ? (
-              <img 
-                src={activity.evidenceUrl} 
-                alt="Activity evidence" 
-                className="w-full h-64 object-cover border-t border-b border-gray-600"
-                onError={(e) => console.error('Evidence image failed to load:', e.currentTarget.src)}
-              />
-            ) : activity.imageUrl ? (
-              <img 
-                src={activity.imageUrl} 
-                alt="Route map" 
-                className="w-full h-64 object-cover border-t border-b border-gray-600"
-              />
-            ) : null}
-            
-            {/* Show image icon when both video and image are present */}
-            {activity.evidenceUrl && activity.imageUrl && (
-              <button
-                onClick={() => setShowImageModal(true)}
-                className="absolute top-4 right-4 bg-black/50 rounded-full p-2 hover:bg-black/70 transition-colors"
-              >
-                <Image className="h-4 w-4 text-white" />
-              </button>
-            )}
+        {/* Full-width media slideshow */}
+        {(activity.evidenceUrl || activity.imageUrl || (activity.imageUrls && activity.imageUrls.length > 0)) && (
+          <div className="mb-0 border-t border-b border-gray-600">
+            <MediaSlideshow 
+              images={
+                activity.imageUrls && activity.imageUrls.length > 0 
+                  ? activity.imageUrls 
+                  : activity.imageUrl 
+                    ? [activity.imageUrl]
+                    : activity.evidenceUrl && !isVideoFile(activity.evidenceUrl)
+                      ? [activity.evidenceUrl]
+                      : []
+              }
+              videoUrl={activity.evidenceUrl && isVideoFile(activity.evidenceUrl) ? activity.evidenceUrl : undefined}
+            />
           </div>
         )}
         
@@ -437,23 +418,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
         activityTitle={activity.description}
       />
       
-      {/* Image Modal */}
-      <Dialog open={showImageModal} onOpenChange={setShowImageModal}>
-        <DialogContent className="max-w-4xl max-h-[90vh] p-0">
-          <DialogHeader className="p-6 pb-0">
-            <DialogTitle className="text-white">Activity Image</DialogTitle>
-          </DialogHeader>
-          <div className="p-6 pt-0">
-            {activity.imageUrl && (
-              <img 
-                src={activity.imageUrl} 
-                alt="Activity evidence" 
-                className="w-full h-auto max-h-[70vh] object-contain rounded-lg"
-              />
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+
     </Card>
   );
 }

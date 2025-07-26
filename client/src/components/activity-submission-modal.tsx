@@ -24,7 +24,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   const [type, setType] = useState("");
   const [description, setDescription] = useState("");
   const [quantity, setQuantity] = useState("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [selectedStravaActivity, setSelectedStravaActivity] = useState<any>(null);
   const [showStravaActivities, setShowStravaActivities] = useState(false);
@@ -126,7 +126,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     setType("");
     setDescription("");
     setQuantity("");
-    setImageFile(null);
+    setImageFiles([]);
     setVideoFile(null);
     setSelectedStravaActivity(null);
     setShowStravaActivities(false);
@@ -177,17 +177,21 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
       formData.append("evidence", videoFile);
     }
     
-    if (imageFile) {
-      formData.append("image", imageFile);
+    if (imageFiles.length > 0) {
+      imageFiles.forEach((file, index) => {
+        formData.append("images", file);
+      });
     }
 
     submitActivity.mutate(formData);
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      setImageFile(selectedFile);
+    const selectedFiles = Array.from(e.target.files || []);
+    if (selectedFiles.length > 0) {
+      // Limit to 5 images maximum
+      const limitedFiles = selectedFiles.slice(0, 5);
+      setImageFiles(limitedFiles);
     }
   };
 
@@ -444,9 +448,9 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
               <span className="text-gray-300">Base Points:</span>
               <span className="text-white font-bold">15 points</span>
             </div>
-            {imageFile && videoFile && (
+            {imageFiles.length > 0 && videoFile && (
               <div className="flex items-center justify-between mt-1 text-military-green">
-                <span className="text-sm">Bonus (Photo + Video):</span>
+                <span className="text-sm">Bonus (Photos + Video):</span>
                 <span className="font-bold">+15 points</span>
               </div>
             )}
@@ -454,7 +458,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
               <div className="flex items-center justify-between">
                 <span className="text-gray-300 font-medium">Total:</span>
                 <span className="text-military-green font-bold text-lg">
-                  {imageFile && videoFile ? '30' : '15'} points
+                  {imageFiles.length > 0 && videoFile ? '30' : '15'} points
                 </span>
               </div>
             </div>
@@ -462,41 +466,46 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <Label className="text-gray-300 font-medium mb-2">Evidence (Photo + Video)</Label>
-              {imageFile && videoFile && (
+              <Label className="text-gray-300 font-medium mb-2">Evidence (Photos + Video)</Label>
+              {imageFiles.length > 0 && videoFile && (
                 <div className="text-xs text-military-green font-medium bg-military-green/10 px-2 py-1 rounded">
                   Double Points!
                 </div>
               )}
             </div>
             
-            {!imageFile || !videoFile ? (
+            {(imageFiles.length === 0 || !videoFile) ? (
               <div className="text-xs text-gray-400 mb-2">
-                💡 Submit both image and video evidence to earn double points (30 total)
+                💡 Submit both images and video evidence to earn double points (30 total)
               </div>
             ) : null}
             
-            {/* Image Upload */}
+            {/* Multiple Images Upload */}
             <div className="border-2 border-dashed border-tactical-gray rounded-lg p-4 text-center hover:border-white/50 transition-colors">
               <div className="mb-2">
                 <Camera className="mx-auto h-6 w-6 text-gray-400 mb-1" />
-                <p className="text-gray-400 text-sm">Image Evidence</p>
+                <p className="text-gray-400 text-sm">Image Evidence (up to 5 images)</p>
               </div>
-              {imageFile ? (
+              {imageFiles.length > 0 ? (
                 <div className="space-y-2">
-                  <p className="text-green-400">✓ {imageFile.name}</p>
-                  <p className="text-gray-400 text-xs">
-                    Image • {Math.round(imageFile.size / 1024)}KB
-                  </p>
+                  <p className="text-green-400">✓ {imageFiles.length} image{imageFiles.length > 1 ? 's' : ''} selected</p>
+                  <div className="text-gray-400 text-xs space-y-1">
+                    {imageFiles.map((file, index) => (
+                      <div key={index} className="flex items-center justify-center space-x-2">
+                        <span>{file.name}</span>
+                        <span>• {Math.round(file.size / 1024)}KB</span>
+                      </div>
+                    ))}
+                  </div>
                   <Button 
                     type="button" 
                     variant="ghost" 
                     size="sm"
-                    onClick={() => setImageFile(null)}
+                    onClick={() => setImageFiles([])}
                     className="text-red-400 hover:text-red-300"
                   >
                     <X className="h-4 w-4 mr-1" />
-                    Remove
+                    Remove All
                   </Button>
                 </div>
               ) : (
@@ -504,6 +513,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                   <Input
                     type="file"
                     accept="image/*"
+                    multiple
                     onChange={handleImageChange}
                     className="hidden"
                     id="image-upload"
@@ -513,7 +523,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                     htmlFor="image-upload"
                     className={`cursor-pointer ${!competitionHasStarted ? 'opacity-50 cursor-not-allowed text-gray-500' : 'text-military-green hover:text-military-green-light'}`}
                   >
-                    {!competitionHasStarted ? "Not Available" : "Choose Image"}
+                    {!competitionHasStarted ? "Not Available" : "Choose Images"}
                   </Label>
                 </div>
               )}

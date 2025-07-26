@@ -100,7 +100,7 @@ export default function Navigation() {
                   )}
                   {/* Task notification indicator */}
                   {pendingTasksCount > 0 && (
-                    <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                    <div className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
                       {pendingTasksCount > 9 ? '9+' : pendingTasksCount}
                     </div>
                   )}

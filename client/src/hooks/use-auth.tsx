@@ -36,7 +36,9 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
         try {
           const userData = JSON.parse(savedUser);
           // Validate the user still exists in the database
-          const response = await fetch(`/api/users/${userData.id}`);
+          const response = await fetch(`/api/users/${userData.id}`, {
+            credentials: "include",
+          });
           if (response.ok) {
             const currentUser = await response.json();
             setUser(currentUser);
@@ -65,6 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -90,6 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ username, email, password, phoneNumber }),
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -110,7 +114,15 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
     setUser(null);
     localStorage.removeItem("user");
     setLocation("/login");
@@ -133,7 +145,9 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
   const refreshUser = async () => {
     if (user) {
       try {
-        const response = await fetch(`/api/users/${user.id}`);
+        const response = await fetch(`/api/users/${user.id}`, {
+          credentials: "include",
+        });
         if (response.ok) {
           const currentUser = await response.json();
           setUser(currentUser);

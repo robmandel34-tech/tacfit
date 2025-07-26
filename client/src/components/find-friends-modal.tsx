@@ -188,7 +188,7 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
           size="sm"
         >
           <UserPlus className="w-4 h-4 mr-2" />
-          Add Friend
+          Add Buddy
         </Button>
       );
     }
@@ -243,7 +243,7 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
             size="sm"
           >
             <UserPlus className="w-4 h-4 mr-2" />
-            Add Friend
+            Add Buddy
           </Button>
         );
       default:
@@ -272,7 +272,7 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
         <DialogHeader>
           <DialogTitle className="text-white flex items-center">
             <Users className="w-5 h-5 mr-2" />
-            Find Friends
+            Find Buddies
           </DialogTitle>
         </DialogHeader>
         
@@ -291,7 +291,7 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
           {/* Pending Friend Requests */}
           {pendingRequests.length > 0 && (
             <div className="space-y-3">
-              <h3 className="text-white font-semibold">Pending Friend Requests</h3>
+              <h3 className="text-white font-semibold">Pending Buddy Requests</h3>
               {pendingRequests.map((request: Friendship) => {
                 const requester = users.find((u: User) => u.id === request.requesterId);
                 if (!requester) return null;
@@ -364,35 +364,35 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
                 {filteredUsers.map((otherUser: User) => (
                   <Card key={otherUser.id} className="bg-tactical-gray border-tactical-gray hover:border-military-green transition-colors">
                     <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start space-x-3 flex-1 min-w-0">
                           {otherUser.avatar ? (
                             <img
                               src={`/uploads/${otherUser.avatar}`}
                               alt="Profile picture"
-                              className="w-10 h-10 rounded-full object-cover"
+                              className="w-12 h-12 rounded-full object-cover flex-shrink-0"
                             />
                           ) : (
-                            <div className="w-10 h-10 bg-military-green rounded-full flex items-center justify-center">
-                              <span className="text-white font-bold">
+                            <div className="w-12 h-12 bg-military-green rounded-full flex items-center justify-center flex-shrink-0">
+                              <span className="text-white font-bold text-sm">
                                 {getInitials(otherUser.username)}
                               </span>
                             </div>
                           )}
-                          <div>
-                            <h4 className="text-white font-medium">{otherUser.username}</h4>
-                            <p className="text-gray-400 text-sm">{otherUser.email}</p>
-                            <div className="flex items-center space-x-3 mt-1">
-                              <Badge variant="outline" className="text-combat-orange">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-white font-medium text-lg truncate">{otherUser.username}</h4>
+                            <p className="text-gray-400 text-sm truncate mb-2">{otherUser.email}</p>
+                            <div className="flex flex-wrap gap-2">
+                              <Badge variant="outline" className="text-combat-orange border-combat-orange bg-combat-orange/10">
                                 {otherUser.points} PTS
                               </Badge>
-                              <Badge variant="outline">
+                              <Badge variant="outline" className="text-steel-blue border-steel-blue bg-steel-blue/10">
                                 {otherUser.competitionsEntered || 0} Competitions
                               </Badge>
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex-shrink-0">
                           {renderFriendshipButton(otherUser)}
                         </div>
                       </div>

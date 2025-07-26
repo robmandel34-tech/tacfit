@@ -2471,14 +2471,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const host = req.get('host');
       let redirectUri;
       
-      // Try different callback URL formats for Strava compatibility
+      // Use the original API callback URL format
       if (host && host.includes('replit.app')) {
-        // Try without api prefix first
-        redirectUri = `https://${host}/strava/callback`;
+        redirectUri = `https://${host}/api/strava/callback`;
       } else if (process.env.REPL_SLUG && process.env.REPL_OWNER) {
-        redirectUri = `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.app/strava/callback`;
+        redirectUri = `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.app/api/strava/callback`;
       } else {
-        redirectUri = `${req.protocol}://${req.get('host')}/strava/callback`;
+        redirectUri = `${req.protocol}://${req.get('host')}/api/strava/callback`;
       }
       
       console.log('Generated redirect URI:', redirectUri);
@@ -2500,50 +2499,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ message: "Strava test endpoint working", timestamp: new Date().toISOString() });
   });
 
-  // Test Strava credentials
-  app.get("/api/strava/test-credentials", async (req, res) => {
-    try {
-      const clientId = process.env.STRAVA_CLIENT_ID;
-      const clientSecret = process.env.STRAVA_CLIENT_SECRET;
-      
-      console.log("Testing Strava credentials...");
-      console.log("Client ID exists:", !!clientId);
-      console.log("Client Secret exists:", !!clientSecret);
-      console.log("Client ID value:", clientId);
-      
-      if (!clientId || !clientSecret) {
-        return res.json({ 
-          error: "Missing credentials", 
-          hasClientId: !!clientId, 
-          hasClientSecret: !!clientSecret 
-        });
-      }
 
-      // Test token endpoint with invalid but real request
-      const testResponse = await fetch("https://www.strava.com/oauth/token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          client_id: clientId,
-          client_secret: clientSecret,
-          grant_type: "authorization_code",
-          code: "test", // This will fail but shows if credentials are valid format
-        }),
-      });
-
-      const responseText = await testResponse.text();
-      console.log("Strava API response:", testResponse.status, responseText);
-
-      res.json({
-        status: testResponse.status,
-        response: responseText,
-        credentialsValid: testResponse.status !== 401,
-      });
-    } catch (error) {
-      console.error("Credential test error:", error);
-      res.status(500).json({ error: error.message });
-    }
-  });
 
   // Simple callback test without async
   app.get("/api/strava/callback-test", (req, res) => {
@@ -2565,53 +2521,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ routes });
   });
 
-  // Alternative Strava callback without /api prefix
-  app.get("/strava/callback", (req, res) => {
-    console.log("=== STRAVA CALLBACK HIT (NO API PREFIX) ===");
-    console.log("Query params:", req.query);
-    console.log("Headers:", req.headers);
-    console.log("Method:", req.method);
-    console.log("URL:", req.url);
-    
-    const { code, state, error } = req.query;
+  // Strava OAuth callback
+  app.get("/api/strava/callback", async (req, res) => {
+    try {
+      console.log("=== STRAVA CALLBACK HIT ===");
+      console.log("Query params:", req.query);
+      const { code, state, error } = req.query;
 
-    if (error) {
-      console.error("Strava OAuth error:", error);
-      return res.redirect(`/?strava_error=${encodeURIComponent(error as string)}`);
+      if (error) {
+        console.error("Strava OAuth error:", error);
+        return res.redirect(`/?strava_error=${encodeURIComponent(error as string)}`);
+      }
+
+      if (!code || !state) {
+        console.error("Missing code or state in Strava callback");
+        return res.redirect("/?strava_error=missing_parameters");
+      }
+
+      const userId = parseInt(state as string);
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.redirect("/?strava_error=invalid_user");
+      }
+
+      // Get the same redirect URI used for auth
+      const host = req.get('host');
+      let redirectUri;
+      
+      if (host && host.includes('replit.app')) {
+        redirectUri = `https://${host}/api/strava/callback`;
+      } else if (process.env.REPL_SLUG && process.env.REPL_OWNER) {
+        redirectUri = `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.app/api/strava/callback`;
+      } else {
+        redirectUri = `${req.protocol}://${req.get('host')}/api/strava/callback`;
+      }
+
+      // Exchange authorization code for access token
+      const tokenResponse = await fetch("https://www.strava.com/oauth/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          client_id: process.env.STRAVA_CLIENT_ID,
+          client_secret: process.env.STRAVA_CLIENT_SECRET,
+          code,
+          grant_type: "authorization_code",
+          redirect_uri: redirectUri,
+        }),
+      });
+
+      if (!tokenResponse.ok) {
+        const errorText = await tokenResponse.text();
+        console.error("Strava token exchange failed:", tokenResponse.status, errorText);
+        return res.redirect(`/?strava_error=token_exchange_failed&details=${encodeURIComponent(errorText)}`);
+      }
+
+      const tokenData = await tokenResponse.json();
+      
+      // Update user with Strava tokens
+      await storage.updateUser(userId, {
+        stravaAccessToken: tokenData.access_token,
+        stravaRefreshToken: tokenData.refresh_token,
+        stravaAthleteId: tokenData.athlete?.id?.toString(),
+        stravaTokenExpiresAt: new Date(tokenData.expires_at * 1000),
+      });
+
+      res.redirect("/?strava_success=true");
+    } catch (error) {
+      console.error("Strava callback error:", error);
+      res.redirect("/?strava_error=callback_failed");
     }
-
-    if (!code || !state) {
-      console.error("Missing code or state in Strava callback");
-      return res.redirect("/?strava_error=missing_parameters");
-    }
-
-    console.log("Callback working (no api prefix) - would process code:", code);
-    return res.redirect("/?strava_test=callback_hit_no_api");
-  });
-
-  // Original Strava OAuth callback - simplified for debugging
-  app.get("/api/strava/callback", (req, res) => {
-    console.log("=== STRAVA CALLBACK HIT ===");
-    console.log("Query params:", req.query);
-    console.log("Headers:", req.headers);
-    console.log("Method:", req.method);
-    console.log("URL:", req.url);
-    
-    const { code, state, error } = req.query;
-
-    if (error) {
-      console.error("Strava OAuth error:", error);
-      return res.redirect(`/?strava_error=${encodeURIComponent(error as string)}`);
-    }
-
-    if (!code || !state) {
-      console.error("Missing code or state in Strava callback");
-      return res.redirect("/?strava_error=missing_parameters");
-    }
-
-    // For now, just redirect with success to test if callback is being hit
-    console.log("Callback working - would process code:", code);
-    return res.redirect("/?strava_test=callback_hit");
   });
 
   // Get user's Strava connection status

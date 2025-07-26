@@ -812,6 +812,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!team) {
         return res.status(404).json({ message: "Team not found" });
       }
+
+      // Get competition to check start date and recalculate points
+      if (team.competitionId) {
+        const competition = await storage.getCompetition(team.competitionId);
+        if (competition) {
+          const validPoints = await calculateValidTeamPoints(team.id, new Date(competition.startDate));
+          team.points = validPoints; // Override with calculated valid points
+        }
+      }
+      
       res.json(team);
     } catch (error) {
       res.status(500).json({ message: "Error fetching team" });
@@ -937,13 +947,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get teams by competition
+  // Helper function to calculate team points based on valid activities only
+  async function calculateValidTeamPoints(teamId: number, competitionStartDate: Date) {
+    const activities = await storage.getActivitiesByTeam(teamId);
+    
+    return activities
+      .filter(activity => new Date(activity.createdAt!) >= competitionStartDate)
+      .reduce((total, activity) => total + (activity.points || 0), 0);
+  }
+
+  // Get teams by competition with corrected points
   app.get("/api/teams/competition/:competitionId", async (req, res) => {
     try {
       const competitionId = parseInt(req.params.competitionId);
+      const competition = await storage.getCompetition(competitionId);
+      
+      if (!competition) {
+        return res.status(404).json({ message: "Competition not found" });
+      }
+      
       const teams = await storage.getTeamsByCompetition(competitionId);
-      res.json(teams);
+      
+      // Recalculate points for each team based on valid activities only
+      const teamsWithValidPoints = await Promise.all(
+        teams.map(async (team) => {
+          const validPoints = await calculateValidTeamPoints(team.id, new Date(competition.startDate));
+          return {
+            ...team,
+            points: validPoints // Override with calculated valid points
+          };
+        })
+      );
+      
+      res.json(teamsWithValidPoints);
     } catch (error) {
+      console.error("Error fetching teams for competition:", error);
       res.status(500).json({ message: "Error fetching teams" });
     }
   });

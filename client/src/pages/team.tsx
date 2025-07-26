@@ -96,10 +96,14 @@ export default function Team() {
   const handleProgressExpand = () => {
     setIsProgressExpanded(!isProgressExpanded);
     if (!isProgressExpanded && competition?.requiredActivities && teamActivities) {
-      // When expanding, mark current progress as viewed
+      // When expanding, mark current progress as viewed (only activities after competition start)
       const currentProgress: Record<string, number> = {};
       competition.requiredActivities.forEach((activityType: string) => {
-        const activitiesOfType = teamActivities.filter((activity: any) => activity.type === activityType);
+        const activitiesOfType = teamActivities.filter((activity: any) => {
+          const isCorrectType = activity.type === activityType;
+          const submittedAfterStart = new Date(activity.createdAt) >= new Date(competition.startDate);
+          return isCorrectType && submittedAfterStart;
+        });
         const totalQuantity = activitiesOfType.reduce((sum: number, activity: any) => {
           const quantity = parseInt(activity.quantity || '0');
           return sum + quantity;
@@ -403,7 +407,12 @@ export default function Team() {
                       let activityCount = 0;
                       
                       competition.requiredActivities.forEach((activityType: string, index: number) => {
-                        const activitiesOfType = teamActivities.filter((activity: any) => activity.type === activityType);
+                        // Only count activities submitted after competition start date
+                        const activitiesOfType = teamActivities.filter((activity: any) => {
+                          const isCorrectType = activity.type === activityType;
+                          const submittedAfterStart = new Date(activity.createdAt) >= new Date(competition.startDate);
+                          return isCorrectType && submittedAfterStart;
+                        });
                         const totalQuantity = activitiesOfType.reduce((sum: number, activity: any) => {
                           const quantity = parseInt(activity.quantity || '0');
                           return sum + quantity;
@@ -561,10 +570,14 @@ export default function Team() {
                           // Check if competition has started
                           const competitionHasStarted = new Date() >= new Date(competition.startDate);
                           
-                          // Calculate current progress
+                          // Calculate current progress (only activities after competition start)
                           const currentProgress: Record<string, number> = {};
                           competition.requiredActivities.forEach((activityType: string) => {
-                            const activitiesOfType = teamActivities.filter((activity: any) => activity.type === activityType);
+                            const activitiesOfType = teamActivities.filter((activity: any) => {
+                              const isCorrectType = activity.type === activityType;
+                              const submittedAfterStart = new Date(activity.createdAt) >= new Date(competition.startDate);
+                              return isCorrectType && submittedAfterStart;
+                            });
                             const totalQuantity = activitiesOfType.reduce((sum: number, activity: any) => {
                               const quantity = parseInt(activity.quantity || '0');
                               return sum + quantity;
@@ -598,8 +611,12 @@ export default function Team() {
                           // Check if competition has started
                           const competitionHasStarted = new Date() >= new Date(competition.startDate);
                           
-                          // Calculate progress for this activity type
-                          const activitiesOfType = teamActivities.filter((activity: any) => activity.type === activityType);
+                          // Calculate progress for this activity type (only activities after competition start)
+                          const activitiesOfType = teamActivities.filter((activity: any) => {
+                            const isCorrectType = activity.type === activityType;
+                            const submittedAfterStart = new Date(activity.createdAt) >= new Date(competition.startDate);
+                            return isCorrectType && submittedAfterStart;
+                          });
                           const rawTotalQuantity = activitiesOfType.reduce((sum: number, activity: any) => {
                             const quantity = parseInt(activity.quantity || '0');
                             return sum + quantity;

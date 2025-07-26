@@ -283,6 +283,15 @@ Preferred communication style: Simple, everyday language.
 - **CONSISTENT**: All Strava-sourced activities receive the same point value regardless of import method
 - **JUSTIFIED**: Full points awarded because Strava provides automatic activity verification and evidence
 
+### Competition Start Date Progress Fix (July 2025)
+- **CRITICAL FIX**: Team progress calculations now only count activities submitted after competition start date
+- **BACKEND**: Added calculateValidTeamPoints function to recalculate team points based on valid activities only
+- **API UPDATES**: Team endpoints (/api/teams/:id, /api/teams/competition/:id) now return dynamically calculated points
+- **FRONTEND**: Team page progress calculations filter activities by createdAt vs competition startDate
+- **RESOLVED**: Fixed bug where changing competition start dates caused incorrect progress jumps due to counting pre-competition activities
+- **CONSISTENT**: All progress tracking components now respect competition start date boundaries
+- **DATABASE**: Team points in database may be stale but API responses use calculated valid points
+
 ### Activity Submission Pre-Competition Restrictions (July 2025)
 - **NEW**: Backend validation prevents activity submissions before competition start date
 - **NEW**: Frontend activity submission modal displays warning when competition hasn't started

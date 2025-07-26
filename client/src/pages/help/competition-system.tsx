@@ -83,7 +83,7 @@ export default function CompetitionSystemHelp() {
                     <li>• Submit daily fitness activities</li>
                     <li>• Coordinate with team members</li>
                     <li>• Track progress on leaderboards</li>
-                    <li>• Complete required activity goals</li>
+                    <li>• Complete fitness activities to earn team points</li>
                   </ul>
                 </div>
 
@@ -167,56 +167,7 @@ export default function CompetitionSystemHelp() {
             </CardContent>
           </Card>
 
-          {/* Activity Requirements */}
-          <Card className="bg-gray-800/50 border-gray-700">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center">
-                <Activity className="h-6 w-6 mr-2 text-military-green" />
-                Activity Requirements
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-gray-300 space-y-4">
-              <p>
-                Each competition includes specific activity requirements that teams must complete. 
-                Activities are categorized into three main types with measurable goals.
-              </p>
-              
-              <div className="grid md:grid-cols-3 gap-4">
-                <div className="bg-red-900/20 border border-red-600/30 p-4 rounded-lg">
-                  <h4 className="font-semibold text-red-300 mb-2">Cardio Training</h4>
-                  <p className="text-sm text-gray-300 mb-2">Measured in minutes</p>
-                  <ul className="text-xs text-gray-400 space-y-1">
-                    <li>• Running, jogging, walking</li>
-                    <li>• Cycling, swimming</li>
-                    <li>• HIIT workouts</li>
-                    <li>• Dance, aerobics</li>
-                  </ul>
-                </div>
 
-                <div className="bg-blue-900/20 border border-blue-600/30 p-4 rounded-lg">
-                  <h4 className="font-semibold text-blue-300 mb-2">Strength Training</h4>
-                  <p className="text-sm text-gray-300 mb-2">Measured in repetitions</p>
-                  <ul className="text-xs text-gray-400 space-y-1">
-                    <li>• Weight lifting, resistance training</li>
-                    <li>• Push-ups, pull-ups, squats</li>
-                    <li>• Functional movements</li>
-                    <li>• Core strengthening</li>
-                  </ul>
-                </div>
-
-                <div className="bg-green-900/20 border border-green-600/30 p-4 rounded-lg">
-                  <h4 className="font-semibold text-green-300 mb-2">Mobility Training</h4>
-                  <p className="text-sm text-gray-300 mb-2">Measured in minutes</p>
-                  <ul className="text-xs text-gray-400 space-y-1">
-                    <li>• Yoga, stretching routines</li>
-                    <li>• Pilates, mobility work</li>
-                    <li>• Recovery sessions</li>
-                    <li>• Balance training</li>
-                  </ul>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
           {/* Scoring System */}
           <Card className="bg-gray-800/50 border-gray-700">

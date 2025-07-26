@@ -352,6 +352,7 @@ Preferred communication style: Simple, everyday language.
 - **CORRECTED**: Help documentation updated to reflect admin-only competition creation policy
 - **FIXED**: Activity type names in help pages now use "Strength Training" instead of "Strength Operations"
 - **REMOVED**: "Getting Started" card removed from help portal for streamlined navigation
+- **REMOVED**: Activity requirements section removed from competition overview help popup
 
 ### Admin Portal Implementation (July 2025)
 - **NEW**: Complete admin portal for competition creation and management

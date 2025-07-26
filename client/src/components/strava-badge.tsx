@@ -12,14 +12,21 @@ export function StravaBadge({ className = "", size = "sm" }: StravaBadgeProps) {
     lg: "text-base px-4 py-2"
   };
 
-  // Simple version for debugging
+  // Debug version - make it very visible
+  console.log('StravaBadge rendering');
+  
   return (
     <div 
-      className={`inline-flex items-center rounded font-semibold tracking-wide text-white ${sizeClasses[size]} ${className}`}
-      style={{ backgroundColor: '#FC4C02', border: '1px solid #FC4C02' }}
+      className={`inline-flex items-center rounded font-bold tracking-wide text-white shadow-lg ${sizeClasses[size]} ${className}`}
+      style={{ 
+        backgroundColor: '#FC4C02', 
+        border: '2px solid #FC4C02',
+        minWidth: '60px',
+        boxShadow: '0 2px 4px rgba(252, 76, 2, 0.5)'
+      }}
     >
       <svg 
-        className={`${size === 'sm' ? 'w-3 h-3' : size === 'md' ? 'w-4 h-4' : 'w-5 h-5'} mr-1`}
+        className={`${size === 'sm' ? 'w-3 h-3' : size === 'md' ? 'w-4 h-4' : 'w-5 h-5'} mr-1 flex-shrink-0`}
         viewBox="0 0 24 24" 
         fill="currentColor"
       >

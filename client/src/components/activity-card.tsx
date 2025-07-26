@@ -313,7 +313,11 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
                   {getActivityIcon(activity.type)} {getActivityTypeDisplayName(activity.type)}
                 </Badge>
                 {isStravaActivity() && (
-                  <StravaBadge size="sm" />
+                  <>
+                    <div className="bg-green-500 text-white text-xs px-2 py-1 rounded">BEFORE STRAVA</div>
+                    <StravaBadge size="sm" />
+                    <div className="bg-blue-500 text-white text-xs px-2 py-1 rounded">AFTER STRAVA</div>
+                  </>
                 )}
                 {/* Temporary debug indicator */}
                 {activity.description?.includes('Imported from Strava') && (

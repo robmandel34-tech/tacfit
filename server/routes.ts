@@ -2688,8 +2688,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ message: "Strava client ID not configured" });
       }
 
-      // For manual flow, we'll use a dummy redirect URI that the user won't need
-      const authUrl = `https://www.strava.com/oauth/authorize?client_id=${clientId}&response_type=code&redirect_uri=http://localhost&approval_prompt=force&scope=read,activity:read_all&state=${userId}`;
+      // Use the same redirect URI format for consistency with callback
+      const host = req.get('host');
+      let redirectUri;
+      
+      if (host && host.includes('replit.app')) {
+        redirectUri = `https://${host}/callback`;
+      } else if (process.env.REPL_SLUG && process.env.REPL_OWNER) {
+        redirectUri = `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.app/callback`;
+      } else {
+        redirectUri = `${req.protocol}://${req.get('host')}/callback`;
+      }
+
+      const authUrl = `https://www.strava.com/oauth/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&approval_prompt=force&scope=read,activity:read_all&state=${userId}`;
       
       res.json({ 
         authUrl,
@@ -2715,6 +2726,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
 
+      // Get the same redirect URI used for auth URL generation
+      const host = req.get('host');
+      let redirectUri;
+      
+      if (host && host.includes('replit.app')) {
+        redirectUri = `https://${host}/callback`;
+      } else if (process.env.REPL_SLUG && process.env.REPL_OWNER) {
+        redirectUri = `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.app/callback`;
+      } else {
+        redirectUri = `${req.protocol}://${req.get('host')}/callback`;
+      }
+
+      console.log("Using redirect URI for token exchange:", redirectUri);
+      console.log("Authorization code received:", code);
+
       // Exchange authorization code for access token
       const tokenResponse = await fetch("https://www.strava.com/oauth/token", {
         method: "POST",
@@ -2726,7 +2752,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           client_secret: process.env.STRAVA_CLIENT_SECRET,
           code,
           grant_type: "authorization_code",
-          redirect_uri: "http://localhost", // Must match the auth URL
+          redirect_uri: redirectUri, // Must match the auth URL
         }),
       });
 

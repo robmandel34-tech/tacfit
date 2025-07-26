@@ -345,6 +345,7 @@ Preferred communication style: Simple, everyday language.
 - **NEW**: Remove buddy functionality with confirmation dialog and permanent friendship deletion
 - **ENHANCED**: Buddies list now shows message and remove buttons with proper red styling for remove action
 - **FIXED**: Profile name and motto centering issues when viewing other users' profiles
+- **IMPROVED**: Profile text spacing - increased distance between profile picture and name/email/motto text
 
 ### Admin Portal Implementation (July 2025)
 - **NEW**: Complete admin portal for competition creation and management

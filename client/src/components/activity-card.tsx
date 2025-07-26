@@ -12,7 +12,7 @@ import ActivityCommentsModal from "./activity-comments-modal";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { StravaBadge } from "@/components/strava-badge";
-import MediaSlideshow from "@/components/media-slideshow";
+import { MediaDisplay } from "@/components/media-display";
 
 interface ActivityCardProps {
   activity: {
@@ -327,8 +327,8 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
         {/* Full-width media slideshow */}
         {(activity.evidenceUrl || activity.imageUrl || (activity.imageUrls && activity.imageUrls.length > 0)) && (
           <div className="mb-0 border-t border-b border-gray-600">
-            <MediaSlideshow 
-              images={
+            <MediaDisplay 
+              imageUrls={
                 activity.imageUrls && activity.imageUrls.length > 0 
                   ? activity.imageUrls 
                   : activity.imageUrl 

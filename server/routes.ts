@@ -3510,14 +3510,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.sendStatus(401);
       }
 
-      const validationResult = insertMoodLogSchema.safeParse(req.body);
+      const requestData = {
+        ...req.body,
+        userId: req.session.user.id
+      };
+
+      const validationResult = insertMoodLogSchema.safeParse(requestData);
       if (!validationResult.success) {
         return res.status(400).json({ message: "Invalid mood log data", errors: validationResult.error.errors });
       }
 
       const moodLogData = {
         ...validationResult.data,
-        userId: req.session.user.id,
         loggedAt: new Date()
       };
 

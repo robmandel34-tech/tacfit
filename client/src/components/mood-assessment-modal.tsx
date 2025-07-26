@@ -44,9 +44,13 @@ export function MoodAssessmentModal({ isOpen, onClose, userId }: MoodAssessmentM
       onClose();
     } catch (error: any) {
       console.error("Mood logging error:", error);
+      const errorMessage = error.errors 
+        ? `Validation error: ${error.errors.map((e: any) => e.message).join(', ')}`
+        : error.message || "Failed to log your mood. Please try again.";
+      
       toast({
         title: "Error logging mood",
-        description: error.message || "Failed to log your mood. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -56,7 +60,7 @@ export function MoodAssessmentModal({ isOpen, onClose, userId }: MoodAssessmentM
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md sharp-card">
+      <DialogContent className="sm:max-w-md sharp-card max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-center text-xl font-bold text-military-green">
             Daily Mood Check-In
@@ -66,7 +70,7 @@ export function MoodAssessmentModal({ isOpen, onClose, userId }: MoodAssessmentM
           </p>
         </DialogHeader>
 
-        <div className="space-y-4 mt-6">
+        <div className="space-y-3 mt-6 max-h-80 overflow-y-auto">
           {moodOptions.map((mood) => {
             const Icon = mood.icon;
             const isSelected = selectedMood === mood.value;

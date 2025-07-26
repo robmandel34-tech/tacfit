@@ -1671,10 +1671,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/friends", async (req, res) => {
     try {
-      const friendshipData = insertFriendshipSchema.parse(req.body);
+      const { userId, friendId } = req.body;
+      
+      // Check if friendship already exists (in either direction)
+      const existingFriendship = await db.select().from(friendships).where(
+        and(
+          eq(friendships.userId, userId),
+          eq(friendships.friendId, friendId)
+        )
+      );
+      
+      const reverseExistingFriendship = await db.select().from(friendships).where(
+        and(
+          eq(friendships.userId, friendId),
+          eq(friendships.friendId, userId)
+        )
+      );
+      
+      if (existingFriendship.length > 0 || reverseExistingFriendship.length > 0) {
+        return res.status(400).json({ message: "Friendship request already exists" });
+      }
+      
+      // Create friendship with pending status
+      const friendshipData = {
+        userId: userId,
+        friendId: friendId,
+        status: "pending"
+      };
+      
       const friendship = await storage.createFriendship(friendshipData);
       res.json(friendship);
     } catch (error) {
+      console.error("Error creating friendship:", error);
       res.status(400).json({ message: "Invalid friendship data" });
     }
   });

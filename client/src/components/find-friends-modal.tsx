@@ -26,12 +26,12 @@ interface User {
 
 interface Friendship {
   id: number;
-  requesterId: number;
-  addresseeId: number;
+  userId: number;
+  friendId: number;
   status: string;
   createdAt: string;
   requester?: User;
-  addressee?: User;
+  friend?: User;
 }
 
 export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalProps) {
@@ -42,14 +42,20 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
 
   // Fetch all users
-  const { data: users = [], isLoading: usersLoading } = useQuery({
+  const { data: users = [], isLoading: usersLoading } = useQuery<User[]>({
     queryKey: ["/api/users"],
     enabled: isOpen,
   });
 
   // Fetch user's friendships
-  const { data: friendships = [], isLoading: friendshipsLoading } = useQuery({
+  const { data: friendships = [], isLoading: friendshipsLoading } = useQuery<Friendship[]>({
     queryKey: [`/api/friends/${user?.id}`],
+    enabled: isOpen && !!user?.id,
+  });
+
+  // Fetch pending requests for this user
+  const { data: pendingRequests = [], isLoading: requestsLoading } = useQuery<Friendship[]>({
+    queryKey: [`/api/friends/${user?.id}/requests`],
     enabled: isOpen && !!user?.id,
   });
 
@@ -66,28 +72,29 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
       .sort((a: User, b: User) => b.points - a.points); // Sort by points descending
     
     setFilteredUsers(filtered);
-  }, [users.length, searchQuery, user?.id]);
+  }, [users, searchQuery, user?.id]);
 
   // Send friend request mutation
   const sendFriendRequestMutation = useMutation({
     mutationFn: async (addresseeId: number) => {
       const response = await apiRequest("POST", "/api/friends", {
-        requesterId: user?.id,
-        addresseeId: addresseeId,
+        userId: user?.id,
+        friendId: addresseeId,
       });
       return response.json();
     },
     onSuccess: () => {
       toast({
-        title: "Friend Request Sent!",
-        description: "Your friend request has been sent successfully.",
+        title: "Buddy Request Sent!",
+        description: "Your buddy request has been sent successfully.",
       });
       queryClient.invalidateQueries({ queryKey: [`/api/friends/${user?.id}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/friends/${user?.id}/requests`] });
     },
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to send friend request",
+        description: error.message || "Failed to send buddy request",
         variant: "destructive",
       });
     },
@@ -103,15 +110,16 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
     },
     onSuccess: () => {
       toast({
-        title: "Friend Request Accepted!",
+        title: "Buddy Request Accepted!",
         description: "You are now buddies!",
       });
       queryClient.invalidateQueries({ queryKey: [`/api/friends/${user?.id}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/friends/${user?.id}/requests`] });
     },
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to accept friend request",
+        description: error.message || "Failed to accept buddy request",
         variant: "destructive",
       });
     },
@@ -127,15 +135,16 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
     },
     onSuccess: () => {
       toast({
-        title: "Friend Request Rejected",
-        description: "The friend request has been rejected.",
+        title: "Buddy Request Rejected",
+        description: "The buddy request has been rejected.",
       });
       queryClient.invalidateQueries({ queryKey: [`/api/friends/${user?.id}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/friends/${user?.id}/requests`] });
     },
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to reject friend request",
+        description: error.message || "Failed to reject buddy request",
         variant: "destructive",
       });
     },
@@ -149,8 +158,8 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
     if (!friendships || !user) return null;
     
     return friendships.find((f: Friendship) => 
-      (f.requesterId === user.id && f.addresseeId === otherUserId) ||
-      (f.requesterId === otherUserId && f.addresseeId === user.id)
+      (f.userId === user.id && f.friendId === otherUserId) ||
+      (f.userId === otherUserId && f.friendId === user.id)
     );
   };
 
@@ -171,10 +180,7 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
     rejectFriendRequestMutation.mutate(friendshipId);
   };
 
-  // Get pending friend requests (where current user is addressee)
-  const pendingRequests = friendships.filter((f: Friendship) => 
-    f.addresseeId === user?.id && f.status === "pending"
-  );
+
 
   const renderFriendshipButton = (otherUser: User) => {
     const friendship = getFriendshipStatus(otherUser.id);
@@ -195,7 +201,7 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
 
     switch (friendship.status) {
       case "pending":
-        if (friendship.requesterId === user?.id) {
+        if (friendship.userId === user?.id) {
           return (
             <Badge variant="secondary" className="text-gray-600">
               Request Sent
@@ -293,7 +299,7 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
             <div className="space-y-3">
               <h3 className="text-white font-semibold">Pending Buddy Requests</h3>
               {pendingRequests.map((request: Friendship) => {
-                const requester = users.find((u: User) => u.id === request.requesterId);
+                const requester = users.find((u: User) => u.id === request.userId);
                 if (!requester) return null;
                 
                 return (

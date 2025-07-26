@@ -60,6 +60,30 @@ export default function Dashboard() {
     }
   }, [user]);
 
+  // Handle Strava connection success/error from URL params
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const stravaSuccess = urlParams.get('strava_success');
+    const stravaError = urlParams.get('strava_error');
+
+    if (stravaSuccess === 'true') {
+      toast({
+        title: "Connected to Strava!",
+        description: "Your Strava account has been successfully connected. You can now import activities.",
+      });
+      // Clean up URL
+      window.history.replaceState({}, document.title, "/");
+    } else if (stravaError) {
+      toast({
+        title: "Strava Connection Failed",
+        description: "Failed to connect to Strava. Please try again.",
+        variant: "destructive",
+      });
+      // Clean up URL
+      window.history.replaceState({}, document.title, "/");
+    }
+  }, [toast]);
+
   if (isLoading) {
     return <div className="min-h-screen bg-tactical-gray flex items-center justify-center">
       <div className="text-white">Loading...</div>

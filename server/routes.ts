@@ -2696,8 +2696,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Manual Strava OAuth - generate auth URL for manual flow
-  app.get("/api/strava/auth", async (req: any, res) => {
+  // Streamlined Strava OAuth - generate auth URL for one-click flow
+  app.get("/api/strava/auth-url", async (req: any, res) => {
     try {
       const { userId } = req.query;
       
@@ -2710,28 +2710,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ message: "Strava client ID not configured" });
       }
 
-      // Use just the domain as registered in Strava app settings
+      // Use the /callback endpoint which automatically handles the authorization
       const host = req.get('host');
       let redirectUri;
       
       if (host && host.includes('replit.app')) {
-        redirectUri = `https://${host}`;
+        redirectUri = `https://${host}/callback`;
       } else if (process.env.REPL_SLUG && process.env.REPL_OWNER) {
-        redirectUri = `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.app`;
+        redirectUri = `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.app/callback`;
       } else {
-        redirectUri = `${req.protocol}://${req.get('host')}`;
+        redirectUri = `${req.protocol}://${req.get('host')}/callback`;
       }
 
       const authUrl = `https://www.strava.com/oauth/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&approval_prompt=force&scope=read,activity:read_all&state=${userId}`;
       
-      console.log("Generated auth URL:", authUrl);
+      console.log("Generated streamlined auth URL:", authUrl);
       console.log("Redirect URI being used:", redirectUri);
       
-      res.json({ 
-        authUrl,
-        redirectUri, // Include this so we can see what URL to register
-        instructions: "Click 'Connect with Strava', authorize the app, then copy the authorization code from the error page URL and enter it in the app."
-      });
+      res.json({ authUrl });
     } catch (error) {
       console.error("Strava auth URL error:", error);
       res.status(500).json({ message: "Error generating Strava auth URL" });

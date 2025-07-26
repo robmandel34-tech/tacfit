@@ -426,7 +426,7 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
             variant="outline"
             onClick={handlePrevious}
             disabled={currentStep === 0}
-            className="border-gray-500 text-white hover:bg-gray-600 hover:text-white hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed disabled:text-gray-500 disabled:border-gray-700 disabled:hover:bg-transparent disabled:hover:border-gray-700"
+            className="border-gray-600 text-gray-200 hover:bg-gray-700 hover:text-white hover:border-gray-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:text-gray-500 disabled:border-gray-700 disabled:hover:bg-transparent disabled:hover:border-gray-700"
           >
             <ChevronLeft className="h-4 w-4 mr-2" />
             Previous

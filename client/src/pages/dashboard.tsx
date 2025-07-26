@@ -2,6 +2,7 @@ import { useAuthRequired } from "@/lib/auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Navigation from "@/components/navigation";
 import ActivityCard from "@/components/activity-card";
+import AdminPostCard from "@/components/admin-post-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OnboardingWalkthrough } from "@/components/onboarding-walkthrough";
 import { Activity, Users } from "lucide-react";
@@ -23,6 +24,19 @@ export default function Dashboard() {
       return data.sort((a: any, b: any) => {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
+    }
+  });
+
+  const { data: adminPosts = [] } = useQuery({
+    queryKey: ["/api/admin-posts/active"],
+    enabled: !!user,
+    select: (data: any[]) => {
+      // Filter active posts and sort by creation date (newest first)
+      return data
+        .filter((post: any) => post.isActive)
+        .sort((a: any, b: any) => {
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
     }
   });
 
@@ -121,7 +135,13 @@ export default function Dashboard() {
 
         {/* Activity Feed */}
         <div className="max-w-2xl mx-auto">
-          {activities.length === 0 ? (
+          {/* Admin Posts */}
+          {adminPosts.map((post: any) => (
+            <AdminPostCard key={`admin-${post.id}`} post={post} />
+          ))}
+
+          {/* Regular Activities */}
+          {activities.length === 0 && adminPosts.length === 0 ? (
             <Card className="tile-card">
               <CardContent className="py-16">
                 <div className="text-center">
@@ -145,6 +165,24 @@ export default function Dashboard() {
                   showFlagButton={false}
                 />
               ))}
+              
+              {/* Show empty state for activities if there are admin posts but no activities */}
+              {activities.length === 0 && adminPosts.length > 0 && (
+                <Card className="tile-card">
+                  <CardContent className="py-8">
+                    <div className="text-center">
+                      <Users className="mx-auto h-12 w-12 text-gray-500 mb-3" />
+                      <h3 className="text-lg font-semibold text-white mb-2">No User Activities Yet</h3>
+                      <p className="text-gray-400 mb-4">Be the first to submit an activity!</p>
+                      {!hasJoinedCompetition && (
+                        <div className="text-sm text-gray-500 bg-surface-overlay px-4 py-2 rounded-lg inline-block">
+                          Join a competition to start submitting activities
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           )}
         </div>

@@ -2701,13 +2701,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { userId } = req.query;
       
+      console.log("Strava auth URL request for user:", userId);
+      
       if (!userId) {
+        console.error("Missing userId in Strava auth request");
         return res.status(400).json({ message: "User ID is required" });
       }
 
       const clientId = process.env.STRAVA_CLIENT_ID;
       if (!clientId) {
+        console.error("STRAVA_CLIENT_ID not configured");
         return res.status(500).json({ message: "Strava client ID not configured" });
+      }
+
+      // Verify user exists
+      const user = await storage.getUser(parseInt(userId));
+      if (!user) {
+        console.error("User not found for Strava auth:", userId);
+        return res.status(404).json({ message: "User not found" });
       }
 
       // Use the /callback endpoint which automatically handles the authorization
@@ -2726,6 +2737,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log("Generated streamlined auth URL:", authUrl);
       console.log("Redirect URI being used:", redirectUri);
+      console.log("Client ID being used:", clientId);
       
       res.json({ authUrl });
     } catch (error) {

@@ -29,13 +29,21 @@ export default function StravaIntegration() {
   const connectStrava = useMutation({
     mutationFn: async () => {
       const response = await fetch(`/api/strava/auth-url?userId=${user?.id}`);
-      return response.json();
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to generate Strava auth URL");
+      }
+      
+      return data;
     },
     onSuccess: (data) => {
+      console.log("Strava auth URL generated:", data.authUrl);
       // Redirect user directly to Strava authorization
       window.location.href = data.authUrl;
     },
     onError: (error: any) => {
+      console.error("Strava connection error:", error);
       toast({
         title: "Connection Failed",
         description: error.message || "Failed to generate Strava auth URL",

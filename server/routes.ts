@@ -1374,6 +1374,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("Activity submission request body:", req.body);
       console.log("Activity submission files:", req.files);
+      console.log("Strava activity ID:", req.body.stravaActivityId);
+      console.log("Strava polyline:", req.body.stravaPolyline);
       
       // Get user's current team for activity submission
       const userId = parseInt(req.body.userId);
@@ -3267,6 +3269,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Strava recent activities error:", error);
       res.status(500).json({ message: "Error fetching recent Strava activities" });
     }
+  });
+
+  // Debug endpoint to check environment variables
+  app.get("/api/debug/env", (req, res) => {
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+    console.log(`Debug endpoint - GOOGLE_MAPS_API_KEY: ${apiKey ? 'EXISTS' : 'MISSING'}`);
+    res.json({ 
+      hasApiKey: !!apiKey,
+      apiKeyPrefix: apiKey ? apiKey.substring(0, 10) + '...' : 'MISSING'
+    });
   });
 
   const httpServer = createServer(app);

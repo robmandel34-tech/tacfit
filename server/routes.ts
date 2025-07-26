@@ -2688,16 +2688,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ message: "Strava client ID not configured" });
       }
 
-      // Use the same redirect URI format for consistency with callback
+      // Use just the domain as registered in Strava app settings
       const host = req.get('host');
       let redirectUri;
       
       if (host && host.includes('replit.app')) {
-        redirectUri = `https://${host}/callback`;
+        redirectUri = `https://${host}`;
       } else if (process.env.REPL_SLUG && process.env.REPL_OWNER) {
-        redirectUri = `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.app/callback`;
+        redirectUri = `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.app`;
       } else {
-        redirectUri = `${req.protocol}://${req.get('host')}/callback`;
+        redirectUri = `${req.protocol}://${req.get('host')}`;
       }
 
       const authUrl = `https://www.strava.com/oauth/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&approval_prompt=force&scope=read,activity:read_all&state=${userId}`;
@@ -2735,11 +2735,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let redirectUri;
       
       if (host && host.includes('replit.app')) {
-        redirectUri = `https://${host}/callback`;
+        redirectUri = `https://${host}`;
       } else if (process.env.REPL_SLUG && process.env.REPL_OWNER) {
-        redirectUri = `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.app/callback`;
+        redirectUri = `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.app`;
       } else {
-        redirectUri = `${req.protocol}://${req.get('host')}/callback`;
+        redirectUri = `${req.protocol}://${req.get('host')}`;
       }
 
       console.log("Using redirect URI for token exchange:", redirectUri);

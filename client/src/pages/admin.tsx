@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { Plus, Edit2, Trash2, Users, Trophy, Calendar, Settings, X, Activity } from "lucide-react";
+import { Plus, Edit2, Trash2, Users, Trophy, Calendar, Settings, X, Activity, AlertTriangle } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 
@@ -69,6 +69,7 @@ export default function AdminPage() {
   const [pointsForm, setPointsForm] = useState({ points: '', operation: 'add' as 'add' | 'set' });
   const [suspensionUser, setSuspensionUser] = useState<User | null>(null);
   const [suspensionReason, setSuspensionReason] = useState('');
+  const [deleteUser, setDeleteUser] = useState<User | null>(null);
 
   // Check if user is admin
   if (!user?.isAdmin) {
@@ -289,6 +290,30 @@ export default function AdminPage() {
     onError: (error: any) => {
       toast({
         title: "Failed to update suspension status",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Delete user mutation
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: number) => {
+      return apiRequest("DELETE", `/api/users/${userId}`, {
+        adminUserId: user?.id
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "User deleted",
+        description: "The user and all associated data have been permanently removed.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      setDeleteUser(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to delete user",
         description: error.message,
         variant: "destructive"
       });
@@ -851,6 +876,17 @@ export default function AdminPage() {
                             >
                               {u.isSuspended ? 'Unsuspend' : 'Suspend'}
                             </Button>
+                            {!u.isAdmin && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setDeleteUser(u)}
+                                className="h-8 w-8 p-0 text-red-600 hover:text-red-500"
+                                disabled={u.id === user?.id}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell className="text-gray-300">
@@ -1001,6 +1037,58 @@ export default function AdminPage() {
                     </Button>
                   </div>
                 </form>
+              </DialogContent>
+            </Dialog>
+
+            {/* Delete User Confirmation Modal */}
+            <Dialog open={!!deleteUser} onOpenChange={() => setDeleteUser(null)}>
+              <DialogContent className="bg-tactical-dark border-tactical-gray max-w-md" aria-describedby="delete-user-dialog-description">
+                <DialogHeader>
+                  <DialogTitle className="text-white flex items-center space-x-2">
+                    <AlertTriangle className="h-5 w-5 text-red-500" />
+                    <span>Delete User - {deleteUser?.username}</span>
+                  </DialogTitle>
+                </DialogHeader>
+                <div id="delete-user-dialog-description" className="sr-only">
+                  Permanently delete user account and all associated data
+                </div>
+                <div className="space-y-4">
+                  <div className="bg-red-950/50 border border-red-800 rounded-lg p-4">
+                    <p className="text-red-200 text-sm">
+                      <strong>Warning:</strong> This action is permanent and cannot be undone. 
+                      All user data, activities, and associated content will be permanently deleted.
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <p className="text-gray-300 text-sm">User Details:</p>
+                    <div className="bg-tactical-gray-lighter rounded p-3 space-y-1">
+                      <p className="text-white"><strong>Username:</strong> {deleteUser?.username}</p>
+                      <p className="text-gray-300"><strong>Email:</strong> {deleteUser?.email}</p>
+                      <p className="text-gray-300"><strong>Points:</strong> {deleteUser?.points}</p>
+                      <p className="text-gray-300"><strong>Competitions:</strong> {deleteUser?.competitionsEntered}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex space-x-4 pt-4">
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      onClick={() => setDeleteUser(null)}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      onClick={() => deleteUser && deleteUserMutation.mutate(deleteUser.id)}
+                      disabled={deleteUserMutation.isPending}
+                      variant="destructive"
+                      className="flex-1"
+                    >
+                      {deleteUserMutation.isPending ? 'Deleting...' : 'Delete User'}
+                    </Button>
+                  </div>
+                </div>
               </DialogContent>
             </Dialog>
           </div>

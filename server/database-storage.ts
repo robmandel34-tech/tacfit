@@ -54,6 +54,17 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
+  async deleteUser(id: number): Promise<boolean> {
+    try {
+      // Delete user and all associated data (cascade will handle most relationships)
+      const result = await db.delete(users).where(eq(users.id, id));
+      return (result.rowCount ?? 0) > 0;
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      return false;
+    }
+  }
+
   // Competition operations
   async getCompetitions(): Promise<Competition[]> {
     return await db.select().from(competitions);

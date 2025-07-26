@@ -411,6 +411,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete user (admin only)
+  app.delete("/api/users/:id", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const adminUserId = req.body.adminUserId; // Pass admin user ID for verification
+      
+      // Verify admin status of requesting user
+      if (adminUserId) {
+        const adminUser = await storage.getUser(adminUserId);
+        if (!adminUser?.isAdmin) {
+          return res.status(403).json({ message: "Admin privileges required" });
+        }
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Prevent deleting admin users (safety measure)
+      if (user.isAdmin) {
+        return res.status(400).json({ message: "Cannot delete admin users" });
+      }
+      
+      console.log(`Admin ${adminUserId} deleting user ${userId} (${user.username})`);
+      
+      // Delete user and all associated data
+      const success = await storage.deleteUser(userId);
+      
+      if (!success) {
+        return res.status(500).json({ message: "Failed to delete user" });
+      }
+      
+      res.json({ message: "User deleted successfully" });
+    } catch (error) {
+      console.error("User deletion error:", error);
+      res.status(500).json({ message: "Error deleting user" });
+    }
+  });
+
   // Competition routes
   app.get("/api/competitions", async (req, res) => {
     try {

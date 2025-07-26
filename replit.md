@@ -63,6 +63,19 @@ Preferred communication style: Simple, everyday language.
 - **SECURED**: Suspended users receive clear error message with suspension reason on login attempts
 - **TRACKED**: Suspension timestamps and reasons stored for audit trail and transparency
 
+### User Deletion System Implementation (July 2025)
+- **NEW**: Complete user deletion functionality for admin content moderation
+- **NEW**: DELETE /api/users/:id API endpoint with comprehensive admin verification
+- **NEW**: Database deleteUser method with cascade deletion of associated data
+- **NEW**: Admin delete button (trash icon) in user management table for non-admin users
+- **NEW**: Confirmation modal with warning message and detailed user information display
+- **NEW**: Safety measures preventing deletion of admin users and own account
+- **SECURED**: Admin-only access with privilege verification and audit logging
+- **PROTECTED**: Cannot delete admin users or own account for system integrity
+- **WARNING**: Permanent deletion warning with red styling and detailed consequences
+- **REAL-TIME**: Table updates and toast notifications after successful deletion
+- **COMPREHENSIVE**: Removes user and all associated activities, team memberships, and content
+
 ### UI Consistency Updates (July 2025)
 - **ENHANCED**: Competitions page header redesigned with green gradient card matching help center style
 - **CHANGED**: "Tactical Operations" text updated to "Join a Competition" with description removed

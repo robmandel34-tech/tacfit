@@ -362,6 +362,7 @@ Preferred communication style: Simple, everyday language.
 - **ENHANCED**: Back navigation in help modal header returns to help center main view
 - **CLEANED**: Removed redundant back buttons from help pages since navigation now handled by modal header
 - **UPDATED**: Modal header back button text changed to "Back to Help Portal"
+- **REMOVED**: Navigation Guide card removed from help center as requested
 
 ### Admin Portal Implementation (July 2025)
 - **NEW**: Complete admin portal for competition creation and management

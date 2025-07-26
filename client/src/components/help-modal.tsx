@@ -44,12 +44,6 @@ export function HelpModal() {
       icon: <Target className="h-5 w-5" />,
       description: "Base points (15), bonus for evidence (30 total), team rewards",
       href: "/help/point-system"
-    },
-    {
-      title: "Navigation Guide",
-      icon: <MessageSquare className="h-5 w-5" />,
-      description: "Learn to navigate TacFit's interface and features efficiently",
-      href: "/help/navigation"
     }
   ];
 

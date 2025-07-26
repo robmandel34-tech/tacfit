@@ -310,9 +310,12 @@ Preferred communication style: Simple, everyday language.
 - **NEW**: Profile notification shows up to 3 tasks with summary and link to team page
 - **NEW**: Real-time task count updates as tasks are completed or assigned
 - **NEW**: Database storage method for efficiently querying user pending tasks
+- **FIXED**: Task count mismatch between profile page and team tab resolved
+- **FIXED**: Pending tasks now filtered to only show tasks from user's current active team
 - **ENHANCED**: Task notification system provides immediate visibility of assigned responsibilities
 - **USER-FRIENDLY**: Clear call-to-action directing users to team page for task management
 - **SECURED**: Task notifications only visible to assigned user on their own profile page
+- **CONSISTENT**: Task counts now match across all platform components
 
 ### Admin Portal Implementation (July 2025)
 - **NEW**: Complete admin portal for competition creation and management

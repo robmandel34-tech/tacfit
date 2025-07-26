@@ -509,6 +509,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserPendingTasks(userId: number): Promise<MissionTask[]> {
+    // First get the user's current active team
+    const [currentMembership] = await db
+      .select()
+      .from(teamMembers)
+      .where(eq(teamMembers.userId, userId));
+    
+    if (!currentMembership) {
+      return []; // User has no active team
+    }
+
+    // Return only pending tasks from the user's current active team
     return await db
       .select()
       .from(missionTasks)
@@ -516,7 +527,8 @@ export class DatabaseStorage implements IStorage {
         and(
           eq(missionTasks.assignedTo, userId.toString()),
           eq(missionTasks.completed, false),
-          eq(missionTasks.status, 'pending')
+          eq(missionTasks.status, 'pending'),
+          eq(missionTasks.teamId, currentMembership.teamId)
         )
       )
       .orderBy(desc(missionTasks.createdAt));

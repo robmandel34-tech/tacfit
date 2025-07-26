@@ -243,6 +243,24 @@ export default function StravaIntegration() {
           )}
         </div>
 
+        {connectStrava.isError && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <h4 className="text-red-800 font-medium mb-2">Strava Connection Issue</h4>
+            <p className="text-red-700 text-sm mb-3">
+              The Strava app redirect URI needs to be updated to match your current domain.
+            </p>
+            <div className="bg-white border border-red-200 rounded p-2 mb-3">
+              <p className="text-xs text-gray-600 mb-1">Add this redirect URI to your Strava app:</p>
+              <code className="text-xs text-red-800 break-all">
+                https://{window.location.host}/callback
+              </code>
+            </div>
+            <p className="text-red-700 text-xs">
+              Go to <a href="https://www.strava.com/settings/api" target="_blank" rel="noopener noreferrer" className="underline">Strava API Settings</a> and update the Authorization Callback Domain.
+            </p>
+          </div>
+        )}
+
         {tokenExpired && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
             <div className="flex items-center gap-2 text-yellow-800 text-sm">

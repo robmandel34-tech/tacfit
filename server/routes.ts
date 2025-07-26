@@ -2529,22 +2529,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ message: "Strava client ID not configured" });
       }
 
-      // Use the correct Replit domain for redirect URI - try exact domain without subdomain
+      // Use the exact current domain for redirect URI
       const host = req.get('host');
-      let redirectUri;
+      const redirectUri = `https://${host}/callback`;
       
-      // Try multiple callback URL formats to find one that works
-      if (host && host.includes('replit.app')) {
-        redirectUri = `https://${host}/callback`;
-      } else if (process.env.REPL_SLUG && process.env.REPL_OWNER) {
-        redirectUri = `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.app/callback`;
-      } else {
-        redirectUri = `${req.protocol}://${req.get('host')}/callback`;
-      }
-      
-      console.log('Generated redirect URI:', redirectUri);
+      console.log('Strava auth URL request for user:', userId);
+      console.log('Request headers:', {
+        host: req.get('host'),
+        'x-forwarded-host': req.get('x-forwarded-host'),
+        'x-replit-domain': req.get('x-replit-domain'),
+        origin: req.get('origin'),
+        referer: req.get('referer')
+      });
       const scope = "read,activity:read_all";
       const state = userId.toString(); // Use user ID as state for security
+      
+      console.log('Generated streamlined auth URL: https://www.strava.com/oauth/authorize?client_id=' + clientId + '&response_type=code&redirect_uri=' + encodeURIComponent(redirectUri) + '&approval_prompt=force&scope=' + scope + '&state=' + state);
+      console.log('Redirect URI being used:', redirectUri);
+      console.log('Client ID being used:', clientId);
 
       const authUrl = `https://www.strava.com/oauth/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&approval_prompt=force&scope=${scope}&state=${state}`;
 

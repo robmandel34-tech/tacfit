@@ -86,6 +86,11 @@ export default function StravaIntegration() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/strava/status", user?.id] });
+      // Reset all local state when disconnecting
+      setIsConnecting(false);
+      setShowManualFlow(false);
+      setAuthCode("");
+      setAuthUrl("");
       toast({
         title: "Disconnected",
         description: "Successfully disconnected from Strava",
@@ -99,6 +104,19 @@ export default function StravaIntegration() {
       });
     },
   });
+
+  // Reset connection state (for when user gets stuck)
+  const resetConnection = () => {
+    setIsConnecting(false);
+    setShowManualFlow(false);
+    setAuthCode("");
+    setAuthUrl("");
+    queryClient.invalidateQueries({ queryKey: ["/api/strava/status", user?.id] });
+    toast({
+      title: "Connection Reset",
+      description: "Strava connection state has been reset. You can try connecting again.",
+    });
+  };
 
   // Sync Strava activities
   const syncActivities = useMutation({
@@ -181,14 +199,26 @@ export default function StravaIntegration() {
 
         <div className="flex gap-2">
           {!isConnected ? (
-            <Button 
-              onClick={() => connectStrava.mutate()}
-              disabled={connectStrava.isPending}
-              className="bg-orange-500 hover:bg-orange-600 text-white"
-            >
-              <Link className="h-4 w-4 mr-2" />
-              {connectStrava.isPending ? "Connecting..." : "Connect with Strava"}
-            </Button>
+            <>
+              <Button 
+                onClick={() => connectStrava.mutate()}
+                disabled={connectStrava.isPending}
+                className="bg-orange-500 hover:bg-orange-600 text-white"
+              >
+                <Link className="h-4 w-4 mr-2" />
+                {connectStrava.isPending ? "Connecting..." : "Connect with Strava"}
+              </Button>
+              {(connectStrava.isError || isConnecting || showManualFlow) && (
+                <Button 
+                  onClick={resetConnection}
+                  variant="outline"
+                  className="border-gray-300 text-gray-600 hover:bg-gray-50"
+                >
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Reset
+                </Button>
+              )}
+            </>
           ) : (
             <>
               <Button 

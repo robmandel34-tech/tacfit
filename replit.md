@@ -104,6 +104,8 @@ Preferred communication style: Simple, everyday language.
 - **NEW**: Team formation guidance, competition mechanics, and navigation tutorial
 - **ENHANCED**: New user experience now includes guided introduction to all platform features
 - **ENHANCED**: Help system provides ongoing support with quick tips and feature explanations
+- **FIXED**: Onboarding flow now only shows for genuinely new users instead of every login
+- **FIXED**: Existing test users marked as onboarding completed to prevent repeated walkthrough displays
 
 ### Profile Competition Participation Display (July 2025)
 - **NEW**: Profile pages now show current competition participation status with detailed information

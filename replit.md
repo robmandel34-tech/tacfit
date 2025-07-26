@@ -265,6 +265,12 @@ Preferred communication style: Simple, everyday language.
 - **LOGGING**: Server logs bonus point awards for tracking and debugging
 - **AUTOMATIC**: Bonus calculation applied server-side during activity submission processing
 
+### Competition Status Display Enhancement (July 2025)
+- **ENHANCED**: Competition tab now shows "starts in # days" for competitions that haven't started yet but can be joined
+- **IMPROVED**: Time display logic differentiates between pre-start (starts in X days) and active (X days left) competitions
+- **FIXED**: Competition status display now properly handles competition start dates vs end dates
+- **USER-FRIENDLY**: Clearer messaging helps users understand when competitions begin vs when they end
+
 ### Admin Portal Implementation (July 2025)
 - **NEW**: Complete admin portal for competition creation and management
 - **ACCESS**: Admin users can access portal via /admin route in main navigation

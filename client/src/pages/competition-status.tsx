@@ -148,8 +148,18 @@ export default function CompetitionStatus() {
                   <Clock className="mr-2 h-4 w-4 text-orange-500" />
                   <span className="font-medium text-gray-300">
                     {(() => {
+                      const startDate = new Date(competition.startDate);
                       const endDate = new Date(competition.endDate);
                       const today = new Date();
+                      
+                      // Check if competition hasn't started yet
+                      if (today < startDate) {
+                        const timeDiffStart = startDate.getTime() - today.getTime();
+                        const daysUntilStart = Math.ceil(timeDiffStart / (1000 * 3600 * 24));
+                        return `starts in ${daysUntilStart} days`;
+                      }
+                      
+                      // Competition has started, show days left
                       const timeDiff = endDate.getTime() - today.getTime();
                       const daysRemaining = Math.ceil(timeDiff / (1000 * 3600 * 24));
                       return daysRemaining > 0 ? `${daysRemaining} days left` : 'Completed';

@@ -2,7 +2,7 @@ import { useAuthRequired } from "@/lib/auth";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { useParams } from "wouter";
+import { useParams, useLocation } from "wouter";
 import Navigation from "@/components/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ export default function Profile() {
   const { user, isLoading } = useAuthRequired();
   const { updateUser } = useAuth();
   const { userId } = useParams();
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [message, setMessage] = useState("");
@@ -707,14 +708,28 @@ export default function Profile() {
                                 ) : (
                                   friends.filter((f: any) => f.status === "accepted").map((friendship: any) => (
                                     <div key={friendship.id} className="flex items-center justify-between p-3 bg-tactical-gray rounded-lg">
-                                      <div className="flex items-center space-x-3">
+                                      <div 
+                                        className="flex items-center space-x-3 flex-1 cursor-pointer hover:bg-tactical-gray-light transition-colors rounded-lg p-2 -m-2"
+                                        onClick={() => {
+                                          setIsFriendsModalOpen(false);
+                                          setLocation(`/profile/${friendship.friend?.id}`);
+                                        }}
+                                      >
                                         <Avatar className="h-10 w-10">
-                                          <AvatarFallback className="bg-military-green text-white">
-                                            {friendship.friend?.username?.charAt(0).toUpperCase()}
-                                          </AvatarFallback>
+                                          {friendship.friend?.avatar ? (
+                                            <img
+                                              src={`/uploads/${friendship.friend.avatar}`}
+                                              alt="Profile picture"
+                                              className="w-10 h-10 rounded-full object-cover"
+                                            />
+                                          ) : (
+                                            <AvatarFallback className="bg-military-green text-white">
+                                              {friendship.friend?.username?.charAt(0).toUpperCase()}
+                                            </AvatarFallback>
+                                          )}
                                         </Avatar>
                                         <div>
-                                          <p className="text-white font-medium">{friendship.friend?.username}</p>
+                                          <p className="text-white font-medium hover:text-steel-blue transition-colors">{friendship.friend?.username}</p>
                                           <p className="text-gray-400 text-sm capitalize">{friendship.status}</p>
                                         </div>
                                       </div>

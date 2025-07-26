@@ -340,6 +340,8 @@ Preferred communication style: Simple, everyday language.
 - **ENHANCED**: Toast notifications use consistent "buddy" terminology throughout
 - **SECURED**: Only accepted friendships are counted in buddy totals
 - **USER-FRIENDLY**: Clear status indicators show "Request Sent" vs "Pending Approval" states
+- **NEW**: Buddy profile navigation - clicking on buddy names or avatars in the buddies list navigates to their profile page
+- **ENHANCED**: Interactive buddy list with hover effects and smooth transitions for better user experience
 
 ### Admin Portal Implementation (July 2025)
 - **NEW**: Complete admin portal for competition creation and management

@@ -84,7 +84,7 @@ export default function AdminPage() {
   const [suspensionReason, setSuspensionReason] = useState('');
   const [deleteUser, setDeleteUser] = useState<User | null>(null);
 
-  // Session refresh mutation
+  // Session refresh mutation - always define hooks at top level
   const refreshSession = useMutation({
     mutationFn: async () => {
       return apiRequest("POST", "/api/auth/refresh-session");
@@ -105,32 +105,6 @@ export default function AdminPage() {
       });
     }
   });
-
-  // Check if user is admin
-  if (!user?.isAdmin) {
-    return (
-      <div className="min-h-screen bg-tactical-dark flex items-center justify-center">
-        <Card className="w-96">
-          <CardHeader>
-            <CardTitle className="text-red-400">Access Denied</CardTitle>
-            <CardDescription>You don't have administrative privileges.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Button 
-              onClick={() => refreshSession.mutate()}
-              disabled={refreshSession.isPending}
-              className="w-full bg-military-green hover:bg-military-green-light"
-            >
-              {refreshSession.isPending ? 'Refreshing...' : 'Refresh Admin Status'}
-            </Button>
-            <Button onClick={() => navigate("/")} className="w-full" variant="outline">
-              Return to Command Center
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   // Fetch competitions
   const { data: competitions = [], isLoading: competitionsLoading } = useQuery({
@@ -641,6 +615,32 @@ export default function AdminPage() {
     });
     setIsCreateCompetitionOpen(true);
   };
+
+  // Check if user is admin - after all hooks are defined
+  if (!user?.isAdmin) {
+    return (
+      <div className="min-h-screen bg-tactical-dark flex items-center justify-center">
+        <Card className="w-96">
+          <CardHeader>
+            <CardTitle className="text-red-400">Access Denied</CardTitle>
+            <CardDescription>You don't have administrative privileges.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button 
+              onClick={() => refreshSession.mutate()}
+              disabled={refreshSession.isPending}
+              className="w-full bg-military-green hover:bg-military-green-light"
+            >
+              {refreshSession.isPending ? 'Refreshing...' : 'Refresh Admin Status'}
+            </Button>
+            <Button onClick={() => navigate("/")} className="w-full" variant="outline">
+              Return to Command Center
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-tactical-dark text-white">

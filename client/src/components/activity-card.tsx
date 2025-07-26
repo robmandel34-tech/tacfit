@@ -10,6 +10,7 @@ import { queryClient } from "@/lib/queryClient";
 import { useState } from "react";
 import ActivityCommentsModal from "./activity-comments-modal";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 interface ActivityCardProps {
   activity: {
@@ -182,20 +183,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
 
   const deleteActivity = useMutation({
     mutationFn: async (activityId: number) => {
-      const response = await fetch(`/api/activities/${activityId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // This ensures session cookies are sent
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to delete activity');
-      }
-
-      return response.json();
+      return apiRequest("DELETE", `/api/activities/${activityId}`);
     },
     onSuccess: () => {
       toast({

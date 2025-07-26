@@ -32,11 +32,20 @@ export default function StravaIntegration() {
     },
     onSuccess: (data) => {
       setShowManualFlow(true);
-      window.open(data.authUrl, '_blank');
-      toast({
-        title: "Strava Authorization",
-        description: "Follow the instructions to complete the connection",
-      });
+      // Create a clickable link instead of automatic popup
+      const authWindow = window.open(data.authUrl, '_blank', 'width=600,height=700,scrollbars=yes');
+      if (!authWindow) {
+        toast({
+          title: "Popup Blocked",
+          description: "Please allow popups and try again, or manually copy the authorization link",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Strava Authorization Opened",
+          description: "Complete authorization in the new window, then copy the code from the error page",
+        });
+      }
     },
     onError: (error: any) => {
       toast({
@@ -175,11 +184,20 @@ export default function StravaIntegration() {
 
         {!isConnected && showManualFlow && (
           <div className="space-y-4 p-4 bg-orange-50 dark:bg-orange-950 rounded-lg border border-orange-200 dark:border-orange-800">
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Step 2: Enter Authorization Code</Label>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                After authorizing in the popup window, copy the code from the error page URL and paste it below:
-              </p>
+            <div className="space-y-3">
+              <Label className="text-sm font-medium text-orange-800 dark:text-orange-200">Manual Strava Connection</Label>
+              
+              <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                <p className="font-medium">Step 1: Authorize TacFit on Strava</p>
+                <p>1. A new window should have opened with Strava authorization</p>
+                <p>2. Click "Authorize" to grant TacFit access to your activities</p>
+                <p>3. You'll see an error page - this is normal!</p>
+                
+                <p className="font-medium mt-3">Step 2: Copy the Authorization Code</p>
+                <p>4. From the error page URL, copy the code after "code=" (before "&")</p>
+                <p>5. Paste it in the field below and click Connect</p>
+              </div>
+              
               <div className="flex gap-2">
                 <Input
                   placeholder="Paste authorization code here..."
@@ -195,20 +213,36 @@ export default function StravaIntegration() {
                   {exchangeCode.isPending ? "Connecting..." : "Connect"}
                 </Button>
               </div>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowManualFlow(false)}
+                className="text-gray-600"
+              >
+                Cancel
+              </Button>
             </div>
           </div>
         )}
 
         <div className="flex gap-2">
           {!isConnected ? (
-            <Button 
-              onClick={() => getAuthUrl.mutate()}
-              disabled={getAuthUrl.isPending}
-              className="bg-orange-500 hover:bg-orange-600 text-white"
-            >
-              <Link className="h-4 w-4 mr-2" />
-              {getAuthUrl.isPending ? "Opening..." : "Connect with Strava"}
-            </Button>
+            <>
+              <Button 
+                onClick={() => getAuthUrl.mutate()}
+                disabled={getAuthUrl.isPending || showManualFlow}
+                className="bg-orange-500 hover:bg-orange-600 text-white"
+              >
+                <Link className="h-4 w-4 mr-2" />
+                {getAuthUrl.isPending ? "Opening..." : "Connect with Strava"}
+              </Button>
+              {showManualFlow && (
+                <p className="text-sm text-gray-600 mt-2">
+                  Authorization window opened. Follow the steps above to complete connection.
+                </p>
+              )}
+            </>
           ) : (
             <>
               <Button 

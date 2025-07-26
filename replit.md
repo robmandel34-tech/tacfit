@@ -330,6 +330,17 @@ Preferred communication style: Simple, everyday language.
 - **ENHANCED**: Responsive layout with flex-wrap for badges and improved mobile display
 - **CONSISTENT**: All "friend" terminology replaced with "buddy" for platform consistency
 
+### Buddy Request Approval System Implementation (July 2025)
+- **FIXED**: Buddy requests now require approval instead of auto-accepting friendships
+- **NEW**: API endpoint creates friendships with "pending" status by default
+- **NEW**: Duplicate request checking prevents multiple requests in both directions
+- **FIXED**: Database friendship counting now includes bidirectional accepted friendships
+- **FIXED**: getFriendships function returns friendships where user is either requester or recipient
+- **ENHANCED**: Buddy count updates properly after accepting friend requests
+- **ENHANCED**: Toast notifications use consistent "buddy" terminology throughout
+- **SECURED**: Only accepted friendships are counted in buddy totals
+- **USER-FRIENDLY**: Clear status indicators show "Request Sent" vs "Pending Approval" states
+
 ### Admin Portal Implementation (July 2025)
 - **NEW**: Complete admin portal for competition creation and management
 - **ACCESS**: Admin users can access portal via /admin route in main navigation

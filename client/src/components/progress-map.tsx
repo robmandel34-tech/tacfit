@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, MapPin, Mountain, Flag } from "lucide-react";
+import { Trophy, MapPin, Mountain, Flag, Shield, Target, Zap, Compass, Flame, Crown, Sword, Star } from "lucide-react";
 
 interface Team {
   id: number;
@@ -30,6 +30,13 @@ interface ProgressMapProps {
 
 export default function ProgressMap({ teams, competitionName, competition, activities = [] }: ProgressMapProps) {
   const [, navigate] = useLocation();
+  
+  // Default tactical icons for teams without custom pictures
+  const getDefaultIcon = (teamId: number) => {
+    const icons = [Shield, Target, Zap, Compass, Flame, Crown, Sword, Star];
+    const IconComponent = icons[teamId % icons.length];
+    return IconComponent;
+  };
   
   // Check if competition has started
   const competitionHasStarted = competition ? new Date() >= new Date(competition.startDate) : true;
@@ -275,9 +282,12 @@ export default function ProgressMap({ teams, competitionName, competition, activ
                                        index === 2 ? 'linear-gradient(135deg, #d97706 0%, #b45309 50%, #92400e 100%)' :
                                        'linear-gradient(135deg, #6b8e6b 0%, #5a7a5a 50%, #4a6a4a 100%)'
                           }}>
-                            <span className="text-white font-bold text-xs" style={{
-                              filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.3))'
-                            }}>{team.rank}</span>
+                            {(() => {
+                              const IconComponent = getDefaultIcon(team.id);
+                              return <IconComponent className="h-4 w-4 text-white" style={{
+                                filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.3))'
+                              }} />;
+                            })()}
                           </div>
                         )}
                       </div>

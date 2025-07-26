@@ -1472,6 +1472,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin-only activity deletion
+  app.delete("/api/activities/:id", async (req, res) => {
+    try {
+      // Check if user is admin
+      if (!req.session?.userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const user = await storage.getUser(req.session.userId);
+      if (!user?.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const activityId = parseInt(req.params.id);
+      const activity = await storage.getActivity(activityId);
+      
+      if (!activity) {
+        return res.status(404).json({ message: "Activity not found" });
+      }
+
+      // Delete the activity and all associated data
+      const success = await storage.deleteActivity(activityId);
+      
+      if (!success) {
+        return res.status(500).json({ message: "Failed to delete activity" });
+      }
+
+      console.log(`Admin ${user.username} deleted activity ${activityId} by user ${activity.userId}`);
+      res.json({ message: "Activity deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting activity:", error);
+      res.status(500).json({ message: "Error deleting activity" });
+    }
+  });
+
   // Activity comment routes
   app.get("/api/activities/:id/comments", async (req, res) => {
     try {

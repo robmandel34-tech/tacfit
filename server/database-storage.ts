@@ -221,6 +221,17 @@ export class DatabaseStorage implements IStorage {
     return activity || undefined;
   }
 
+  async deleteActivity(id: number): Promise<boolean> {
+    // Delete all associated data first (comments, likes, flags)
+    await db.delete(activityComments).where(eq(activityComments.activityId, id));
+    await db.delete(activityLikes).where(eq(activityLikes.activityId, id));
+    await db.delete(activityFlags).where(eq(activityFlags.activityId, id));
+    
+    // Delete the activity itself
+    const result = await db.delete(activities).where(eq(activities.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
   // Activity comment operations
   async getActivityComments(activityId: number): Promise<ActivityComment[]> {
     return await db.select().from(activityComments).where(eq(activityComments.activityId, activityId));

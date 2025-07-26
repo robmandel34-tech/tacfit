@@ -373,6 +373,18 @@ Preferred communication style: Simple, everyday language.
 - **FIXED**: Previous button contrast improved - added dark background (bg-gray-800) with white text for clear visibility and proper disabled states
 - **FIXED**: Progress circles spacing and overlap issue - made circles smaller (w-2 h-2), removed scale effect, added proper margins to prevent button overlap
 
+### Admin Activity Deletion System (July 2025)
+- **NEW**: Complete admin activity deletion functionality for content moderation
+- **NEW**: DELETE API endpoint for activities with admin-only access restrictions
+- **NEW**: Backend validation ensures only admin users can delete activities
+- **NEW**: Comprehensive deletion removes activity and all associated data (comments, likes, flags)
+- **NEW**: Admin delete button on activity cards with trash icon and confirmation dialog
+- **NEW**: Real-time activity feed updates after deletion with proper cache invalidation
+- **NEW**: Toast notifications for successful deletion and error handling
+- **ENHANCED**: Activity cards now include admin controls visible only to admin users
+- **SECURED**: Activity deletion requires admin privileges and user authentication
+- **LOGGED**: Admin activity deletions logged to console for audit trail with admin and activity details
+
 ### Admin Portal Implementation (July 2025)
 - **NEW**: Complete admin portal for competition creation and management
 - **ACCESS**: Admin users can access portal via /admin route in main navigation

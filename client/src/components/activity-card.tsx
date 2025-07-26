@@ -2,13 +2,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ThumbsUp, MessageCircle, Flag, Users, Image, Mountain } from "lucide-react";
+import { ThumbsUp, MessageCircle, Flag, Users, Image, Mountain, Trash2 } from "lucide-react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useState } from "react";
 import ActivityCommentsModal from "./activity-comments-modal";
+import { useToast } from "@/hooks/use-toast";
 
 interface ActivityCardProps {
   activity: {
@@ -39,11 +40,13 @@ interface ActivityCardProps {
   onLike?: (id: number) => void;
   onFlag?: (id: number) => void;
   showFlagButton?: boolean; // New prop to control flag button visibility
+  onDelete?: () => void; // Callback to trigger parent refresh after deletion
 }
 
-export default function ActivityCard({ activity, onLike, onFlag, showFlagButton = true }: ActivityCardProps) {
+export default function ActivityCard({ activity, onLike, onFlag, showFlagButton = true, onDelete }: ActivityCardProps) {
   const [, navigate] = useLocation();
   const { user } = useAuth();
+  const { toast } = useToast();
   const [showComments, setShowComments] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   
@@ -177,6 +180,47 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
     },
   });
 
+  const deleteActivity = useMutation({
+    mutationFn: async (activityId: number) => {
+      const response = await fetch(`/api/activities/${activityId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to delete activity');
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Activity Deleted",
+        description: "The activity has been removed successfully.",
+      });
+      
+      // Invalidate all relevant queries to refresh activity feeds
+      queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/activities/team'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/activities/competition'] });
+      
+      // Call onDelete callback if provided
+      if (onDelete) {
+        onDelete();
+      }
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to Delete Activity",
+        description: error.message || "Could not delete the activity. Please try again.",
+        variant: "destructive"
+      });
+    },
+  });
+
   const handleLike = () => {
     if (onLike) {
       onLike(activity.id);
@@ -190,6 +234,12 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
       onFlag(activity.id);
     } else {
       flagActivity.mutate(activity.id);
+    }
+  };
+
+  const handleDelete = () => {
+    if (confirm('Are you sure you want to delete this activity? This action cannot be undone.')) {
+      deleteActivity.mutate(activity.id);
     }
   };
 
@@ -339,6 +389,19 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
                     }}
                   />
                   <span className="text-gray-300">{currentFlagCount > 0 ? currentFlagCount : 'Flag'}</span>
+                </button>
+              )}
+
+              {/* Admin delete button */}
+              {user?.isAdmin && (
+                <button
+                  onClick={handleDelete}
+                  disabled={deleteActivity.isPending}
+                  className="flex items-center gap-2 transition-colors text-sm text-gray-400 hover:text-red-500"
+                  title="Delete Activity (Admin)"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span className="text-gray-300">Delete</span>
                 </button>
               )}
             </div>

@@ -50,6 +50,7 @@ export interface IStorage {
   getActivitiesByUser(userId: number): Promise<Activity[]>;
   createActivity(activity: InsertActivity): Promise<Activity>;
   updateActivity(id: number, updates: Partial<Activity>): Promise<Activity | undefined>;
+  deleteActivity(id: number): Promise<boolean>;
   
   // Activity comment operations
   getActivityComments(activityId: number): Promise<ActivityComment[]>;

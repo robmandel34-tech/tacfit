@@ -196,6 +196,7 @@ Preferred communication style: Simple, everyday language.
 - **ENHANCED**: Better activity classification for competitions and team tracking
 - **ENHANCED**: More accurate point allocation based on specific activity types
 - **COMPREHENSIVE**: System now supports every official Strava activity type with proper categorization and measurement units
+- **RESTORED**: All 60 activity types restored after database reset (July 26, 2025) - includes full Strava integration plus meditation activities
 
 ### Meditation & Mindfulness Integration (July 2025)
 - **NEW**: Added 6 comprehensive meditation activity types: Meditation, Mindfulness, Breathing Exercises, Sleep Meditation, Body Scan, Loving Kindness

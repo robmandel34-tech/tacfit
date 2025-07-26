@@ -28,11 +28,22 @@ export default function StravaIntegration() {
   // Get Strava auth URL for one-click flow
   const connectStrava = useMutation({
     mutationFn: async () => {
+      console.log("Requesting Strava auth URL for user:", user?.id);
       const response = await fetch(`/api/strava/auth-url?userId=${user?.id}`);
+      
+      console.log("Response status:", response.status);
+      console.log("Response headers:", response.headers);
+      
       const data = await response.json();
+      console.log("Response data:", data);
       
       if (!response.ok) {
         throw new Error(data.message || "Failed to generate Strava auth URL");
+      }
+      
+      // Validate that we have a proper auth URL
+      if (!data.authUrl || typeof data.authUrl !== 'string') {
+        throw new Error("Invalid auth URL received from server");
       }
       
       return data;

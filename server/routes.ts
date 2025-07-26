@@ -2565,10 +2565,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(200).send("OK");
   });
 
+  // Simple callback test page to verify external accessibility
+  app.get("/callback-test", (req, res) => {
+    res.send(`
+      <html>
+        <body>
+          <h1>Callback Test Page</h1>
+          <p>This page is accessible from external domains.</p>
+          <p>Host: ${req.get('host')}</p>
+          <p>Query params: ${JSON.stringify(req.query)}</p>
+          <p>Headers: ${JSON.stringify(req.headers)}</p>
+        </body>
+      </html>
+    `);
+  });
+
   // Strava callback without /api prefix for better accessibility
   app.get("/callback", async (req, res) => {
     try {
       console.log("=== STRAVA CALLBACK HIT (SIMPLE URL) ===");
+      console.log("Full URL:", req.url);
+      console.log("Host:", req.get('host'));
+      console.log("User-Agent:", req.get('user-agent'));
       console.log("Query params:", req.query);
       const { code, state, error } = req.query;
 

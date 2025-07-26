@@ -193,15 +193,24 @@ export default function StravaIntegration() {
                   </Button>
                 </div>
                 
-                <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-                  <p className="font-medium">Step 2: First, check your Strava app settings:</p>
-                  <p>• Go to <a href="https://www.strava.com/settings/api" target="_blank" className="text-orange-600 underline">Strava API Settings</a></p>
-                  <p>• Confirm "Authorization Callback Domain" has: <code className="bg-gray-200 px-1 rounded">workspace.rmandel20.replit.app</code></p>
+                <div className="space-y-3 text-sm text-gray-700 dark:text-gray-300">
+                  <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded border border-blue-200 dark:border-blue-800">
+                    <p className="font-medium text-blue-800 dark:text-blue-200">Step 2: Get Your Authorization Code</p>
+                    <div className="mt-2 space-y-1">
+                      <p>1. Click the orange "Open Strava Authorization" button above</p>
+                      <p>2. Click "Authorize" on the Strava page</p>
+                      <p>3. You'll be redirected to an error page - <strong>this is normal!</strong></p>
+                      <p>4. Look at the URL in your browser's address bar</p>
+                      <p>5. Find the part that looks like: <code className="bg-gray-200 px-1 rounded">code=abc123xyz...</code></p>
+                      <p>6. Copy everything after "code=" (the long string of letters and numbers)</p>
+                      <p>7. Paste it in the box below</p>
+                    </div>
+                  </div>
                   
-                  <p className="font-medium mt-3">Step 3: After clicking "Authorize" on Strava:</p>
-                  <p>• You'll see an error page (this is expected)</p>
-                  <p>• Copy the long code from the URL after "code=" (before any "&")</p>
-                  <p>• Paste it below and click Connect</p>
+                  <div className="text-xs text-gray-600 dark:text-gray-400">
+                    <strong>Example:</strong> If the URL shows <code>workspace.rmandel20.replit.app/?code=abc123xyz789&state=1</code><br/>
+                    Copy: <code>abc123xyz789</code>
+                  </div>
                 </div>
               </div>
               

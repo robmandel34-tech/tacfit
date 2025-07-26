@@ -342,6 +342,9 @@ Preferred communication style: Simple, everyday language.
 - **USER-FRIENDLY**: Clear status indicators show "Request Sent" vs "Pending Approval" states
 - **NEW**: Buddy profile navigation - clicking on buddy names or avatars in the buddies list navigates to their profile page
 - **ENHANCED**: Interactive buddy list with hover effects and smooth transitions for better user experience
+- **NEW**: Remove buddy functionality with confirmation dialog and permanent friendship deletion
+- **ENHANCED**: Buddies list now shows message and remove buttons with proper red styling for remove action
+- **FIXED**: Profile name and motto centering issues when viewing other users' profiles
 
 ### Admin Portal Implementation (July 2025)
 - **NEW**: Complete admin portal for competition creation and management

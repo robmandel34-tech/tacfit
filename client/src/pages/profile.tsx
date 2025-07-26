@@ -569,7 +569,7 @@ export default function Profile() {
                       </form>
                     ) : (
                       <div className="flex items-center justify-center">
-                        <div className="flex items-center ml-12">
+                        <div className={`flex items-center ${isOwnProfile ? 'ml-12' : ''}`}>
                           <h2 className="text-white font-bold text-xl mr-2">{displayUser.username}</h2>
                           {isOwnProfile && (
                             <Button
@@ -623,7 +623,7 @@ export default function Profile() {
                       </form>
                     ) : (
                       <div className="flex items-center justify-center">
-                        <div className="flex items-center space-x-2 ml-10">
+                        <div className={`flex items-center space-x-2 ${isOwnProfile ? 'ml-10' : ''}`}>
                           <p className="text-gray-300 text-sm italic text-center">
                             {displayUser.motto ? `"${displayUser.motto}"` : "No motto set"}
                           </p>

@@ -54,6 +54,8 @@ Preferred communication style: Simple, everyday language.
 - **ENHANCED**: Automatic domain detection for deployed apps with fallback to development domain
 - **DOCUMENTED**: Created comprehensive setup guide for Strava integration with deployed applications
 - **IMPROVED**: Better error messages guide users on domain configuration for deployed apps
+- **ENHANCED**: Strava activity maps now use satellite view instead of terrain for better route visibility
+- **CONFIGURABLE**: Map type can be easily changed between roadmap, satellite, terrain, or hybrid views
 
 ### User Suspension System Implementation (July 2025)
 - **NEW**: Complete user suspension functionality for administrative moderation

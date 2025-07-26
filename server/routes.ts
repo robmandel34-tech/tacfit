@@ -1485,8 +1485,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`Environment GOOGLE_MAPS_API_KEY: ${apiKey ? 'EXISTS' : 'MISSING'}`);
           
           if (apiKey && apiKey !== 'demo') {
-            stravaMapUrl = `https://maps.googleapis.com/maps/api/staticmap?size=600x400&path=enc:${req.body.stravaPolyline}&maptype=terrain&key=${apiKey}`;
-            console.log(`Generated Strava map URL for activity ${req.body.stravaActivityId}: ${stravaMapUrl}`);
+            // Map type configuration - change this to customize map appearance:
+            // 'roadmap' - Standard road map (default Google Maps style)
+            // 'satellite' - Satellite imagery (shows actual terrain/buildings)
+            // 'terrain' - Physical relief map (shows elevation/mountains)
+            // 'hybrid' - Satellite imagery with road/label overlays
+            const mapType = 'satellite';
+            stravaMapUrl = `https://maps.googleapis.com/maps/api/staticmap?size=600x400&path=enc:${req.body.stravaPolyline}&maptype=${mapType}&key=${apiKey}`;
+            console.log(`Generated Strava map URL for activity ${req.body.stravaActivityId} with ${mapType} view: ${stravaMapUrl}`);
           } else {
             console.log(`Cannot generate map URL - API key missing or demo`);
           }
@@ -3374,7 +3380,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           formattedDate: new Date(activity.start_date).toLocaleDateString(),
           polyline: polylineToUse, // Include polyline for frontend map generation
           mapImageUrl: hasValidPolyline ? 
-            `https://maps.googleapis.com/maps/api/staticmap?size=600x400&path=enc:${polylineToUse}&maptype=terrain&key=${process.env.GOOGLE_MAPS_API_KEY || 'demo'}` : 
+            `https://maps.googleapis.com/maps/api/staticmap?size=600x400&path=enc:${polylineToUse}&maptype=satellite&key=${process.env.GOOGLE_MAPS_API_KEY || 'demo'}` : 
             null,
         };
       }));

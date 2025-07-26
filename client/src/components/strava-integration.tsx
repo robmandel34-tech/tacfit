@@ -205,13 +205,13 @@ export default function StravaIntegration() {
 
 
 
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-3">
           {!isConnected ? (
             <>
               <Button 
                 onClick={() => connectStrava.mutate()}
                 disabled={connectStrava.isPending}
-                className="bg-orange-500 hover:bg-orange-600 text-white"
+                className="bg-orange-500 hover:bg-orange-600 text-white flex-1 sm:flex-none"
               >
                 <Link className="h-4 w-4 mr-2" />
                 {connectStrava.isPending ? "Connecting..." : "Connect with Strava"}
@@ -220,7 +220,7 @@ export default function StravaIntegration() {
                 <Button 
                   onClick={resetConnection}
                   variant="outline"
-                  className="border-gray-300 text-gray-600 hover:bg-gray-50"
+                  className="border-gray-300 text-gray-600 hover:bg-gray-50 flex-1 sm:flex-none"
                 >
                   <RotateCcw className="h-4 w-4 mr-2" />
                   Reset
@@ -232,17 +232,17 @@ export default function StravaIntegration() {
               <Button 
                 onClick={() => syncActivities.mutate()}
                 disabled={syncActivities.isPending || tokenExpired}
-                className="bg-military-green hover:bg-military-green-light text-white"
+                className="bg-military-green hover:bg-military-green-light text-white flex-1 sm:flex-none"
               >
                 <Zap className="h-4 w-4 mr-2" />
-                {syncActivities.isPending ? "Loading Activities..." : "Load 18 Months of Activities"}
+                {syncActivities.isPending ? "Loading Activities..." : "Load Activities"}
               </Button>
               
               <Button 
                 onClick={() => disconnectStrava.mutate()}
                 disabled={disconnectStrava.isPending}
                 variant="outline"
-                className="border-red-300 text-red-600 hover:bg-red-50"
+                className="border-red-300 text-red-600 hover:bg-red-50 flex-shrink-0"
               >
                 <Unlink className="h-4 w-4 mr-2" />
                 {disconnectStrava.isPending ? "Disconnecting..." : "Disconnect"}

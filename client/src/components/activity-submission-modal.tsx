@@ -534,6 +534,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
               <div className="mb-2">
                 <div className="mx-auto h-6 w-6 text-gray-400 mb-1 flex items-center justify-center">🎥</div>
                 <p className="text-gray-400 text-sm">Video Evidence</p>
+                <p className="text-xs text-gray-500 mt-1">Recommended: MP4 format for best compatibility</p>
               </div>
               {videoFile ? (
                 <div className="space-y-2">

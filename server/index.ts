@@ -3,6 +3,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { seedDatabase } from "./seed-data";
+import path from "path";
 
 const app = express();
 app.use(express.json());
@@ -20,6 +21,33 @@ app.use((req, res, next) => {
     next();
   }
 });
+
+// Custom static file serving with proper MIME types for videos
+app.use('/uploads', (req, res, next) => {
+  const filePath = path.join(process.cwd(), 'uploads', req.path);
+  const ext = path.extname(req.path).toLowerCase();
+  
+  // Set proper MIME types for video files
+  switch (ext) {
+    case '.mov':
+      res.setHeader('Content-Type', 'video/quicktime');
+      break;
+    case '.mp4':
+      res.setHeader('Content-Type', 'video/mp4');
+      break;
+    case '.webm':
+      res.setHeader('Content-Type', 'video/webm');
+      break;
+    case '.avi':
+      res.setHeader('Content-Type', 'video/x-msvideo');
+      break;
+    default:
+      // Let express handle other files normally
+      break;
+  }
+  
+  next();
+}, express.static('uploads'));
 
 app.use((req, res, next) => {
   const start = Date.now();

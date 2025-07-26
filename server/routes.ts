@@ -2406,9 +2406,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Session data:", req.session);
       console.log("User in session:", req.session?.user);
       console.log("User admin status:", req.session?.user?.isAdmin);
+      console.log("User ID in session:", req.session?.userId);
       
-      // Check if user is admin
-      if (!req.session?.user?.isAdmin) {
+      // Check if user is admin - first check session, then fallback to database lookup
+      let isAdmin = req.session?.user?.isAdmin;
+      let userId = req.session?.user?.id || req.session?.userId;
+      
+      if (!isAdmin && userId) {
+        // Fallback: check database if session user data is missing
+        const user = await storage.getUser(userId);
+        if (user) {
+          isAdmin = user.isAdmin;
+          // Update session with fresh user data
+          req.session.user = user;
+          console.log("Updated session with fresh user data, isAdmin:", user.isAdmin);
+        }
+      }
+      
+      if (!isAdmin) {
         return res.status(403).json({ message: "Admin privileges required" });
       }
 
@@ -2424,7 +2439,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const postData = {
         ...validationResult.data,
-        createdBy: req.session.user.id
+        createdBy: userId
       };
 
       const post = await storage.createAdminPost(postData);

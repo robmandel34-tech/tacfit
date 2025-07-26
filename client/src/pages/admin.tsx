@@ -94,15 +94,25 @@ export default function AdminPage() {
         title: "Session refreshed",
         description: `Admin status: ${userData.isAdmin ? 'Active' : 'Not active'}`,
       });
-      // Force page reload to update user context
-      window.location.reload();
+      // Invalidate queries to refetch with updated session
+      queryClient.invalidateQueries();
     },
     onError: (error: any) => {
-      toast({
-        title: "Failed to refresh session",
-        description: error.message,
-        variant: "destructive"
-      });
+      console.log("Session refresh failed:", error);
+      // If session refresh fails, the user needs to log out and back in
+      if (error.message.includes("Not logged in")) {
+        toast({
+          title: "Session expired",
+          description: "Please log out and log back in to refresh your admin privileges.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Failed to refresh session",
+          description: error.message,
+          variant: "destructive"
+        });
+      }
     }
   });
 

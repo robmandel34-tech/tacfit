@@ -1341,6 +1341,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      // Check if user is part of a team and competition
+      if (!userTeam || !userTeam.competitionId) {
+        return res.status(400).json({ message: "You must be part of a team in an active competition to submit activities" });
+      }
+      
+      // Get competition details to check if it has started
+      const competition = await storage.getCompetition(userTeam.competitionId);
+      if (!competition) {
+        return res.status(400).json({ message: "Competition not found" });
+      }
+      
+      // Check if competition has started
+      const now = new Date();
+      const startDate = new Date(competition.startDate);
+      if (now < startDate) {
+        const daysUntilStart = Math.ceil((startDate.getTime() - now.getTime()) / (1000 * 3600 * 24));
+        return res.status(400).json({ 
+          message: `Competition has not started yet. Activities can be submitted starting ${startDate.toLocaleDateString()}`,
+          daysUntilStart 
+        });
+      }
+      
       // Handle file uploads
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
       

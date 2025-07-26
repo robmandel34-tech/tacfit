@@ -59,6 +59,12 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   // Get filtered activity types that are available for this competition
   const competitionActivityTypes = activityTypes.filter(at => availableActivityTypes.includes(at.name));
 
+  // Check if competition has started
+  const competitionHasStarted = competition ? new Date() >= new Date(competition.startDate) : false;
+  const daysUntilStart = competition && !competitionHasStarted 
+    ? Math.ceil((new Date(competition.startDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24))
+    : 0;
+
   // Get recent Strava activities if user is connected
   const { data: stravaActivities, isLoading: stravaLoading } = useQuery({
     queryKey: ["/api/strava/recent-activities", user?.id],
@@ -228,6 +234,23 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
           <DialogTitle className="text-xl font-bold text-white">Submit Activity</DialogTitle>
         </DialogHeader>
         
+        {/* Competition Not Started Warning */}
+        {!competitionHasStarted && competition && (
+          <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-4 mb-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Clock className="h-5 w-5 text-orange-500" />
+              <h3 className="font-semibold text-orange-100">Competition Not Started</h3>
+            </div>
+            <p className="text-sm text-orange-200">
+              The competition "{competition.name}" starts on {new Date(competition.startDate).toLocaleDateString()}.
+              {daysUntilStart > 0 && ` That's ${daysUntilStart} day${daysUntilStart === 1 ? '' : 's'} from now.`}
+            </p>
+            <p className="text-xs text-orange-300 mt-2">
+              Activity submissions will be available once the competition begins.
+            </p>
+          </div>
+        )}
+        
         <div className="max-h-[70vh] overflow-y-auto pr-2">
           <form id="activity-form" onSubmit={handleSubmit} className="space-y-4">
             
@@ -243,10 +266,11 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                   variant="outline"
                   size="sm"
                   onClick={() => setShowStravaActivities(!showStravaActivities)}
-                  className="text-orange-500 border-orange-500 hover:bg-orange-500/10"
+                  disabled={!competitionHasStarted}
+                  className="text-orange-500 border-orange-500 hover:bg-orange-500/10 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Zap className="h-4 w-4 mr-1" />
-                  {showStravaActivities ? "Hide" : "Load"} Recent Activities
+                  {!competitionHasStarted ? "Not Available" : showStravaActivities ? "Hide" : "Load"} Recent Activities
                 </Button>
               </div>
               
@@ -323,9 +347,9 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
             
             <div>
             <Label className="text-gray-300 font-medium mb-2">Activity Type</Label>
-            <Select value={type} onValueChange={setType}>
-              <SelectTrigger className="bg-tactical-gray-lighter border-2 border-tactical-gray text-white focus:border-white focus:ring-0 focus:ring-offset-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
-                <SelectValue placeholder="Select activity type" />
+            <Select value={type} onValueChange={setType} disabled={!competitionHasStarted}>
+              <SelectTrigger className="bg-tactical-gray-lighter border-2 border-tactical-gray text-white focus:border-white focus:ring-0 focus:ring-offset-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed">
+                <SelectValue placeholder={!competitionHasStarted ? "Competition not started" : "Select activity type"} />
               </SelectTrigger>
               <SelectContent className="bg-tactical-gray-light border-tactical-gray text-white">
                 {competitionActivityTypes.map((activityType) => (
@@ -358,8 +382,9 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
             <Textarea 
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="bg-tactical-gray-lighter border-2 border-tactical-gray text-white h-24 focus:border-white focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
-              placeholder="Describe your activity..."
+              className="bg-tactical-gray-lighter border-2 border-tactical-gray text-white h-24 focus:border-white focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
+              placeholder={!competitionHasStarted ? "Competition not started" : "Describe your activity..."}
+              disabled={!competitionHasStarted}
               required
             />
           </div>
@@ -377,13 +402,15 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
               step="1"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
-              className="bg-tactical-gray-lighter border-2 border-tactical-gray text-white focus:border-white focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+              className="bg-tactical-gray-lighter border-2 border-tactical-gray text-white focus:border-white focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
               placeholder={
-                type 
-                  ? `e.g., ${competitionActivityTypes.find(at => at.name === type)?.defaultQuantity || 30}`
-                  : "Select activity type first"
+                !competitionHasStarted 
+                  ? "Competition not started"
+                  : type 
+                    ? `e.g., ${competitionActivityTypes.find(at => at.name === type)?.defaultQuantity || 30}`
+                    : "Select activity type first"
               }
-              disabled={!type}
+              disabled={!type || !competitionHasStarted}
               required
             />
           </div>
@@ -457,12 +484,13 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                     onChange={handleImageChange}
                     className="hidden"
                     id="image-upload"
+                    disabled={!competitionHasStarted}
                   />
                   <Label 
                     htmlFor="image-upload"
-                    className="cursor-pointer text-military-green hover:text-military-green-light"
+                    className={`cursor-pointer ${!competitionHasStarted ? 'opacity-50 cursor-not-allowed text-gray-500' : 'text-military-green hover:text-military-green-light'}`}
                   >
-                    Choose Image
+                    {!competitionHasStarted ? "Not Available" : "Choose Image"}
                   </Label>
                 </div>
               )}
@@ -499,12 +527,13 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                     onChange={handleVideoChange}
                     className="hidden"
                     id="video-upload"
+                    disabled={!competitionHasStarted}
                   />
                   <Label 
                     htmlFor="video-upload"
-                    className="cursor-pointer text-military-green hover:text-military-green-light"
+                    className={`cursor-pointer ${!competitionHasStarted ? 'opacity-50 cursor-not-allowed text-gray-500' : 'text-military-green hover:text-military-green-light'}`}
                   >
-                    Choose Video
+                    {!competitionHasStarted ? "Not Available" : "Choose Video"}
                   </Label>
                 </div>
               )}
@@ -525,10 +554,10 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
           <Button 
             type="submit" 
             form="activity-form"
-            disabled={submitActivity.isPending || !type || !description}
-            className="flex-1 bg-military-green hover:bg-military-green-light text-white"
+            disabled={submitActivity.isPending || !type || !description || !competitionHasStarted}
+            className="flex-1 bg-military-green hover:bg-military-green-light text-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {submitActivity.isPending ? "Submitting..." : "Submit"}
+            {submitActivity.isPending ? "Submitting..." : !competitionHasStarted ? "Competition Not Started" : "Submit"}
           </Button>
         </div>
       </DialogContent>

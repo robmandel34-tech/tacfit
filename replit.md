@@ -271,6 +271,16 @@ Preferred communication style: Simple, everyday language.
 - **FIXED**: Competition status display now properly handles competition start dates vs end dates
 - **USER-FRIENDLY**: Clearer messaging helps users understand when competitions begin vs when they end
 
+### Activity Submission Pre-Competition Restrictions (July 2025)
+- **NEW**: Backend validation prevents activity submissions before competition start date
+- **NEW**: Frontend activity submission modal displays warning when competition hasn't started
+- **NEW**: All form fields disabled until competition begins (activity type, description, quantity, file uploads)
+- **NEW**: Strava integration section disabled before competition starts
+- **NEW**: Submit button shows "Competition Not Started" and is disabled appropriately
+- **ENHANCED**: Clear messaging shows competition start date and days remaining until start
+- **SECURED**: Teams cannot make progress or earn points before their competition officially begins
+- **USER-FRIENDLY**: Visual indicators and disabled states prevent user confusion about submission timing
+
 ### Admin Portal Implementation (July 2025)
 - **NEW**: Complete admin portal for competition creation and management
 - **ACCESS**: Admin users can access portal via /admin route in main navigation

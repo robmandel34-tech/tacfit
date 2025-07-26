@@ -69,9 +69,9 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
           <div className="flex justify-center mt-6">
             <Link href="/help/navigation">
               <Button 
-                variant="outline" 
+                variant="default" 
                 size="sm"
-                className="border-military-green/50 text-military-green hover:bg-military-green/10"
+                className="bg-military-green hover:bg-military-green/80 text-black font-medium"
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
                 Learn More About Navigation
@@ -123,9 +123,9 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
           <div className="flex justify-center mt-4">
             <Link href="/help/competition-system">
               <Button 
-                variant="outline" 
+                variant="default" 
                 size="sm"
-                className="border-military-green/50 text-military-green hover:bg-military-green/10"
+                className="bg-military-green hover:bg-military-green/80 text-black font-medium"
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
                 Learn More About Competitions
@@ -150,14 +150,14 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
                   <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
                   <span className="text-sm text-white">Team Captain</span>
                 </div>
-                <Badge variant="outline" className="text-xs">Leadership role</Badge>
+                <Badge variant="outline" className="text-xs border-gray-600 text-gray-300">Leadership role</Badge>
               </div>
               <div className="flex items-center justify-between p-2 bg-gray-700/50 rounded">
                 <div className="flex items-center space-x-2">
                   <div className="w-3 h-3 rounded-full bg-military-green"></div>
                   <span className="text-sm text-white">Team Members</span>
                 </div>
-                <Badge variant="outline" className="text-xs">Support role</Badge>
+                <Badge variant="outline" className="text-xs border-gray-600 text-gray-300">Support role</Badge>
               </div>
             </div>
           </div>
@@ -178,9 +178,9 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
           <div className="flex justify-center mt-4">
             <Link href="/help/team-formation">
               <Button 
-                variant="outline" 
+                variant="default" 
                 size="sm"
-                className="border-military-green/50 text-military-green hover:bg-military-green/10"
+                className="bg-military-green hover:bg-military-green/80 text-black font-medium"
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
                 Learn More About Teams
@@ -202,15 +202,15 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
             <div className="space-y-2">
               <div className="flex items-center justify-between p-2 bg-gray-700/30 rounded">
                 <span className="text-sm text-white">Cardio Training</span>
-                <Badge variant="secondary" className="text-xs">Minutes</Badge>
+                <Badge variant="secondary" className="text-xs bg-gray-700 text-gray-300 border-gray-600">Minutes</Badge>
               </div>
               <div className="flex items-center justify-between p-2 bg-gray-700/30 rounded">
                 <span className="text-sm text-white">Strength Training</span>
-                <Badge variant="secondary" className="text-xs">Reps</Badge>
+                <Badge variant="secondary" className="text-xs bg-gray-700 text-gray-300 border-gray-600">Reps</Badge>
               </div>
               <div className="flex items-center justify-between p-2 bg-gray-700/30 rounded">
                 <span className="text-sm text-white">Mobility Training</span>
-                <Badge variant="secondary" className="text-xs">Minutes</Badge>
+                <Badge variant="secondary" className="text-xs bg-gray-700 text-gray-300 border-gray-600">Minutes</Badge>
               </div>
             </div>
           </div>
@@ -229,9 +229,9 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
           <div className="flex justify-center mt-4">
             <Link href="/help/activity-tracking">
               <Button 
-                variant="outline" 
+                variant="default" 
                 size="sm"
-                className="border-military-green/50 text-military-green hover:bg-military-green/10"
+                className="bg-military-green hover:bg-military-green/80 text-black font-medium"
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
                 Learn More About Activities
@@ -424,7 +424,7 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
             variant="outline"
             onClick={handlePrevious}
             disabled={currentStep === 0}
-            className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white hover:border-gray-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:border-gray-700"
           >
             <ChevronLeft className="h-4 w-4 mr-2" />
             Previous

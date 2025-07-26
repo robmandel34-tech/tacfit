@@ -364,6 +364,12 @@ Preferred communication style: Simple, everyday language.
 - **UPDATED**: Modal header back button text changed to "Back to Help Portal"
 - **REMOVED**: Navigation Guide card removed from help center as requested
 
+### Onboarding Walkthrough UI Improvements (July 2025)
+- **FIXED**: Button contrast issues in walkthrough by converting outline buttons to solid military green buttons
+- **ENHANCED**: Improved badge styling with proper borders and text colors for better visibility
+- **ENHANCED**: Previous/Next buttons now have better contrast and hover states
+- **IMPROVED**: All interactive elements now have clear visual distinction from background
+
 ### Admin Portal Implementation (July 2025)
 - **NEW**: Complete admin portal for competition creation and management
 - **ACCESS**: Admin users can access portal via /admin route in main navigation

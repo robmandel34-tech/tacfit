@@ -5,10 +5,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Activity, RotateCcw, Link, Unlink, Zap, Copy } from "lucide-react";
+import { Activity, RotateCcw, Link, Unlink, Zap, Copy, ChevronDown, ChevronUp } from "lucide-react";
 
 export default function StravaIntegration() {
   const { toast } = useToast();
@@ -17,6 +18,7 @@ export default function StravaIntegration() {
   const [showManualFlow, setShowManualFlow] = useState(false);
   const [authCode, setAuthCode] = useState("");
   const [authUrl, setAuthUrl] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
 
   // Get Strava connection status
   const { data: stravaStatus, isLoading } = useQuery({
@@ -149,19 +151,28 @@ export default function StravaIntegration() {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5" />
-            Strava Integration
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin w-6 h-6 border-2 border-military-green border-t-transparent rounded-full" />
-          </div>
-        </CardContent>
-      </Card>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <Card>
+          <CollapsibleTrigger asChild>
+            <CardHeader className="cursor-pointer hover:bg-gray-50 transition-colors">
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Activity className="h-5 w-5" />
+                  Strava Integration
+                </div>
+                {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </CardTitle>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent>
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin w-6 h-6 border-2 border-military-green border-t-transparent rounded-full" />
+              </div>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
     );
   }
 
@@ -169,17 +180,30 @@ export default function StravaIntegration() {
   const tokenExpired = stravaStatus?.tokenExpired;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Activity className="h-5 w-5 text-orange-500" />
-          Strava Integration
-        </CardTitle>
-        <CardDescription>
-          Connect your Strava account to import activities for manual submission during competitions
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <Card>
+        <CollapsibleTrigger asChild>
+          <CardHeader className="cursor-pointer hover:bg-gray-50 transition-colors">
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Activity className="h-5 w-5 text-orange-500" />
+                Strava Integration
+                <Badge 
+                  variant={isConnected ? (tokenExpired ? "destructive" : "default") : "secondary"}
+                  className={`ml-2 ${isConnected ? (tokenExpired ? "" : "bg-green-100 text-green-800") : ""}`}
+                >
+                  {isConnected ? (tokenExpired ? "Token Expired" : "Connected") : "Disconnected"}
+                </Badge>
+              </div>
+              {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </CardTitle>
+            <CardDescription>
+              Connect your Strava account to import activities for manual submission during competitions
+            </CardDescription>
+          </CardHeader>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="text-sm">
@@ -291,7 +315,9 @@ export default function StravaIntegration() {
             <li>You must be in a competition to sync activities</li>
           </ul>
         </div>
-      </CardContent>
-    </Card>
+          </CardContent>
+        </CollapsibleContent>
+      </Card>
+    </Collapsible>
   );
 }

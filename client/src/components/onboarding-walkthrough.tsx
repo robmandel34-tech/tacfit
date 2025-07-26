@@ -432,13 +432,13 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
             Previous
           </Button>
 
-          <div className="flex space-x-2">
+          <div className="flex space-x-1.5 mx-4">
             {steps.map((_, index) => (
               <div
                 key={index}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${
                   index === currentStep
-                    ? 'bg-military-green scale-125'
+                    ? 'bg-military-green'
                     : index < currentStep
                     ? 'bg-military-green/80'
                     : 'bg-gray-600'

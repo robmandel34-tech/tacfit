@@ -2498,13 +2498,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Strava OAuth callback
   app.get("/api/strava/callback", async (req, res) => {
     try {
+      console.log("Strava callback hit with query:", req.query);
       const { code, state, error } = req.query;
 
       if (error) {
+        console.error("Strava OAuth error:", error);
         return res.redirect(`/?strava_error=${encodeURIComponent(error as string)}`);
       }
 
       if (!code || !state) {
+        console.error("Missing code or state in Strava callback");
         return res.redirect("/?strava_error=missing_parameters");
       }
 
@@ -2543,7 +2546,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       if (!tokenResponse.ok) {
-        return res.redirect("/?strava_error=token_exchange_failed");
+        const errorText = await tokenResponse.text();
+        console.error("Strava token exchange failed:", tokenResponse.status, errorText);
+        return res.redirect(`/?strava_error=token_exchange_failed&details=${encodeURIComponent(errorText)}`);
       }
 
       const tokenData = await tokenResponse.json();

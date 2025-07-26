@@ -4,19 +4,26 @@
     <title>Video Test</title>
 </head>
 <body>
-    <h1>Video Playback Test</h1>
-    <video controls width="400" height="300">
+    <h1>WebM Video Playback Test</h1>
+    <video controls width="600" height="400">
+        <source src="http://localhost:5000/uploads/test-conversion.webm" type="video/webm">
         <source src="http://localhost:5000/uploads/1753547817856.mp4" type="video/mp4">
         Your browser does not support the video tag.
     </video>
     
-    <p>If this video plays, the MP4 conversion is working correctly.</p>
+    <p>Testing WebM video conversion - this should play the new WebM file with VP9/Opus codecs.</p>
     
     <script>
         const video = document.querySelector('video');
-        video.addEventListener('loadstart', () => console.log('Video load started'));
-        video.addEventListener('canplay', () => console.log('Video can play'));
-        video.addEventListener('error', (e) => console.error('Video error:', e));
+        video.addEventListener('loadstart', () => console.log('✓ WebM Video load started'));
+        video.addEventListener('canplay', () => console.log('✓ WebM Video can play'));
+        video.addEventListener('canplaythrough', () => console.log('✓ WebM Video can play through'));
+        video.addEventListener('play', () => console.log('✓ WebM Video started playing'));
+        video.addEventListener('error', (e) => {
+            console.error('WebM Video error:', e);
+            console.error('Error code:', video.error?.code);
+            console.error('Error message:', video.error?.message);
+        });
     </script>
 </body>
 </html>

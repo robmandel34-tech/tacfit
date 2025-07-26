@@ -41,7 +41,6 @@ export default function MediaSlideshow({ images, videoUrl }: MediaSlideshowProps
         ) : (
           <video
             key={media.url} // Force re-render when URL changes
-            src={media.url}
             className="w-full h-full object-cover"
             controls
             preload="metadata"
@@ -57,7 +56,11 @@ export default function MediaSlideshow({ images, videoUrl }: MediaSlideshowProps
             onCanPlay={() => console.log("✓ Video can play:", media.url)}
             onLoadedData={() => console.log("✓ Video loaded and ready to play:", media.url)}
             onPlay={() => console.log("✓ Video started playing:", media.url)}
-          />
+          >
+            <source src={media.url} type="video/webm" />
+            <source src={media.url} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
         )}
       </div>
     );
@@ -93,7 +96,6 @@ export default function MediaSlideshow({ images, videoUrl }: MediaSlideshowProps
       ) : (
         <video
           key={currentMedia.url} // Force re-render when URL changes
-          src={currentMedia.url}
           className="w-full h-full object-cover"
           controls
           preload="metadata"
@@ -109,7 +111,11 @@ export default function MediaSlideshow({ images, videoUrl }: MediaSlideshowProps
           onCanPlay={() => console.log("✓ Video can play:", currentMedia.url)}
           onLoadedData={() => console.log("✓ Video loaded and ready to play:", currentMedia.url)}
           onPlay={() => console.log("✓ Video started playing:", currentMedia.url)}
-        />
+        >
+          <source src={currentMedia.url} type="video/webm" />
+          <source src={currentMedia.url} type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
       )}
 
       {/* Navigation Arrows */}

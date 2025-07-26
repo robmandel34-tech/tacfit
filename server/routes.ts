@@ -21,16 +21,16 @@ import Stripe from "stripe";
 
 const execAsync = promisify(exec);
 
-// Video conversion function to convert videos to web-compatible MP4
-async function convertVideoToMp4(inputPath: string, outputPath: string): Promise<boolean> {
+// Video conversion function to convert videos to web-compatible WebM
+async function convertVideoToWebM(inputPath: string, outputPath: string): Promise<boolean> {
   try {
-    // Use maximally compatible settings for web playback
-    const ffmpegCommand = `ffmpeg -i "${inputPath}" -c:v libx264 -profile:v baseline -level 3.0 -pix_fmt yuv420p -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart -preset fast -crf 23 -maxrate 1000k -bufsize 2000k -f mp4 "${outputPath}"`;
-    console.log(`Converting video: ${ffmpegCommand}`);
+    // Use WebM format which has excellent browser support
+    const ffmpegCommand = `ffmpeg -i "${inputPath}" -c:v libvpx-vp9 -crf 30 -b:v 1000k -c:a libopus -b:a 128k -f webm "${outputPath}"`;
+    console.log(`Converting video to WebM: ${ffmpegCommand}`);
     
     const { stdout, stderr } = await execAsync(ffmpegCommand);
     console.log(`Video conversion completed: ${outputPath}`);
-    console.log(`FFmpeg output:`, stderr); // FFmpeg writes info to stderr
+    console.log(`FFmpeg output:`, stderr.substring(0, 500)); // Show partial output
     
     // Check if output file exists and has content
     if (fs.existsSync(outputPath)) {
@@ -1573,24 +1573,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (videoFile.mimetype.startsWith('video/')) {
           evidenceType = 'video';
           
-          // For non-MP4 videos, convert to MP4 for better browser compatibility
-          if (originalExtension.toLowerCase() === '.mov' || originalExtension.toLowerCase() === '.avi' || originalExtension.toLowerCase() === '.webm') {
+          // For non-WebM videos, convert to WebM for better browser compatibility
+          if (originalExtension.toLowerCase() === '.mov' || originalExtension.toLowerCase() === '.avi' || originalExtension.toLowerCase() === '.mp4') {
             const tempFileName = `${timestamp}_temp${originalExtension}`;
             const tempFilePath = path.join('uploads', tempFileName);
-            const mp4FileName = `${timestamp}.mp4`;
-            const mp4FilePath = path.join('uploads', mp4FileName);
+            const webmFileName = `${timestamp}.webm`;
+            const webmFilePath = path.join('uploads', webmFileName);
             
             // Move uploaded file to temp location
             fs.renameSync(videoFile.path, tempFilePath);
             
-            console.log(`Converting ${originalExtension} video to MP4 for better browser compatibility...`);
+            console.log(`Converting ${originalExtension} video to WebM for better browser compatibility...`);
             
-            // Convert to MP4
-            const conversionSuccess = await convertVideoToMp4(tempFilePath, mp4FilePath);
+            // Convert to WebM
+            const conversionSuccess = await convertVideoToWebM(tempFilePath, webmFilePath);
             
             if (conversionSuccess) {
-              evidenceUrl = `/uploads/${mp4FileName}`;
-              console.log(`Video conversion successful: ${mp4FileName}`);
+              evidenceUrl = `/uploads/${webmFileName}`;
+              console.log(`Video conversion successful: ${webmFileName}`);
             } else {
               // If conversion fails, use original file
               fs.renameSync(tempFilePath, path.join('uploads', `${timestamp}${originalExtension}`));
@@ -2565,8 +2565,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Serve uploaded files
-  app.use('/uploads', express.static('uploads'));
+  // Serve uploaded files with proper MIME types and video support
+  app.use('/uploads', (req, res, next) => {
+    const ext = path.extname(req.path).toLowerCase();
+    
+    // Set proper MIME types for different file types
+    if (ext === '.webm') {
+      res.setHeader('Content-Type', 'video/webm');
+      res.setHeader('Accept-Ranges', 'bytes'); // Important for video seeking
+    } else if (ext === '.mp4') {
+      res.setHeader('Content-Type', 'video/mp4');
+      res.setHeader('Accept-Ranges', 'bytes');
+    } else if (ext === '.mov') {
+      res.setHeader('Content-Type', 'video/quicktime');
+    } else if (['.jpg', '.jpeg'].includes(ext)) {
+      res.setHeader('Content-Type', 'image/jpeg');
+    } else if (ext === '.png') {
+      res.setHeader('Content-Type', 'image/png');
+    }
+    
+    next();
+  }, express.static('uploads'));
 
   // Competition entry with points payment
   app.post("/api/competitions/:id/enter-with-points", async (req, res) => {

@@ -2543,6 +2543,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ routes });
   });
 
+  // Debug current domain info
+  app.get("/api/debug/domain", (req, res) => {
+    res.json({
+      host: req.get('host'),
+      protocol: req.protocol,
+      originalUrl: req.originalUrl,
+      headers: {
+        host: req.get('host'),
+        'x-forwarded-host': req.get('x-forwarded-host'),
+        'x-replit-domain': req.get('x-replit-domain'),
+        origin: req.get('origin'),
+        referer: req.get('referer')
+      },
+      generatedCallbackUrl: `https://${req.get('host')}/callback`
+    });
+  });
+
   // Health check endpoint for external services
   app.get("/health", (req, res) => {
     res.status(200).send("OK");
@@ -2721,17 +2738,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Use the /callback endpoint which automatically handles the authorization
+      // Get the actual domain from the request headers
       const host = req.get('host');
-      let redirectUri;
-      
-      if (host && host.includes('replit.app')) {
-        redirectUri = `https://${host}/callback`;
-      } else if (process.env.REPL_SLUG && process.env.REPL_OWNER) {
-        redirectUri = `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.app/callback`;
-      } else {
-        redirectUri = `${req.protocol}://${req.get('host')}/callback`;
-      }
+      const redirectUri = `https://${host}/callback`;
+
+      console.log("Request headers:", {
+        host: req.get('host'),
+        'x-forwarded-host': req.get('x-forwarded-host'),
+        'x-replit-domain': req.get('x-replit-domain'),
+        origin: req.get('origin'),
+        referer: req.get('referer')
+      });
 
       const authUrl = `https://www.strava.com/oauth/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&approval_prompt=force&scope=read,activity:read_all&state=${userId}`;
       

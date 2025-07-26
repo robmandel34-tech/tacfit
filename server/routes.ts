@@ -2602,6 +2602,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Debug Strava connection status for a user
+  app.get("/api/debug/strava/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({
+        userId: user.id,
+        username: user.username,
+        hasStravaToken: !!user.stravaAccessToken,
+        hasRefreshToken: !!user.stravaRefreshToken,
+        athleteId: user.stravaAthleteId,
+        tokenExpired: user.stravaTokenExpiresAt ? new Date() > user.stravaTokenExpiresAt : true,
+        tokenExpiresAt: user.stravaTokenExpiresAt,
+        lastTokenLength: user.stravaAccessToken ? user.stravaAccessToken.length : 0
+      });
+    } catch (error) {
+      console.error("Strava debug error:", error);
+      res.status(500).json({ message: "Debug error" });
+    }
+  });
+
   // Health check endpoint for external services
   app.get("/health", (req, res) => {
     res.status(200).send("OK");

@@ -16,7 +16,9 @@ import {
   CheckCircle,
   Play,
   X,
-  ExternalLink
+  ExternalLink,
+  Mountain,
+  Shield
 } from 'lucide-react';
 import { Link } from 'wouter';
 
@@ -262,7 +264,7 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
               </div>
               <div className="flex items-center space-x-3 p-2 bg-gray-700/30 rounded">
                 <div className="w-8 h-8 rounded bg-military-green/20 flex items-center justify-center">
-                  <Target className="h-4 w-4 text-military-green" />
+                  <Mountain className="h-4 w-4 text-military-green" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-white">Competitions</p>
@@ -271,7 +273,7 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
               </div>
               <div className="flex items-center space-x-3 p-2 bg-gray-700/30 rounded">
                 <div className="w-8 h-8 rounded bg-military-green/20 flex items-center justify-center">
-                  <Users className="h-4 w-4 text-military-green" />
+                  <Shield className="h-4 w-4 text-military-green" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-white">Team</p>
@@ -288,9 +290,9 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
           <div className="flex justify-center mt-4">
             <Link href="/help/navigation">
               <Button 
-                variant="outline" 
+                variant="default" 
                 size="sm"
-                className="border-military-green/50 text-military-green hover:bg-military-green/10"
+                className="bg-military-green hover:bg-military-green/80 text-black font-medium"
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
                 Learn More About Navigation
@@ -339,9 +341,9 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
           <div className="flex justify-center mt-4">
             <Link href="/help/point-system">
               <Button 
-                variant="outline" 
+                variant="default" 
                 size="sm"
-                className="border-military-green/50 text-military-green hover:bg-military-green/10"
+                className="bg-military-green hover:bg-military-green/80 text-black font-medium"
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
                 Learn More About Points

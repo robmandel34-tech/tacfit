@@ -1430,11 +1430,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let description = req.body.description;
       let evidenceType = null;
       let isStravaActivity = false;
+      let stravaMapUrl = null;
       
       if (req.body.stravaActivityId) {
         description = `${req.body.description} (Imported from Strava - ID: ${req.body.stravaActivityId})`;
         evidenceType = "strava_import";
         isStravaActivity = true;
+        
+        // Get Strava polyline and generate map URL if available
+        if (req.body.stravaPolyline) {
+          const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+          console.log(`Environment GOOGLE_MAPS_API_KEY: ${apiKey ? 'EXISTS' : 'MISSING'}`);
+          
+          if (apiKey && apiKey !== 'demo') {
+            stravaMapUrl = `https://maps.googleapis.com/maps/api/staticmap?size=600x400&path=enc:${req.body.stravaPolyline}&maptype=terrain&key=${apiKey}`;
+            console.log(`Generated Strava map URL for activity ${req.body.stravaActivityId}: ${stravaMapUrl}`);
+          } else {
+            console.log(`Cannot generate map URL - API key missing or demo`);
+          }
+        }
       }
       
       // Apply points logic: Strava activities get full 30 points automatically, 
@@ -1449,7 +1463,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         description: description,
         quantity: req.body.quantity,
         points: finalPoints,
-        evidenceType: evidenceType
+        evidenceType: evidenceType,
+        imageUrl: stravaMapUrl // Add Strava map URL if available
       };
       
       console.log("Processed activity data:", activityData);
@@ -3236,6 +3251,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           mappedQuantity,
           mappedUnit: mappedType?.measurementUnit,
           formattedDate: new Date(activity.start_date).toLocaleDateString(),
+          polyline: polylineToUse, // Include polyline for frontend map generation
           mapImageUrl: hasValidPolyline ? 
             `https://maps.googleapis.com/maps/api/staticmap?size=600x400&path=enc:${polylineToUse}&maptype=terrain&key=${process.env.GOOGLE_MAPS_API_KEY || 'demo'}` : 
             null,

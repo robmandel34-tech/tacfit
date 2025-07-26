@@ -167,6 +167,10 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
       if (selectedStravaActivity.mapImageUrl) {
         formData.append("mapImageUrl", selectedStravaActivity.mapImageUrl);
       }
+      // Add polyline data for map generation
+      if (selectedStravaActivity.polyline) {
+        formData.append("stravaPolyline", selectedStravaActivity.polyline);
+      }
     }
     
     if (videoFile) {

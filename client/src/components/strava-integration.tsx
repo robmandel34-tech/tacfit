@@ -3,15 +3,19 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Activity, RotateCcw, Link, Unlink, Zap } from "lucide-react";
+import { Activity, RotateCcw, Link, Unlink, Zap, Copy } from "lucide-react";
 
 export default function StravaIntegration() {
   const { toast } = useToast();
   const { user } = useAuth();
   const [isConnecting, setIsConnecting] = useState(false);
+  const [showManualFlow, setShowManualFlow] = useState(false);
+  const [authCode, setAuthCode] = useState("");
 
   // Get Strava connection status
   const { data: stravaStatus, isLoading } = useQuery({
@@ -20,20 +24,51 @@ export default function StravaIntegration() {
     enabled: !!user?.id,
   });
 
-  // Connect to Strava
-  const connectStrava = useMutation({
+  // Get Strava auth URL for manual flow
+  const getAuthUrl = useMutation({
     mutationFn: async () => {
       const response = await fetch(`/api/strava/auth?userId=${user?.id}`);
       return response.json();
     },
     onSuccess: (data) => {
-      setIsConnecting(true);
-      window.location.href = data.authUrl;
+      setShowManualFlow(true);
+      window.open(data.authUrl, '_blank');
+      toast({
+        title: "Strava Authorization",
+        description: "Follow the instructions to complete the connection",
+      });
     },
     onError: (error: any) => {
       toast({
         title: "Connection Failed",
-        description: error.message || "Failed to connect to Strava",
+        description: error.message || "Failed to generate Strava auth URL",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Exchange authorization code
+  const exchangeCode = useMutation({
+    mutationFn: async (code: string) => {
+      const response = await apiRequest("POST", "/api/strava/exchange-code", { 
+        userId: user?.id, 
+        code 
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/strava/status", user?.id] });
+      setShowManualFlow(false);
+      setAuthCode("");
+      toast({
+        title: "Connected Successfully",
+        description: `Connected to Strava (Athlete ID: ${data.athleteId})`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Connection Failed",
+        description: error.message || "Invalid authorization code",
         variant: "destructive",
       });
     },
@@ -138,15 +173,41 @@ export default function StravaIntegration() {
           </div>
         )}
 
+        {!isConnected && showManualFlow && (
+          <div className="space-y-4 p-4 bg-orange-50 dark:bg-orange-950 rounded-lg border border-orange-200 dark:border-orange-800">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Step 2: Enter Authorization Code</Label>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                After authorizing in the popup window, copy the code from the error page URL and paste it below:
+              </p>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Paste authorization code here..."
+                  value={authCode}
+                  onChange={(e) => setAuthCode(e.target.value)}
+                  className="flex-1"
+                />
+                <Button 
+                  onClick={() => exchangeCode.mutate(authCode)}
+                  disabled={!authCode.trim() || exchangeCode.isPending}
+                  className="bg-military-green hover:bg-military-green-light text-white"
+                >
+                  {exchangeCode.isPending ? "Connecting..." : "Connect"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="flex gap-2">
           {!isConnected ? (
             <Button 
-              onClick={() => connectStrava.mutate()}
-              disabled={connectStrava.isPending || isConnecting}
+              onClick={() => getAuthUrl.mutate()}
+              disabled={getAuthUrl.isPending}
               className="bg-orange-500 hover:bg-orange-600 text-white"
             >
               <Link className="h-4 w-4 mr-2" />
-              {connectStrava.isPending || isConnecting ? "Connecting..." : "Connect Strava"}
+              {getAuthUrl.isPending ? "Opening..." : "Connect with Strava"}
             </Button>
           ) : (
             <>

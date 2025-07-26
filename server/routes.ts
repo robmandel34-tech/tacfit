@@ -2674,6 +2674,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Manual Strava OAuth - generate auth URL for manual flow
+  app.get("/api/strava/auth", async (req: any, res) => {
+    try {
+      const { userId } = req.query;
+      
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
+
+      const clientId = process.env.STRAVA_CLIENT_ID;
+      if (!clientId) {
+        return res.status(500).json({ message: "Strava client ID not configured" });
+      }
+
+      // For manual flow, we'll use a dummy redirect URI that the user won't need
+      const authUrl = `https://www.strava.com/oauth/authorize?client_id=${clientId}&response_type=code&redirect_uri=http://localhost&approval_prompt=force&scope=read,activity:read_all&state=${userId}`;
+      
+      res.json({ 
+        authUrl,
+        instructions: "Click 'Connect with Strava', authorize the app, then copy the authorization code from the error page URL and enter it in the app."
+      });
+    } catch (error) {
+      console.error("Strava auth URL error:", error);
+      res.status(500).json({ message: "Error generating Strava auth URL" });
+    }
+  });
+
+  // Manual code exchange for Strava
+  app.post("/api/strava/exchange-code", async (req: any, res) => {
+    try {
+      const { userId, code } = req.body;
+      
+      if (!userId || !code) {
+        return res.status(400).json({ message: "User ID and authorization code are required" });
+      }
+
+      const user = await storage.getUser(parseInt(userId));
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Exchange authorization code for access token
+      const tokenResponse = await fetch("https://www.strava.com/oauth/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          client_id: process.env.STRAVA_CLIENT_ID,
+          client_secret: process.env.STRAVA_CLIENT_SECRET,
+          code,
+          grant_type: "authorization_code",
+          redirect_uri: "http://localhost", // Must match the auth URL
+        }),
+      });
+
+      if (!tokenResponse.ok) {
+        const errorText = await tokenResponse.text();
+        console.error("Strava token exchange failed:", tokenResponse.status, errorText);
+        return res.status(400).json({ 
+          message: "Invalid authorization code", 
+          details: errorText 
+        });
+      }
+
+      const tokenData = await tokenResponse.json();
+      
+      // Update user with Strava tokens
+      await storage.updateUser(parseInt(userId), {
+        stravaAccessToken: tokenData.access_token,
+        stravaRefreshToken: tokenData.refresh_token,
+        stravaAthleteId: tokenData.athlete?.id?.toString(),
+        stravaTokenExpiresAt: new Date(tokenData.expires_at * 1000),
+      });
+
+      res.json({ 
+        success: true, 
+        athleteId: tokenData.athlete?.id,
+        message: "Successfully connected to Strava!" 
+      });
+    } catch (error) {
+      console.error("Strava code exchange error:", error);
+      res.status(500).json({ message: "Failed to connect to Strava" });
+    }
+  });
+
   // Get user's Strava connection status
   app.get("/api/strava/status", async (req: any, res) => {
     try {

@@ -2649,17 +2649,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.redirect("/?strava_error=invalid_user");
       }
 
-      // Get the same redirect URI used for auth
+      // Use the exact same redirect URI format as in auth URL generation
       const host = req.get('host');
-      let redirectUri;
+      const redirectUri = `https://${host}/callback`;
       
-      if (host && host.includes('replit.app')) {
-        redirectUri = `https://${host}/callback`;
-      } else if (process.env.REPL_SLUG && process.env.REPL_OWNER) {
-        redirectUri = `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.app/callback`;
-      } else {
-        redirectUri = `${req.protocol}://${req.get('host')}/callback`;
-      }
+      console.log("Token exchange details:");
+      console.log("Client ID:", process.env.STRAVA_CLIENT_ID);
+      console.log("Client Secret exists:", !!process.env.STRAVA_CLIENT_SECRET);
+      console.log("Redirect URI:", redirectUri);
+      console.log("Auth code:", code);
 
       // Exchange authorization code for access token
       const tokenResponse = await fetch("https://www.strava.com/oauth/token", {

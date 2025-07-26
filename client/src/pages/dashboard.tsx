@@ -58,31 +58,36 @@ export default function Dashboard() {
     if (user && !user.onboardingCompleted) {
       setShowOnboarding(true);
     }
-  }, [user]);
-
-  // Handle Strava connection success/error from URL params
-  useEffect(() => {
+    
+    // Check for Strava connection success
     const urlParams = new URLSearchParams(window.location.search);
-    const stravaSuccess = urlParams.get('strava_success');
-    const stravaError = urlParams.get('strava_error');
-
-    if (stravaSuccess === 'true') {
+    if (urlParams.get('strava_success')) {
       toast({
-        title: "Connected to Strava!",
-        description: "Your Strava account has been successfully connected. You can now import activities.",
+        title: "Strava Connected!",
+        description: "Your Strava account has been successfully connected.",
       });
+      
+      // Refresh Strava status
+      queryClient.invalidateQueries({ queryKey: ["/api/strava/status"] });
+      
       // Clean up URL
-      window.history.replaceState({}, document.title, "/");
-    } else if (stravaError) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    
+    if (urlParams.get('strava_error')) {
+      const error = urlParams.get('strava_error');
       toast({
         title: "Strava Connection Failed",
-        description: "Failed to connect to Strava. Please try again.",
+        description: `Error: ${error}`,
         variant: "destructive",
       });
+      
       // Clean up URL
-      window.history.replaceState({}, document.title, "/");
+      window.history.replaceState({}, document.title, window.location.pathname);
     }
-  }, [toast]);
+  }, [user, toast, queryClient]);
+
+
 
   if (isLoading) {
     return <div className="min-h-screen bg-tactical-gray flex items-center justify-center">

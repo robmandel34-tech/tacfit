@@ -3,6 +3,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useParams, useLocation } from "wouter";
+import { useEffect } from "react";
 import Navigation from "@/components/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -45,6 +46,35 @@ export default function Profile() {
 
   const isOwnProfile = !userId || userId === user?.id?.toString();
   const targetUserId = isOwnProfile ? user?.id : parseInt(userId!);
+
+  // Handle Strava connection success/error from URL params
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('strava_success')) {
+      toast({
+        title: "Strava Connected!",
+        description: "Your Strava account has been successfully connected.",
+      });
+      
+      // Refresh Strava status
+      queryClient.invalidateQueries({ queryKey: ["/api/strava/status"] });
+      
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    
+    if (urlParams.get('strava_error')) {
+      const error = urlParams.get('strava_error');
+      toast({
+        title: "Strava Connection Failed",
+        description: `Error: ${error}`,
+        variant: "destructive",
+      });
+      
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [toast, queryClient]);
 
   // Get profile user data
   const { data: profileUser } = useQuery({

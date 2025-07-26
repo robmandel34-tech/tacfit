@@ -290,6 +290,16 @@ Preferred communication style: Simple, everyday language.
 - **SECURED**: Visual progress indicators prevent confusion about competition timing and fairness
 - **CONSISTENT**: Both activity submission and progress visualization respect competition start dates
 
+### Activity Progress Card Pre-Competition Restrictions (July 2025)
+- **NEW**: Team page activity progress card shows "At Base Camp" status when competition hasn't started
+- **NEW**: Warning banner displays explaining progress tracking awaits competition start
+- **NEW**: Progress bars remain at 0% regardless of submitted activities until competition begins
+- **NEW**: Activity progress calculations reset to zero when competition hasn't started
+- **NEW**: New progress indicators disabled until competition officially starts
+- **ENHANCED**: Team progress percentage shows "At Base Camp" instead of calculated percentages before start
+- **CONSISTENT**: Activity progress cards now align with submission restrictions and progress map limitations
+- **USER-FRIENDLY**: Clear messaging indicates when progress tracking will begin with competition start date
+
 ### Admin Portal Implementation (July 2025)
 - **NEW**: Complete admin portal for competition creation and management
 - **ACCESS**: Admin users can access portal via /admin route in main navigation

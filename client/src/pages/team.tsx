@@ -390,6 +390,14 @@ export default function Team() {
                         return `${team.points} pts`;
                       }
                       
+                      // Check if competition has started
+                      const competitionHasStarted = new Date() >= new Date(competition.startDate);
+                      
+                      // If competition hasn't started, show "At Base Camp"
+                      if (!competitionHasStarted) {
+                        return "At Base Camp";
+                      }
+                      
                       // Calculate overall team completion percentage
                       let totalProgress = 0;
                       let activityCount = 0;
@@ -522,6 +530,25 @@ export default function Team() {
               {/* Activity Progress Section - Collapsible */}
               {competition && competition.requiredActivities && competition.requiredActivities.length > 0 && (
                 <div className="mt-4">
+                  {/* Competition Not Started Warning */}
+                  {(() => {
+                    const competitionHasStarted = new Date() >= new Date(competition.startDate);
+                    if (!competitionHasStarted) {
+                      return (
+                        <div className="mb-4 bg-orange-500/10 border border-orange-500/20 rounded-lg p-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Target className="h-5 w-5 text-orange-500" />
+                            <h3 className="font-semibold text-orange-100">Activity Progress Awaiting Start</h3>
+                          </div>
+                          <p className="text-sm text-orange-200">
+                            Progress tracking begins when the competition starts on {new Date(competition.startDate).toLocaleDateString()}. Current activities won't count toward targets until then.
+                          </p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+                  
                   <div 
                     className="p-4 bg-tactical-gray rounded-lg border border-tactical-gray cursor-pointer hover:bg-tactical-gray-light transition-colors"
                     onClick={handleProgressExpand}
@@ -531,6 +558,9 @@ export default function Team() {
                         <Target className="mr-2 h-4 w-4 text-military-green" />
                         <h3 className="text-white font-semibold">Activity Progress</h3>
                         {(() => {
+                          // Check if competition has started
+                          const competitionHasStarted = new Date() >= new Date(competition.startDate);
+                          
                           // Calculate current progress
                           const currentProgress: Record<string, number> = {};
                           competition.requiredActivities.forEach((activityType: string) => {
@@ -539,11 +569,12 @@ export default function Team() {
                               const quantity = parseInt(activity.quantity || '0');
                               return sum + quantity;
                             }, 0);
-                            currentProgress[activityType] = totalQuantity;
+                            // If competition hasn't started, progress stays at 0
+                            currentProgress[activityType] = competitionHasStarted ? totalQuantity : 0;
                           });
 
-                          // Check if there's new progress
-                          const hasNewProgress = Object.keys(currentProgress).some(activityType => {
+                          // Check if there's new progress (only if competition has started)
+                          const hasNewProgress = competitionHasStarted && Object.keys(currentProgress).some(activityType => {
                             const current = currentProgress[activityType] || 0;
                             const lastViewed = lastViewedProgress[activityType] || 0;
                             return current > lastViewed;
@@ -564,12 +595,18 @@ export default function Team() {
                     {isProgressExpanded && (
                       <div className="mt-4 space-y-3">
                         {competition.requiredActivities.map((activityType: string, index: number) => {
+                          // Check if competition has started
+                          const competitionHasStarted = new Date() >= new Date(competition.startDate);
+                          
                           // Calculate progress for this activity type
                           const activitiesOfType = teamActivities.filter((activity: any) => activity.type === activityType);
-                          const totalQuantity = activitiesOfType.reduce((sum: number, activity: any) => {
+                          const rawTotalQuantity = activitiesOfType.reduce((sum: number, activity: any) => {
                             const quantity = parseInt(activity.quantity || '0');
                             return sum + quantity;
                           }, 0);
+                          
+                          // If competition hasn't started, total quantity is 0 for progress tracking
+                          const totalQuantity = competitionHasStarted ? rawTotalQuantity : 0;
                           
                           // Get target goal for this activity type
                           const targetGoal = competition.targetGoals?.[index] || '';
@@ -583,9 +620,9 @@ export default function Team() {
                           
                           const percentage = targetNumber > 0 ? Math.min((totalQuantity / targetNumber) * 100, 100) : 0;
                           
-                          // Check if this activity type has new progress
+                          // Check if this activity type has new progress (only if competition has started)
                           const lastViewed = lastViewedProgress[activityType] || 0;
-                          const hasNewProgressForType = totalQuantity > lastViewed;
+                          const hasNewProgressForType = competitionHasStarted && totalQuantity > lastViewed;
                           
                           return (
                             <div key={activityType} className="space-y-2">

@@ -3195,6 +3195,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`No mapping found for Strava type "${activityType}"`);
         }
         
+        // Debug map data
+        console.log(`Activity ${activity.name} map data:`, activity.map);
+        
         return {
           id: activity.id,
           name: activity.name,

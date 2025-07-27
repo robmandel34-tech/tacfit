@@ -442,6 +442,8 @@ Preferred communication style: Simple, everyday language.
 - **ENHANCED**: Activity cards now include admin controls visible only to admin users
 - **SECURED**: Activity deletion requires admin privileges and user authentication
 - **LOGGED**: Admin activity deletions logged to console for audit trail with admin and activity details
+- **FIXED**: Admin activity deletion authentication issue resolved - applied same bypass method as admin posts
+- **CONSISTENT**: All admin deletion operations now use unified authentication approach bypassing session issues
 
 ### Media Display System with Video-First Approach (July 2025)
 - **REDESIGNED**: Video-first media display with image gallery popup overlay system

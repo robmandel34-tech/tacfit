@@ -2868,9 +2868,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ message: "Strava client ID not configured" });
       }
 
-      // Use the exact current domain for redirect URI
+      // Use proper domain detection for redirect URI
+      let redirectUri;
       const host = req.get('host');
-      const redirectUri = `https://${host}/callback`;
+      
+      // Check if we're on Replit domain
+      if (process.env.REPLIT_DOMAINS) {
+        redirectUri = `https://${process.env.REPLIT_DOMAINS}/callback`;
+      } else if (host && host.includes('replit.dev')) {
+        redirectUri = `https://${host}/callback`;
+      } else if (host && host.includes('replit.app')) {
+        redirectUri = `https://${host}/callback`;
+      } else {
+        // Fallback for development
+        redirectUri = `https://${host}/callback`;
+      }
       
       console.log('Strava auth URL request for user:', userId);
       console.log('Request headers:', {
@@ -3014,9 +3026,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.redirect("/?strava_error=invalid_user");
       }
 
-      // Use the exact same redirect URI format as in auth URL generation
+      // Use the same domain detection logic as auth URL generation
+      let redirectUri;
       const host = req.get('host');
-      const redirectUri = `https://${host}/callback`;
+      
+      // Check if we're on Replit domain
+      if (process.env.REPLIT_DOMAINS) {
+        redirectUri = `https://${process.env.REPLIT_DOMAINS}/callback`;
+      } else if (host && host.includes('replit.dev')) {
+        redirectUri = `https://${host}/callback`;
+      } else if (host && host.includes('replit.app')) {
+        redirectUri = `https://${host}/callback`;
+      } else {
+        // Fallback for development
+        redirectUri = `https://${host}/callback`;
+      }
       
       console.log("Token exchange details:");
       console.log("Client ID:", process.env.STRAVA_CLIENT_ID);
@@ -3086,16 +3110,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.redirect("/?strava_error=invalid_user");
       }
 
-      // Get the same redirect URI used for auth
-      const host = req.get('host');
+      // Use the same domain detection logic as auth URL generation
       let redirectUri;
+      const host = req.get('host');
       
-      if (host && host.includes('replit.app')) {
-        redirectUri = `https://${host}/api/strava/callback`;
-      } else if (process.env.REPL_SLUG && process.env.REPL_OWNER) {
-        redirectUri = `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.app/api/strava/callback`;
+      // Check if we're on Replit domain
+      if (process.env.REPLIT_DOMAINS) {
+        redirectUri = `https://${process.env.REPLIT_DOMAINS}/callback`;
+      } else if (host && host.includes('replit.dev')) {
+        redirectUri = `https://${host}/callback`;
+      } else if (host && host.includes('replit.app')) {
+        redirectUri = `https://${host}/callback`;
       } else {
-        redirectUri = `${req.protocol}://${req.get('host')}/api/strava/callback`;
+        // Fallback for development
+        redirectUri = `https://${host}/callback`;
       }
 
       // Exchange authorization code for access token
@@ -3210,16 +3238,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Get the same redirect URI used for auth URL generation
-      const host = req.get('host');
+      // Use the same domain detection logic as auth URL generation
       let redirectUri;
+      const host = req.get('host');
       
-      if (host && host.includes('replit.app')) {
-        redirectUri = `https://${host}`;
-      } else if (process.env.REPL_SLUG && process.env.REPL_OWNER) {
-        redirectUri = `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.app`;
+      // Check if we're on Replit domain
+      if (process.env.REPLIT_DOMAINS) {
+        redirectUri = `https://${process.env.REPLIT_DOMAINS}/callback`;
+      } else if (host && host.includes('replit.dev')) {
+        redirectUri = `https://${host}/callback`;
+      } else if (host && host.includes('replit.app')) {
+        redirectUri = `https://${host}/callback`;
       } else {
-        redirectUri = `${req.protocol}://${req.get('host')}`;
+        // Fallback for development
+        redirectUri = `https://${host}/callback`;
       }
 
       console.log("Using redirect URI for token exchange:", redirectUri);

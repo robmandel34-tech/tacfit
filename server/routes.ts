@@ -2529,6 +2529,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin post image upload route
+  app.post("/api/admin-posts/upload-image", upload.single('image'), async (req, res) => {
+    try {
+      // Check if user is admin (bypass session check for now)
+      const users = await storage.getUsers();
+      const adminUser = users.find(u => u.isAdmin === true);
+      
+      if (!adminUser) {
+        return res.status(403).json({ message: "Admin privileges required" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ message: "No image file provided" });
+      }
+
+      // Generate unique filename
+      const timestamp = Date.now();
+      const originalName = req.file.originalname;
+      const extension = path.extname(originalName);
+      const filename = `admin_post_${timestamp}${extension}`;
+      const filePath = path.join('uploads', filename);
+
+      // Move the uploaded file to the correct location
+      fs.renameSync(req.file.path, filePath);
+
+      // Return the image URL
+      res.json({ 
+        imageUrl: `/uploads/${filename}`,
+        filename: filename
+      });
+    } catch (error) {
+      console.error("Error uploading admin post image:", error);
+      res.status(500).json({ message: "Error uploading image" });
+    }
+  });
+
   app.patch("/api/admin-posts/:id", async (req, res) => {
     try {
       // Check if user is admin

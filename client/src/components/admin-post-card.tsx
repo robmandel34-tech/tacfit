@@ -16,6 +16,7 @@ interface AdminPostCardProps {
     id: number;
     title: string;
     content: string;
+    postImageUrl?: string;
     type: string;
     priority: string;
     isActive: boolean;
@@ -120,6 +121,15 @@ export default function AdminPostCard({ post }: AdminPostCardProps) {
         <div className="text-gray-300 whitespace-pre-wrap">
           {post.content}
         </div>
+        {post.postImageUrl && (
+          <div className="mt-4">
+            <img 
+              src={post.postImageUrl} 
+              alt="Admin post image" 
+              className="w-full max-w-md rounded-lg border border-tactical-gray"
+            />
+          </div>
+        )}
       </CardContent>
     </Card>
   );

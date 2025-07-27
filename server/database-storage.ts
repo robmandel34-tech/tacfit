@@ -710,7 +710,7 @@ export class DatabaseStorage implements IStorage {
     const result = await db
       .delete(adminPosts)
       .where(eq(adminPosts.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Mood log operations

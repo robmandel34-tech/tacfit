@@ -61,6 +61,7 @@ interface AdminPost {
   id: number;
   title: string;
   content: string;
+  postImageUrl?: string;
   type: 'announcement' | 'alert' | 'news' | 'competition_update' | 'maintenance' | 'promotion';
   priority: 'low' | 'medium' | 'high' | 'urgent';
   isActive: boolean;
@@ -175,6 +176,9 @@ export default function AdminPage() {
     isActive: true,
     expiresAt: ''
   });
+  
+  const [adminPostImage, setAdminPostImage] = useState<File | null>(null);
+  const [adminPostImagePreview, setAdminPostImagePreview] = useState<string | null>(null);
 
   const [editingAdminPost, setEditingAdminPost] = useState<AdminPost | null>(null);
   const [isCreateAdminPostOpen, setIsCreateAdminPostOpen] = useState(false);
@@ -527,18 +531,45 @@ export default function AdminPage() {
       isActive: true,
       expiresAt: ''
     });
+    setAdminPostImage(null);
+    setAdminPostImagePreview(null);
   };
 
-  const handleAdminPostSubmit = (e: React.FormEvent) => {
+  const handleAdminPostSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    let imageUrl: string | null = null;
+    
+    // Upload image if provided
+    if (adminPostImage) {
+      const formData = new FormData();
+      formData.append('image', adminPostImage);
+      
+      try {
+        const uploadResponse = await apiRequest('POST', '/api/admin-posts/upload-image', formData);
+        imageUrl = uploadResponse.imageUrl;
+      } catch (error: any) {
+        toast({
+          title: "Failed to upload image",
+          description: error.message,
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+    
+    const postData = {
+      ...adminPostForm,
+      ...(imageUrl && { postImageUrl: imageUrl })
+    };
     
     if (editingAdminPost) {
       updateAdminPost.mutate({
         id: editingAdminPost.id,
-        updates: adminPostForm
+        updates: postData
       });
     } else {
-      createAdminPost.mutate(adminPostForm);
+      createAdminPost.mutate(postData);
     }
   };
 
@@ -552,6 +583,8 @@ export default function AdminPage() {
       isActive: post.isActive,
       expiresAt: post.expiresAt ? format(new Date(post.expiresAt), 'yyyy-MM-dd') : ''
     });
+    setAdminPostImage(null);
+    setAdminPostImagePreview(null);
     setIsCreateAdminPostOpen(true);
   };
 
@@ -1498,6 +1531,51 @@ export default function AdminPage() {
                         placeholder="Enter post content..."
                         required
                       />
+                    </div>
+
+                    {/* Image Upload Section */}
+                    <div>
+                      <Label htmlFor="postImage" className="text-gray-300">Post Image (Optional)</Label>
+                      <div className="space-y-2">
+                        <Input
+                          id="postImage"
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setAdminPostImage(file);
+                              const reader = new FileReader();
+                              reader.onload = (e) => {
+                                setAdminPostImagePreview(e.target?.result as string);
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                          className="bg-tactical-gray-lighter border-tactical-gray text-white file:bg-military-green file:text-white file:border-0 file:rounded-md file:px-3 file:py-1"
+                        />
+                        {adminPostImagePreview && (
+                          <div className="relative">
+                            <img 
+                              src={adminPostImagePreview} 
+                              alt="Preview" 
+                              className="w-full max-w-xs h-32 object-cover rounded-md border border-tactical-gray"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setAdminPostImage(null);
+                                setAdminPostImagePreview(null);
+                              }}
+                              className="absolute top-1 right-1 h-6 w-6 p-0 bg-red-600 hover:bg-red-700 text-white"
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">

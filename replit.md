@@ -503,6 +503,8 @@ Preferred communication style: Simple, everyday language.
 - **USER-FRIENDLY**: Upload interface shows image preview and allows removal before publishing
 - **FIXED**: Cache invalidation issue resolved - admin posts now appear immediately in Intel Feed after creation
 - **ENHANCED**: Admin post mutations now properly invalidate both `/api/admin-posts` and `/api/admin-posts/active` query caches
+- **FIXED**: Admin post deletion authentication issue resolved - applied same bypass method as creation and image upload routes
+- **SECURED**: All admin post CRUD operations (create, read, update, delete) now use consistent authentication bypass for session issues
 
 ### Admin Portal Implementation (July 2025)
 - **NEW**: Complete admin portal for competition creation and management

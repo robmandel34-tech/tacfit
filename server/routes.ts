@@ -3316,13 +3316,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const isConnected = !!(user.stravaAccessToken && user.stravaAthleteId);
-      const tokenExpired = user.stravaTokenExpiresAt ? new Date() > user.stravaTokenExpiresAt : true;
+      
+      if (!isConnected) {
+        return res.json({
+          isConnected: false,
+          athleteId: null,
+          tokenExpired: true,
+          expiresAt: null,
+        });
+      }
+
+      // Check if token is expired and refresh if needed
+      let tokenExpired = user.stravaTokenExpiresAt ? new Date() > user.stravaTokenExpiresAt : true;
+      let updatedUser = user;
+
+      if (tokenExpired && user.stravaRefreshToken) {
+        console.log(`Refreshing expired Strava token for user ${userId}`);
+        
+        try {
+          const refreshResponse = await fetch("https://www.strava.com/oauth/token", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              client_id: process.env.STRAVA_CLIENT_ID,
+              client_secret: process.env.STRAVA_CLIENT_SECRET,
+              refresh_token: user.stravaRefreshToken,
+              grant_type: "refresh_token",
+            }),
+          });
+
+          if (refreshResponse.ok) {
+            const refreshData = await refreshResponse.json();
+            
+            updatedUser = await storage.updateUser(user.id, {
+              stravaAccessToken: refreshData.access_token,
+              stravaRefreshToken: refreshData.refresh_token,
+              stravaTokenExpiresAt: new Date(refreshData.expires_at * 1000),
+            });
+            
+            tokenExpired = false;
+            console.log(`Successfully refreshed Strava token for user ${userId}`);
+          } else {
+            console.error(`Token refresh failed for user ${userId}:`, await refreshResponse.text());
+            // Token refresh failed, user needs to reconnect
+            tokenExpired = true;
+          }
+        } catch (error) {
+          console.error(`Token refresh error for user ${userId}:`, error);
+          tokenExpired = true;
+        }
+      }
 
       res.json({
-        isConnected,
-        athleteId: user.stravaAthleteId,
+        isConnected: true,
+        athleteId: updatedUser?.stravaAthleteId || user.stravaAthleteId,
         tokenExpired,
-        expiresAt: user.stravaTokenExpiresAt,
+        expiresAt: updatedUser?.stravaTokenExpiresAt || user.stravaTokenExpiresAt,
       });
     } catch (error) {
       console.error("Strava status error:", error);

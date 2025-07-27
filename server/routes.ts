@@ -1562,7 +1562,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let stravaMapUrl = null;
       
       if (req.body.stravaActivityId) {
-        description = `${req.body.description} (Imported from Strava - ID: ${req.body.stravaActivityId})`;
+        description = req.body.description; // Keep original description clean
         evidenceType = "strava_import";
         isStravaActivity = true;
         

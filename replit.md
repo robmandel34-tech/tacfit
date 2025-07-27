@@ -230,6 +230,8 @@ Preferred communication style: Simple, everyday language.
 - **ENHANCED**: Clean activity descriptions with Strava text removed but badge identification preserved
 - **NEW**: Strava route maps now appear first in image gallery slideshow when combined with uploaded photos
 - **ENHANCED**: MediaDisplay component prioritizes Google Maps Static API route visualizations over user photos
+- **CLEANED**: Removed "Imported from Strava..." text from activity descriptions while preserving Strava badge functionality
+- **SIMPLIFIED**: Activity descriptions now show original Strava activity names without import annotations
 
 ### Mission Planning Board Updates (July 2025)
 - **RESTORED**: Mission Planning Board brought back with collapsible format matching Team Comms card

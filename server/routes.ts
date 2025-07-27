@@ -21,6 +21,33 @@ import Stripe from "stripe";
 
 const execAsync = promisify(exec);
 
+// Generate video thumbnail function
+async function generateVideoThumbnail(videoPath: string, thumbnailPath: string): Promise<boolean> {
+  try {
+    // Extract frame at 1 second mark as thumbnail
+    const ffmpegCommand = `ffmpeg -i "${videoPath}" -ss 00:00:01 -vframes 1 -vf "scale=640:360:force_original_aspect_ratio=decrease,pad=640:360:(ow-iw)/2:(oh-ih)/2" -y "${thumbnailPath}"`;
+    console.log(`Generating thumbnail: ${ffmpegCommand}`);
+    
+    const { stdout, stderr } = await execAsync(ffmpegCommand);
+    console.log(`Thumbnail generated: ${thumbnailPath}`);
+    
+    // Check if thumbnail file exists and has content
+    if (fs.existsSync(thumbnailPath)) {
+      const stats = fs.statSync(thumbnailPath);
+      if (stats.size > 0) {
+        console.log(`Thumbnail size: ${stats.size} bytes`);
+        return true;
+      }
+    }
+    
+    console.error(`Failed to generate thumbnail for: ${videoPath}`);
+    return false;
+  } catch (error) {
+    console.error(`Error generating thumbnail for ${videoPath}:`, error);
+    return false;
+  }
+}
+
 // Video conversion function to convert videos to basic MP4 with maximum compatibility
 async function convertVideoToMp4(inputPath: string, outputPath: string): Promise<boolean> {
   try {
@@ -1565,6 +1592,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Handle video file (primary evidence) first
       let evidenceUrl = '';
+      let thumbnailUrl = '';
       if (files['evidence'] && files['evidence'][0]) {
         const videoFile = files['evidence'][0];
         const originalExtension = path.extname(videoFile.originalname);
@@ -1591,11 +1619,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
             if (conversionSuccess) {
               evidenceUrl = `/uploads/${mp4FileName}`;
               console.log(`Video conversion successful: ${mp4FileName}`);
+              
+              // Generate thumbnail for converted video
+              const thumbnailFileName = `${timestamp}_thumb.jpg`;
+              const thumbnailPath = path.join('uploads', thumbnailFileName);
+              const thumbnailGenerated = await generateVideoThumbnail(mp4FilePath, thumbnailPath);
+              if (thumbnailGenerated) {
+                thumbnailUrl = `/uploads/${thumbnailFileName}`;
+              }
             } else {
               // If conversion fails, use original file
               fs.renameSync(tempFilePath, path.join('uploads', `${timestamp}${originalExtension}`));
               evidenceUrl = `/uploads/${timestamp}${originalExtension}`;
               console.log(`Video conversion failed, using original format`);
+              
+              // Try to generate thumbnail from original video
+              const thumbnailFileName = `${timestamp}_thumb.jpg`;
+              const thumbnailPath = path.join('uploads', thumbnailFileName);
+              const originalVideoPath = path.join('uploads', `${timestamp}${originalExtension}`);
+              const thumbnailGenerated = await generateVideoThumbnail(originalVideoPath, thumbnailPath);
+              if (thumbnailGenerated) {
+                thumbnailUrl = `/uploads/${thumbnailFileName}`;
+              }
             }
           } else {
             // For MP4 and other formats, use directly
@@ -1603,6 +1648,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const filePath = path.join('uploads', fileName);
             fs.renameSync(videoFile.path, filePath);
             evidenceUrl = `/uploads/${fileName}`;
+            
+            // Generate thumbnail for MP4 video
+            const thumbnailFileName = `${timestamp}_thumb.jpg`;
+            const thumbnailPath = path.join('uploads', thumbnailFileName);
+            const thumbnailGenerated = await generateVideoThumbnail(filePath, thumbnailPath);
+            if (thumbnailGenerated) {
+              thumbnailUrl = `/uploads/${thumbnailFileName}`;
+            }
           }
         } else {
           // Handle non-video files as photos
@@ -1645,6 +1698,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         points: finalPoints,
         evidenceType: evidenceType,
         evidenceUrl: evidenceUrl,
+        thumbnailUrl: thumbnailUrl,
         imageUrls: imageUrls
       };
       

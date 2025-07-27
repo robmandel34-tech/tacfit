@@ -86,6 +86,7 @@ export const activities = pgTable("activities", {
   quantity: text("quantity"),
   evidenceType: text("evidence_type"), // photo, screenshot, text
   evidenceUrl: text("evidence_url"), // Video URL (only one allowed)
+  thumbnailUrl: text("thumbnail_url"), // Video thumbnail image URL
   imageUrls: text("image_urls").array().default([]), // Multiple image URLs
   points: integer("points").default(10),
   isFlagged: boolean("is_flagged").default(false),

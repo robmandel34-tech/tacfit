@@ -338,6 +338,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
                       : []
               }
               videoUrl={activity.evidenceUrl && isVideoFile(activity.evidenceUrl) ? activity.evidenceUrl : undefined}
+              thumbnailUrl={activity.thumbnailUrl}
             />
           </div>
         )}

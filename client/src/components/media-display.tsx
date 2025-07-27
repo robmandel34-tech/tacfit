@@ -5,6 +5,7 @@ import { X, ChevronLeft, ChevronRight, Images } from 'lucide-react';
 interface MediaDisplayProps {
   imageUrls: string[];
   videoUrl?: string;
+  thumbnailUrl?: string;
 }
 
 interface ImageGalleryModalProps {
@@ -97,35 +98,65 @@ function ImageGalleryModal({ images, currentIndex, setCurrentIndex, onClose }: I
   );
 }
 
-export function MediaDisplay({ imageUrls, videoUrl }: MediaDisplayProps) {
+export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplayProps) {
   const [isImageGalleryOpen, setIsImageGalleryOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showVideo, setShowVideo] = useState(false);
 
   // If we have a video, show it as the main content with image overlay
   if (videoUrl) {
     return (
       <div className="relative w-full h-64 bg-tactical-gray-light rounded-lg overflow-hidden">
-        {/* Main Video Display */}
-        <video
-          key={`video-${videoUrl}`}
-          src={videoUrl}
-          className="w-full h-full object-cover"
-          controls
-          preload="metadata"
-          playsInline
-          muted
-          onError={(e) => {
-            console.error("Video playback failed for:", videoUrl);
-            const videoElement = e.currentTarget as HTMLVideoElement;
-            console.error("Video error code:", videoElement.error?.code);
-            // Hide video and show fallback
-            videoElement.style.display = 'none';
-            const fallback = videoElement.nextElementSibling as HTMLElement;
-            if (fallback) fallback.style.display = 'flex';
-          }}
-          onLoadStart={() => console.log("✓ Video load started:", videoUrl)}
-          onCanPlay={() => console.log("✓ Video can play:", videoUrl)}
-        />
+        {/* Show thumbnail with play button overlay if available and video not playing */}
+        {thumbnailUrl && !showVideo ? (
+          <div className="relative w-full h-full">
+            <img
+              src={thumbnailUrl}
+              alt="Video thumbnail"
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                console.error("Thumbnail failed to load:", thumbnailUrl);
+                // Fall back to video element
+                setShowVideo(true);
+              }}
+            />
+            {/* Play button overlay */}
+            <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+              <button
+                onClick={() => setShowVideo(true)}
+                className="bg-white/90 hover:bg-white text-black rounded-full p-4 transition-all duration-200 hover:scale-110"
+                title="Play video"
+              >
+                <svg className="w-8 h-8 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* Main Video Display */
+          <video
+            key={`video-${videoUrl}`}
+            src={videoUrl}
+            className="w-full h-full object-cover"
+            controls
+            autoPlay={showVideo}
+            preload="metadata"
+            playsInline
+            muted
+            onError={(e) => {
+              console.error("Video playback failed for:", videoUrl);
+              const videoElement = e.currentTarget as HTMLVideoElement;
+              console.error("Video error code:", videoElement.error?.code);
+              // Hide video and show fallback
+              videoElement.style.display = 'none';
+              const fallback = videoElement.nextElementSibling as HTMLElement;
+              if (fallback) fallback.style.display = 'flex';
+            }}
+            onLoadStart={() => console.log("✓ Video load started:", videoUrl)}
+            onCanPlay={() => console.log("✓ Video can play:", videoUrl)}
+          />
+        )}
         
         {/* Fallback UI for when video fails to play */}
         <div 

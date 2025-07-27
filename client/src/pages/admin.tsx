@@ -546,7 +546,18 @@ export default function AdminPage() {
       formData.append('image', adminPostImage);
       
       try {
-        const uploadResponse = await apiRequest('POST', '/api/admin-posts/upload-image', formData);
+        const response = await fetch('/api/admin-posts/upload-image', {
+          method: 'POST',
+          body: formData,
+          credentials: 'include'
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText);
+        }
+        
+        const uploadResponse = await response.json();
         imageUrl = uploadResponse.imageUrl;
       } catch (error: any) {
         toast({

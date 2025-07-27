@@ -490,6 +490,18 @@ Preferred communication style: Simple, everyday language.
 - **ENHANCED**: Intel Feed shows admin announcements above user activities with proper sorting and filtering
 - **SECURED**: Admin post authentication bypass implemented to resolve session storage issues
 
+### Admin Post Image Upload System (July 2025)
+- **NEW**: Complete image upload functionality for admin posts in Intel Feed
+- **NEW**: Database schema updated with postImageUrl field for storing image references
+- **NEW**: Admin post creation form includes image upload with preview functionality
+- **NEW**: Backend API endpoint /api/admin-posts/upload-image for handling image uploads
+- **NEW**: AdminPostCard component displays uploaded images below post content
+- **NEW**: Image preview with remove functionality before post creation
+- **NEW**: Proper FormData handling for multipart file uploads with direct fetch calls
+- **ENHANCED**: Admin posts now support rich content with both text and images
+- **ENHANCED**: Image uploads stored in uploads directory with unique timestamped filenames
+- **USER-FRIENDLY**: Upload interface shows image preview and allows removal before publishing
+
 ### Admin Portal Implementation (July 2025)
 - **NEW**: Complete admin portal for competition creation and management
 - **ACCESS**: Admin users can access portal via /admin route in main navigation

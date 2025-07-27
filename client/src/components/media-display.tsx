@@ -103,6 +103,21 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showVideo, setShowVideo] = useState(false);
 
+  // Sort images to prioritize Strava maps first
+  const sortedImageUrls = React.useMemo(() => {
+    if (!imageUrls.length) return [];
+    
+    const stravaMapUrls = imageUrls.filter(url => 
+      url.includes('maps.googleapis.com') || url.includes('staticmap')
+    );
+    const otherUrls = imageUrls.filter(url => 
+      !url.includes('maps.googleapis.com') && !url.includes('staticmap')
+    );
+    
+    // Put Strava maps first, then other images
+    return [...stravaMapUrls, ...otherUrls];
+  }, [imageUrls]);
+
   // If we have a video, show it as the main content with image overlay
   if (videoUrl) {
     return (
@@ -190,25 +205,25 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
         </div>
 
         {/* Image Gallery Button (if images exist) */}
-        {imageUrls.length > 0 && (
+        {sortedImageUrls.length > 0 && (
           <button
             onClick={() => setIsImageGalleryOpen(true)}
             className="absolute top-3 right-3 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors backdrop-blur-sm"
-            title={`View ${imageUrls.length} image${imageUrls.length > 1 ? 's' : ''}`}
+            title={`View ${sortedImageUrls.length} image${sortedImageUrls.length > 1 ? 's' : ''}`}
           >
             <Images className="w-5 h-5" />
-            {imageUrls.length > 1 && (
+            {sortedImageUrls.length > 1 && (
               <span className="absolute -top-1 -right-1 bg-military-green text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                {imageUrls.length}
+                {sortedImageUrls.length}
               </span>
             )}
           </button>
         )}
 
         {/* Image Gallery Modal */}
-        {isImageGalleryOpen && imageUrls.length > 0 && (
+        {isImageGalleryOpen && sortedImageUrls.length > 0 && (
           <ImageGalleryModal
-            images={imageUrls}
+            images={sortedImageUrls}
             currentIndex={currentImageIndex}
             setCurrentIndex={setCurrentImageIndex}
             onClose={() => setIsImageGalleryOpen(false)}
@@ -219,29 +234,29 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
   }
 
   // If no video but we have images, show the first image with gallery button
-  if (imageUrls.length > 0) {
+  if (sortedImageUrls.length > 0) {
     return (
       <div className="relative w-full h-64 bg-tactical-gray-light rounded-lg overflow-hidden">
         <img
-          src={imageUrls[0]}
+          src={sortedImageUrls[0]}
           alt="Activity evidence"
           className="w-full h-full object-cover"
           onError={(e) => {
-            console.error("Evidence image failed to load:", imageUrls[0]);
+            console.error("Evidence image failed to load:", sortedImageUrls[0]);
             e.currentTarget.style.display = 'none';
           }}
         />
 
         {/* Gallery Button (if multiple images) */}
-        {imageUrls.length > 1 && (
+        {sortedImageUrls.length > 1 && (
           <button
             onClick={() => setIsImageGalleryOpen(true)}
             className="absolute top-3 right-3 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors backdrop-blur-sm"
-            title={`View all ${imageUrls.length} images`}
+            title={`View all ${sortedImageUrls.length} images`}
           >
             <Images className="w-5 h-5" />
             <span className="absolute -top-1 -right-1 bg-military-green text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-              {imageUrls.length}
+              {sortedImageUrls.length}
             </span>
           </button>
         )}
@@ -249,7 +264,7 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
         {/* Image Gallery Modal */}
         {isImageGalleryOpen && (
           <ImageGalleryModal
-            images={imageUrls}
+            images={sortedImageUrls}
             currentIndex={currentImageIndex}
             setCurrentIndex={setCurrentImageIndex}
             onClose={() => setIsImageGalleryOpen(false)}

@@ -469,6 +469,7 @@ export default function AdminPage() {
         description: "The new post is now active.",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/admin-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin-posts/active"] });
       setIsCreateAdminPostOpen(false);
       resetAdminPostForm();
     },
@@ -491,6 +492,7 @@ export default function AdminPage() {
         description: "Changes have been saved.",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/admin-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin-posts/active"] });
       setEditingAdminPost(null);
     },
     onError: (error: any) => {
@@ -512,6 +514,7 @@ export default function AdminPage() {
         description: "The post has been removed.",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/admin-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin-posts/active"] });
     },
     onError: (error: any) => {
       toast({

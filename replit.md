@@ -501,6 +501,8 @@ Preferred communication style: Simple, everyday language.
 - **ENHANCED**: Admin posts now support rich content with both text and images
 - **ENHANCED**: Image uploads stored in uploads directory with unique timestamped filenames
 - **USER-FRIENDLY**: Upload interface shows image preview and allows removal before publishing
+- **FIXED**: Cache invalidation issue resolved - admin posts now appear immediately in Intel Feed after creation
+- **ENHANCED**: Admin post mutations now properly invalidate both `/api/admin-posts` and `/api/admin-posts/active` query caches
 
 ### Admin Portal Implementation (July 2025)
 - **NEW**: Complete admin portal for competition creation and management

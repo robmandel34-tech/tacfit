@@ -177,12 +177,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
   app.post("/api/auth/register", async (req, res) => {
     try {
+      console.log('Registration request received:', { body: req.body });
+      
       const { phoneNumber, ...userData } = req.body;
+      
+      // Validate required fields
+      if (!userData.username || !userData.email || !userData.password) {
+        console.log('Missing required fields:', { username: !!userData.username, email: !!userData.email, password: !!userData.password });
+        return res.status(400).json({ 
+          message: "Missing required fields: username, email, and password are required" 
+        });
+      }
+      
+      console.log('Parsing user data with schema...');
       const parsedData = insertUserSchema.parse(userData);
+      console.log('Schema validation successful');
       
       // Check if user exists
+      console.log('Checking for existing user with email:', parsedData.email);
       const existingUser = await storage.getUserByEmail(parsedData.email);
       if (existingUser) {
+        console.log('User already exists with email:', parsedData.email);
         return res.status(400).json({ message: "User already exists" });
       }
       
@@ -190,6 +205,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Check for phone number referral if provided
       if (phoneNumber) {
+        console.log('Processing phone number referral:', phoneNumber);
         const phoneInvitations = await storage.getPhoneInvitationsByPhone(phoneNumber);
         const pendingInvitation = phoneInvitations.find(inv => inv.status === 'pending');
         
@@ -212,17 +228,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      console.log('Creating user in database...');
       const user = await storage.createUser({
         ...parsedData,
         referredBy,
         points: 100, // Starting points for new users
       });
+      console.log('User created successfully:', user.id);
       
       // Don't send password back
       const { password, ...userWithoutPassword } = user;
       res.json({ user: userWithoutPassword, referralAwarded: !!referredBy });
     } catch (error) {
-      res.status(400).json({ message: "Invalid user data" });
+      console.error('Registration error:', error);
+      
+      // More specific error handling
+      if (error instanceof Error) {
+        if (error.message.includes('duplicate key')) {
+          return res.status(400).json({ message: "Username or email already taken" });
+        }
+        if (error.message.includes('validation')) {
+          return res.status(400).json({ message: "Invalid input data: " + error.message });
+        }
+        return res.status(400).json({ message: "Registration failed: " + error.message });
+      }
+      
+      res.status(500).json({ message: "Unable to process registration. Check your details and try again." });
     }
   });
 

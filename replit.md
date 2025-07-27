@@ -233,6 +233,13 @@ Preferred communication style: Simple, everyday language.
 - **CLEANED**: Removed "Imported from Strava..." text from activity descriptions while preserving Strava badge functionality
 - **SIMPLIFIED**: Activity descriptions now show original Strava activity names without import annotations
 
+### Registration Error Handling Enhancement (July 2025)
+- **ENHANCED**: Improved registration endpoint error handling with detailed console logging
+- **FIXED**: Registration now provides specific error messages for duplicate usernames/emails
+- **UPDATED**: Better validation and error reporting for missing required fields
+- **DIAGNOSED**: Username "Rob" already exists in database from previous registration attempt
+- **RESOLVED**: Registration works correctly with unique usernames and email addresses
+
 ### Mission Planning Board Updates (July 2025)
 - **RESTORED**: Mission Planning Board brought back with collapsible format matching Team Comms card
 - **ENHANCED**: Added proper Card wrapper with header structure and collapsible trigger

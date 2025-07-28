@@ -21,6 +21,7 @@ interface ActivityCardProps {
     description: string;
     quantity?: string;
     evidenceUrl?: string;
+    evidenceType?: string; // Add evidence type field (strava_import, video, photo, etc.)
     imageUrl?: string;
     imageUrls?: string[]; // New field for multiple images
     points?: number;
@@ -55,17 +56,15 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
   const [showComments, setShowComments] = useState(false);
 
   // Debug: Log activity data to help identify missing Strava badges
-  if (activity.description?.toLowerCase().includes('strava') || activity.stravaActivityId) {
-    console.log('Strava activity detected:', {
-      id: activity.id,
-      stravaActivityId: activity.stravaActivityId,
-      description: activity.description,
-      imageUrls: activity.imageUrls,
-      evidenceUrl: activity.evidenceUrl,
-      hasStravaId: !!activity.stravaActivityId,
-      descriptionIncludesStrava: activity.description?.toLowerCase().includes('strava')
-    });
-  }
+  console.log('Activity data:', {
+    id: activity.id,
+    evidenceType: activity.evidenceType,
+    evidenceType_raw: (activity as any).evidence_type,
+    stravaActivityId: activity.stravaActivityId,
+    description: activity.description,
+    imageUrls: activity.imageUrls,
+    evidenceUrl: activity.evidenceUrl,
+  });
 
   
   // Get activity types for display names
@@ -156,6 +155,11 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
   const isStravaActivity = () => {
     // Primary check: stravaActivityId field
     if (activity.stravaActivityId) {
+      return true;
+    }
+    
+    // Check evidence type for Strava imports
+    if (activity.evidenceType === 'strava_import') {
       return true;
     }
     

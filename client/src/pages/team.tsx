@@ -753,14 +753,14 @@ export default function Team() {
                           <Crown className="ml-2 h-4 w-4 text-yellow-500" />
                         )}
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center justify-between">
                         <p className="text-sm text-gray-400 capitalize">{member.role}</p>
                         {getPendingTasksCount(member.user?.id) > 0 && (
                           <Badge 
                             variant="secondary" 
-                            className="bg-orange-600 text-white text-xs px-2 py-1"
+                            className="bg-orange-500 text-white text-xs px-1.5 py-0.5 ml-2 text-[10px] leading-tight"
                           >
-                            {getPendingTasksCount(member.user?.id)} tasks pending
+                            {getPendingTasksCount(member.user?.id)} tasks
                           </Badge>
                         )}
                       </div>

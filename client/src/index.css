@@ -122,6 +122,21 @@
     border: 1px solid rgba(255, 255, 255, 0.15);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
   }
+  
+  /* Prevent button focus outline issues and white highlighting */
+  button:focus {
+    outline: none !important;
+  }
+  
+  button:active {
+    outline: none !important;
+  }
+  
+  /* Fix specific button white highlighting issues */
+  button:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+  }
 
   /* Enhanced Tile Effects */
   .tile-card {

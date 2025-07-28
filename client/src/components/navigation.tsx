@@ -111,7 +111,8 @@ export default function Navigation() {
             <Button 
               variant="ghost" 
               onClick={logout}
-              className="text-gray-300 hover:text-white"
+              className="text-gray-300 hover:text-white hover:bg-surface-overlay focus:bg-transparent focus:text-gray-300 active:bg-transparent active:text-gray-300 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
+              style={{ outline: 'none !important', boxShadow: 'none !important' }}
             >
               Logout
             </Button>

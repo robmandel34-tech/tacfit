@@ -493,6 +493,20 @@ Preferred communication style: Simple, everyday language.
 - **IMPROVED**: Modern card-based design with hover effects, scaling animations, and tactical theming
 - **INFORMATIVE**: Clear messaging about 5-point rewards and wellness habit building
 
+### Button Focus State Fixes (July 2025)
+- **FIXED**: Login/logout button white highlighting issue resolved with comprehensive CSS fixes
+- **ENHANCED**: Global button focus and active state overrides prevent unwanted highlighting
+- **IMPROVED**: Navigation logout button includes specific focus/active state management
+- **SECURED**: Inline styles with !important declarations ensure consistent behavior across browsers
+- **CLEANED**: Button interactions now maintain proper visual states without persistent highlighting
+
+### Strava Badge Detection Enhancement (July 2025)
+- **FIXED**: Strava badges now appear correctly on deployed version for activities with both Strava data and media files
+- **ENHANCED**: Robust Strava activity detection with multiple fallback checks
+- **IMPROVED**: Detection logic checks stravaActivityId, description patterns, and Google Maps route URLs
+- **SECURED**: Case-insensitive pattern matching for better reliability
+- **ADDED**: Debug logging to help identify Strava badge detection issues in production
+
 ### Admin Post System for Intel Feed (July 2025)
 - **NEW**: Complete admin post management system for Intel Feed announcements
 - **NEW**: Database schema with adminPosts table including type, priority, expiration, and status fields

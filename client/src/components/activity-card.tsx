@@ -54,6 +54,19 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
   const { toast } = useToast();
   const [showComments, setShowComments] = useState(false);
 
+  // Debug: Log activity data to help identify missing Strava badges
+  if (activity.description?.toLowerCase().includes('strava') || activity.stravaActivityId) {
+    console.log('Strava activity detected:', {
+      id: activity.id,
+      stravaActivityId: activity.stravaActivityId,
+      description: activity.description,
+      imageUrls: activity.imageUrls,
+      evidenceUrl: activity.evidenceUrl,
+      hasStravaId: !!activity.stravaActivityId,
+      descriptionIncludesStrava: activity.description?.toLowerCase().includes('strava')
+    });
+  }
+
   
   // Get activity types for display names
   const { data: activityTypes } = useQuery({
@@ -141,12 +154,42 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
   };
 
   const isStravaActivity = () => {
-    const hasStravaId = activity.stravaActivityId;
-    const hasStravaText = activity.description?.includes('Strava ID:');
-    const hasStravaUrl = activity.description?.includes('strava.com/activities/');
-    const hasImportedText = activity.description?.includes('Imported from Strava');
+    // Primary check: stravaActivityId field
+    if (activity.stravaActivityId) {
+      return true;
+    }
     
-    return hasStravaId || hasStravaText || hasStravaUrl || hasImportedText;
+    // Secondary checks: description patterns (case-insensitive)
+    if (activity.description) {
+      const description = activity.description.toLowerCase();
+      const hasStravaText = description.includes('strava id:');
+      const hasStravaUrl = description.includes('strava.com/activities/');
+      const hasImportedText = description.includes('imported from strava');
+      
+      if (hasStravaText || hasStravaUrl || hasImportedText) {
+        return true;
+      }
+    }
+    
+    // Additional check: if imageUrls contains Google Maps route
+    if (activity.imageUrls && Array.isArray(activity.imageUrls)) {
+      const hasGoogleMapsRoute = activity.imageUrls.some(url => 
+        url.includes('maps.googleapis.com') || url.includes('google.com/maps')
+      );
+      if (hasGoogleMapsRoute) {
+        return true;
+      }
+    }
+    
+    // Fallback: check if evidenceUrl is a Google Maps route
+    if (activity.evidenceUrl && (
+      activity.evidenceUrl.includes('maps.googleapis.com') || 
+      activity.evidenceUrl.includes('google.com/maps')
+    )) {
+      return true;
+    }
+    
+    return false;
   };
 
   const getCleanDescription = () => {

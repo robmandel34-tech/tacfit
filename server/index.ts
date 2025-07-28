@@ -22,17 +22,23 @@ app.use((req, res, next) => {
   }
 });
 
-// Enhanced static file serving optimized for video playback
+// Enhanced static file serving for both images and videos
 app.use('/uploads', (req, res, next) => {
   const filePath = path.join(process.cwd(), 'uploads', req.path);
   const ext = path.extname(req.path).toLowerCase();
   
-  // Set comprehensive headers for video files to improve browser compatibility
+  // Set proper headers for all media files
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  
+  // Handle video files
   if (['.mov', '.mp4', '.webm', '.avi'].includes(ext)) {
-    // Enable range requests for progressive video loading
     res.setHeader('Accept-Ranges', 'bytes');
+    res.setHeader('Cache-Control', 'public, max-age=31536000'); // 1 year cache
+    res.setHeader('X-Content-Type-Options', 'nosniff');
     
-    // Set proper MIME types
+    // Set proper MIME types for videos
     switch (ext) {
       case '.mov':
         res.setHeader('Content-Type', 'video/quicktime');
@@ -47,25 +53,41 @@ app.use('/uploads', (req, res, next) => {
         res.setHeader('Content-Type', 'video/x-msvideo');
         break;
     }
-    
-    // Add headers for better video streaming
-    res.setHeader('Cache-Control', 'public, max-age=31536000'); // 1 year cache
-    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  }
+  
+  // Handle image files
+  if (['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext)) {
+    res.setHeader('Cache-Control', 'public, max-age=86400'); // 1 day cache for images
     res.setHeader('X-Content-Type-Options', 'nosniff');
     
-    // Enable CORS for video elements
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+    // Set proper MIME types for images
+    switch (ext) {
+      case '.jpg':
+      case '.jpeg':
+        res.setHeader('Content-Type', 'image/jpeg');
+        break;
+      case '.png':
+        res.setHeader('Content-Type', 'image/png');
+        break;
+      case '.gif':
+        res.setHeader('Content-Type', 'image/gif');
+        break;
+      case '.webp':
+        res.setHeader('Content-Type', 'image/webp');
+        break;
+    }
   }
   
   next();
 }, express.static('uploads', {
-  // Additional static file options for better video serving
+  // Additional static file options for better media serving
   setHeaders: (res, path, stat) => {
     const ext = path.split('.').pop()?.toLowerCase();
     if (['mp4', 'webm', 'mov', 'avi'].includes(ext || '')) {
       res.setHeader('Accept-Ranges', 'bytes');
     }
+    // Set ETag for better caching
+    res.setHeader('ETag', `"${stat.size}-${stat.mtime.getTime()}"`);
   }
 }));
 

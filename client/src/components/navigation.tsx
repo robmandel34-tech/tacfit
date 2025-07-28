@@ -17,7 +17,7 @@ export default function Navigation() {
     enabled: !!user.id,
   });
 
-  const pendingTasksCount = pendingTasks.length;
+  const pendingTasksCount = Array.isArray(pendingTasks) ? pendingTasks.length : 0;
 
   const getInitials = (username: string) => {
     return username.split(' ').map(word => word[0]).join('').toUpperCase() || username.slice(0, 2).toUpperCase();

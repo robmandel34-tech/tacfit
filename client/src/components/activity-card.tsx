@@ -342,12 +342,11 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
                 {isStravaActivity() && (
                   <StravaBadge size="sm" />
                 )}
-                {/* Debug: Force show for activity 16 */}
-                {activity.id === 16 && !isStravaActivity() && (
-                  <div className="text-xs text-red-400">DEBUG: Strava check failed for activity 16</div>
-                )}
-                {activity.id === 16 && isStravaActivity() && (
-                  <div className="text-xs text-green-400">DEBUG: Strava check passed for activity 16</div>
+                {/* Debug: Force show badge for activity 16 */}
+                {activity.id === 16 && (
+                  <div className="bg-orange-500 text-white px-2 py-1 rounded text-xs">
+                    DEBUG STRAVA
+                  </div>
                 )}
               </div>
               <p className="text-gray-300 text-sm">

@@ -240,6 +240,13 @@ Preferred communication style: Simple, everyday language.
 - **DIAGNOSED**: Username "Rob" already exists in database from previous registration attempt
 - **RESOLVED**: Registration works correctly with unique usernames and email addresses
 
+### Strava OAuth Configuration for Deployed Apps (July 2025)
+- **DEPLOYMENT ISSUE**: Deployed app domain (tacfit.replit.app) requires Strava app configuration
+- **REDIRECT URI ERROR**: "Bad Request - invalid redirect_uri" occurs when domain not in Strava app settings
+- **SOLUTION REQUIRED**: Add `tacfit.replit.app` to Strava app's "Authorization Callback Domains" setting
+- **DEVELOPMENT DOMAIN**: 52c3692b-e3ae-4f26-87b1-b5a765544cd7-00-3bw69stdxgu5x.worf.replit.dev already configured for development
+- **CALLBACK URL**: System uses `https://tacfit.replit.app/callback` for OAuth redirect on deployed domain
+
 ### Mission Planning Board Updates (July 2025)
 - **RESTORED**: Mission Planning Board brought back with collapsible format matching Team Comms card
 - **ENHANCED**: Added proper Card wrapper with header structure and collapsible trigger

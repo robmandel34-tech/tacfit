@@ -55,16 +55,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
   const { toast } = useToast();
   const [showComments, setShowComments] = useState(false);
 
-  // Debug: Log activity data to help identify missing Strava badges
-  console.log('Activity data:', {
-    id: activity.id,
-    evidenceType: activity.evidenceType,
-    evidenceType_raw: (activity as any).evidence_type,
-    stravaActivityId: activity.stravaActivityId,
-    description: activity.description,
-    imageUrls: activity.imageUrls,
-    evidenceUrl: activity.evidenceUrl,
-  });
+
 
   
   // Get activity types for display names
@@ -350,6 +341,13 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
                 </Badge>
                 {isStravaActivity() && (
                   <StravaBadge size="sm" />
+                )}
+                {/* Debug: Force show for activity 16 */}
+                {activity.id === 16 && !isStravaActivity() && (
+                  <div className="text-xs text-red-400">DEBUG: Strava check failed for activity 16</div>
+                )}
+                {activity.id === 16 && isStravaActivity() && (
+                  <div className="text-xs text-green-400">DEBUG: Strava check passed for activity 16</div>
                 )}
               </div>
               <p className="text-gray-300 text-sm">

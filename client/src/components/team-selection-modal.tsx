@@ -73,6 +73,8 @@ export default function TeamSelectionModal({
       });
       queryClient.invalidateQueries({ queryKey: [`/api/team-members/${user?.id}`] });
       queryClient.invalidateQueries({ queryKey: [`/api/competitions/${competitionId}/teams-with-members`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/teams`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/competitions`] });
       onClose();
       // Navigate to team page after successful join
       setLocation("/team");
@@ -100,7 +102,11 @@ export default function TeamSelectionModal({
       });
       queryClient.invalidateQueries({ queryKey: [`/api/team-members/${user?.id}`] });
       queryClient.invalidateQueries({ queryKey: [`/api/competitions/${competitionId}/teams-with-members`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/teams`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/competitions`] });
       onClose();
+      // Navigate to team page after successful team creation
+      setLocation("/team");
     },
     onError: (error: any) => {
       toast({

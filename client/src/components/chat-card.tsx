@@ -113,8 +113,10 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
     
     setIsSearchingGifs(true);
     try {
-      const response = await giphy.search(query, { limit: 12 });
-      setGifs(response.data || []);
+      // Use fetch instead of giphy-api library to avoid callback issues
+      const response = await fetch(`https://api.giphy.com/v1/gifs/search?api_key=sXpGFDGZs0Dv1mmNFvYaGUvYwKX0PWIh&q=${encodeURIComponent(query)}&limit=12&rating=pg`);
+      const data = await response.json();
+      setGifs(data.data || []);
     } catch (error) {
       console.error('Error searching GIFs:', error);
       setGifs([]);

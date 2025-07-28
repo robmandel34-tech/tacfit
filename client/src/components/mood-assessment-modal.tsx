@@ -2,9 +2,10 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Smile, Meh, Frown, TrendingDown } from "lucide-react";
+import { Heart, Smile, Meh, Frown, TrendingDown, Trophy, Coins } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 
 interface MoodAssessmentModalProps {
   isOpen: boolean;
@@ -24,20 +25,23 @@ export function MoodAssessmentModal({ isOpen, onClose, userId }: MoodAssessmentM
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { refreshUser } = useAuth();
 
   const handleMoodSubmit = async () => {
     if (!selectedMood) return;
 
     setIsSubmitting(true);
     try {
-      await apiRequest("POST", "/api/mood-logs", { mood: selectedMood });
+      const response = await apiRequest("POST", "/api/mood-logs", { mood: selectedMood });
+      const data = await response.json();
 
-      // Invalidate mood-related queries
+      // Invalidate mood-related queries and refresh user context for points update
       queryClient.invalidateQueries({ queryKey: ["/api/mood-logs"] });
+      await refreshUser();
 
       toast({
         title: "Mood logged successfully",
-        description: "Your daily mood has been recorded. Thank you for checking in!",
+        description: `Your daily mood has been recorded. You earned ${data.pointsAwarded || 5} points!`,
         className: "bg-military-green border-military-green text-white"
       });
 
@@ -60,17 +64,27 @@ export function MoodAssessmentModal({ isOpen, onClose, userId }: MoodAssessmentM
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md sharp-card max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-center text-xl font-bold text-military-green">
-            Daily Mood Check-In
+      <DialogContent className="sm:max-w-lg sharp-card max-h-[90vh] overflow-y-auto bg-tactical-gray-light border-tactical-gray">
+        <DialogHeader className="text-center space-y-4">
+          <div className="mx-auto w-16 h-16 bg-military-green/20 rounded-full flex items-center justify-center">
+            <Heart className="h-8 w-8 text-military-green" />
+          </div>
+          <DialogTitle className="text-2xl font-bold text-white">
+            Daily Wellness Check
           </DialogTitle>
-          <p className="text-center text-gray-600 mt-2">
+          <p className="text-gray-400">
             How are you feeling today? Your mental wellness is important to your tactical readiness.
           </p>
+          
+          {/* Points Reward Banner */}
+          <div className="bg-military-green/10 border border-military-green/30 rounded-lg p-3 flex items-center justify-center space-x-2">
+            <Trophy className="h-5 w-5 text-military-green" />
+            <span className="text-military-green font-semibold">Earn 5 Points</span>
+            <span className="text-gray-400">for completing your wellness check</span>
+          </div>
         </DialogHeader>
 
-        <div className="space-y-3 mt-6 max-h-80 overflow-y-auto">
+        <div className="space-y-4 mt-6">
           {moodOptions.map((mood) => {
             const Icon = mood.icon;
             const isSelected = selectedMood === mood.value;
@@ -79,26 +93,39 @@ export function MoodAssessmentModal({ isOpen, onClose, userId }: MoodAssessmentM
               <button
                 key={mood.value}
                 onClick={() => setSelectedMood(mood.value)}
-                className={`w-full p-4 rounded-lg border-2 transition-all duration-200 hover:scale-105 ${
+                className={`group w-full p-5 rounded-xl border-2 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg ${
                   isSelected 
-                    ? `${mood.color} text-white border-transparent shadow-lg` 
-                    : "border-gray-200 hover:border-military-green bg-white"
+                    ? `${mood.color} text-white border-transparent shadow-xl transform scale-[1.02]` 
+                    : "border-tactical-gray bg-tactical-gray-light hover:border-military-green/50 hover:bg-tactical-gray"
                 }`}
               >
-                <div className="flex items-center space-x-3">
-                  <Icon className={`h-6 w-6 ${isSelected ? "text-white" : "text-gray-600"}`} />
+                <div className="flex items-center space-x-4">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
+                    isSelected ? "bg-white/20" : "bg-military-green/10 group-hover:bg-military-green/20"
+                  }`}>
+                    <Icon className={`h-6 w-6 transition-all duration-300 ${
+                      isSelected ? "text-white" : "text-military-green group-hover:scale-110"
+                    }`} />
+                  </div>
                   <div className="flex-1 text-left">
-                    <div className={`font-semibold ${isSelected ? "text-white" : "text-gray-900"}`}>
+                    <div className={`text-lg font-bold transition-colors duration-300 ${
+                      isSelected ? "text-white" : "text-white group-hover:text-military-green"
+                    }`}>
                       {mood.label}
                     </div>
-                    <div className={`text-sm ${isSelected ? "text-white/80" : "text-gray-500"}`}>
+                    <div className={`text-sm transition-colors duration-300 ${
+                      isSelected ? "text-white/90" : "text-gray-400 group-hover:text-gray-300"
+                    }`}>
                       {mood.description}
                     </div>
                   </div>
                   {isSelected && (
-                    <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
-                      Selected
-                    </Badge>
+                    <div className="flex items-center space-x-2">
+                      <Badge className="bg-white/20 text-white border-white/30 animate-pulse">
+                        <Coins className="h-3 w-3 mr-1" />
+                        +5 PTS
+                      </Badge>
+                    </div>
                   )}
                 </div>
               </button>
@@ -106,11 +133,11 @@ export function MoodAssessmentModal({ isOpen, onClose, userId }: MoodAssessmentM
           })}
         </div>
 
-        <div className="flex space-x-3 mt-6">
+        <div className="flex space-x-4 mt-8">
           <Button
             variant="outline"
             onClick={onClose}
-            className="flex-1 sharp-button"
+            className="flex-1 sharp-button border-tactical-gray text-gray-400 hover:text-white hover:border-white/50"
             disabled={isSubmitting}
           >
             Skip for Now
@@ -118,15 +145,30 @@ export function MoodAssessmentModal({ isOpen, onClose, userId }: MoodAssessmentM
           <Button
             onClick={handleMoodSubmit}
             disabled={!selectedMood || isSubmitting}
-            className="flex-1 bg-military-green hover:bg-military-green/90 text-white sharp-button"
+            className="flex-1 bg-military-green hover:bg-military-green-light text-white sharp-button font-bold shadow-lg hover:shadow-xl transition-all duration-300"
           >
-            {isSubmitting ? "Logging..." : "Log Mood"}
+            {isSubmitting ? (
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Logging...</span>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Trophy className="h-4 w-4" />
+                <span>Complete Check (+5 PTS)</span>
+              </div>
+            )}
           </Button>
         </div>
 
-        <p className="text-xs text-gray-500 text-center mt-4">
-          Your mood data is private and helps us understand your wellness patterns.
-        </p>
+        <div className="text-center mt-6 space-y-2">
+          <p className="text-xs text-gray-500">
+            Your mood data is private and helps us understand your wellness patterns.
+          </p>
+          <p className="text-xs text-military-green font-medium">
+            🎯 Complete daily mood checks to build consistent wellness habits
+          </p>
+        </div>
       </DialogContent>
     </Dialog>
   );

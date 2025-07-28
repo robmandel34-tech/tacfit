@@ -3877,7 +3877,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const moodLog = await storage.createMoodLog(moodLogData);
       console.log('Mood log created:', moodLog);
-      res.status(201).json(moodLog);
+      
+      // Award 5 points for mood logging
+      const currentUser = await storage.getUser(req.session.user.id);
+      if (currentUser) {
+        const updatedPoints = (currentUser.points || 0) + 5;
+        await storage.updateUser(req.session.user.id, { points: updatedPoints });
+        console.log(`Awarded 5 points for mood logging. User ${req.session.user.id} now has ${updatedPoints} points.`);
+      }
+      
+      res.status(201).json({ ...moodLog, pointsAwarded: 5 });
     } catch (error: any) {
       console.error('Mood log creation error:', error);
       res.status(500).json({ message: error.message || "Error creating mood log" });

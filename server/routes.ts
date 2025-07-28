@@ -3220,19 +3220,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Use pre-configured redirect URI that matches Strava app settings
-      // For development/testing, use the original domain; for production, user needs to update Strava settings
-      const host = req.get('host');
-      let redirectUri;
-      
-      // Check if this is a production deployment
-      if (host && host.includes('.replit.app')) {
-        // For Replit deployments, user needs to configure their Strava app with the deployed domain
-        redirectUri = `https://${host}/callback`;
-      } else {
-        // For development, use the original configured domain
-        redirectUri = `https://52c3692b-e3ae-4f26-87b1-b5a765544cd7-00-3bw69stdxgu5x.worf.replit.dev/callback`;
-      }
+      // Always use the pre-configured development domain for Strava OAuth
+      // This domain is already configured in the Strava app settings
+      const redirectUri = `https://52c3692b-e3ae-4f26-87b1-b5a765544cd7-00-3bw69stdxgu5x.worf.replit.dev/callback`;
 
       console.log("Request headers:", {
         host: req.get('host'),

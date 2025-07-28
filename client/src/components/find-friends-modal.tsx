@@ -312,14 +312,17 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
                               src={`/uploads/${requester.avatar}`}
                               alt="Profile picture"
                               className="w-10 h-10 rounded-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                              }}
                             />
-                          ) : (
-                            <div className="w-10 h-10 bg-military-green rounded-full flex items-center justify-center">
-                              <span className="text-white font-bold">
-                                {getInitials(requester.username)}
-                              </span>
-                            </div>
-                          )}
+                          ) : null}
+                          <div className={`w-10 h-10 bg-military-green rounded-full flex items-center justify-center ${requester.avatar ? 'hidden' : ''}`}>
+                            <span className="text-white font-bold">
+                              {getInitials(requester.username)}
+                            </span>
+                          </div>
                           <div>
                             <h4 className="text-white font-medium">{requester.username}</h4>
                             <p className="text-gray-400 text-sm">{requester.points} points</p>
@@ -377,14 +380,17 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
                               src={`/uploads/${otherUser.avatar}`}
                               alt="Profile picture"
                               className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                              }}
                             />
-                          ) : (
-                            <div className="w-12 h-12 bg-military-green rounded-full flex items-center justify-center flex-shrink-0">
-                              <span className="text-white font-bold text-sm">
-                                {getInitials(otherUser.username)}
-                              </span>
-                            </div>
-                          )}
+                          ) : null}
+                          <div className={`w-12 h-12 bg-military-green rounded-full flex items-center justify-center flex-shrink-0 ${otherUser.avatar ? 'hidden' : ''}`}>
+                            <span className="text-white font-bold text-sm">
+                              {getInitials(otherUser.username)}
+                            </span>
+                          </div>
                           <div className="flex-1 min-w-0">
                             <h4 className="text-white font-medium text-lg truncate">{otherUser.username}</h4>
                             <p className="text-gray-400 text-sm truncate mb-2">{otherUser.email}</p>

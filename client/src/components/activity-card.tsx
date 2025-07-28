@@ -340,12 +340,11 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
                   {getActivityIcon(activity.type)} {getActivityTypeDisplayName(activity.type)}
                 </Badge>
                 {isStravaActivity() && (
-                  <StravaBadge size="sm" />
-                )}
-                {/* Debug: Force show badge for activity 16 */}
-                {activity.id === 16 && (
-                  <div className="bg-orange-500 text-white px-2 py-1 rounded text-xs">
-                    DEBUG STRAVA
+                  <div className="inline-flex items-center rounded text-xs px-2 py-1 font-semibold tracking-wide text-white bg-[#FC4C02] border border-[#FC4C02]">
+                    <svg className="w-3 h-3 mr-1 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.599h4.172L10.463 0L0 20.172h3.066l1.947-3.839h3.065z"/>
+                    </svg>
+                    STRAVA
                   </div>
                 )}
               </div>

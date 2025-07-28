@@ -11,6 +11,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Send, Smile, ImageIcon, Search, ChevronDown, ChevronUp, Radio } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import EmojiPicker from 'emoji-picker-react';
+// @ts-ignore
 import GiphyApi from 'giphy-api';
 
 interface ChatCardProps {
@@ -257,8 +258,8 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
                     <PopoverContent className="w-80 p-0 bg-tactical-gray-light border-tactical-gray">
                       <EmojiPicker
                         onEmojiClick={handleEmojiClick}
-                        theme="dark"
-                        skinTonePickerLocation="PREVIEW"
+                        theme={"dark" as any}
+                        skinTonePickerLocation={"PREVIEW" as any}
                       />
                     </PopoverContent>
                   </Popover>

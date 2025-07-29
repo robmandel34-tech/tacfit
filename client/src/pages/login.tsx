@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import tacfitLogo from "@assets/Confident Shield Logo for Tacfit App_1753766511173.png";
+import tacfitLogo from "../assets/tacfit-logo-transparent.svg";
 
 export default function Login() {
   const { login } = useAuth();

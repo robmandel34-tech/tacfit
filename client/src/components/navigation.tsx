@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { HelpModal } from "@/components/help-modal";
 import { Shield, Trophy, MessageCircle, Users, Activity, Bell } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import tacfitLogo from "@assets/Confident Shield Logo for Tacfit App_1753766511173.png";
+import tacfitLogo from "../assets/tacfit-logo-transparent.svg";
 
 export default function Navigation() {
   const { user, logout } = useAuth();

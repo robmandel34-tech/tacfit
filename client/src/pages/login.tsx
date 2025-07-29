@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import logoImage from "@assets/Simple Modern Logo for tacfit App_1753767705375.jpeg";
 
 export default function Login() {
   const { login } = useAuth();
@@ -37,11 +37,15 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-tactical-gray px-4">
+    <div className="min-h-screen flex items-center justify-center px-4">
       <Card className="w-full max-w-md card-modern">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-6">
-            <Shield className="text-military-green" style={{ fontSize: '96px' }} />
+            <img 
+              src={logoImage} 
+              alt="TacFit Logo" 
+              className="h-24 w-auto object-contain"
+            />
           </div>
           <CardTitle className="text-3xl font-bold text-heading tracking-tight">TacFit</CardTitle>
           <CardDescription className="text-body text-lg">

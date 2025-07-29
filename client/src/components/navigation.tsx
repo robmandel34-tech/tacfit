@@ -2,8 +2,9 @@ import { useAuth } from "@/hooks/use-auth";
 import { Link, useLocation, useRouter } from "wouter";
 import { Button } from "@/components/ui/button";
 import { HelpModal } from "@/components/help-modal";
-import { Shield, Trophy, MessageCircle, Users, Activity, Bell } from "lucide-react";
+import { Trophy, MessageCircle, Users, Activity, Bell } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import logoImage from "@assets/Simple Modern Logo for tacfit App_1753767705375.jpeg";
 
 export default function Navigation() {
   const { user, logout } = useAuth();
@@ -29,7 +30,11 @@ export default function Navigation() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-6">
             <div className="flex items-center space-x-3">
-              <Shield className="text-military-green text-3xl" />
+              <img 
+                src={logoImage} 
+                alt="TacFit Logo" 
+                className="h-8 w-auto object-contain"
+              />
               <span className="text-2xl font-bold text-heading tracking-tight">TacFit</span>
             </div>
             <nav className="hidden md:flex space-x-8">

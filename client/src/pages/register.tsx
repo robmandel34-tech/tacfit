@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import tacfitLogo from "@assets/Confident Shield Logo for Tacfit App_1753766511173.png";
 
 export default function Register() {
   const { register } = useAuth();
@@ -42,7 +43,11 @@ export default function Register() {
       <Card className="w-full max-w-md card-modern">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-6">
-            <Shield className="text-military-green text-5xl" />
+            <img 
+              src={tacfitLogo} 
+              alt="TacFit Logo" 
+              className="h-24 w-24 object-contain"
+            />
           </div>
           <CardTitle className="text-3xl font-bold text-heading tracking-tight">Join the Force</CardTitle>
           <CardDescription className="text-body text-lg">

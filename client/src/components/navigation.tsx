@@ -29,7 +29,7 @@ export default function Navigation() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-6">
             <div className="flex items-center space-x-3">
-              <Shield className="h-10 w-10 text-military-green" />
+              <Shield className="h-8 w-8 text-military-green" />
               <span className="text-2xl font-bold text-heading tracking-tight">TacFit</span>
             </div>
             <nav className="hidden md:flex space-x-8">

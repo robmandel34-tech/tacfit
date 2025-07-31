@@ -2899,20 +2899,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ message: "Strava client ID not configured" });
       }
 
-      // Use proper domain detection for redirect URI
+      // Enhanced domain detection for redirect URI
       let redirectUri;
       const host = req.get('host');
+      const xForwardedHost = req.get('x-forwarded-host');
+      const origin = req.get('origin');
       
-      // Check if we're on Replit domain
+      console.log('Domain detection debug:', {
+        host,
+        xForwardedHost,
+        origin,
+        replitDomains: process.env.REPLIT_DOMAINS,
+        userAgent: req.get('user-agent')
+      });
+      
+      // Priority order: environment variable, x-forwarded-host, origin, host
       if (process.env.REPLIT_DOMAINS) {
         redirectUri = `https://${process.env.REPLIT_DOMAINS}/callback`;
-      } else if (host && host.includes('replit.dev')) {
-        redirectUri = `https://${host}/callback`;
-      } else if (host && host.includes('replit.app')) {
-        redirectUri = `https://${host}/callback`;
+        console.log('Using REPLIT_DOMAINS env var for redirect URI');
+      } else if (xForwardedHost) {
+        redirectUri = `https://${xForwardedHost}/callback`;
+        console.log('Using x-forwarded-host for redirect URI');
+      } else if (origin && origin.startsWith('https://')) {
+        const originHost = new URL(origin).hostname;
+        redirectUri = `https://${originHost}/callback`;
+        console.log('Using origin header for redirect URI');
+      } else if (host) {
+        // Ensure we use HTTPS for production domains
+        const protocol = (host.includes('replit.app') || host.includes('replit.dev')) ? 'https' : 'https';
+        redirectUri = `${protocol}://${host}/callback`;
+        console.log('Using host header for redirect URI');
       } else {
-        // Fallback for development
-        redirectUri = `https://${host}/callback`;
+        console.error('Could not determine domain for redirect URI');
+        return res.status(500).json({ message: "Could not determine domain for Strava callback" });
       }
       
       console.log('Strava auth URL request for user:', userId);
@@ -3010,9 +3029,149 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Comprehensive Strava troubleshooting endpoint
+  app.get("/api/debug/strava-troubleshoot/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Test domain detection logic
+      const host = req.get('host');
+      const xForwardedHost = req.get('x-forwarded-host');
+      const origin = req.get('origin');
+      
+      let detectedRedirectUri;
+      if (process.env.REPLIT_DOMAINS) {
+        detectedRedirectUri = `https://${process.env.REPLIT_DOMAINS}/callback`;
+      } else if (xForwardedHost) {
+        detectedRedirectUri = `https://${xForwardedHost}/callback`;
+      } else if (origin && origin.startsWith('https://')) {
+        const originHost = new URL(origin).hostname;
+        detectedRedirectUri = `https://${originHost}/callback`;
+      } else if (host) {
+        detectedRedirectUri = `https://${host}/callback`;
+      }
+
+      // Test Strava API connectivity
+      let stravaApiTest = null;
+      try {
+        const testResponse = await fetch('https://www.strava.com/api/v3/athlete', {
+          headers: user.stravaAccessToken ? {
+            'Authorization': `Bearer ${user.stravaAccessToken}`
+          } : {}
+        });
+        stravaApiTest = {
+          status: testResponse.status,
+          accessible: testResponse.status !== 0,
+          needsAuth: testResponse.status === 401
+        };
+      } catch (error) {
+        stravaApiTest = {
+          status: 'error',
+          accessible: false,
+          error: error.message
+        };
+      }
+
+      res.json({
+        user: {
+          id: user.id,
+          username: user.username,
+          hasStravaToken: !!user.stravaAccessToken,
+          hasRefreshToken: !!user.stravaRefreshToken,
+          athleteId: user.stravaAthleteId,
+          tokenExpired: user.stravaTokenExpiresAt ? new Date() > user.stravaTokenExpiresAt : true,
+          tokenExpiresAt: user.stravaTokenExpiresAt
+        },
+        environment: {
+          hasStravaClientId: !!process.env.STRAVA_CLIENT_ID,
+          hasStravaClientSecret: !!process.env.STRAVA_CLIENT_SECRET,
+          hasReplitDomains: !!process.env.REPLIT_DOMAINS,
+          replitDomains: process.env.REPLIT_DOMAINS
+        },
+        request: {
+          host,
+          xForwardedHost,
+          origin,
+          userAgent: req.get('user-agent'),
+          detectedRedirectUri
+        },
+        stravaApi: stravaApiTest,
+        recommendations: [
+          !process.env.STRAVA_CLIENT_ID && "Missing STRAVA_CLIENT_ID environment variable",
+          !process.env.STRAVA_CLIENT_SECRET && "Missing STRAVA_CLIENT_SECRET environment variable",
+          host?.includes('replit.app') && !process.env.REPLIT_DOMAINS && 
+            `Deployed app detected (${host}) - set REPLIT_DOMAINS environment variable to ${host}`,
+          host?.includes('replit.app') && 
+            `For deployed apps, ensure ${host} is added to Strava app's Authorization Callback Domains`,
+          user.stravaTokenExpiresAt && new Date() > user.stravaTokenExpiresAt && 
+            "Strava token has expired - user needs to reconnect"
+        ].filter(Boolean)
+      });
+    } catch (error) {
+      console.error("Strava troubleshoot error:", error);
+      res.status(500).json({ message: "Troubleshoot error", error: error.message });
+    }
+  });
+
   // Health check endpoint for external services
   app.get("/health", (req, res) => {
     res.status(200).send("OK");
+  });
+
+  // Strava connection health check endpoint
+  app.get("/api/strava/health-check", async (req, res) => {
+    try {
+      const results = {
+        environment: {
+          hasClientId: !!process.env.STRAVA_CLIENT_ID,
+          hasClientSecret: !!process.env.STRAVA_CLIENT_SECRET,
+          hasReplitDomains: !!process.env.REPLIT_DOMAINS,
+          domain: req.get('host')
+        },
+        stravaApi: {
+          accessible: false,
+          error: null
+        },
+        recommendations: []
+      };
+
+      // Test Strava API accessibility
+      try {
+        const testResponse = await fetch('https://www.strava.com/api/v3/athlete', {
+          headers: { 'Authorization': 'Bearer invalid_token_test' }
+        });
+        results.stravaApi.accessible = testResponse.status === 401; // 401 means API is accessible, just needs auth
+      } catch (error) {
+        results.stravaApi.error = error.message;
+      }
+
+      // Generate recommendations
+      if (!results.environment.hasClientId) {
+        results.recommendations.push("Missing STRAVA_CLIENT_ID environment variable");
+      }
+      if (!results.environment.hasClientSecret) {
+        results.recommendations.push("Missing STRAVA_CLIENT_SECRET environment variable");
+      }
+      if (results.environment.domain?.includes('replit.app') && !results.environment.hasReplitDomains) {
+        results.recommendations.push(`Set REPLIT_DOMAINS environment variable to ${results.environment.domain}`);
+      }
+      if (results.environment.domain?.includes('replit.app')) {
+        results.recommendations.push(`Add ${results.environment.domain} to Strava app's Authorization Callback Domains`);
+      }
+      if (!results.stravaApi.accessible) {
+        results.recommendations.push("Strava API may not be accessible from this environment");
+      }
+
+      res.json(results);
+    } catch (error) {
+      console.error("Strava health check error:", error);
+      res.status(500).json({ error: error.message });
+    }
   });
 
   // Simple callback test page to verify external accessibility
@@ -3057,20 +3216,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.redirect("/?strava_error=invalid_user");
       }
 
-      // Use the same domain detection logic as auth URL generation
+      // Use the same enhanced domain detection logic as auth URL generation
       let redirectUri;
       const host = req.get('host');
+      const xForwardedHost = req.get('x-forwarded-host');
+      const origin = req.get('origin');
       
-      // Check if we're on Replit domain
+      console.log('Callback domain detection debug:', {
+        host,
+        xForwardedHost,
+        origin,
+        replitDomains: process.env.REPLIT_DOMAINS
+      });
+      
+      // Priority order: environment variable, x-forwarded-host, origin, host
       if (process.env.REPLIT_DOMAINS) {
         redirectUri = `https://${process.env.REPLIT_DOMAINS}/callback`;
-      } else if (host && host.includes('replit.dev')) {
-        redirectUri = `https://${host}/callback`;
-      } else if (host && host.includes('replit.app')) {
-        redirectUri = `https://${host}/callback`;
+      } else if (xForwardedHost) {
+        redirectUri = `https://${xForwardedHost}/callback`;
+      } else if (origin && origin.startsWith('https://')) {
+        const originHost = new URL(origin).hostname;
+        redirectUri = `https://${originHost}/callback`;
+      } else if (host) {
+        const protocol = (host.includes('replit.app') || host.includes('replit.dev')) ? 'https' : 'https';
+        redirectUri = `${protocol}://${host}/callback`;
       } else {
-        // Fallback for development
-        redirectUri = `https://${host}/callback`;
+        console.error('Could not determine domain for callback redirect URI');
+        return res.redirect("/?strava_error=domain_detection_failed");
       }
       
       console.log("Token exchange details:");
@@ -3141,20 +3313,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.redirect("/?strava_error=invalid_user");
       }
 
-      // Use the same domain detection logic as auth URL generation
+      // Use the same enhanced domain detection logic as auth URL generation  
       let redirectUri;
       const host = req.get('host');
+      const xForwardedHost = req.get('x-forwarded-host');
+      const origin = req.get('origin');
       
-      // Check if we're on Replit domain
+      console.log('API Callback domain detection debug:', {
+        host,
+        xForwardedHost,
+        origin,
+        replitDomains: process.env.REPLIT_DOMAINS
+      });
+      
+      // Priority order: environment variable, x-forwarded-host, origin, host
       if (process.env.REPLIT_DOMAINS) {
         redirectUri = `https://${process.env.REPLIT_DOMAINS}/callback`;
-      } else if (host && host.includes('replit.dev')) {
-        redirectUri = `https://${host}/callback`;
-      } else if (host && host.includes('replit.app')) {
-        redirectUri = `https://${host}/callback`;
+      } else if (xForwardedHost) {
+        redirectUri = `https://${xForwardedHost}/callback`;
+      } else if (origin && origin.startsWith('https://')) {
+        const originHost = new URL(origin).hostname;
+        redirectUri = `https://${originHost}/callback`;
+      } else if (host) {
+        const protocol = (host.includes('replit.app') || host.includes('replit.dev')) ? 'https' : 'https';
+        redirectUri = `${protocol}://${host}/callback`;
       } else {
-        // Fallback for development
-        redirectUri = `https://${host}/callback`;
+        console.error('Could not determine domain for API callback redirect URI');
+        return res.redirect("/?strava_error=domain_detection_failed");
       }
 
       // Exchange authorization code for access token
@@ -3269,20 +3454,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Use the same domain detection logic as auth URL generation
+      // Use the same enhanced domain detection logic as auth URL generation
       let redirectUri;
       const host = req.get('host');
+      const xForwardedHost = req.get('x-forwarded-host');
+      const origin = req.get('origin');
       
-      // Check if we're on Replit domain
+      console.log('Exchange code domain detection debug:', {
+        host,
+        xForwardedHost,
+        origin,
+        replitDomains: process.env.REPLIT_DOMAINS
+      });
+      
+      // Priority order: environment variable, x-forwarded-host, origin, host
       if (process.env.REPLIT_DOMAINS) {
         redirectUri = `https://${process.env.REPLIT_DOMAINS}/callback`;
-      } else if (host && host.includes('replit.dev')) {
-        redirectUri = `https://${host}/callback`;
-      } else if (host && host.includes('replit.app')) {
-        redirectUri = `https://${host}/callback`;
+      } else if (xForwardedHost) {
+        redirectUri = `https://${xForwardedHost}/callback`;
+      } else if (origin && origin.startsWith('https://')) {
+        const originHost = new URL(origin).hostname;
+        redirectUri = `https://${originHost}/callback`;
+      } else if (host) {
+        const protocol = (host.includes('replit.app') || host.includes('replit.dev')) ? 'https' : 'https';
+        redirectUri = `${protocol}://${host}/callback`;
       } else {
-        // Fallback for development
-        redirectUri = `https://${host}/callback`;
+        console.error('Could not determine domain for exchange code redirect URI');
+        return res.status(500).json({ message: "Could not determine domain for Strava callback" });
       }
 
       console.log("Using redirect URI for token exchange:", redirectUri);

@@ -90,9 +90,39 @@ export default function Dashboard() {
     
     if (urlParams.get('strava_error')) {
       const error = urlParams.get('strava_error');
+      const errorDetails = urlParams.get('details');
+      
+      let title = "Strava Connection Failed";
+      let description = "There was an issue connecting to Strava. Please try again.";
+      
+      // Provide specific error messages based on error type
+      switch (error) {
+        case 'domain_not_configured':
+          title = "Domain Configuration Required";
+          description = "This app's domain needs to be added to your Strava app settings. Contact the app administrator.";
+          break;
+        case 'authorization_expired':
+          title = "Authorization Expired";
+          description = "The authorization request has expired. Please try connecting to Strava again.";
+          break;
+        case 'invalid_app_config':
+          title = "App Configuration Error";
+          description = "There's an issue with the Strava app configuration. Contact the app administrator.";
+          break;
+        case 'domain_detection_failed':
+          title = "Connection Error";
+          description = "Unable to determine the correct callback URL. Please try again or contact support.";
+          break;
+        case 'connection_failed':
+        default:
+          title = "Connection Failed";
+          description = "Failed to connect to Strava. Please check your internet connection and try again.";
+          break;
+      }
+      
       toast({
-        title: "Strava Connection Failed",
-        description: `Error: ${error}`,
+        title,
+        description,
         variant: "destructive",
       });
       

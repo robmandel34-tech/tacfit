@@ -515,6 +515,18 @@ Preferred communication style: Simple, everyday language.
 - **SECURED**: Case-insensitive pattern matching for better reliability
 - **ADDED**: Debug logging to help identify Strava badge detection issues in production
 
+### Strava Connection Reliability Improvements (July 2025)
+- **ENHANCED**: Comprehensive domain detection logic with multiple fallback methods for OAuth redirects
+- **IMPROVED**: Better handling of x-forwarded-host, origin headers, and environment variables for deployed apps
+- **NEW**: Enhanced error handling with specific error types (domain_not_configured, authorization_expired, invalid_app_config)
+- **NEW**: Comprehensive Strava troubleshooting endpoint (/api/debug/strava-troubleshoot/:userId) for user-specific diagnostics
+- **NEW**: Strava health check endpoint (/api/strava/health-check) for system-wide configuration validation
+- **NEW**: Detailed error logging and debugging information for OAuth callback failures
+- **ENHANCED**: User-friendly error messages with specific guidance based on error type
+- **DOCUMENTED**: Complete Strava troubleshooting guide with common issues and solutions
+- **FIXED**: Domain detection now uses priority order: environment variable, x-forwarded-host, origin, host headers
+- **IMPROVED**: Better error feedback in frontend with meaningful error descriptions instead of generic messages
+
 ### Admin Post System for Intel Feed (July 2025)
 - **NEW**: Complete admin post management system for Intel Feed announcements
 - **NEW**: Database schema with adminPosts table including type, priority, expiration, and status fields

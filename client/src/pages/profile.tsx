@@ -18,6 +18,7 @@ import { apiRequest } from "@/lib/queryClient";
 import DirectMessageModal from "@/components/direct-message-modal";
 import FindFriendsModal from "@/components/find-friends-modal";
 import StravaIntegration from "@/components/strava-integration";
+import type { User, CompetitionHistory, Activity, TeamMember, Team, Competition, Friendship, MissionTask } from "@shared/schema";
 
 export default function Profile() {
   const { user, isLoading } = useAuthRequired();
@@ -107,36 +108,36 @@ export default function Profile() {
   }, [toast, queryClient]);
 
   // Get profile user data
-  const { data: profileUser } = useQuery({
+  const { data: profileUser } = useQuery<User>({
     queryKey: ["/api/users", targetUserId],
     enabled: !!targetUserId,
   });
 
-  const { data: history = [] } = useQuery({
+  const { data: history = [] } = useQuery<CompetitionHistory[]>({
     queryKey: ["/api/history", targetUserId],
     enabled: !!targetUserId,
   });
 
-  const { data: activities = [] } = useQuery({
+  const { data: activities = [] } = useQuery<Activity[]>({
     queryKey: ["/api/activities", "user", targetUserId],
     queryFn: () => fetch(`/api/activities?userId=${targetUserId}`).then(res => res.json()),
     enabled: !!targetUserId,
   });
 
   // Get current team membership to check active competition participation
-  const { data: currentTeamMembership = [] } = useQuery({
+  const { data: currentTeamMembership = [] } = useQuery<TeamMember[]>({
     queryKey: ["/api/team-members", targetUserId],
     enabled: !!targetUserId,
   });
 
   // Get current team details if user has active membership
-  const { data: currentTeam } = useQuery({
+  const { data: currentTeam } = useQuery<Team>({
     queryKey: ["/api/teams", currentTeamMembership[0]?.teamId],
     enabled: currentTeamMembership.length > 0 && !!currentTeamMembership[0]?.teamId,
   });
 
   // Get current competition details if user has active team
-  const { data: currentCompetition } = useQuery({
+  const { data: currentCompetition } = useQuery<Competition>({
     queryKey: ["/api/competitions", currentTeam?.competitionId],
     enabled: !!currentTeam?.competitionId,
   });
@@ -147,25 +148,28 @@ export default function Profile() {
   const totalCompetitions = completedCompetitions + activeCompetitions;
 
   // Calculate wins (1st place finishes)
-  const wins = history.filter((record: any) => record.finalRank === 1).length;
+  const wins = history.filter((record) => record.finalRank === 1).length;
 
   // Get friends for the current user to check relationships
-  const { data: friends = [] } = useQuery({
+  const { data: friends = [] } = useQuery<Friendship[]>({
     queryKey: ["/api/friends", user?.id],
     enabled: !!user?.id,
   });
 
   // Get incoming friend requests for the current user
-  const { data: incomingRequests = [] } = useQuery({
+  const { data: incomingRequests = [] } = useQuery<Friendship[]>({
     queryKey: ["/api/friends", user?.id, "requests"],
     enabled: !!user?.id && isOwnProfile,
   });
 
   // Get pending tasks for the current user (only on own profile)
-  const { data: pendingTasks = [] } = useQuery({
+  const { data: pendingTasks = [] } = useQuery<MissionTask[]>({
     queryKey: [`/api/mission-tasks/user/${user?.id}/pending`],
     enabled: !!user?.id && isOwnProfile,
   });
+
+  // Determine which user data to display (profile user or current user)
+  const displayUser = profileUser || user;
 
   // Friend request mutation
   const sendFriendRequest = useMutation({
@@ -247,7 +251,7 @@ export default function Profile() {
       queryClient.invalidateQueries({ queryKey: ["/api/team-members"] });
       // Also invalidate specific activity queries that may exist
       queryClient.invalidateQueries({ predicate: (query) => 
-        query.queryKey[0]?.toString().includes("/api/activities") 
+        query.queryKey[0]?.toString().includes("/api/activities") || false
       });
       // Update user context with new avatar
       updateUser({ avatar: data.avatar });
@@ -318,6 +322,7 @@ export default function Profile() {
   // Update user motto mutation
   const updateUserMotto = useMutation({
     mutationFn: async (motto: string) => {
+      if (!displayUser?.id) throw new Error("User not found");
       const response = await fetch(`/api/users/${displayUser.id}/motto`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -337,15 +342,17 @@ export default function Profile() {
         updateUser(updatedUser);
       }
       // Update the query cache directly with the new user data
-      queryClient.setQueryData(["/api/users", displayUser.id], updatedUser);
+      if (displayUser?.id) {
+        queryClient.setQueryData(["/api/users", displayUser.id], updatedUser);
+      }
       // Invalidate all user-related queries to update motto everywhere
       queryClient.invalidateQueries({ queryKey: ["/api/team-members"] });
       queryClient.invalidateQueries({ predicate: (query) => 
-        query.queryKey[0]?.toString().includes("/api/team-members") 
+        query.queryKey[0]?.toString().includes("/api/team-members") || false
       });
       // Also invalidate the team members query for the specific team
       queryClient.invalidateQueries({ predicate: (query) => 
-        query.queryKey[0]?.toString().includes("/api/team-members/team/") 
+        query.queryKey[0]?.toString().includes("/api/team-members/team/") || false
       });
       setIsEditingMotto(false);
     },
@@ -376,7 +383,7 @@ export default function Profile() {
 
   // Handle motto editing
   const handleMottoEdit = () => {
-    setMottoText(displayUser.motto || "");
+    setMottoText((displayUser as any)?.motto || "");
     setIsEditingMotto(true);
   };
 
@@ -394,7 +401,7 @@ export default function Profile() {
 
   // Handle name editing
   const handleNameEdit = () => {
-    setNameText(displayUser.username || "");
+    setNameText(displayUser?.username || "");
     setIsEditingName(true);
   };
 
@@ -413,9 +420,7 @@ export default function Profile() {
   // Remove buddy mutation
   const removeBuddy = useMutation({
     mutationFn: async (friendshipId: number) => {
-      const response = await apiRequest(`/api/friends/${friendshipId}`, {
-        method: "DELETE",
-      });
+      const response = await apiRequest("DELETE", `/api/friends/${friendshipId}`);
       return response;
     },
     onSuccess: () => {
@@ -440,6 +445,7 @@ export default function Profile() {
   // Update user name mutation
   const updateUserName = useMutation({
     mutationFn: async (newName: string) => {
+      if (!displayUser?.id) throw new Error("User not found");
       const response = await fetch(`/api/users/${displayUser.id}`, {
         method: "PUT",
         headers: {
@@ -461,14 +467,16 @@ export default function Profile() {
         updateUser(updatedUser);
       }
       // Update the query cache directly with the new user data
-      queryClient.setQueryData(["/api/users", displayUser.id], updatedUser);
+      if (displayUser?.id) {
+        queryClient.setQueryData(["/api/users", displayUser.id], updatedUser);
+      }
       // Invalidate all user-related queries to update name everywhere
       queryClient.invalidateQueries({ queryKey: ["/api/team-members"] });
       queryClient.invalidateQueries({ predicate: (query) => 
-        query.queryKey[0]?.toString().includes("/api/team-members") 
+        query.queryKey[0]?.toString().includes("/api/team-members") || false
       });
       queryClient.invalidateQueries({ predicate: (query) => 
-        query.queryKey[0]?.toString().includes("/api/activities") 
+        query.queryKey[0]?.toString().includes("/api/activities") || false
       });
       setIsEditingName(false);
     },
@@ -480,8 +488,6 @@ export default function Profile() {
       });
     },
   });
-
-  const displayUser = profileUser || user;
 
   if (isLoading) {
     return <div className="min-h-screen bg-tactical-gray flex items-center justify-center">
@@ -676,7 +682,7 @@ export default function Profile() {
                       <div className="flex items-center justify-center">
                         <div className={`flex items-center space-x-2 ${isOwnProfile ? 'ml-10' : ''}`}>
                           <p className="text-gray-300 text-sm italic text-center">
-                            {displayUser.motto ? `"${displayUser.motto}"` : "No motto set"}
+                            {(displayUser as any)?.motto ? `"${(displayUser as any)?.motto}"` : "No motto set"}
                           </p>
                           {isOwnProfile && (
                             <Button

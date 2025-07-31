@@ -69,7 +69,7 @@ export default function Dashboard() {
 
   // Show onboarding to new users who haven't completed it
   useEffect(() => {
-    if (user && user.onboardingCompleted === false) {
+    if (user && (user as any).onboardingCompleted === false) {
       setShowOnboarding(true);
     }
     

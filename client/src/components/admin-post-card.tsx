@@ -127,6 +127,13 @@ export default function AdminPostCard({ post }: AdminPostCardProps) {
               src={post.postImageUrl} 
               alt="Admin post image" 
               className="w-full max-w-md rounded-lg border border-tactical-gray"
+              onError={(e) => {
+                console.error("Admin post image failed to load:", post.postImageUrl);
+                e.currentTarget.style.display = 'none';
+              }}
+              onLoad={() => {
+                console.log("Admin post image loaded successfully:", post.postImageUrl);
+              }}
             />
           </div>
         )}

@@ -17,7 +17,7 @@ export default function BottomNavigation() {
   if (!user) return null;
 
   // Show different nav items based on whether user is in a competition
-  const hasActiveMembership = userTeamMember && userTeamMember.length > 0;
+  const hasActiveMembership = userTeamMember && Array.isArray(userTeamMember) && userTeamMember.length > 0;
   
   const navItems = [
     { path: "/", icon: Activity, label: "Intel", enabled: true },

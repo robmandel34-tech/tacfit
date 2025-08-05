@@ -24,6 +24,7 @@ interface ActivityCardProps {
     evidenceType?: string; // Add evidence type field (video, photo, etc.)
     imageUrl?: string;
     imageUrls?: string[]; // New field for multiple images
+    thumbnailUrl?: string; // Add thumbnailUrl field
     points?: number;
     createdAt: string;
 

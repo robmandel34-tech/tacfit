@@ -1430,6 +1430,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           return {
             ...activity,
+            imageUrls: activity.imageUrls || [],
             user: user ? { id: user.id, username: user.username, avatar: user.avatar } : null,
             team: team ? { id: team.id, name: team.name } : null,
             competition: competition ? { id: competition.id, name: competition.name } : null,
@@ -1475,6 +1476,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           return {
             ...activity,
+            imageUrls: activity.imageUrls || [],
             user: user ? { id: user.id, username: user.username, avatar: user.avatar } : null,
             team: team ? { id: team.id, name: team.name } : null,
             competition: activityCompetition ? { id: activityCompetition.id, name: activityCompetition.name } : null,
@@ -1511,6 +1513,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           return {
             ...activity,
+            imageUrls: activity.imageUrls || [],
             user: user ? { id: user.id, username: user.username, avatar: user.avatar } : null,
             competition: competition ? { id: competition.id, name: competition.name } : null,
             likesCount: likes.length,

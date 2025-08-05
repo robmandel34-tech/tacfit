@@ -44,7 +44,10 @@ export default function BottomNavigation() {
                 key={item.path}
                 className="flex flex-col items-center justify-center py-3 px-3 cursor-not-allowed opacity-40"
               >
-                <IconComponent size={22} />
+                <IconComponent 
+                  size={22} 
+                  style={{ display: 'inline-block' }}
+                />
                 <span className="text-xs mt-1 font-semibold">{item.label}</span>
               </div>
             );
@@ -60,7 +63,10 @@ export default function BottomNavigation() {
                   : "text-muted hover:text-secondary hover:bg-surface-overlay"
               }`}
             >
-              <IconComponent size={22} />
+              <IconComponent 
+                size={22} 
+                style={{ display: 'inline-block' }}
+              />
               <span className="text-xs mt-1 font-semibold">{item.label}</span>
             </Link>
           );

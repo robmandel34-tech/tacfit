@@ -25,14 +25,14 @@
   --radius: 0.125rem;
   
   /* Professional Military Theme Colors */
-  --military-green: hsl(97, 45%, 35%);
-  --military-green-light: hsl(97, 45%, 45%);
-  --military-green-dark: hsl(97, 45%, 25%);
+  --military-green: hsl(97, 45%, 45%);
+  --military-green-light: hsl(97, 45%, 55%);
+  --military-green-dark: hsl(97, 45%, 35%);
   --tactical-gray: hsl(220, 13%, 9%);
   --tactical-gray-light: hsl(220, 13%, 16%);
   --tactical-gray-lighter: hsl(220, 13%, 22%);
   --tactical-gray-lightest: hsl(220, 13%, 28%);
-  --combat-orange: hsl(25, 95%, 53%);
+  --combat-orange: hsl(25, 95%, 60%);
   --steel-blue: hsl(210, 80%, 60%);
   --success-green: hsl(142, 76%, 36%);
   --warning-amber: hsl(43, 96%, 56%);
@@ -41,7 +41,7 @@
   --surface-overlay: hsl(220, 13%, 18%);
   --text-primary: hsl(0, 0%, 98%);
   --text-secondary: hsl(0, 0%, 78%);
-  --text-muted: hsl(0, 0%, 58%);
+  --text-muted: hsl(0, 0%, 65%);
   --border-subtle: hsl(220, 13%, 24%);
   --border-default: hsl(220, 13%, 30%);
 }

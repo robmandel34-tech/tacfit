@@ -29,7 +29,12 @@ export default function Navigation() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-6">
             <div className="flex items-center space-x-3">
-              <Shield className="h-8 w-8 text-military-green" />
+              <Shield 
+                className="h-8 w-8 text-military-green" 
+                style={{ display: 'inline-block' }}
+                onLoad={() => console.log("Shield icon loaded")}
+                onError={() => console.log("Shield icon error")}
+              />
               <span className="text-2xl font-bold text-heading tracking-tight">TacFit</span>
             </div>
             <nav className="hidden md:flex space-x-8">
@@ -69,7 +74,10 @@ export default function Navigation() {
           </div>
           <div className="flex items-center space-x-4">
             <div className="hidden md:flex items-center space-x-2 bg-surface-overlay px-4 py-2 rounded-full border border-border-subtle">
-              <Trophy className="text-combat-orange text-lg" />
+              <Trophy 
+                className="h-5 w-5 text-combat-orange" 
+                style={{ display: 'inline-block' }}
+              />
               <span className="text-sm font-semibold text-white">{user.points || 0} PTS</span>
             </div>
             <HelpModal />

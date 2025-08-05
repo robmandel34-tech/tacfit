@@ -166,7 +166,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     secret: process.env.SESSION_SECRET || 'your-secret-key',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false, maxAge: 1000 * 60 * 60 * 24 * 7 } // 7 days
+    cookie: { 
+      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+      sameSite: 'lax' // Help with CSRF protection while allowing normal navigation
+    }
   }));
 
   // Create uploads directory if it doesn't exist
@@ -1388,6 +1392,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Helper function to transform PostgreSQL array format to JavaScript array
+  function transformPgArray(pgArray: any): string[] {
+    if (!pgArray) return [];
+    if (Array.isArray(pgArray)) return pgArray; // Already a JavaScript array, return as-is
+    if (typeof pgArray === 'string') {
+      // Handle PostgreSQL array format: {item1,item2,item3}
+      if (pgArray === '{}') return [];
+      if (pgArray.startsWith('{') && pgArray.endsWith('}')) {
+        const content = pgArray.slice(1, -1);
+        return content ? content.split(',') : [];
+      }
+    }
+    return [];
+  }
+
   // Activity routes
   app.get("/api/activities", async (req, res) => {
     try {
@@ -1409,6 +1428,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get user details for each activity
       const activitiesWithUsers = await Promise.all(
         activities.map(async (activity) => {
+
           const user = activity.userId ? await storage.getUser(activity.userId) : null;
           const likes = await storage.getActivityLikes(activity.id);
           const comments = await storage.getActivityComments(activity.id);
@@ -1430,7 +1450,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           return {
             ...activity,
-            imageUrls: activity.imageUrls || [],
+            imageUrls: transformPgArray(activity.imageUrls),
             user: user ? { id: user.id, username: user.username, avatar: user.avatar } : null,
             team: team ? { id: team.id, name: team.name } : null,
             competition: competition ? { id: competition.id, name: competition.name } : null,
@@ -1476,7 +1496,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           return {
             ...activity,
-            imageUrls: activity.imageUrls || [],
+            imageUrls: transformPgArray(activity.imageUrls),
             user: user ? { id: user.id, username: user.username, avatar: user.avatar } : null,
             team: team ? { id: team.id, name: team.name } : null,
             competition: activityCompetition ? { id: activityCompetition.id, name: activityCompetition.name } : null,
@@ -1513,7 +1533,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           return {
             ...activity,
-            imageUrls: activity.imageUrls || [],
+            imageUrls: transformPgArray(activity.imageUrls),
             user: user ? { id: user.id, username: user.username, avatar: user.avatar } : null,
             competition: competition ? { id: competition.id, name: competition.name } : null,
             likesCount: likes.length,

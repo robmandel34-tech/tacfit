@@ -43,7 +43,7 @@ export default function ProgressMap({ teams, competitionName, competition, activ
   
   // Calculate actual progress based on target goals like the team page does
   const calculateTeamProgress = useMemo(() => {
-    if (!competition || !competition.requiredActivities || !competition.targetGoals) {
+    if (!competition || !competition?.requiredActivities || !competition?.targetGoals) {
       return (teamId: number) => 0;
     }
 
@@ -63,7 +63,7 @@ export default function ProgressMap({ teams, competitionName, competition, activ
       let totalProgress = 0;
       let activityCount = 0;
 
-      competition.requiredActivities.forEach((activityType: string, index: number) => {
+      competition?.requiredActivities?.forEach((activityType: string, index: number) => {
         // Get activities of this type for the team
         const activitiesOfType = teamActivities.filter(activity => activity.type === activityType);
         
@@ -269,27 +269,36 @@ export default function ProgressMap({ teams, competitionName, competition, activ
                             src={team.pictureUrl} 
                             alt={team.name}
                             className="w-full h-full object-cover"
+                            onError={(e) => {
+                              console.error("Team picture failed to load:", team.pictureUrl);
+                              e.currentTarget.style.display = 'none';
+                              const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                              if (fallback) fallback.style.display = 'flex';
+                            }}
+                            onLoad={() => {
+                              console.log("Team picture loaded successfully:", team.pictureUrl);
+                            }}
                           />
-                        ) : (
-                          <div className={`w-full h-full flex items-center justify-center ${
-                            index === 0 ? 'bg-emerald-600' : 
-                            index === 1 ? 'bg-gray-400' : 
-                            index === 2 ? 'bg-amber-600' : 
-                            'bg-military-green'
-                          }`} style={{
-                            background: index === 0 ? 'linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%)' :
-                                       index === 1 ? 'linear-gradient(135deg, #9ca3af 0%, #6b7280 50%, #4b5563 100%)' :
-                                       index === 2 ? 'linear-gradient(135deg, #d97706 0%, #b45309 50%, #92400e 100%)' :
-                                       'linear-gradient(135deg, #6b8e6b 0%, #5a7a5a 50%, #4a6a4a 100%)'
-                          }}>
-                            {(() => {
-                              const IconComponent = getDefaultIcon(team.id);
-                              return <IconComponent className="h-4 w-4 text-white" style={{
-                                filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.3))'
-                              }} />;
-                            })()}
-                          </div>
-                        )}
+                        ) : null}
+                        <div className={`w-full h-full flex items-center justify-center ${
+                          index === 0 ? 'bg-emerald-600' : 
+                          index === 1 ? 'bg-gray-400' : 
+                          index === 2 ? 'bg-amber-600' : 
+                          'bg-military-green'
+                        }`} style={{
+                          display: team.pictureUrl ? 'none' : 'flex',
+                          background: index === 0 ? 'linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%)' :
+                                     index === 1 ? 'linear-gradient(135deg, #9ca3af 0%, #6b7280 50%, #4b5563 100%)' :
+                                     index === 2 ? 'linear-gradient(135deg, #d97706 0%, #b45309 50%, #92400e 100%)' :
+                                     'linear-gradient(135deg, #6b8e6b 0%, #5a7a5a 50%, #4a6a4a 100%)'
+                        }}>
+                          {(() => {
+                            const IconComponent = getDefaultIcon(team.id);
+                            return <IconComponent className="h-4 w-4 text-white" style={{
+                              filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.3))'
+                            }} />;
+                          })()}
+                        </div>
                       </div>
                       
                       {/* Rank indicator */}

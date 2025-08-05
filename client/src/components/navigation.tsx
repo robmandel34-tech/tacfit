@@ -100,12 +100,20 @@ export default function Navigation() {
                       src={`/uploads/${user.avatar}`}
                       alt="Profile picture"
                       className="w-10 h-10 rounded-full object-cover"
+                      onError={(e) => {
+                        console.error("Profile image failed to load:", user.avatar);
+                        e.currentTarget.style.display = 'none';
+                        const fallback = e.currentTarget.parentElement?.querySelector('.fallback-avatar') as HTMLElement;
+                        if (fallback) fallback.style.display = 'flex';
+                      }}
+                      onLoad={() => {
+                        console.log("Profile image loaded successfully:", user.avatar);
+                      }}
                     />
-                  ) : (
-                    <div className="w-10 h-10 bg-military-green rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold text-sm">{getInitials(user.username)}</span>
-                    </div>
-                  )}
+                  ) : null}
+                  <div className="w-10 h-10 bg-military-green rounded-full flex items-center justify-center fallback-avatar" style={{ display: user.avatar ? 'none' : 'flex' }}>
+                    <span className="text-white font-bold text-sm">{getInitials(user.username)}</span>
+                  </div>
                   {/* Task notification indicator */}
                   {pendingTasksCount > 0 && (
                     <div className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">

@@ -27,7 +27,7 @@ import PointSystemHelp from "@/pages/help/point-system";
 import NavigationHelp from "@/pages/help/navigation";
 import BottomNavigation from "@/components/bottom-navigation";
 import FloatingActionButton from "@/components/floating-action-button";
-import { IconTest } from "@/components/icon-test";
+
 
 function Router() {
   return (
@@ -69,7 +69,7 @@ function App() {
             <Router />
             <BottomNavigation />
             <FloatingActionButton />
-            <IconTest />
+
           </MoodTracker>
         </AuthProvider>
       </TooltipProvider>

@@ -266,14 +266,22 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
                     src={`/uploads/${activity.user.avatar}`}
                     alt="Profile picture"
                     className="w-12 h-12 rounded-full object-cover"
+                    onError={(e) => {
+                      console.error("Activity user avatar failed to load:", activity.user.avatar);
+                      e.currentTarget.style.display = 'none';
+                      const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                      if (fallback) fallback.style.display = 'flex';
+                    }}
+                    onLoad={() => {
+                      console.log("Activity user avatar loaded successfully:", activity.user.avatar);
+                    }}
                   />
-                ) : (
-                  <div className="w-12 h-12 bg-military-green rounded-full flex items-center justify-center hover:bg-military-green-light transition-colors">
-                    <span className="text-white font-bold text-sm">
-                      {getInitials(activity.user.username)}
-                    </span>
-                  </div>
-                )}
+                ) : null}
+                <div className="w-12 h-12 bg-military-green rounded-full flex items-center justify-center hover:bg-military-green-light transition-colors" style={{ display: activity.user?.avatar ? 'none' : 'flex' }}>
+                  <span className="text-white font-bold text-sm">
+                    {getInitials(activity.user.username)}
+                  </span>
+                </div>
               </div>
               <span 
                 className="text-white text-sm font-medium cursor-pointer hover:text-military-green transition-colors text-center"

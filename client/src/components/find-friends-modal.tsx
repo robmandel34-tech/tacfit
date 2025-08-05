@@ -312,14 +312,22 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
                               src={`/uploads/${requester.avatar}`}
                               alt="Profile picture"
                               className="w-10 h-10 rounded-full object-cover"
+                              onError={(e) => {
+                                console.error("Friend request avatar failed to load:", requester.avatar);
+                                e.currentTarget.style.display = 'none';
+                                const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                                if (fallback) fallback.style.display = 'flex';
+                              }}
+                              onLoad={() => {
+                                console.log("Friend request avatar loaded successfully:", requester.avatar);
+                              }}
                             />
-                          ) : (
-                            <div className="w-10 h-10 bg-military-green rounded-full flex items-center justify-center">
-                              <span className="text-white font-bold">
-                                {getInitials(requester.username)}
-                              </span>
-                            </div>
-                          )}
+                          ) : null}
+                          <div className="w-10 h-10 bg-military-green rounded-full flex items-center justify-center" style={{ display: requester.avatar ? 'none' : 'flex' }}>
+                            <span className="text-white font-bold">
+                              {getInitials(requester.username)}
+                            </span>
+                          </div>
                           <div>
                             <h4 className="text-white font-medium">{requester.username}</h4>
                             <p className="text-gray-400 text-sm">{requester.points} points</p>

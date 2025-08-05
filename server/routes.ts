@@ -84,6 +84,7 @@ async function convertVideoToMp4(inputPath: string, outputPath: string): Promise
 declare module 'express-session' {
   interface SessionData {
     user?: User;
+    userId?: number;
   }
 }
 
@@ -163,11 +164,13 @@ async function completeCompetition(competitionId: number) {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Configure session middleware
   app.use(session({
-    secret: process.env.SESSION_SECRET || 'your-secret-key',
+    secret: process.env.SESSION_SECRET || 'tacfit-session-key-2025',
     resave: false,
     saveUninitialized: false,
+
     cookie: { 
-      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+      secure: false, // Allow non-HTTPS for Replit deployment
+      httpOnly: true,
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
       sameSite: 'lax' // Help with CSRF protection while allowing normal navigation
     }
@@ -265,13 +268,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { email, password } = req.body;
       
+      console.log(`Login attempt for email: ${email}`);
+      
       const user = await storage.getUserByEmail(email);
-      if (!user || user.password !== password) {
+      if (!user) {
+        console.log(`User not found for email: ${email}`);
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+      
+      console.log(`User found: ${user.username}, checking password...`);
+      
+      if (user.password !== password) {
+        console.log(`Password mismatch for user: ${email}`);
         return res.status(401).json({ message: "Invalid credentials" });
       }
       
       // Check if user is suspended
       if (user.isSuspended) {
+        console.log(`User suspended: ${email}`);
         return res.status(403).json({ 
           message: "Account suspended", 
           suspensionReason: user.suspensionReason || "No reason provided" 
@@ -282,10 +296,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       req.session.userId = user.id;
       req.session.user = user;
       
+      console.log(`Login successful for user: ${email}, session ID: ${req.sessionID}`);
+      
       // Don't send password back
       const { password: _, ...userWithoutPassword } = user;
       res.json(userWithoutPassword);
     } catch (error) {
+      console.error('Login error:', error);
       res.status(500).json({ message: "Login failed" });
     }
   });

@@ -86,6 +86,10 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
         description: "Mission task has been added successfully.",
       });
       queryClient.invalidateQueries({ queryKey: [`/api/mission-tasks/team/${teamId}`] });
+      // Also invalidate pending tasks for the assigned user to update notification badge
+      if (newTask.assignedTo) {
+        queryClient.invalidateQueries({ queryKey: [`/api/mission-tasks/user/${newTask.assignedTo}/pending`] });
+      }
       setIsAddingTask(false);
       setNewTask({ title: '', description: '', assignedTo: '', dueDate: '' });
     },
@@ -115,6 +119,12 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
         description: "Mission task has been updated successfully.",
       });
       queryClient.invalidateQueries({ queryKey: [`/api/mission-tasks/team/${teamId}`] });
+      // Invalidate pending tasks for all team members to update notification badges
+      teamMembers.forEach(member => {
+        if (member.user?.id) {
+          queryClient.invalidateQueries({ queryKey: [`/api/mission-tasks/user/${member.user.id}/pending`] });
+        }
+      });
       setEditingTaskId(null);
     },
     onError: () => {
@@ -141,6 +151,12 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
         description: "Mission task has been removed.",
       });
       queryClient.invalidateQueries({ queryKey: [`/api/mission-tasks/team/${teamId}`] });
+      // Invalidate pending tasks for all team members to update notification badges
+      teamMembers.forEach(member => {
+        if (member.user?.id) {
+          queryClient.invalidateQueries({ queryKey: [`/api/mission-tasks/user/${member.user.id}/pending`] });
+        }
+      });
     },
     onError: () => {
       toast({
@@ -164,6 +180,12 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/mission-tasks/team/${teamId}`] });
+      // Invalidate pending tasks for all team members to update notification badges
+      teamMembers.forEach(member => {
+        if (member.user?.id) {
+          queryClient.invalidateQueries({ queryKey: [`/api/mission-tasks/user/${member.user.id}/pending`] });
+        }
+      });
     },
     onError: () => {
       toast({

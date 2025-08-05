@@ -311,6 +311,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
         {/* Full-width media slideshow */}
         {(activity.evidenceUrl || activity.imageUrl || (activity.imageUrls && activity.imageUrls.length > 0)) && (
           <div className="mb-0 border-t border-b border-gray-600">
+
             <MediaDisplay 
               imageUrls={
                 activity.imageUrls && activity.imageUrls.length > 0 

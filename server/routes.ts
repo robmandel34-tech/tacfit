@@ -1448,9 +1448,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           }
           
+          const transformedImageUrls = transformPgArray(activity.imageUrls);
+          
           return {
             ...activity,
-            imageUrls: transformPgArray(activity.imageUrls),
+            imageUrls: transformedImageUrls,
             user: user ? { id: user.id, username: user.username, avatar: user.avatar } : null,
             team: team ? { id: team.id, name: team.name } : null,
             competition: competition ? { id: competition.id, name: competition.name } : null,

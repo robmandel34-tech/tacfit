@@ -102,6 +102,8 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
   const [isImageGalleryOpen, setIsImageGalleryOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showVideo, setShowVideo] = useState(false);
+  
+
 
   // Sort images to prioritize maps first
   const sortedImageUrls = React.useMemo(() => {

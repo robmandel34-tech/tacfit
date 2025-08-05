@@ -167,12 +167,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     secret: process.env.SESSION_SECRET || 'tacfit-session-key-2025',
     resave: false,
     saveUninitialized: false,
-
+    name: 'tacfit-session',
+    rolling: true, // Reset expiration on activity
     cookie: { 
-      secure: false, // Allow non-HTTPS for Replit deployment
+      secure: false, // Allow non-HTTPS for development and Replit deployment
       httpOnly: true,
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-      sameSite: 'lax' // Help with CSRF protection while allowing normal navigation
+      sameSite: 'lax', // Help with CSRF protection while allowing normal navigation
+      domain: undefined // Let browser determine domain
     }
   }));
 
@@ -268,7 +270,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { email, password } = req.body;
       
-      console.log(`Login attempt for email: ${email}`);
+      console.log(`Login attempt for email: ${email} from ${req.ip}`);
+      console.log(`Environment: ${process.env.NODE_ENV}, Secure cookies: ${req.secure}`);
       
       const user = await storage.getUserByEmail(email);
       if (!user) {
@@ -277,6 +280,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       console.log(`User found: ${user.username}, checking password...`);
+      console.log(`Database password: ${user.password}, Input password: ${password}`);
       
       if (user.password !== password) {
         console.log(`Password mismatch for user: ${email}`);
@@ -292,15 +296,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Set session
-      req.session.userId = user.id;
-      req.session.user = user;
-      
-      console.log(`Login successful for user: ${email}, session ID: ${req.sessionID}`);
-      
-      // Don't send password back
-      const { password: _, ...userWithoutPassword } = user;
-      res.json(userWithoutPassword);
+      // Set session with regeneration for security
+      req.session.regenerate((err) => {
+        if (err) {
+          console.error('Session regeneration error:', err);
+          return res.status(500).json({ message: "Login failed" });
+        }
+        
+        req.session.userId = user.id;
+        req.session.user = user;
+        
+        req.session.save((err) => {
+          if (err) {
+            console.error('Session save error:', err);
+            return res.status(500).json({ message: "Login failed" });
+          }
+          
+          console.log(`Login successful for user: ${email}, session ID: ${req.sessionID}`);
+          
+          // Don't send password back
+          const { password: _, ...userWithoutPassword } = user;
+          res.json(userWithoutPassword);
+        });
+      });
     } catch (error) {
       console.error('Login error:', error);
       res.status(500).json({ message: "Login failed" });

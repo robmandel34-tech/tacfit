@@ -21,10 +21,7 @@ export const users = pgTable("users", {
   referredBy: integer("referred_by"),
   referralToken: text("referral_token"),
   onboardingCompleted: boolean("onboarding_completed").default(false),
-  stravaAccessToken: text("strava_access_token"),
-  stravaRefreshToken: text("strava_refresh_token"),
-  stravaAthleteId: text("strava_athlete_id"),
-  stravaTokenExpiresAt: timestamp("strava_token_expires_at"),
+
   createdAt: timestamp("created_at").defaultNow(),
 });
 

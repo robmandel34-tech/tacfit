@@ -17,7 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import DirectMessageModal from "@/components/direct-message-modal";
 import FindFriendsModal from "@/components/find-friends-modal";
-import StravaIntegration from "@/components/strava-integration";
+
 import type { User, CompetitionHistory, Activity, TeamMember, Team, Competition, Friendship, MissionTask } from "@shared/schema";
 
 export default function Profile() {
@@ -48,64 +48,8 @@ export default function Profile() {
   const isOwnProfile = !userId || userId === user?.id?.toString();
   const targetUserId = isOwnProfile ? user?.id : parseInt(userId!);
 
-  // Handle Strava connection success/error from URL params
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('strava_success')) {
-      toast({
-        title: "Strava Connected!",
-        description: "Your Strava account has been successfully connected.",
-      });
-      
-      // Refresh Strava status
-      queryClient.invalidateQueries({ queryKey: ["/api/strava/status"] });
-      
-      // Clean up URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-    
-    if (urlParams.get('strava_error')) {
-      const error = urlParams.get('strava_error');
-      const errorDetails = urlParams.get('details');
-      
-      let title = "Strava Connection Failed";
-      let description = "There was an issue connecting to Strava. Please try again.";
-      
-      // Provide specific error messages based on error type
-      switch (error) {
-        case 'domain_not_configured':
-          title = "Domain Configuration Required";
-          description = "This app's domain needs to be added to your Strava app settings. Contact the app administrator.";
-          break;
-        case 'authorization_expired':
-          title = "Authorization Expired";
-          description = "The authorization request has expired. Please try connecting to Strava again.";
-          break;
-        case 'invalid_app_config':
-          title = "App Configuration Error";
-          description = "There's an issue with the Strava app configuration. Contact the app administrator.";
-          break;
-        case 'domain_detection_failed':
-          title = "Connection Error";
-          description = "Unable to determine the correct callback URL. Please try again or contact support.";
-          break;
-        case 'connection_failed':
-        default:
-          title = "Connection Failed";
-          description = "Failed to connect to Strava. Please check your internet connection and try again.";
-          break;
-      }
-      
-      toast({
-        title,
-        description,
-        variant: "destructive",
-      });
-      
-      // Clean up URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-  }, [toast, queryClient]);
+
+
 
   // Get profile user data
   const { data: profileUser } = useQuery<User>({
@@ -1168,8 +1112,7 @@ export default function Profile() {
               </Dialog>
             </div>
 
-            {/* Strava Integration - Only show on own profile */}
-            {isOwnProfile && <StravaIntegration />}
+
 
             {/* Competition History */}
             <Card className="bg-tactical-gray-light border-tactical-gray">

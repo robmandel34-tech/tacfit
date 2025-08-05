@@ -76,10 +76,11 @@ The platform follows a military/tactical theme across its UI/UX, language, and i
 - **RESOLVED**: Database inconsistencies where activities referenced non-existent image files
 - **IMPROVED**: Static file serving configuration maintained for proper image/video delivery
 
-### Strava API Athlete Connection Limit Issue (August 2025)
-- **IDENTIFIED**: Strava "Single Player Mode" limiting new user connections
-- **CURRENT STATUS**: 3 users connected, additional connections blocked by Strava API limits
-- **ROOT CAUSE**: All Strava API applications start with 1-athlete limit, requiring manual approval for increases
-- **SOLUTION**: Must submit Strava Developer Program application for increased athlete capacity (up to 999)
-- **DOCUMENTED**: Created comprehensive guide for requesting Strava athlete limit increase
-- **TEMPORARY WORKAROUND**: Manual user management until approval received
+### Complete Strava Integration Removal (August 2025)
+- **DECISION**: Removed all Strava functionality instead of requesting API limit increase
+- **COMPLETED**: Full removal of Strava OAuth, API routes, components, and database fields
+- **DATABASE**: Removed stravaAccessToken, stravaRefreshToken, stravaAthleteId, stravaTokenExpiresAt fields
+- **BACKEND**: Removed all /api/strava/* routes, OAuth callbacks, and Strava API integrations
+- **FRONTEND**: Removed StravaIntegration component, StravaBadge, and all UI references
+- **ACTIVITY SYSTEM**: Now operates independently without external API dependencies
+- **STATUS**: Application fully functional without Strava integration

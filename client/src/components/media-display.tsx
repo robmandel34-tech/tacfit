@@ -103,19 +103,19 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showVideo, setShowVideo] = useState(false);
 
-  // Sort images to prioritize Strava maps first
+  // Sort images to prioritize maps first
   const sortedImageUrls = React.useMemo(() => {
     if (!imageUrls.length) return [];
     
-    const stravaMapUrls = imageUrls.filter(url => 
+    const mapUrls = imageUrls.filter(url => 
       url.includes('maps.googleapis.com') || url.includes('staticmap')
     );
     const otherUrls = imageUrls.filter(url => 
       !url.includes('maps.googleapis.com') && !url.includes('staticmap')
     );
     
-    // Put Strava maps first, then other images
-    return [...stravaMapUrls, ...otherUrls];
+    // Put maps first, then other images
+    return [...mapUrls, ...otherUrls];
   }, [imageUrls]);
 
   // If we have a video, show it as the main content with image overlay

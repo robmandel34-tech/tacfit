@@ -2847,9 +2847,794 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+
+
+
+
+
+
+
+
   // Health check endpoint for external services
   app.get("/health", (req, res) => {
     res.status(200).send("OK");
+  });
+
+
+
+
+
+
+
+
+        stravaTokenExpiresAt: new Date(tokenData.expires_at * 1000),
+      });
+
+      res.redirect("/?strava_success=true");
+    } catch (error) {
+      console.error("Strava callback error:", error);
+      res.redirect("/?strava_error=callback_failed");
+    }
+  });
+
+  // Strava OAuth callback
+  app.get("/api/strava/callback", async (req, res) => {
+    try {
+      console.log("=== STRAVA CALLBACK HIT ===");
+      console.log("Query params:", req.query);
+      const { code, state, error } = req.query;
+
+      if (error) {
+        console.error("Strava OAuth error:", error);
+        return res.redirect(`/?strava_error=${encodeURIComponent(error as string)}`);
+      }
+
+      if (!code || !state) {
+        console.error("Missing code or state in Strava callback");
+        return res.redirect("/?strava_error=missing_parameters");
+      }
+
+      const userId = parseInt(state as string);
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.redirect("/?strava_error=invalid_user");
+      }
+
+      // Use the same enhanced domain detection logic as auth URL generation  
+      let redirectUri;
+      const host = req.get('host');
+      const xForwardedHost = req.get('x-forwarded-host');
+      const origin = req.get('origin');
+      
+      console.log('API Callback domain detection debug:', {
+        host,
+        xForwardedHost,
+        origin,
+        replitDomains: process.env.REPLIT_DOMAINS
+      });
+      
+      // Priority order: environment variable, x-forwarded-host, origin, host
+      if (process.env.REPLIT_DOMAINS) {
+        redirectUri = `https://${process.env.REPLIT_DOMAINS}/callback`;
+      } else if (xForwardedHost) {
+        redirectUri = `https://${xForwardedHost}/callback`;
+      } else if (origin && origin.startsWith('https://')) {
+        const originHost = new URL(origin).hostname;
+        redirectUri = `https://${originHost}/callback`;
+      } else if (host) {
+        const protocol = (host.includes('replit.app') || host.includes('replit.dev')) ? 'https' : 'https';
+        redirectUri = `${protocol}://${host}/callback`;
+      } else {
+        console.error('Could not determine domain for API callback redirect URI');
+        return res.redirect("/?strava_error=domain_detection_failed");
+      }
+
+      // Exchange authorization code for access token
+      const tokenResponse = await fetch("https://www.strava.com/oauth/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          client_id: process.env.STRAVA_CLIENT_ID,
+          client_secret: process.env.STRAVA_CLIENT_SECRET,
+          code,
+          grant_type: "authorization_code",
+          redirect_uri: redirectUri,
+        }),
+      });
+
+      if (!tokenResponse.ok) {
+        const errorText = await tokenResponse.text();
+        console.error("Strava token exchange failed:", tokenResponse.status, errorText);
+        return res.redirect(`/?strava_error=token_exchange_failed&details=${encodeURIComponent(errorText)}`);
+      }
+
+      const tokenData = await tokenResponse.json();
+      
+      // Update user with Strava tokens
+      await storage.updateUser(userId, {
+        stravaAccessToken: tokenData.access_token,
+        stravaRefreshToken: tokenData.refresh_token,
+        stravaAthleteId: tokenData.athlete?.id?.toString(),
+        stravaTokenExpiresAt: new Date(tokenData.expires_at * 1000),
+      });
+
+      res.redirect("/?strava_success=true");
+    } catch (error) {
+      console.error("Strava callback error:", error);
+      res.redirect("/?strava_error=callback_failed");
+    }
+  });
+
+  // Streamlined Strava OAuth - generate auth URL for one-click flow
+  app.get("/api/strava/auth-url", async (req: any, res) => {
+    try {
+      const { userId } = req.query;
+      
+      console.log("Strava auth URL request for user:", userId);
+      
+      if (!userId) {
+        console.error("Missing userId in Strava auth request");
+        return res.status(400).json({ message: "User ID is required" });
+      }
+
+      const clientId = process.env.STRAVA_CLIENT_ID;
+      if (!clientId) {
+        console.error("STRAVA_CLIENT_ID not configured");
+        return res.status(500).json({ message: "Strava client ID not configured" });
+      }
+
+      // Verify user exists
+      const user = await storage.getUser(parseInt(userId));
+      if (!user) {
+        console.error("User not found for Strava auth:", userId);
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Use pre-configured redirect URI that matches Strava app settings
+      // For development/testing, use the original domain; for production, user needs to update Strava settings
+      const host = req.get('host');
+      let redirectUri;
+      
+      // Check if this is a production deployment
+      if (host && host.includes('.replit.app')) {
+        // For Replit deployments, user needs to configure their Strava app with the deployed domain
+        redirectUri = `https://${host}/callback`;
+      } else {
+        // For development, use the original configured domain
+        redirectUri = `https://52c3692b-e3ae-4f26-87b1-b5a765544cd7-00-3bw69stdxgu5x.worf.replit.dev/callback`;
+      }
+
+      console.log("Request headers:", {
+        host: req.get('host'),
+        'x-forwarded-host': req.get('x-forwarded-host'),
+        'x-replit-domain': req.get('x-replit-domain'),
+        origin: req.get('origin'),
+        referer: req.get('referer')
+      });
+
+      const authUrl = `https://www.strava.com/oauth/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&approval_prompt=force&scope=read,activity:read_all&state=${userId}`;
+      
+      console.log("Generated streamlined auth URL:", authUrl);
+      console.log("Redirect URI being used:", redirectUri);
+      console.log("Client ID being used:", clientId);
+      
+      res.json({ authUrl });
+    } catch (error) {
+      console.error("Strava auth URL error:", error);
+      res.status(500).json({ message: "Error generating Strava auth URL" });
+    }
+  });
+
+  // Manual code exchange for Strava
+  app.post("/api/strava/exchange-code", async (req: any, res) => {
+    try {
+      const { userId, code } = req.body;
+      
+      if (!userId || !code) {
+        return res.status(400).json({ message: "User ID and authorization code are required" });
+      }
+
+      const user = await storage.getUser(parseInt(userId));
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Use the same enhanced domain detection logic as auth URL generation
+      let redirectUri;
+      const host = req.get('host');
+      const xForwardedHost = req.get('x-forwarded-host');
+      const origin = req.get('origin');
+      
+      console.log('Exchange code domain detection debug:', {
+        host,
+        xForwardedHost,
+        origin,
+        replitDomains: process.env.REPLIT_DOMAINS
+      });
+      
+      // Priority order: environment variable, x-forwarded-host, origin, host
+      if (process.env.REPLIT_DOMAINS) {
+        redirectUri = `https://${process.env.REPLIT_DOMAINS}/callback`;
+      } else if (xForwardedHost) {
+        redirectUri = `https://${xForwardedHost}/callback`;
+      } else if (origin && origin.startsWith('https://')) {
+        const originHost = new URL(origin).hostname;
+        redirectUri = `https://${originHost}/callback`;
+      } else if (host) {
+        const protocol = (host.includes('replit.app') || host.includes('replit.dev')) ? 'https' : 'https';
+        redirectUri = `${protocol}://${host}/callback`;
+      } else {
+        console.error('Could not determine domain for exchange code redirect URI');
+        return res.status(500).json({ message: "Could not determine domain for Strava callback" });
+      }
+
+      console.log("Using redirect URI for token exchange:", redirectUri);
+      console.log("Authorization code received:", code);
+
+      // Exchange authorization code for access token
+      const tokenResponse = await fetch("https://www.strava.com/oauth/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          client_id: process.env.STRAVA_CLIENT_ID,
+          client_secret: process.env.STRAVA_CLIENT_SECRET,
+          code,
+          grant_type: "authorization_code",
+          redirect_uri: redirectUri, // Must match the auth URL
+        }),
+      });
+
+      if (!tokenResponse.ok) {
+        const errorText = await tokenResponse.text();
+        console.error("Strava token exchange failed:", tokenResponse.status, errorText);
+        return res.status(400).json({ 
+          message: "Invalid authorization code", 
+          details: errorText 
+        });
+      }
+
+      const tokenData = await tokenResponse.json();
+      
+      // Update user with Strava tokens
+      await storage.updateUser(parseInt(userId), {
+        stravaAccessToken: tokenData.access_token,
+        stravaRefreshToken: tokenData.refresh_token,
+        stravaAthleteId: tokenData.athlete?.id?.toString(),
+        stravaTokenExpiresAt: new Date(tokenData.expires_at * 1000),
+      });
+
+      res.json({ 
+        success: true, 
+        athleteId: tokenData.athlete?.id,
+        message: "Successfully connected to Strava!" 
+      });
+    } catch (error) {
+      console.error("Strava code exchange error:", error);
+      res.status(500).json({ message: "Failed to connect to Strava" });
+    }
+  });
+
+  // Get user's Strava connection status
+  app.get("/api/strava/status", async (req: any, res) => {
+    try {
+      const userId = req.query.userId;
+      if (!userId) {
+        return res.status(400).json({ message: "User ID required" });
+      }
+
+      const user = await storage.getUser(parseInt(userId));
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const isConnected = !!(user.stravaAccessToken && user.stravaAthleteId);
+      
+      if (!isConnected) {
+        return res.json({
+          isConnected: false,
+          athleteId: null,
+          tokenExpired: true,
+          expiresAt: null,
+        });
+      }
+
+      // Check if token is expired and refresh if needed
+      let tokenExpired = user.stravaTokenExpiresAt ? new Date() > user.stravaTokenExpiresAt : true;
+      let updatedUser = user;
+
+      if (tokenExpired && user.stravaRefreshToken) {
+        console.log(`Refreshing expired Strava token for user ${userId}`);
+        
+        try {
+          const refreshResponse = await fetch("https://www.strava.com/oauth/token", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              client_id: process.env.STRAVA_CLIENT_ID,
+              client_secret: process.env.STRAVA_CLIENT_SECRET,
+              refresh_token: user.stravaRefreshToken,
+              grant_type: "refresh_token",
+            }),
+          });
+
+          if (refreshResponse.ok) {
+            const refreshData = await refreshResponse.json();
+            
+            updatedUser = await storage.updateUser(user.id, {
+              stravaAccessToken: refreshData.access_token,
+              stravaRefreshToken: refreshData.refresh_token,
+              stravaTokenExpiresAt: new Date(refreshData.expires_at * 1000),
+            });
+            
+            tokenExpired = false;
+            console.log(`Successfully refreshed Strava token for user ${userId}`);
+          } else {
+            console.error(`Token refresh failed for user ${userId}:`, await refreshResponse.text());
+            // Token refresh failed, user needs to reconnect
+            tokenExpired = true;
+          }
+        } catch (error) {
+          console.error(`Token refresh error for user ${userId}:`, error);
+          tokenExpired = true;
+        }
+      }
+
+      res.json({
+        isConnected: true,
+        athleteId: updatedUser?.stravaAthleteId || user.stravaAthleteId,
+        tokenExpired,
+        expiresAt: updatedUser?.stravaTokenExpiresAt || user.stravaTokenExpiresAt,
+      });
+    } catch (error) {
+      console.error("Strava status error:", error);
+      res.status(500).json({ message: "Error checking Strava status" });
+    }
+  });
+
+  // Disconnect Strava account
+  app.post("/api/strava/disconnect", async (req: any, res) => {
+    try {
+      const { userId } = req.body;
+      if (!userId) {
+        return res.status(400).json({ message: "User ID required" });
+      }
+
+      await storage.updateUser(parseInt(userId), {
+        stravaAccessToken: null,
+        stravaRefreshToken: null,
+        stravaAthleteId: null,
+        stravaTokenExpiresAt: null,
+      });
+
+      res.json({ message: "Strava account disconnected successfully" });
+    } catch (error) {
+      console.error("Strava disconnect error:", error);
+      res.status(500).json({ message: "Error disconnecting Strava account" });
+    }
+  });
+
+  // Sync Strava activities for authenticated user
+  app.post("/api/strava/sync", async (req: any, res) => {
+    try {
+      const { userId } = req.body;
+      if (!userId) {
+        return res.status(400).json({ message: "User ID required" });
+      }
+
+      const user = await storage.getUser(parseInt(userId));
+      if (!user || !user.stravaAccessToken) {
+        return res.status(400).json({ message: "Strava not connected" });
+      }
+
+      // Check if user is in a competition
+      const teamMemberships = await storage.getTeamMembersByUser(user.id);
+      if (teamMemberships.length === 0) {
+        return res.status(400).json({ message: "Must be in a competition to sync activities" });
+      }
+
+      const membership = teamMemberships[0];
+      const team = await storage.getTeam(membership.teamId!);
+      if (!team) {
+        return res.status(400).json({ message: "Team not found" });
+      }
+
+      // Refresh token if needed
+      let accessToken = user.stravaAccessToken;
+      if (user.stravaTokenExpiresAt && new Date() > user.stravaTokenExpiresAt) {
+        const refreshResponse = await fetch("https://www.strava.com/oauth/token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            client_id: process.env.STRAVA_CLIENT_ID,
+            client_secret: process.env.STRAVA_CLIENT_SECRET,
+            refresh_token: user.stravaRefreshToken,
+            grant_type: "refresh_token",
+          }),
+        });
+
+        if (refreshResponse.ok) {
+          const refreshData = await refreshResponse.json();
+          accessToken = refreshData.access_token;
+          
+          await storage.updateUser(user.id, {
+            stravaAccessToken: accessToken,
+            stravaRefreshToken: refreshData.refresh_token,
+            stravaTokenExpiresAt: new Date(refreshData.expires_at * 1000),
+          });
+        } else {
+          return res.status(400).json({ message: "Strava token refresh failed" });
+        }
+      }
+
+      // Get activities from last 18 months (548 days)
+      const eighteenMonthsAgo = Math.floor((Date.now() - 548 * 24 * 60 * 60 * 1000) / 1000);
+      console.log(`Fetching Strava activities since ${new Date(eighteenMonthsAgo * 1000).toISOString()}`);
+      
+      // Fetch activities in batches (Strava limits to 200 per request)
+      let allActivities = [];
+      let page = 1;
+      const perPage = 200;
+      
+      while (true) {
+        const activitiesResponse = await fetch(
+          `https://www.strava.com/api/v3/athlete/activities?after=${eighteenMonthsAgo}&per_page=${perPage}&page=${page}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+
+        if (!activitiesResponse.ok) {
+          return res.status(400).json({ message: "Failed to fetch Strava activities" });
+        }
+
+        const pageActivities = await activitiesResponse.json();
+        
+        // If we get less than perPage activities, we've reached the end
+        if (pageActivities.length === 0) {
+          break;
+        }
+        
+        allActivities.push(...pageActivities);
+        
+        // If we got less than perPage, this is the last page
+        if (pageActivities.length < perPage) {
+          break;
+        }
+        
+        page++;
+        console.log(`Fetched page ${page - 1}, total activities so far: ${allActivities.length}`);
+        
+        // Prevent infinite loops and respect Strava rate limits
+        if (page > 50) {
+          console.log(`Stopping after 50 pages to respect rate limits`);
+          break;
+        }
+      }
+
+      console.log(`Total Strava activities fetched: ${allActivities.length}`);
+
+      const stravaActivities = allActivities;
+      const syncedActivities = [];
+
+      // Map Strava activities to TacFit activity types
+      for (const stravaActivity of stravaActivities) {
+        let tacfitType = null;
+        let quantity = null;
+
+        // Map Strava activity types to TacFit types
+        const activityType = stravaActivity.type?.toLowerCase().replace(/\s+/g, '_');
+        
+        // Create mapping from Strava types to TacFit activity types
+        const stravaToTacfitMapping: { [key: string]: { type: string; unit: string } } = {
+          // Running activities
+          'run': { type: 'run', unit: 'minutes' },
+          'trailrun': { type: 'trail_run', unit: 'minutes' },
+          'virtualrun': { type: 'virtual_run', unit: 'minutes' },
+          'walk': { type: 'walk', unit: 'minutes' },
+          'hike': { type: 'hike', unit: 'minutes' },
+          'wheelchair': { type: 'wheelchair', unit: 'minutes' },
+          
+          // Cycling activities
+          'ride': { type: 'ride', unit: 'minutes' },
+          'mountainbikeride': { type: 'mountain_bike_ride', unit: 'minutes' },
+          'gravelride': { type: 'gravel_ride', unit: 'minutes' },
+          'ebikeride': { type: 'e_bike_ride', unit: 'minutes' },
+          'emountainbikeride': { type: 'e_mountain_bike_ride', unit: 'minutes' },
+          'virtualride': { type: 'virtual_ride', unit: 'minutes' },
+          'handcycle': { type: 'handcycle', unit: 'minutes' },
+          'velomobile': { type: 'velomobile', unit: 'minutes' },
+          
+          // Water sports
+          'swim': { type: 'swim', unit: 'minutes' },
+          'canoe': { type: 'canoe', unit: 'minutes' },
+          'kayaking': { type: 'kayak', unit: 'minutes' },
+          'kitesurf': { type: 'kitesurf', unit: 'minutes' },
+          'rowing': { type: 'rowing', unit: 'minutes' },
+          'standuppaddling': { type: 'stand_up_paddling', unit: 'minutes' },
+          'surf': { type: 'surf', unit: 'minutes' },
+          'windsurf': { type: 'windsurf', unit: 'minutes' },
+          'sail': { type: 'sail', unit: 'minutes' },
+          
+          // Winter sports
+          'iceskate': { type: 'ice_skate', unit: 'minutes' },
+          'alpinesky': { type: 'alpine_ski', unit: 'minutes' },
+          'backcountryski': { type: 'backcountry_ski', unit: 'minutes' },
+          'nordicski': { type: 'nordic_ski', unit: 'minutes' },
+          'snowboard': { type: 'snowboard', unit: 'minutes' },
+          'snowshoe': { type: 'snowshoe', unit: 'minutes' },
+          'rollerski': { type: 'roller_ski', unit: 'minutes' },
+          
+          // Gym/indoor activities
+          'crossfit': { type: 'crossfit', unit: 'reps' },
+          'elliptical': { type: 'elliptical', unit: 'minutes' },
+          'stairstepper': { type: 'stair_stepper', unit: 'minutes' },
+          'weighttraining': { type: 'weight_training', unit: 'reps' },
+          'yoga': { type: 'yoga', unit: 'minutes' },
+          'workout': { type: 'workout', unit: 'minutes' },
+          
+          // Other sports
+          'inlineskate': { type: 'inline_skate', unit: 'minutes' },
+          'rockclimbing': { type: 'rock_climb', unit: 'minutes' },
+          'golf': { type: 'golf', unit: 'minutes' },
+          'skateboard': { type: 'skateboard', unit: 'minutes' },
+          'soccer': { type: 'football', unit: 'minutes' },
+          'football': { type: 'football', unit: 'minutes' },
+          'badminton': { type: 'badminton', unit: 'minutes' },
+          'tennis': { type: 'tennis', unit: 'minutes' },
+          'pickleball': { type: 'pickleball', unit: 'minutes' },
+        };
+        
+        const mapping = stravaToTacfitMapping[activityType];
+        if (mapping) {
+          tacfitType = mapping.type;
+          
+          if (mapping.unit === 'minutes') {
+            quantity = Math.round(stravaActivity.moving_time / 60).toString(); // Convert seconds to minutes
+          } else if (mapping.unit === 'reps') {
+            // For strength/reps activities, estimate reps based on duration (rough approximation)
+            quantity = Math.round(stravaActivity.moving_time / 30).toString(); // ~2 seconds per rep
+          } else {
+            quantity = Math.round(stravaActivity.moving_time / 60).toString(); // Default to minutes
+          }
+        }
+
+        if (tacfitType) {
+          // Store activity info for potential manual submission (don't auto-create)
+          syncedActivities.push({
+            id: stravaActivity.id,
+            name: stravaActivity.name,
+            type: tacfitType.displayName,
+            quantity,
+            date: stravaActivity.start_date,
+            duration: stravaActivity.moving_time,
+            distance: stravaActivity.distance,
+            stravaId: stravaActivity.id,
+          });
+
+          console.log(`Found Strava activity: ${stravaActivity.name} (${tacfitType.displayName}, ${quantity} ${tacfitType.measurementUnit})`);
+        }
+      }
+
+      res.json({
+        message: `Found ${syncedActivities.length} Strava activities available for manual submission`,
+        availableCount: syncedActivities.length,
+        activities: syncedActivities,
+      });
+    } catch (error) {
+      console.error("Strava sync error:", error);
+      res.status(500).json({ message: "Error syncing Strava activities" });
+    }
+  });
+
+  // Get recent Strava activities for activity selection
+  app.get("/api/strava/recent-activities", async (req: any, res) => {
+    try {
+      const userId = req.query.userId;
+      if (!userId) {
+        return res.status(400).json({ message: "User ID required" });
+      }
+
+      const user = await storage.getUser(parseInt(userId));
+      if (!user || !user.stravaAccessToken) {
+        return res.status(400).json({ message: "Strava not connected" });
+      }
+
+      console.log(`Fetching Strava recent activities for user ${userId}, token exists: ${!!user.stravaAccessToken}`);
+
+      // Check if user is in a competition team
+      const userTeamMembers = await storage.getTeamMembersByUser(user.id);
+      if (!userTeamMembers || userTeamMembers.length === 0) {
+        console.log(`User ${userId} not in any team, returning empty activities`);
+        return res.json([]);
+      }
+
+      // Refresh token if needed
+      let accessToken = user.stravaAccessToken;
+      if (user.stravaTokenExpiresAt && new Date() > user.stravaTokenExpiresAt) {
+        const refreshResponse = await fetch("https://www.strava.com/oauth/token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            client_id: process.env.STRAVA_CLIENT_ID,
+            client_secret: process.env.STRAVA_CLIENT_SECRET,
+            refresh_token: user.stravaRefreshToken,
+            grant_type: "refresh_token",
+          }),
+        });
+
+        if (refreshResponse.ok) {
+          const refreshData = await refreshResponse.json();
+          accessToken = refreshData.access_token;
+          
+          await storage.updateUser(user.id, {
+            stravaAccessToken: accessToken,
+            stravaRefreshToken: refreshData.refresh_token,
+            stravaTokenExpiresAt: new Date(refreshData.expires_at * 1000),
+          });
+        } else {
+          return res.status(400).json({ message: "Strava token refresh failed" });
+        }
+      }
+
+      // Get activities from last 18 months for selection (same as sync)
+      const eighteenMonthsAgo = Math.floor((Date.now() - 548 * 24 * 60 * 60 * 1000) / 1000);
+      const activitiesResponse = await fetch(
+        `https://www.strava.com/api/v3/athlete/activities?after=${eighteenMonthsAgo}&per_page=50`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      if (!activitiesResponse.ok) {
+        return res.status(400).json({ message: "Failed to fetch Strava activities" });
+      }
+
+      const stravaActivities = await activitiesResponse.json();
+      console.log(`Fetched ${stravaActivities.length} raw activities from Strava API`);
+      
+      // Get available activity types from database first
+      const availableActivityTypes = await storage.getActivityTypes();
+      console.log(`Found ${availableActivityTypes.length} activity types in database`);
+      console.log('Available activity types:', availableActivityTypes.map(at => `${at.name} -> ${at.displayName}`));
+      
+      // Map activities with TacFit types and quantities, fetching detailed data for GPS activities
+      const mappedActivities = await Promise.all(stravaActivities.map(async (activity: any) => {
+        const activityType = activity.type?.toLowerCase().replace(/\s+/g, '');
+        console.log(`Processing Strava activity: ${activity.name} (type: "${activity.type}" -> "${activityType}")`);
+        
+        // Create mapping from Strava types to TacFit activity types (using correct database display names)
+        const stravaToTacfitMapping: { [key: string]: string } = {
+          // Map to Cardio Training (the actual display name in DB)
+          'run': 'Cardio Training',
+          'trailrun': 'Cardio Training', 
+          'virtualrun': 'Cardio Training',
+          'walk': 'Cardio Training',
+          'hike': 'Cardio Training',
+          'ride': 'Cardio Training',
+          'mountainbikeride': 'Cardio Training',
+          'gravelride': 'Cardio Training',
+          'ebikeride': 'Cardio Training',
+          'virtualride': 'Cardio Training',
+          'swim': 'Cardio Training',
+          'rowing': 'Cardio Training',
+          'elliptical': 'Cardio Training',
+          
+          // Map to Strength Training (the actual display name in DB)
+          'weighttraining': 'Strength Training',
+          'crossfit': 'Strength Training',
+          'workout': 'Strength Training',
+          
+          // Map to Mobility Training (the actual display name in DB)
+          'yoga': 'Mobility Training',
+          'meditation': 'Meditation',
+          'mindfulness': 'Mindfulness',
+        };
+        
+        console.log(`Looking for mapping for "${activityType}" in`, Object.keys(stravaToTacfitMapping));
+        
+        const mappedTypeName = stravaToTacfitMapping[activityType];
+        let mappedType = null;
+        let mappedQuantity = null;
+        
+        console.log(`Mapped type name: "${mappedTypeName}" for activity type "${activityType}"`);
+        
+        if (mappedTypeName) {
+          // Find the actual activity type from database
+          const dbActivityType = availableActivityTypes.find(at => at.displayName === mappedTypeName);
+          console.log(`Found DB activity type:`, dbActivityType ? `${dbActivityType.displayName} (${dbActivityType.measurementUnit})` : 'none');
+          
+          if (dbActivityType) {
+            mappedType = dbActivityType;
+            
+            if (dbActivityType.measurementUnit === 'minutes') {
+              mappedQuantity = Math.round(activity.moving_time / 60); // Convert seconds to minutes
+            } else if (dbActivityType.measurementUnit === 'reps') {
+              // For strength/reps activities, estimate reps based on duration (rough approximation)
+              mappedQuantity = Math.round(activity.moving_time / 30); // ~2 seconds per rep
+            } else {
+              mappedQuantity = Math.round(activity.moving_time / 60); // Default to minutes
+            }
+          }
+        } else {
+          console.log(`No mapping found for Strava type "${activityType}"`);
+        }
+        
+        // For GPS-enabled activities, fetch detailed data to get polyline
+        let detailedActivity = activity;
+        if (activity.distance && activity.distance > 0) {
+          try {
+            console.log(`Fetching detailed data for GPS activity: ${activity.name}`);
+            const detailResponse = await fetch(`https://www.strava.com/api/v3/activities/${activity.id}`, {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+            });
+            
+            if (detailResponse.ok) {
+              detailedActivity = await detailResponse.json();
+              console.log(`Activity ${activity.name} detailed map data:`, detailedActivity.map);
+            }
+          } catch (error) {
+            console.log(`Failed to fetch detailed data for activity ${activity.id}:`, error);
+          }
+        }
+        
+        // Check for valid polyline data (try both summary_polyline and polyline)
+        const summaryPolyline = detailedActivity.map?.summary_polyline;
+        const fullPolyline = detailedActivity.map?.polyline;
+        const polylineToUse = (summaryPolyline && summaryPolyline.length > 0) ? summaryPolyline : 
+                             (fullPolyline && fullPolyline.length > 0) ? fullPolyline : null;
+        const hasValidPolyline = !!polylineToUse;
+        console.log(`Activity ${activity.name} valid polyline: ${hasValidPolyline} (using ${summaryPolyline ? 'summary' : fullPolyline ? 'full' : 'none'})`);
+        console.log(`Environment GOOGLE_MAPS_API_KEY: ${process.env.GOOGLE_MAPS_API_KEY ? 'EXISTS' : 'MISSING'}`);
+        
+        return {
+          id: activity.id,
+          name: activity.name,
+          type: activity.type,
+          start_date: activity.start_date,
+          moving_time: activity.moving_time,
+          distance: activity.distance,
+          mappedType: mappedType?.displayName,
+          mappedTypeId: mappedType?.id,
+          mappedQuantity,
+          mappedUnit: mappedType?.measurementUnit,
+          formattedDate: new Date(activity.start_date).toLocaleDateString(),
+          polyline: polylineToUse, // Include polyline for frontend map generation
+          mapImageUrl: hasValidPolyline ? 
+            `https://maps.googleapis.com/maps/api/staticmap?size=600x400&path=enc:${polylineToUse}&maptype=satellite&key=${process.env.GOOGLE_MAPS_API_KEY || 'demo'}` : 
+            null,
+        };
+      }));
+      
+      // Filter to only return activities that can be mapped
+      const filteredActivities = mappedActivities.filter((activity: any) => activity.mappedType);
+
+      console.log(`Returning ${filteredActivities.length} mapped Strava activities for user ${userId}`);
+      res.json(filteredActivities);
+    } catch (error) {
+      console.error("Strava recent activities error:", error);
+      res.status(500).json({ message: "Error fetching recent Strava activities" });
+    }
+  });
+
+  // Debug endpoint to check environment variables
+  app.get("/api/debug/env", (req, res) => {
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+    console.log(`Debug endpoint - GOOGLE_MAPS_API_KEY: ${apiKey ? 'EXISTS' : 'MISSING'}`);
+    res.json({ 
+      hasApiKey: !!apiKey,
+      apiKeyPrefix: apiKey ? apiKey.substring(0, 10) + '...' : 'MISSING'
+    });
   });
 
   // Mood logging routes

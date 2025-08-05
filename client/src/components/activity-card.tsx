@@ -11,7 +11,7 @@ import { useState } from "react";
 import ActivityCommentsModal from "./activity-comments-modal";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { StravaBadge } from "@/components/strava-badge";
+
 import { MediaDisplay } from "@/components/media-display";
 
 interface ActivityCardProps {
@@ -21,12 +21,12 @@ interface ActivityCardProps {
     description: string;
     quantity?: string;
     evidenceUrl?: string;
-    evidenceType?: string; // Add evidence type field (strava_import, video, photo, etc.)
+    evidenceType?: string; // Add evidence type field (video, photo, etc.)
     imageUrl?: string;
     imageUrls?: string[]; // New field for multiple images
     points?: number;
     createdAt: string;
-    stravaActivityId?: string; // Add Strava ID field
+
     user: {
       id: number;
       username: string;
@@ -143,62 +143,9 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
     return videoExtensions.some(ext => url.toLowerCase().includes(ext));
   };
 
-  const isStravaActivity = () => {
-    // Primary check: stravaActivityId field
-    if (activity.stravaActivityId) {
-      return true;
-    }
-    
-    // Check evidence type for Strava imports
-    if (activity.evidenceType === 'strava_import') {
-      return true;
-    }
-    
-    // Secondary checks: description patterns (case-insensitive)
-    if (activity.description) {
-      const description = activity.description.toLowerCase();
-      const hasStravaText = description.includes('strava id:');
-      const hasStravaUrl = description.includes('strava.com/activities/');
-      const hasImportedText = description.includes('imported from strava');
-      
-      if (hasStravaText || hasStravaUrl || hasImportedText) {
-        return true;
-      }
-    }
-    
-    // Additional check: if imageUrls contains Google Maps route
-    if (activity.imageUrls && Array.isArray(activity.imageUrls)) {
-      const hasGoogleMapsRoute = activity.imageUrls.some(url => 
-        url.includes('maps.googleapis.com') || url.includes('google.com/maps')
-      );
-      if (hasGoogleMapsRoute) {
-        return true;
-      }
-    }
-    
-    // Fallback: check if evidenceUrl is a Google Maps route
-    if (activity.evidenceUrl && (
-      activity.evidenceUrl.includes('maps.googleapis.com') || 
-      activity.evidenceUrl.includes('google.com/maps')
-    )) {
-      return true;
-    }
-    
-    return false;
-  };
 
-  const getCleanDescription = () => {
-    if (!activity.description) return '';
-    
-    // Remove Strava-related text patterns
-    let cleanDescription = activity.description
-      .replace(/\s*-\s*Imported from Strava.*$/i, '')
-      .replace(/\s*\(Strava ID:.*?\).*$/i, '')
-      .replace(/\s*https:\/\/www\.strava\.com\/activities\/\d+.*$/i, '')
-      .trim();
-    
-    return cleanDescription;
-  };
+
+
 
   const likeActivity = useMutation({
     mutationFn: async (activityId: number) => {
@@ -339,9 +286,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
                 <Badge variant="outline" className="text-xs border-gray-600 text-gray-300 whitespace-nowrap">
                   {getActivityIcon(activity.type)} {getActivityTypeDisplayName(activity.type)}
                 </Badge>
-                {isStravaActivity() && (
-                  <StravaBadge size="sm" />
-                )}
+
               </div>
               <p className="text-gray-300 text-sm">
                 {activity.quantity && (
@@ -349,8 +294,8 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
                     {activity.quantity} {getActivityMeasurement(activity.type)}
                   </span>
                 )}
-                {activity.quantity && getCleanDescription() && ' - '}
-                {getCleanDescription()}
+                {activity.quantity && activity.description && ' - '}
+                {activity.description}
               </p>
               {activity.competition && (
                 <p className="text-xs text-military-green mt-1 flex items-center gap-1">

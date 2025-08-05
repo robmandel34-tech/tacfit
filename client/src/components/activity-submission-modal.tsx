@@ -7,10 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Camera, X, Activity, Clock, MapPin, Zap, Calendar } from "lucide-react";
+import { Camera, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
 
 interface ActivitySubmissionModalProps {
   isOpen: boolean;
@@ -26,8 +25,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   const [quantity, setQuantity] = useState("");
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [selectedStravaActivity, setSelectedStravaActivity] = useState<any>(null);
-  const [showStravaActivities, setShowStravaActivities] = useState(false);
+
 
   // Get user's current team membership
   const { data: userTeamMember } = useQuery({
@@ -65,12 +63,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     ? Math.ceil((new Date(competition.startDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24))
     : 0;
 
-  // Get recent Strava activities if user is connected
-  const { data: stravaActivities, isLoading: stravaLoading } = useQuery({
-    queryKey: ["/api/strava/recent-activities", user?.id],
-    queryFn: () => fetch(`/api/strava/recent-activities?userId=${user?.id}`).then(res => res.json()),
-    enabled: !!user && showStravaActivities,
-  });
+
 
   const submitActivity = useMutation({
     mutationFn: async (data: FormData) => {
@@ -128,17 +121,9 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     setQuantity("");
     setImageFiles([]);
     setVideoFile(null);
-    setSelectedStravaActivity(null);
-    setShowStravaActivities(false);
   };
 
-  const handleStravaActivitySelect = (stravaActivity: any) => {
-    setSelectedStravaActivity(stravaActivity);
-    setType(stravaActivity.mappedType || "");
-    setDescription(stravaActivity.name);
-    setQuantity(stravaActivity.mappedQuantity?.toString() || "");
-    setShowStravaActivities(false);
-  };
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -161,17 +146,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     formData.append("description", description);
     formData.append("quantity", quantity);
     
-    // Include Strava activity ID and map image if selected from Strava
-    if (selectedStravaActivity) {
-      formData.append("stravaActivityId", selectedStravaActivity.id.toString());
-      if (selectedStravaActivity.mapImageUrl) {
-        formData.append("mapImageUrl", selectedStravaActivity.mapImageUrl);
-      }
-      // Add polyline data for map generation
-      if (selectedStravaActivity.polyline) {
-        formData.append("stravaPolyline", selectedStravaActivity.polyline);
-      }
-    }
+
     
     if (videoFile) {
       formData.append("evidence", videoFile);
@@ -265,112 +240,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
         <div className="max-h-[70vh] overflow-y-auto pr-2">
           <form id="activity-form" onSubmit={handleSubmit} className="space-y-4">
             
-            {/* Strava Integration Section */}
-            <div className="border-2 border-dashed border-tactical-gray rounded-lg p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Activity className="h-5 w-5 text-orange-500" />
-                  <span className="text-gray-300 font-medium">Import from Strava</span>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowStravaActivities(!showStravaActivities)}
-                  disabled={!competitionHasStarted}
-                  className="text-orange-500 border-orange-500 hover:bg-orange-500/10 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Zap className="h-4 w-4 mr-1" />
-                  {!competitionHasStarted ? "Not Available" : showStravaActivities ? "Hide" : "Load"} Recent Activities
-                </Button>
-              </div>
-              
-              {selectedStravaActivity && (
-                <div className="mb-3 p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-sm font-medium text-orange-100">Selected from Strava:</div>
-                      <div className="text-xs text-orange-200">{selectedStravaActivity.name}</div>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setSelectedStravaActivity(null)}
-                      className="text-orange-400 hover:text-orange-300"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-              
-              {showStravaActivities && (
-                <div className="space-y-2">
-                  {stravaLoading ? (
-                    <div className="flex items-center justify-center py-4">
-                      <div className="animate-spin w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full" />
-                      <span className="ml-2 text-sm text-gray-400">Loading Strava activities...</span>
-                    </div>
-                  ) : stravaActivities && stravaActivities.length > 0 ? (
-                    <div className="max-h-48 overflow-y-auto space-y-3">
-                      {stravaActivities.map((activity: any) => (
-                        <Card 
-                          key={activity.id} 
-                          className={`cursor-pointer transition-all duration-200 p-3 ${
-                            activity.mapImageUrl 
-                              ? 'border-orange-500/50 bg-orange-500/5 hover:border-orange-500 hover:bg-orange-500/10' 
-                              : 'border-tactical-gray hover:border-orange-500/30'
-                          }`}
-                          onClick={() => handleStravaActivitySelect(activity)}
-                        >
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-2">
-                                <div className="text-sm font-medium text-white truncate">{activity.name}</div>
-                                {activity.mapImageUrl && (
-                                  <div className="flex items-center gap-1 text-xs text-orange-400 bg-orange-500/20 px-2 py-1 rounded-full">
-                                    <MapPin className="h-3 w-3" />
-                                    Route
-                                  </div>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-3 text-xs text-gray-400">
-                                <span className="flex items-center gap-1">
-                                  <Activity className="h-3 w-3" />
-                                  {activity.type}
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <Clock className="h-3 w-3" />
-                                  {Math.round(activity.moving_time / 60)} min
-                                </span>
-                                {activity.distance && (
-                                  <span className="flex items-center gap-1">
-                                    <MapPin className="h-3 w-3" />
-                                    {(activity.distance / 1000).toFixed(1)} km
-                                  </span>
-                                )}
-                                <span className="flex items-center gap-1">
-                                  <Calendar className="h-3 w-3" />
-                                  {activity.formattedDate}
-                                </span>
-                              </div>
-                            </div>
-                            <Badge variant="secondary" className="text-xs ml-2 shrink-0">
-                              {activity.mappedType}
-                            </Badge>
-                          </div>
-                        </Card>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-4 text-gray-400 text-sm">
-                      No recent Strava activities found or Strava not connected
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+
             
             <div>
             <Label className="text-gray-300 font-medium mb-2">Activity Type</Label>

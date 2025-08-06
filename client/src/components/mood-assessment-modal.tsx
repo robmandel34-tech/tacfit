@@ -64,27 +64,26 @@ export function MoodAssessmentModal({ isOpen, onClose, userId }: MoodAssessmentM
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg sharp-card max-h-[90vh] overflow-y-auto bg-tactical-gray-light border-tactical-gray">
-        <DialogHeader className="text-center space-y-4">
-          <div className="mx-auto w-16 h-16 bg-military-green/20 rounded-full flex items-center justify-center">
-            <Heart className="h-8 w-8 text-military-green" />
+      <DialogContent className="sm:max-w-sm sharp-card max-h-[80vh] overflow-y-auto bg-tactical-gray-light border-tactical-gray">
+        <DialogHeader className="text-center space-y-3">
+          <div className="mx-auto w-12 h-12 bg-military-green/20 rounded-full flex items-center justify-center">
+            <Heart className="h-6 w-6 text-military-green" />
           </div>
-          <DialogTitle className="text-2xl font-bold text-white">
+          <DialogTitle className="text-xl font-bold text-white">
             Daily Wellness Check
           </DialogTitle>
-          <p className="text-gray-400">
-            How are you feeling today? Your mental wellness is important to your tactical readiness.
+          <p className="text-gray-400 text-sm">
+            How are you feeling today?
           </p>
           
           {/* Points Reward Banner */}
-          <div className="bg-military-green/10 border border-military-green/30 rounded-lg p-3 flex items-center justify-center space-x-2">
-            <Trophy className="h-5 w-5 text-military-green" />
-            <span className="text-military-green font-semibold">Earn 5 Points</span>
-            <span className="text-gray-400">for completing your wellness check</span>
+          <div className="bg-military-green/10 border border-military-green/30 rounded-lg p-2 flex items-center justify-center space-x-2">
+            <Trophy className="h-4 w-4 text-military-green" />
+            <span className="text-military-green font-semibold text-sm">Earn 5 Points</span>
           </div>
         </DialogHeader>
 
-        <div className="space-y-4 mt-6">
+        <div className="space-y-3 mt-4">
           {moodOptions.map((mood) => {
             const Icon = mood.icon;
             const isSelected = selectedMood === mood.value;
@@ -93,39 +92,32 @@ export function MoodAssessmentModal({ isOpen, onClose, userId }: MoodAssessmentM
               <button
                 key={mood.value}
                 onClick={() => setSelectedMood(mood.value)}
-                className={`group w-full p-5 rounded-xl border-2 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg ${
+                className={`group w-full p-3 rounded-lg border-2 transition-all duration-300 hover:scale-[1.01] hover:shadow-md ${
                   isSelected 
-                    ? `${mood.color} text-white border-transparent shadow-xl transform scale-[1.02]` 
+                    ? `${mood.color} text-white border-transparent shadow-lg transform scale-[1.01]` 
                     : "border-tactical-gray bg-tactical-gray-light hover:border-military-green/50 hover:bg-tactical-gray"
                 }`}
               >
-                <div className="flex items-center space-x-4">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
+                <div className="flex items-center space-x-3">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
                     isSelected ? "bg-white/20" : "bg-military-green/10 group-hover:bg-military-green/20"
                   }`}>
-                    <Icon className={`h-6 w-6 transition-all duration-300 ${
+                    <Icon className={`h-4 w-4 transition-all duration-300 ${
                       isSelected ? "text-white" : "text-military-green group-hover:scale-110"
                     }`} />
                   </div>
                   <div className="flex-1 text-left">
-                    <div className={`text-lg font-bold transition-colors duration-300 ${
+                    <div className={`font-semibold transition-colors duration-300 ${
                       isSelected ? "text-white" : "text-white group-hover:text-military-green"
                     }`}>
                       {mood.label}
                     </div>
-                    <div className={`text-sm transition-colors duration-300 ${
-                      isSelected ? "text-white/90" : "text-gray-400 group-hover:text-gray-300"
-                    }`}>
-                      {mood.description}
-                    </div>
                   </div>
                   {isSelected && (
-                    <div className="flex items-center space-x-2">
-                      <Badge className="bg-white/20 text-white border-white/30 animate-pulse">
-                        <Coins className="h-3 w-3 mr-1" />
-                        +5 PTS
-                      </Badge>
-                    </div>
+                    <Badge className="bg-white/20 text-white border-white/30 text-xs">
+                      <Coins className="h-3 w-3 mr-1" />
+                      +5
+                    </Badge>
                   )}
                 </div>
               </button>
@@ -133,7 +125,7 @@ export function MoodAssessmentModal({ isOpen, onClose, userId }: MoodAssessmentM
           })}
         </div>
 
-        <div className="flex space-x-4 mt-8">
+        <div className="flex space-x-3 mt-6">
           <Button
             variant="outline"
             onClick={onClose}

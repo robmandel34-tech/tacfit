@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Smile, Meh, Frown, TrendingDown, Trophy, Coins } from "lucide-react";
+import { Activity, Smile, Meh, Frown, TrendingDown, Trophy, Coins } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
@@ -14,7 +14,7 @@ interface MoodAssessmentModalProps {
 }
 
 const moodOptions = [
-  { value: "excellent", label: "Excellent", icon: Heart, color: "bg-green-500", description: "Feeling fantastic!" },
+  { value: "excellent", label: "Excellent", icon: Activity, color: "bg-green-500", description: "Feeling fantastic!" },
   { value: "good", label: "Good", icon: Smile, color: "bg-emerald-500", description: "Feeling positive" },
   { value: "neutral", label: "Neutral", icon: Meh, color: "bg-yellow-500", description: "Feeling okay" },
   { value: "poor", label: "Poor", icon: Frown, color: "bg-orange-500", description: "Feeling down" },
@@ -67,10 +67,10 @@ export function MoodAssessmentModal({ isOpen, onClose, userId }: MoodAssessmentM
       <DialogContent className="sm:max-w-sm sharp-card max-h-[80vh] overflow-y-auto bg-tactical-gray-light border-tactical-gray">
         <DialogHeader className="text-center space-y-3">
           <div className="mx-auto w-12 h-12 bg-military-green/20 rounded-full flex items-center justify-center">
-            <Heart className="h-6 w-6 text-military-green" />
+            <Activity className="h-6 w-6 text-military-green" />
           </div>
           <DialogTitle className="text-xl font-bold text-white">
-            Daily Wellness Check
+            Daily Check-In
           </DialogTitle>
           <p className="text-gray-400 text-sm">
             How are you feeling today?

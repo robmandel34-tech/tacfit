@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Link, useLocation, useRouter } from "wouter";
 import { Button } from "@/components/ui/button";
 import { HelpModal } from "@/components/help-modal";
-import { Shield, Trophy, MessageCircle, Users, Activity, Bell } from "lucide-react";
+import { ShieldPlus, Trophy, MessageCircle, Users, Activity, Bell } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 export default function Navigation() {
@@ -29,11 +29,11 @@ export default function Navigation() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-6">
             <div className="flex items-center space-x-3">
-              <Shield 
+              <ShieldPlus 
                 className="h-8 w-8 text-military-green" 
                 style={{ display: 'inline-block' }}
-                onLoad={() => console.log("Shield icon loaded")}
-                onError={() => console.log("Shield icon error")}
+                onLoad={() => console.log("ShieldPlus icon loaded")}
+                onError={() => console.log("ShieldPlus icon error")}
               />
               <span className="text-2xl font-bold text-heading tracking-tight">TacFit</span>
             </div>

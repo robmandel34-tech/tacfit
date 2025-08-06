@@ -41,7 +41,7 @@ export default function Login() {
       <Card className="w-full max-w-md card-modern">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-6">
-            <ShieldPlus className="h-20 w-20 text-military-green" />
+            <ShieldPlus className="h-16 w-16 text-military-green" style={{ strokeWidth: 1.5 }} />
           </div>
           <CardTitle className="text-3xl font-bold text-heading tracking-tight">TacFit</CardTitle>
           <CardDescription className="text-body text-lg">

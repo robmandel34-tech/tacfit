@@ -30,8 +30,8 @@ export default function Navigation() {
           <div className="flex items-center space-x-6">
             <div className="flex items-center space-x-3">
               <ShieldPlus 
-                className="h-8 w-8 text-military-green" 
-                style={{ display: 'inline-block' }}
+                className="h-6 w-6 text-military-green" 
+                style={{ display: 'inline-block', strokeWidth: 1.5 }}
                 onLoad={() => console.log("ShieldPlus icon loaded")}
                 onError={() => console.log("ShieldPlus icon error")}
               />

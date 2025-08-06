@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ShieldPlusCustom } from "@/components/ui/shield-plus-custom";
+import { ShieldPlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Login() {
@@ -41,7 +41,7 @@ export default function Login() {
       <Card className="w-full max-w-md card-modern">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-6">
-            <ShieldPlusCustom className="h-16 w-16 text-military-green" />
+            <ShieldPlus className="h-16 w-16 text-military-green" style={{ strokeWidth: 1.5 }} />
           </div>
           <CardTitle className="text-3xl font-bold text-heading tracking-tight">TacFit</CardTitle>
           <CardDescription className="text-body text-lg">

@@ -2,7 +2,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { Link, useLocation, useRouter } from "wouter";
 import { Button } from "@/components/ui/button";
 import { HelpModal } from "@/components/help-modal";
-import { ShieldPlus, Trophy, MessageCircle, Users, Activity, Bell } from "lucide-react";
+import { Trophy, MessageCircle, Users, Activity, Bell } from "lucide-react";
+import { ShieldPlusCustom } from "@/components/ui/shield-plus-custom";
 import { useQuery } from "@tanstack/react-query";
 
 export default function Navigation() {
@@ -29,9 +30,9 @@ export default function Navigation() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-6">
             <div className="flex items-center space-x-3">
-              <ShieldPlus 
+              <ShieldPlusCustom 
                 className="h-6 w-6 text-military-green" 
-                style={{ display: 'inline-block', strokeWidth: 1.5 }}
+                style={{ display: 'inline-block' }}
                 onLoad={() => console.log("ShieldPlus icon loaded")}
                 onError={() => console.log("ShieldPlus icon error")}
               />

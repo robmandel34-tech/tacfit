@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { Plus, Edit2, Trash2, Users, Trophy, Calendar, Settings, X, Activity, AlertTriangle, MessageSquare } from "lucide-react";
+import { Plus, Edit2, Trash2, Users, Trophy, Calendar, Settings, X, Activity, AlertTriangle, MessageSquare, BarChart3 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 
@@ -71,6 +71,14 @@ interface AdminPost {
   updatedAt: string;
 }
 
+interface MoodLog {
+  id: number;
+  userId: number;
+  mood: string;
+  note?: string;
+  loggedAt: string;
+}
+
 export default function AdminPage() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -84,6 +92,7 @@ export default function AdminPage() {
   const [suspensionUser, setSuspensionUser] = useState<User | null>(null);
   const [suspensionReason, setSuspensionReason] = useState('');
   const [deleteUser, setDeleteUser] = useState<User | null>(null);
+  const [viewCheckInsUser, setViewCheckInsUser] = useState<User | null>(null);
 
   // Session refresh mutation - always define hooks at top level
   const refreshSession = useMutation({
@@ -139,6 +148,12 @@ export default function AdminPage() {
   const { data: adminPosts = [], isLoading: postsLoading } = useQuery({
     queryKey: ["/api/admin-posts"],
     select: (data: AdminPost[]) => data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  });
+
+  // Fetch mood logs for selected user
+  const { data: userMoodLogs = [], isLoading: moodLogsLoading } = useQuery({
+    queryKey: ["/api/admin/mood-logs/user", viewCheckInsUser?.id],
+    enabled: !!viewCheckInsUser?.id
   });
 
   // Competition form state
@@ -1095,6 +1110,15 @@ export default function AdminPage() {
                             <Button
                               variant="ghost"
                               size="sm"
+                              onClick={() => setViewCheckInsUser(u)}
+                              className="h-8 px-2 text-blue-400 hover:text-blue-300"
+                            >
+                              <BarChart3 className="h-4 w-4 mr-1" />
+                              Check-ins
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() => {
                                 setSuspensionUser(u);
                                 setSuspensionReason('');
@@ -1313,6 +1337,87 @@ export default function AdminPage() {
                       className="flex-1"
                     >
                       {deleteUserMutation.isPending ? 'Deleting...' : 'Delete User'}
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            {/* View Check-ins Modal */}
+            <Dialog open={!!viewCheckInsUser} onOpenChange={() => setViewCheckInsUser(null)}>
+              <DialogContent className="bg-tactical-dark border-tactical-gray max-w-2xl max-h-[80vh] overflow-y-auto" aria-describedby="checkins-dialog-description">
+                <DialogHeader>
+                  <DialogTitle className="text-white flex items-center space-x-2">
+                    <BarChart3 className="h-5 w-5 text-blue-400" />
+                    <span>Daily Check-ins - {viewCheckInsUser?.username}</span>
+                  </DialogTitle>
+                </DialogHeader>
+                <div id="checkins-dialog-description" className="sr-only">
+                  View user's daily wellness check-in history and mood tracking
+                </div>
+                <div className="space-y-4">
+                  {moodLogsLoading ? (
+                    <div className="flex items-center justify-center p-8">
+                      <div className="text-gray-400">Loading check-ins...</div>
+                    </div>
+                  ) : userMoodLogs.length === 0 ? (
+                    <div className="text-center p-8">
+                      <div className="text-gray-400 mb-2">No daily check-ins found</div>
+                      <div className="text-gray-500 text-sm">This user hasn't completed any daily wellness check-ins yet.</div>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-lg font-semibold text-white">Check-in History</h3>
+                        <div className="text-sm text-gray-400">{userMoodLogs.length} total check-ins</div>
+                      </div>
+                      
+                      <div className="space-y-2 max-h-96 overflow-y-auto">
+                        {userMoodLogs.map((log: MoodLog) => (
+                          <div key={log.id} className="bg-tactical-gray-lighter border border-tactical-gray rounded-lg p-4">
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-3 mb-2">
+                                  <Badge 
+                                    variant={
+                                      log.mood === 'excellent' ? 'default' : 
+                                      log.mood === 'good' ? 'default' : 
+                                      log.mood === 'okay' ? 'secondary' : 
+                                      'destructive'
+                                    }
+                                    className={
+                                      log.mood === 'excellent' ? 'bg-green-600 hover:bg-green-700' :
+                                      log.mood === 'good' ? 'bg-blue-600 hover:bg-blue-700' :
+                                      log.mood === 'okay' ? 'bg-yellow-600 hover:bg-yellow-700' :
+                                      log.mood === 'stressed' ? 'bg-orange-600 hover:bg-orange-700' :
+                                      'bg-red-600 hover:bg-red-700'
+                                    }
+                                  >
+                                    {log.mood.charAt(0).toUpperCase() + log.mood.slice(1)}
+                                  </Badge>
+                                  <span className="text-sm text-gray-400">
+                                    {format(new Date(log.loggedAt), 'MMM d, yyyy h:mm a')}
+                                  </span>
+                                </div>
+                                {log.note && (
+                                  <p className="text-gray-300 text-sm bg-tactical-gray rounded p-2 mt-2">
+                                    "{log.note}"
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-end pt-4">
+                    <Button
+                      onClick={() => setViewCheckInsUser(null)}
+                      className="bg-military-green hover:bg-military-green-light"
+                    >
+                      Close
                     </Button>
                   </div>
                 </div>

@@ -3021,6 +3021,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin-only route to get any user's mood logs
+  app.get("/api/admin/mood-logs/user/:userId", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.sendStatus(401);
+      }
+
+      // Check if user is admin
+      const currentUser = await storage.getUser(req.session.user.id);
+      if (!currentUser?.isAdmin) {
+        return res.sendStatus(403);
+      }
+
+      const userId = parseInt(req.params.userId);
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 30;
+
+      const moodLogs = await storage.getUserMoodLogs(userId, limit);
+      res.json(moodLogs);
+    } catch (error: any) {
+      console.error('Admin get mood logs error:', error);
+      res.status(500).json({ message: error.message || "Error fetching mood logs" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

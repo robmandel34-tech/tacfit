@@ -189,10 +189,12 @@ export default function AdminPage() {
     enabled: !!viewCheckInsUser?.id
   });
 
-  // Fetch all activity posts for admin management
+  // Fetch only flagged activity posts for admin management
   const { data: activityPosts = [], isLoading: activityPostsLoading } = useQuery<ActivityPost[]>({
     queryKey: ["/api/activities"],
-    select: (data: ActivityPost[]) => data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    select: (data: ActivityPost[]) => data
+      .filter(activity => activity.isFlagged)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
   });
 
   // Competition form state
@@ -1937,18 +1939,18 @@ export default function AdminPage() {
         {activeTab === 'activity-posts' && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Activity Posts Management</h2>
+              <h2 className="text-2xl font-bold">Flagged Activity Posts</h2>
               <div className="text-gray-400 text-sm">
-                Remove user-submitted activities and automatically deduct points
+                Manage flagged activities - removal automatically deducts points
               </div>
             </div>
 
             {/* Activity Posts Table */}
             <Card className="bg-tactical-gray border-tactical-gray-light">
               <CardHeader>
-                <CardTitle className="text-white">User Activity Submissions</CardTitle>
+                <CardTitle className="text-white">Flagged Activity Submissions</CardTitle>
                 <CardDescription className="text-gray-400">
-                  Manage user-submitted activities. Deleting activities will automatically reduce points from users and teams.
+                  Review and manage flagged activities. Deleting activities will automatically reduce points from users and teams.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -1958,7 +1960,8 @@ export default function AdminPage() {
                   </div>
                 ) : activityPosts.length === 0 ? (
                   <div className="text-center py-8">
-                    <div className="text-gray-400">No activity submissions found</div>
+                    <div className="text-gray-400">No flagged activities found</div>
+                    <div className="text-gray-500 text-sm mt-2">Activities appear here when users flag them for review</div>
                   </div>
                 ) : (
                   <Table>
@@ -1970,7 +1973,6 @@ export default function AdminPage() {
                         <TableHead className="text-gray-300">Quantity</TableHead>
                         <TableHead className="text-gray-300">Points</TableHead>
                         <TableHead className="text-gray-300">Team</TableHead>
-                        <TableHead className="text-gray-300">Flagged</TableHead>
                         <TableHead className="text-gray-300">Created</TableHead>
                         <TableHead className="text-gray-300">Actions</TableHead>
                       </TableRow>
@@ -1997,15 +1999,6 @@ export default function AdminPage() {
                           </TableCell>
                           <TableCell className="text-gray-300">
                             {activity.team?.name || `Team ${activity.teamId}`}
-                          </TableCell>
-                          <TableCell>
-                            {activity.isFlagged ? (
-                              <Badge variant="destructive" className="text-xs bg-red-600 text-white border-red-500">
-                                Flagged
-                              </Badge>
-                            ) : (
-                              <span className="text-gray-400 text-xs">Normal</span>
-                            )}
                           </TableCell>
                           <TableCell className="text-gray-300">
                             {format(new Date(activity.createdAt), 'MMM d, h:mm a')}

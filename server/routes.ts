@@ -1920,6 +1920,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin route to sync flagged activities
+  app.post("/api/admin/sync-flagged-activities", async (req, res) => {
+    try {
+      // Check admin privileges (same pattern as other admin routes)
+      const users = await storage.getUsers();
+      const adminUser = users.find(u => u.isAdmin === true);
+      
+      if (!adminUser) {
+        return res.status(403).json({ message: "Admin privileges required" });
+      }
+
+      await storage.syncFlaggedActivities();
+      res.json({ message: "Flagged activities synced successfully" });
+    } catch (error) {
+      console.error("Error syncing flagged activities:", error);
+      res.status(500).json({ message: "Error syncing flagged activities" });
+    }
+  });
+
   // Activity Types routes
   app.get("/api/activity-types", async (req, res) => {
     try {

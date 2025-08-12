@@ -74,10 +74,20 @@ export default function PointSystemHelp() {
                     </p>
                   </div>
 
+                  <div className="bg-blue-900/20 border border-blue-600/30 p-4 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-white">Daily Wellness Check-in</span>
+                      <span className="font-bold text-blue-400 text-lg">5 pts</span>
+                    </div>
+                    <p className="text-xs text-gray-400">
+                      Complete your daily mood assessment to track mental wellness (once per day)
+                    </p>
+                  </div>
+
                   <div className="bg-yellow-900/20 border border-yellow-600/30 p-3 rounded-lg">
                     <p className="text-sm text-yellow-200">
                       <strong>Pro Tip:</strong> Always upload both photo and video evidence to maximize 
-                      your points per activity submission!
+                      your points per activity submission, and don't forget your daily wellness check-in!
                     </p>
                   </div>
                 </div>
@@ -270,7 +280,8 @@ export default function PointSystemHelp() {
                     <ul className="text-xs text-gray-400 space-y-1">
                       <li>• 3 activities per week</li>
                       <li>• No evidence uploaded</li>
-                      <li>• 15 pts × 3 = 45 pts/week</li>
+                      <li>• 2 daily mood check-ins</li>
+                      <li>• 15×3 + 5×2 = 55 pts/week</li>
                     </ul>
                   </div>
                   <div className="bg-yellow-900/20 border border-yellow-600/30 p-3 rounded-lg">
@@ -278,7 +289,8 @@ export default function PointSystemHelp() {
                     <ul className="text-xs text-gray-400 space-y-1">
                       <li>• 5 activities per week</li>
                       <li>• Evidence for all activities</li>
-                      <li>• 30 pts × 5 = 150 pts/week</li>
+                      <li>• 5 daily mood check-ins</li>
+                      <li>• 30×5 + 5×5 = 175 pts/week</li>
                     </ul>
                   </div>
                   <div className="bg-green-900/20 border border-green-600/30 p-3 rounded-lg">
@@ -286,7 +298,8 @@ export default function PointSystemHelp() {
                     <ul className="text-xs text-gray-400 space-y-1">
                       <li>• 7+ activities per week</li>
                       <li>• Evidence for all activities</li>
-                      <li>• 30 pts × 7 = 210+ pts/week</li>
+                      <li>• Daily mood check-ins (7×)</li>
+                      <li>• 30×7 + 5×7 = 245+ pts/week</li>
                     </ul>
                   </div>
                 </div>

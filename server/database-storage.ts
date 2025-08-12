@@ -13,7 +13,7 @@ import {
   whiteboardItems, missionTasks, adminPosts, moodLogs
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, or, desc, isNull, gt, inArray, not } from "drizzle-orm";
+import { eq, and, or, desc, isNull, gt } from "drizzle-orm";
 import { IStorage } from "./storage";
 
 export class DatabaseStorage implements IStorage {
@@ -327,38 +327,14 @@ export class DatabaseStorage implements IStorage {
       .where(and(eq(activityFlags.activityId, activityId), eq(activityFlags.userId, userId)));
 
     if (existingFlag) {
-      // Remove the flag
       await db
         .delete(activityFlags)
         .where(and(eq(activityFlags.activityId, activityId), eq(activityFlags.userId, userId)));
-      
-      // Check if there are any remaining flags for this activity
-      const remainingFlags = await db
-        .select()
-        .from(activityFlags)
-        .where(eq(activityFlags.activityId, activityId));
-      
-      // If no more flags remain, set isFlagged to false
-      if (remainingFlags.length === 0) {
-        await db
-          .update(activities)
-          .set({ isFlagged: false })
-          .where(eq(activities.id, activityId));
-      }
-      
       return false;
     } else {
-      // Add the flag
       await db
         .insert(activityFlags)
         .values({ activityId, userId });
-      
-      // Set the activity as flagged
-      await db
-        .update(activities)
-        .set({ isFlagged: true })
-        .where(eq(activities.id, activityId));
-      
       return true;
     }
   }
@@ -395,31 +371,6 @@ export class DatabaseStorage implements IStorage {
       .delete(activityTypes)
       .where(eq(activityTypes.id, id));
     return (result.rowCount ?? 0) > 0;
-  }
-
-  // Sync flagged activities - updates isFlagged field based on activityFlags table
-  async syncFlaggedActivities(): Promise<void> {
-    // Get all activities that have flags
-    const flaggedActivityIds = await db
-      .selectDistinct({ activityId: activityFlags.activityId })
-      .from(activityFlags);
-    
-    // Set isFlagged = true for activities with flags
-    if (flaggedActivityIds.length > 0) {
-      await db
-        .update(activities)
-        .set({ isFlagged: true })
-        .where(inArray(activities.id, flaggedActivityIds.map(f => f.activityId)));
-    }
-    
-    // Set isFlagged = false for activities without flags
-    const allActivityIds = flaggedActivityIds.map(f => f.activityId);
-    if (allActivityIds.length > 0) {
-      await db
-        .update(activities)
-        .set({ isFlagged: false })
-        .where(not(inArray(activities.id, allActivityIds)));
-    }
   }
 
   // Chat operations

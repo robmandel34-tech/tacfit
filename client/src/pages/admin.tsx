@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { Plus, Edit2, Trash2, Users, Trophy, Calendar, Settings, X, Activity, AlertTriangle, MessageSquare, BarChart3, Eye } from "lucide-react";
+import { Plus, Edit2, Trash2, Users, Trophy, Calendar, Settings, X, Activity, AlertTriangle, MessageSquare, BarChart3 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 
@@ -189,23 +189,10 @@ export default function AdminPage() {
     enabled: !!viewCheckInsUser?.id
   });
 
-  // Fetch only flagged activity posts for admin management
-  const { data: activityPosts = [], isLoading: activityPostsLoading } = useQuery<(ActivityPost & { flagCount?: number })[]>({
-    queryKey: ["/api/activities", "flagged-with-counts"],
-    queryFn: async () => {
-      const activities = await fetch('/api/activities').then(res => res.json()) as ActivityPost[];
-      const flaggedActivities = activities.filter(activity => activity.isFlagged);
-      
-      // Fetch flag counts for each flagged activity
-      const activitiesWithFlags = await Promise.all(
-        flaggedActivities.map(async (activity) => {
-          const flags = await fetch(`/api/activities/${activity.id}/flags`).then(res => res.json());
-          return { ...activity, flagCount: flags.length };
-        })
-      );
-      
-      return activitiesWithFlags.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    }
+  // Fetch all activity posts for admin management
+  const { data: activityPosts = [], isLoading: activityPostsLoading } = useQuery<ActivityPost[]>({
+    queryKey: ["/api/activities"],
+    select: (data: ActivityPost[]) => data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
   });
 
   // Competition form state
@@ -1950,18 +1937,18 @@ export default function AdminPage() {
         {activeTab === 'activity-posts' && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Flagged Activity Posts</h2>
+              <h2 className="text-2xl font-bold">Activity Posts Management</h2>
               <div className="text-gray-400 text-sm">
-                Manage flagged activities - removal automatically deducts points
+                Remove user-submitted activities and automatically deduct points
               </div>
             </div>
 
             {/* Activity Posts Table */}
             <Card className="bg-tactical-gray border-tactical-gray-light">
               <CardHeader>
-                <CardTitle className="text-white">Flagged Activity Submissions</CardTitle>
+                <CardTitle className="text-white">User Activity Submissions</CardTitle>
                 <CardDescription className="text-gray-400">
-                  Review and manage flagged activities. Deleting activities will automatically reduce points from users and teams.
+                  Manage user-submitted activities. Deleting activities will automatically reduce points from users and teams.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -1971,8 +1958,7 @@ export default function AdminPage() {
                   </div>
                 ) : activityPosts.length === 0 ? (
                   <div className="text-center py-8">
-                    <div className="text-gray-400">No flagged activities found</div>
-                    <div className="text-gray-500 text-sm mt-2">Activities appear here when users flag them for review</div>
+                    <div className="text-gray-400">No activity submissions found</div>
                   </div>
                 ) : (
                   <Table>
@@ -1984,7 +1970,7 @@ export default function AdminPage() {
                         <TableHead className="text-gray-300">Quantity</TableHead>
                         <TableHead className="text-gray-300">Points</TableHead>
                         <TableHead className="text-gray-300">Team</TableHead>
-                        <TableHead className="text-gray-300">Flag Count</TableHead>
+                        <TableHead className="text-gray-300">Flagged</TableHead>
                         <TableHead className="text-gray-300">Created</TableHead>
                         <TableHead className="text-gray-300">Actions</TableHead>
                       </TableRow>
@@ -1999,7 +1985,7 @@ export default function AdminPage() {
                             {activity.description}
                           </TableCell>
                           <TableCell>
-                            <Badge variant="outline" className="text-xs border-gray-500 text-white">
+                            <Badge variant="outline" className="text-xs">
                               {activity.type}
                             </Badge>
                           </TableCell>
@@ -2013,42 +1999,30 @@ export default function AdminPage() {
                             {activity.team?.name || `Team ${activity.teamId}`}
                           </TableCell>
                           <TableCell>
-                            <Badge 
-                              variant="destructive" 
-                              className="text-xs bg-red-600/20 text-red-300 border-red-500/30 font-semibold"
-                            >
-                              {activity.flagCount || 0} flags
-                            </Badge>
+                            {activity.isFlagged && (
+                              <Badge variant="destructive" className="text-xs">
+                                Flagged
+                              </Badge>
+                            )}
                           </TableCell>
                           <TableCell className="text-gray-300">
                             {format(new Date(activity.createdAt), 'MMM d, h:mm a')}
                           </TableCell>
                           <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => window.open(`/activity-feed?highlight=${activity.id}`, '_blank')}
-                                className="h-8 w-8 p-0 hover:bg-blue-900/20"
-                                title="View full activity post"
-                              >
-                                <Eye className="h-4 w-4 text-blue-400" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => {
-                                  if (confirm(`Delete this activity? This will deduct ${activity.points} points from the user and team. This action cannot be undone.`)) {
-                                    deleteActivityPost.mutate(activity.id);
-                                  }
-                                }}
-                                disabled={deleteActivityPost.isPending}
-                                className="h-8 w-8 p-0 hover:bg-red-900/20"
-                                title="Delete activity and deduct points"
-                              >
-                                <Trash2 className="h-4 w-4 text-red-400" />
-                              </Button>
-                            </div>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                if (confirm(`Delete this activity? This will deduct ${activity.points} points from the user and team. This action cannot be undone.`)) {
+                                  deleteActivityPost.mutate(activity.id);
+                                }
+                              }}
+                              disabled={deleteActivityPost.isPending}
+                              className="h-8 w-8 p-0 hover:bg-red-900/20"
+                              title="Delete activity and deduct points"
+                            >
+                              <Trash2 className="h-4 w-4 text-red-400" />
+                            </Button>
                           </TableCell>
                         </TableRow>
                       ))}

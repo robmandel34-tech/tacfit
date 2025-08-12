@@ -13,10 +13,6 @@ export default function ActivityFeed() {
   const [forceRefresh, setForceRefresh] = useState(0);
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
   
-  // Check for highlight parameter in URL
-  const urlParams = new URLSearchParams(location.split('?')[1] || '');
-  const highlightActivityId = urlParams.get('highlight');
-  
   // Force refresh when navigating to this page
   useEffect(() => {
     setForceRefresh(prev => prev + 1);
@@ -30,29 +26,11 @@ export default function ActivityFeed() {
     enabled: !!user,
   });
 
-  // Add debugging
-  console.log('Activities data:', activities);
-  console.log('Is loading:', isLoading);
-  console.log('User:', user);
-  console.log('Highlight ID:', highlightActivityId);
-
   // Get activity types for display names
   const { data: activityTypes } = useQuery({
     queryKey: ['/api/activity-types'],
     enabled: !!user,
   });
-
-  // Scroll to highlighted activity after data loads
-  useEffect(() => {
-    if (highlightActivityId && activities && !isLoading) {
-      setTimeout(() => {
-        const element = document.getElementById(`activity-${highlightActivityId}`);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }, 500); // Small delay to ensure DOM is updated
-    }
-  }, [highlightActivityId, activities, isLoading]);
 
   const likeActivity = useMutation({
     mutationFn: async (activityId: number) => {
@@ -153,7 +131,7 @@ export default function ActivityFeed() {
         </div>
 
         <div className="w-full max-w-2xl mx-auto">
-          {!activities || activities.length === 0 ? (
+          {activities?.length === 0 ? (
             <div className="text-center py-16">
               <div className="bg-tactical-gray-light p-8 rounded-lg border border-tactical-gray-lighter">
                 <Camera className="mx-auto h-16 w-16 text-gray-400 mb-4" />
@@ -163,16 +141,8 @@ export default function ActivityFeed() {
             </div>
           ) : (
             <div className="space-y-6">
-              {Array.isArray(activities) ? activities.map((activity: any) => (
-                <div 
-                  key={`${activity.id}-${forceRefresh}`} 
-                  id={`activity-${activity.id}`}
-                  className={`bg-tactical-gray-light border rounded-lg p-6 ${
-                    highlightActivityId === activity.id.toString() 
-                      ? 'border-yellow-400 shadow-lg shadow-yellow-400/20 ring-2 ring-yellow-400/20' 
-                      : 'border-tactical-gray-lighter'
-                  }`}
-                >
+              {activities?.map((activity: any) => (
+                <div key={`${activity.id}-${forceRefresh}`} className="bg-tactical-gray-light border border-tactical-gray-lighter rounded-lg p-6">
                   
                   {/* User Info Row */}
                   <div className="flex items-center gap-3 mb-3">
@@ -246,7 +216,7 @@ export default function ActivityFeed() {
                     </button>
                   </div>
                 </div>
-              )) : null}
+              ))}
             </div>
           )}
         </div>

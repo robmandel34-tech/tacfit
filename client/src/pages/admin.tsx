@@ -190,11 +190,22 @@ export default function AdminPage() {
   });
 
   // Fetch only flagged activity posts for admin management
-  const { data: activityPosts = [], isLoading: activityPostsLoading } = useQuery<ActivityPost[]>({
-    queryKey: ["/api/activities"],
-    select: (data: ActivityPost[]) => data
-      .filter(activity => activity.isFlagged)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  const { data: activityPosts = [], isLoading: activityPostsLoading } = useQuery<(ActivityPost & { flagCount?: number })[]>({
+    queryKey: ["/api/activities", "flagged-with-counts"],
+    queryFn: async () => {
+      const activities = await fetch('/api/activities').then(res => res.json()) as ActivityPost[];
+      const flaggedActivities = activities.filter(activity => activity.isFlagged);
+      
+      // Fetch flag counts for each flagged activity
+      const activitiesWithFlags = await Promise.all(
+        flaggedActivities.map(async (activity) => {
+          const flags = await fetch(`/api/activities/${activity.id}/flags`).then(res => res.json());
+          return { ...activity, flagCount: flags.length };
+        })
+      );
+      
+      return activitiesWithFlags.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }
   });
 
   // Competition form state
@@ -1973,6 +1984,7 @@ export default function AdminPage() {
                         <TableHead className="text-gray-300">Quantity</TableHead>
                         <TableHead className="text-gray-300">Points</TableHead>
                         <TableHead className="text-gray-300">Team</TableHead>
+                        <TableHead className="text-gray-300">Flag Count</TableHead>
                         <TableHead className="text-gray-300">Created</TableHead>
                         <TableHead className="text-gray-300">Actions</TableHead>
                       </TableRow>
@@ -1999,6 +2011,14 @@ export default function AdminPage() {
                           </TableCell>
                           <TableCell className="text-gray-300">
                             {activity.team?.name || `Team ${activity.teamId}`}
+                          </TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant="destructive" 
+                              className="text-xs bg-red-600/20 text-red-300 border-red-500/30 font-semibold"
+                            >
+                              {activity.flagCount || 0} flags
+                            </Badge>
                           </TableCell>
                           <TableCell className="text-gray-300">
                             {format(new Date(activity.createdAt), 'MMM d, h:mm a')}

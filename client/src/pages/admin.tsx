@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { Plus, Edit2, Trash2, Users, Trophy, Calendar, Settings, X, Activity, AlertTriangle, MessageSquare, BarChart3 } from "lucide-react";
+import { Plus, Edit2, Trash2, Users, Trophy, Calendar, Settings, X, Activity, AlertTriangle, MessageSquare, BarChart3, Eye } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 
@@ -2024,20 +2024,31 @@ export default function AdminPage() {
                             {format(new Date(activity.createdAt), 'MMM d, h:mm a')}
                           </TableCell>
                           <TableCell>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => {
-                                if (confirm(`Delete this activity? This will deduct ${activity.points} points from the user and team. This action cannot be undone.`)) {
-                                  deleteActivityPost.mutate(activity.id);
-                                }
-                              }}
-                              disabled={deleteActivityPost.isPending}
-                              className="h-8 w-8 p-0 hover:bg-red-900/20"
-                              title="Delete activity and deduct points"
-                            >
-                              <Trash2 className="h-4 w-4 text-red-400" />
-                            </Button>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => window.open(`/activity-feed#activity-${activity.id}`, '_blank')}
+                                className="h-8 w-8 p-0 hover:bg-blue-900/20"
+                                title="View full activity post"
+                              >
+                                <Eye className="h-4 w-4 text-blue-400" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => {
+                                  if (confirm(`Delete this activity? This will deduct ${activity.points} points from the user and team. This action cannot be undone.`)) {
+                                    deleteActivityPost.mutate(activity.id);
+                                  }
+                                }}
+                                disabled={deleteActivityPost.isPending}
+                                className="h-8 w-8 p-0 hover:bg-red-900/20"
+                                title="Delete activity and deduct points"
+                              >
+                                <Trash2 className="h-4 w-4 text-red-400" />
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}

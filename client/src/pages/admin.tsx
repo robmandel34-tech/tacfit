@@ -1985,7 +1985,7 @@ export default function AdminPage() {
                             {activity.description}
                           </TableCell>
                           <TableCell>
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-xs border-gray-500 text-white">
                               {activity.type}
                             </Badge>
                           </TableCell>
@@ -1999,10 +1999,12 @@ export default function AdminPage() {
                             {activity.team?.name || `Team ${activity.teamId}`}
                           </TableCell>
                           <TableCell>
-                            {activity.isFlagged && (
-                              <Badge variant="destructive" className="text-xs">
+                            {activity.isFlagged ? (
+                              <Badge variant="destructive" className="text-xs bg-red-600 text-white border-red-500">
                                 Flagged
                               </Badge>
+                            ) : (
+                              <span className="text-gray-400 text-xs">Normal</span>
                             )}
                           </TableCell>
                           <TableCell className="text-gray-300">

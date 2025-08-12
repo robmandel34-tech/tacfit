@@ -25,6 +25,17 @@ export default function ActivityFeed() {
     queryClient.invalidateQueries({ queryKey: ['/api/activity-types'] });
   }, [location]);
 
+  const { data: activities, isLoading } = useQuery({
+    queryKey: ['/api/activities', forceRefresh],
+    enabled: !!user,
+  });
+
+  // Get activity types for display names
+  const { data: activityTypes } = useQuery({
+    queryKey: ['/api/activity-types'],
+    enabled: !!user,
+  });
+
   // Scroll to highlighted activity after data loads
   useEffect(() => {
     if (highlightActivityId && activities && !isLoading) {
@@ -36,17 +47,6 @@ export default function ActivityFeed() {
       }, 500); // Small delay to ensure DOM is updated
     }
   }, [highlightActivityId, activities, isLoading]);
-
-  const { data: activities, isLoading } = useQuery({
-    queryKey: ['/api/activities', forceRefresh],
-    enabled: !!user,
-  });
-
-  // Get activity types for display names
-  const { data: activityTypes } = useQuery({
-    queryKey: ['/api/activity-types'],
-    enabled: !!user,
-  });
 
   const likeActivity = useMutation({
     mutationFn: async (activityId: number) => {

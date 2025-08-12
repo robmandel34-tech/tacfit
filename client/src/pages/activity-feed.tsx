@@ -30,6 +30,12 @@ export default function ActivityFeed() {
     enabled: !!user,
   });
 
+  // Add debugging
+  console.log('Activities data:', activities);
+  console.log('Is loading:', isLoading);
+  console.log('User:', user);
+  console.log('Highlight ID:', highlightActivityId);
+
   // Get activity types for display names
   const { data: activityTypes } = useQuery({
     queryKey: ['/api/activity-types'],
@@ -147,7 +153,7 @@ export default function ActivityFeed() {
         </div>
 
         <div className="w-full max-w-2xl mx-auto">
-          {activities?.length === 0 ? (
+          {!activities || activities.length === 0 ? (
             <div className="text-center py-16">
               <div className="bg-tactical-gray-light p-8 rounded-lg border border-tactical-gray-lighter">
                 <Camera className="mx-auto h-16 w-16 text-gray-400 mb-4" />
@@ -157,7 +163,7 @@ export default function ActivityFeed() {
             </div>
           ) : (
             <div className="space-y-6">
-              {activities?.map((activity: any) => (
+              {Array.isArray(activities) ? activities.map((activity: any) => (
                 <div 
                   key={`${activity.id}-${forceRefresh}`} 
                   id={`activity-${activity.id}`}
@@ -240,7 +246,7 @@ export default function ActivityFeed() {
                     </button>
                   </div>
                 </div>
-              ))}
+              )) : null}
             </div>
           )}
         </div>

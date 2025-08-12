@@ -79,8 +79,12 @@ export default function ActivityFeed() {
         title: "Activity deleted successfully",
         description: "Points have been deducted from user and team.",
       });
+      // Force refresh the activity feed
+      setForceRefresh(prev => prev + 1);
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/activities', forceRefresh] });
       queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/teams'] });
     },
     onError: (error: any) => {
       toast({

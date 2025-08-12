@@ -3,12 +3,14 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import Navigation from "@/components/navigation";
-import { Camera, ThumbsUp, MessageCircle, Flag } from "lucide-react";
-import { queryClient } from "@/lib/queryClient";
+import { Camera, ThumbsUp, MessageCircle, Flag, Trash2 } from "lucide-react";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import ActivitySubmissionModal from "@/components/activity-submission-modal";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ActivityFeed() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [location] = useLocation();
   const [forceRefresh, setForceRefresh] = useState(0);
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
@@ -66,6 +68,27 @@ export default function ActivityFeed() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
     },
+  });
+
+  const deleteActivity = useMutation({
+    mutationFn: async (activityId: number) => {
+      return apiRequest("DELETE", `/api/activities/${activityId}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Activity deleted successfully",
+        description: "Points have been deducted from user and team.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to delete activity",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
   });
 
   const getInitials = (username: string) => {
@@ -131,7 +154,7 @@ export default function ActivityFeed() {
         </div>
 
         <div className="w-full max-w-2xl mx-auto">
-          {activities?.length === 0 ? (
+          {!activities || !Array.isArray(activities) || activities.length === 0 ? (
             <div className="text-center py-16">
               <div className="bg-tactical-gray-light p-8 rounded-lg border border-tactical-gray-lighter">
                 <Camera className="mx-auto h-16 w-16 text-gray-400 mb-4" />
@@ -141,7 +164,7 @@ export default function ActivityFeed() {
             </div>
           ) : (
             <div className="space-y-6">
-              {activities?.map((activity: any) => (
+              {(activities as any[])?.map((activity: any) => (
                 <div key={`${activity.id}-${forceRefresh}`} className="bg-tactical-gray-light border border-tactical-gray-lighter rounded-lg p-6">
                   
                   {/* User Info Row */}
@@ -214,6 +237,23 @@ export default function ActivityFeed() {
                       <Flag className="h-4 w-4" />
                       <span>Flag</span>
                     </button>
+                    
+                    {/* Admin Delete Button */}
+                    {user?.isAdmin && (
+                      <button
+                        onClick={() => {
+                          if (confirm(`Delete this activity? This will deduct ${activity.points} points from the user and team. This action cannot be undone.`)) {
+                            deleteActivity.mutate(activity.id);
+                          }
+                        }}
+                        disabled={deleteActivity.isPending}
+                        className="flex items-center gap-2 text-gray-400 hover:text-red-500 transition-colors text-sm"
+                        title="Delete activity (Admin only)"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span>Delete</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}

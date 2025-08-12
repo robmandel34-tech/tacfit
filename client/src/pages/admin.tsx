@@ -101,7 +101,7 @@ export default function AdminPage() {
     mutationFn: async () => {
       return apiRequest("POST", "/api/auth/refresh-session");
     },
-    onSuccess: (userData) => {
+    onSuccess: (userData: any) => {
       toast({
         title: "Session refreshed",
         description: `Admin status: ${userData.isAdmin ? 'Active' : 'Not active'}`,
@@ -113,7 +113,7 @@ export default function AdminPage() {
       console.log("Session refresh failed:", error);
       // If session refresh fails, the user needs to log out and back in
       const message = error && typeof error === 'object' && 'message' in error ? (error as any).message : 'Unknown error';
-      if (message.includes("Not logged in")) {
+      if (String(message).includes("Not logged in")) {
         toast({
           title: "Session expired",
           description: "Please log out and log back in to refresh your admin privileges.",

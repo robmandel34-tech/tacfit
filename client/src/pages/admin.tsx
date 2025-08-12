@@ -79,12 +79,44 @@ interface MoodLog {
   loggedAt: string;
 }
 
+interface ActivityPost {
+  id: number;
+  userId: number;
+  competitionId: number;
+  teamId: number;
+  type: string;
+  description: string;
+  quantity: string;
+  evidenceType: string;
+  evidenceUrl?: string;
+  thumbnailUrl?: string;
+  imageUrls: string[];
+  points: number;
+  isFlagged: boolean;
+  createdAt: string;
+  user?: {
+    id: number;
+    username: string;
+    avatar?: string;
+  };
+  team?: {
+    id: number;
+    name: string;
+  };
+  competition?: {
+    id: number;
+    name: string;
+  };
+  likesCount: number;
+  commentsCount: number;
+}
+
 export default function AdminPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
-  const [activeTab, setActiveTab] = useState<'competitions' | 'users' | 'activities' | 'posts' | 'settings'>('competitions');
+  const [activeTab, setActiveTab] = useState<'competitions' | 'users' | 'activity-types' | 'activity-posts' | 'posts' | 'settings'>('competitions');
   const [isCreateCompetitionOpen, setIsCreateCompetitionOpen] = useState(false);
   const [editingCompetition, setEditingCompetition] = useState<Competition | null>(null);
   const [pointsAdjustmentUser, setPointsAdjustmentUser] = useState<User | null>(null);
@@ -110,7 +142,8 @@ export default function AdminPage() {
     onError: (error: any) => {
       console.log("Session refresh failed:", error);
       // If session refresh fails, the user needs to log out and back in
-      if (error.message.includes("Not logged in")) {
+      const message = error && typeof error === 'object' && 'message' in error ? (error as any).message : 'Unknown error';
+      if (message.includes("Not logged in")) {
         toast({
           title: "Session expired",
           description: "Please log out and log back in to refresh your admin privileges.",
@@ -119,7 +152,7 @@ export default function AdminPage() {
       } else {
         toast({
           title: "Failed to refresh session",
-          description: error.message,
+          description: message,
           variant: "destructive"
         });
       }
@@ -151,9 +184,15 @@ export default function AdminPage() {
   });
 
   // Fetch mood logs for selected user
-  const { data: userMoodLogs = [], isLoading: moodLogsLoading } = useQuery({
+  const { data: userMoodLogs = [], isLoading: moodLogsLoading } = useQuery<MoodLog[]>({
     queryKey: ["/api/admin/mood-logs/user", viewCheckInsUser?.id],
     enabled: !!viewCheckInsUser?.id
+  });
+
+  // Fetch all activity posts for admin management
+  const { data: activityPosts = [], isLoading: activityPostsLoading } = useQuery<ActivityPost[]>({
+    queryKey: ["/api/activities"],
+    select: (data: ActivityPost[]) => data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
   });
 
   // Competition form state
@@ -540,6 +579,28 @@ export default function AdminPage() {
     }
   });
 
+  // Activity post deletion mutation
+  const deleteActivityPost = useMutation({
+    mutationFn: async (id: number) => {
+      return apiRequest("DELETE", `/api/activities/${id}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Activity deleted successfully",
+        description: "Points have been deducted from user and team.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to delete activity",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
   const resetAdminPostForm = () => {
     setAdminPostForm({
       title: '',
@@ -742,12 +803,20 @@ export default function AdminPage() {
             <span>Users</span>
           </Button>
           <Button
-            variant={activeTab === 'activities' ? 'default' : 'ghost'}
-            onClick={() => setActiveTab('activities')}
+            variant={activeTab === 'activity-types' ? 'default' : 'ghost'}
+            onClick={() => setActiveTab('activity-types')}
             className="flex items-center space-x-2"
           >
             <Activity className="h-4 w-4" />
             <span>Activity Types</span>
+          </Button>
+          <Button
+            variant={activeTab === 'activity-posts' ? 'default' : 'ghost'}
+            onClick={() => setActiveTab('activity-posts')}
+            className="flex items-center space-x-2"
+          >
+            <AlertTriangle className="h-4 w-4" />
+            <span>Activity Posts</span>
           </Button>
           <Button
             variant={activeTab === 'posts' ? 'default' : 'ghost'}
@@ -1427,7 +1496,7 @@ export default function AdminPage() {
         )}
 
         {/* Activity Types Tab */}
-        {activeTab === 'activities' && (
+        {activeTab === 'activity-types' && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold">Activity Types Management</h2>
@@ -1853,6 +1922,107 @@ export default function AdminPage() {
                                 <Trash2 className="h-4 w-4 text-red-400" />
                               </Button>
                             </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Activity Posts Tab */}
+        {activeTab === 'activity-posts' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Activity Posts Management</h2>
+              <div className="text-gray-400 text-sm">
+                Remove user-submitted activities and automatically deduct points
+              </div>
+            </div>
+
+            {/* Activity Posts Table */}
+            <Card className="bg-tactical-gray border-tactical-gray-light">
+              <CardHeader>
+                <CardTitle className="text-white">User Activity Submissions</CardTitle>
+                <CardDescription className="text-gray-400">
+                  Manage user-submitted activities. Deleting activities will automatically reduce points from users and teams.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {activityPostsLoading ? (
+                  <div className="text-center py-8">
+                    <div className="text-gray-400">Loading activities...</div>
+                  </div>
+                ) : activityPosts.length === 0 ? (
+                  <div className="text-center py-8">
+                    <div className="text-gray-400">No activity submissions found</div>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-tactical-gray hover:bg-tactical-gray-lighter">
+                        <TableHead className="text-gray-300">User</TableHead>
+                        <TableHead className="text-gray-300">Activity</TableHead>
+                        <TableHead className="text-gray-300">Type</TableHead>
+                        <TableHead className="text-gray-300">Quantity</TableHead>
+                        <TableHead className="text-gray-300">Points</TableHead>
+                        <TableHead className="text-gray-300">Team</TableHead>
+                        <TableHead className="text-gray-300">Flagged</TableHead>
+                        <TableHead className="text-gray-300">Created</TableHead>
+                        <TableHead className="text-gray-300">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {activityPosts.map((activity) => (
+                        <TableRow key={activity.id} className="border-tactical-gray hover:bg-tactical-gray-lighter">
+                          <TableCell className="text-white font-medium">
+                            {activity.user?.username || `User ${activity.userId}`}
+                          </TableCell>
+                          <TableCell className="text-gray-300 max-w-xs truncate">
+                            {activity.description}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="text-xs">
+                              {activity.type}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-gray-300">
+                            {activity.quantity || '-'}
+                          </TableCell>
+                          <TableCell className="text-white font-semibold">
+                            {activity.points}
+                          </TableCell>
+                          <TableCell className="text-gray-300">
+                            {activity.team?.name || `Team ${activity.teamId}`}
+                          </TableCell>
+                          <TableCell>
+                            {activity.isFlagged && (
+                              <Badge variant="destructive" className="text-xs">
+                                Flagged
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-gray-300">
+                            {format(new Date(activity.createdAt), 'MMM d, h:mm a')}
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                if (confirm(`Delete this activity? This will deduct ${activity.points} points from the user and team. This action cannot be undone.`)) {
+                                  deleteActivityPost.mutate(activity.id);
+                                }
+                              }}
+                              disabled={deleteActivityPost.isPending}
+                              className="h-8 w-8 p-0 hover:bg-red-900/20"
+                              title="Delete activity and deduct points"
+                            >
+                              <Trash2 className="h-4 w-4 text-red-400" />
+                            </Button>
                           </TableCell>
                         </TableRow>
                       ))}

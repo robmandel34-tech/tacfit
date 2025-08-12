@@ -234,14 +234,48 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteActivity(id: number): Promise<boolean> {
-    // Delete all associated data first (comments, likes, flags)
-    await db.delete(activityComments).where(eq(activityComments.activityId, id));
-    await db.delete(activityLikes).where(eq(activityLikes.activityId, id));
-    await db.delete(activityFlags).where(eq(activityFlags.activityId, id));
-    
-    // Delete the activity itself
-    const result = await db.delete(activities).where(eq(activities.id, id));
-    return (result.rowCount ?? 0) > 0;
+    try {
+      // Get the activity details before deleting (to handle points reduction)
+      const [activity] = await db.select().from(activities).where(eq(activities.id, id));
+      
+      if (!activity) {
+        return false;
+      }
+
+      // Reduce points from user
+      if (activity.userId && activity.points) {
+        const [user] = await db.select().from(users).where(eq(users.id, activity.userId));
+        if (user) {
+          const newUserPoints = Math.max(0, (user.points || 0) - activity.points);
+          await db.update(users)
+            .set({ points: newUserPoints })
+            .where(eq(users.id, activity.userId));
+        }
+      }
+
+      // Reduce points from team
+      if (activity.teamId && activity.points) {
+        const [team] = await db.select().from(teams).where(eq(teams.id, activity.teamId));
+        if (team) {
+          const newTeamPoints = Math.max(0, (team.points || 0) - activity.points);
+          await db.update(teams)
+            .set({ points: newTeamPoints })
+            .where(eq(teams.id, activity.teamId));
+        }
+      }
+
+      // Delete all associated data first (comments, likes, flags)
+      await db.delete(activityComments).where(eq(activityComments.activityId, id));
+      await db.delete(activityLikes).where(eq(activityLikes.activityId, id));
+      await db.delete(activityFlags).where(eq(activityFlags.activityId, id));
+      
+      // Delete the activity itself
+      const result = await db.delete(activities).where(eq(activities.id, id));
+      return (result.rowCount ?? 0) > 0;
+    } catch (error) {
+      console.error("Error deleting activity:", error);
+      return false;
+    }
   }
 
   // Activity comment operations

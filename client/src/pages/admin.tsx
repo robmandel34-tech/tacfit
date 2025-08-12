@@ -2028,7 +2028,7 @@ export default function AdminPage() {
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                onClick={() => window.open(`/activity-feed#activity-${activity.id}`, '_blank')}
+                                onClick={() => window.open(`/activity-feed?highlight=${activity.id}`, '_blank')}
                                 className="h-8 w-8 p-0 hover:bg-blue-900/20"
                                 title="View full activity post"
                               >

@@ -13,6 +13,10 @@ export default function ActivityFeed() {
   const [forceRefresh, setForceRefresh] = useState(0);
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
   
+  // Check for highlight parameter in URL
+  const urlParams = new URLSearchParams(location.split('?')[1] || '');
+  const highlightActivityId = urlParams.get('highlight');
+  
   // Force refresh when navigating to this page
   useEffect(() => {
     setForceRefresh(prev => prev + 1);
@@ -20,6 +24,18 @@ export default function ActivityFeed() {
     queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
     queryClient.invalidateQueries({ queryKey: ['/api/activity-types'] });
   }, [location]);
+
+  // Scroll to highlighted activity after data loads
+  useEffect(() => {
+    if (highlightActivityId && activities && !isLoading) {
+      setTimeout(() => {
+        const element = document.getElementById(`activity-${highlightActivityId}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 500); // Small delay to ensure DOM is updated
+    }
+  }, [highlightActivityId, activities, isLoading]);
 
   const { data: activities, isLoading } = useQuery({
     queryKey: ['/api/activities', forceRefresh],
@@ -142,7 +158,15 @@ export default function ActivityFeed() {
           ) : (
             <div className="space-y-6">
               {activities?.map((activity: any) => (
-                <div key={`${activity.id}-${forceRefresh}`} className="bg-tactical-gray-light border border-tactical-gray-lighter rounded-lg p-6">
+                <div 
+                  key={`${activity.id}-${forceRefresh}`} 
+                  id={`activity-${activity.id}`}
+                  className={`bg-tactical-gray-light border rounded-lg p-6 ${
+                    highlightActivityId === activity.id.toString() 
+                      ? 'border-yellow-400 shadow-lg shadow-yellow-400/20 ring-2 ring-yellow-400/20' 
+                      : 'border-tactical-gray-lighter'
+                  }`}
+                >
                   
                   {/* User Info Row */}
                   <div className="flex items-center gap-3 mb-3">

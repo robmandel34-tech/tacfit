@@ -106,7 +106,15 @@ The platform follows a military/tactical theme across its UI/UX, language, and i
 - **STATUS**: Complete email verification workflow operational, new users must verify before platform access (except test.com accounts)
 
 ### User Deletion Foreign Key Fix (August 2025)
-- **ISSUE**: Admin user deletion failing due to foreign key constraints with activities table
-- **RESOLUTION**: Updated deleteUser function to cascade delete all related data before removing user
-- **AFFECTED TABLES**: activities, mood entries, team memberships, buddy requests, chat messages, phone invitations, activity interactions
-- **STATUS**: User deletion now works properly for admin operations
+- **ISSUE**: Admin user deletion failing due to foreign key constraints across multiple database tables
+- **RESOLUTION**: Comprehensive fix to deleteUser function with proper cascade deletion order
+- **AFFECTED TABLES**: activities, activity_likes, activity_comments, activity_flags, mood_logs, team_members, friendships, chat_messages (sender/receiver), phone_invitations, competition_entries, competition_invitations, competition_history, whiteboard_items, admin_posts, competitions (created_by), teams (captain updates)
+- **TECHNICAL DETAILS**: Added proper sequence handling, fixed table name references, handled bidirectional relationships
+- **STATUS**: User deletion now works completely for admin operations
+
+### Email Service Rate Limiting Issue (August 2025)
+- **ISSUE**: Email verification failing due to test account rate limiting (403 error after multiple sends)
+- **TEMPORARY SOLUTION**: Manual email verification via SQL when needed for development
+- **RECOMMENDATION**: Configure proper SMTP credentials (SMTP_HOST, SMTP_USER, SMTP_PASS, FROM_EMAIL) for production
+- **WORKAROUND**: Test accounts (@test.com) skip email verification automatically
+- **STATUS**: Email verification system functional with fallback manual verification capability

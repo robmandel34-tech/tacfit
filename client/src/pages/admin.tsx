@@ -709,7 +709,7 @@ export default function AdminPage() {
       maxTeams: competition.maxTeams,
       requiredActivities: competition.requiredActivities || [],
       targetGoals: competition.targetGoals || [],
-      paymentType: competition.paymentType || 'free',
+      paymentType: (competition.paymentType as 'free' | 'one_time') || 'free',
       entryFee: competition.entryFee || 0
     });
     setIsCreateCompetitionOpen(true);
@@ -1097,7 +1097,7 @@ export default function AdminPage() {
                             </Badge>
                           ) : (
                             <Badge variant="secondary" className="bg-yellow-600/20 text-yellow-400 border-yellow-600/30">
-                              ${(competition.entryFee / 100).toFixed(2)}
+                              ${((competition.entryFee || 0) / 100).toFixed(2)}
                             </Badge>
                           )}
                         </TableCell>

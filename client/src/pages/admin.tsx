@@ -661,9 +661,9 @@ export default function AdminPage() {
       measurementUnit: activityType.measurementUnit,
       defaultQuantity: activityType.defaultQuantity,
       isActive: activityType.isActive,
-      requiresTextInput: activityType.requiresTextInput,
+      requiresTextInput: activityType.requiresTextInput || false,
       textInputDescription: activityType.textInputDescription || '',
-      textInputMinWords: activityType.textInputMinWords
+      textInputMinWords: activityType.textInputMinWords || 50
     });
     setIsCreateActivityTypeOpen(true);
   };

@@ -135,3 +135,10 @@ The platform follows a military/tactical theme across its UI/UX, language, and i
 - **MAINTAINED**: Paid competitions continue to award completion rewards (1st: 1000/500 points, 2nd: 500/250 points for captain/members)
 - **LOGGING**: Enhanced completion logging to distinguish between free and paid competition types
 - **STATUS**: Competition reward system properly differentiated between free and paid competitions
+
+### Free Competition Join Flow Fix (August 2025)
+- **FIXED**: Free competitions no longer incorrectly show payment modal during join flow
+- **UPDATED**: Free competitions now directly open team selection modal instead of payment modal
+- **ENHANCED**: Added proper condition checking for entry fee amount (> 0) in addition to payment type
+- **IMPROVED**: Better user experience with immediate team selection for free competitions
+- **STATUS**: Free competition joining flow works correctly without payment prompts

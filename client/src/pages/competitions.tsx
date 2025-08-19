@@ -107,17 +107,25 @@ export default function Competitions() {
     const competition = competitions.find(c => c.id === competitionId);
     if (competition) {
       // Check if competition requires payment
-      if (competition.paymentType === 'one_time' && competition.entryFee) {
+      if (competition.paymentType === 'one_time' && competition.entryFee && competition.entryFee > 0) {
         // Redirect to checkout page for paid competitions
         setLocation(`/checkout/${competitionId}`);
       } else {
-        // For free competitions, continue with existing flow
+        // For free competitions, skip payment and go directly to team selection
         setSelectedCompetition({ 
           id: competition.id, 
           name: competition.name, 
           description: competition.description 
         });
-        setPaymentModalOpen(true);
+        setTeamSelectionModalOpen(true);
+        
+        // Show helpful toast
+        setTimeout(() => {
+          toast({
+            title: "Choose Your Squad",
+            description: "Select a team to join or create a new one to complete your entry",
+          });
+        }, 500);
       }
     }
   };

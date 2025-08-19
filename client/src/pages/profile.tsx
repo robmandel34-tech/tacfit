@@ -1056,7 +1056,7 @@ export default function Profile() {
                                 <p className="text-gray-300 text-sm">Team: {record.team?.name}</p>
                               </div>
                               <div className="text-right">
-                                <Badge variant="outline" className="mb-1">
+                                <Badge variant="outline" className="mb-1 text-white border-gray-500">
                                   {record.finalRank ? `#${record.finalRank}` : "Completed"}
                                 </Badge>
                                 <p className="text-combat-orange text-sm font-bold">{record.pointsEarned} pts</p>
@@ -1097,7 +1097,7 @@ export default function Profile() {
                                 <p className="text-gray-300 text-sm">Team: {record.team?.name}</p>
                               </div>
                               <div className="text-right">
-                                <Badge className="bg-combat-orange text-white mb-1">
+                                <Badge className="bg-combat-orange text-white mb-1 border-combat-orange">
                                   🏆 1st Place
                                 </Badge>
                                 <p className="text-combat-orange text-sm font-bold">{record.pointsEarned} pts</p>

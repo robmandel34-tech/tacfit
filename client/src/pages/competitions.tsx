@@ -23,6 +23,12 @@ export default function Competitions() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Fetch user's competition results for completed competitions
+  const { data: userResults } = useQuery({
+    queryKey: ["/api/users", user?.id, "competition-results"],
+    enabled: !!user,
+  });
+
   const { data: competitions = [] } = useQuery({
     queryKey: ["/api/competitions"],
     enabled: !!user,
@@ -66,10 +72,8 @@ export default function Competitions() {
         };
       });
       
-      // Filter out competitions with closed join windows
-      const availableCompetitions = enrichedCompetitions.filter(comp => 
-        comp.joinWindowStatus !== 'closed'
-      );
+      // Don't filter out completed competitions - user needs to see results
+      const availableCompetitions = enrichedCompetitions;
       
       // Sort competitions: joinable first, then by join window status, then by start date
       return availableCompetitions.sort((a, b) => {
@@ -118,6 +122,38 @@ export default function Competitions() {
     }
   };
 
+  const dismissCompetition = useMutation({
+    mutationFn: async (competitionId: number) => {
+      const response = await apiRequest("POST", `/api/competitions/${competitionId}/dismiss`, {
+        userId: user?.id
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to dismiss competition");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/users", user?.id, "competition-results"] });
+      toast({
+        title: "Competition Dismissed",
+        description: "Competition removed from your view.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDismiss = (competitionId: number) => {
+    dismissCompetition.mutate(competitionId);
+  };
+
   if (isLoading) {
     return <div className="min-h-screen bg-tactical-gray flex items-center justify-center">
       <div className="text-white">Loading...</div>
@@ -162,14 +198,27 @@ export default function Competitions() {
               </div>
             </div>
           ) : (
-            competitions.map((competition: any) => (
-              <CompetitionCard
-                key={competition.id}
-                competition={competition}
-                onInvite={handleInvite}
-                onJoin={(id) => handleJoin(id, competition.name)}
-              />
-            ))
+            competitions.map((competition: any) => {
+              // Find user result for this competition if it's completed
+              const userResult = userResults?.history?.find(
+                (h: any) => h.competitionId === competition.id
+              );
+              
+              return (
+                <CompetitionCard
+                  key={competition.id}
+                  competition={competition}
+                  userResult={userResult ? {
+                    finalRank: userResult.finalRank,
+                    pointsEarned: userResult.pointsEarned,
+                    teamName: userResult.team?.name
+                  } : null}
+                  onInvite={handleInvite}
+                  onJoin={(id) => handleJoin(id, competition.name)}
+                  onDismiss={handleDismiss}
+                />
+              );
+            })
           )}
         </div>
 

@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Trophy, Calendar, Users, Target, Share2, Activity, CheckCircle, DollarSign } from "lucide-react";
+import { Trophy, Calendar, Users, Target, Share2, Activity, CheckCircle, DollarSign, Medal, X, Star } from "lucide-react";
 
 interface CompetitionCardProps {
   competition: {
@@ -15,6 +15,7 @@ interface CompetitionCardProps {
     joinEndDate?: string;
     maxTeams: number;
     isActive: boolean;
+    isCompleted?: boolean;
     requiredActivities?: string[];
     targetGoals?: string[];
     joinWindowStatus?: string;
@@ -22,11 +23,17 @@ interface CompetitionCardProps {
     paymentType?: 'free' | 'one_time';
     entryFee?: number;
   };
+  userResult?: {
+    finalRank?: number;
+    pointsEarned?: number;
+    teamName?: string;
+  } | null;
   onInvite?: (competitionId: number, competitionName: string) => void;
   onJoin?: (competitionId: number) => void;
+  onDismiss?: (competitionId: number) => void;
 }
 
-export default function CompetitionCard({ competition, onInvite, onJoin }: CompetitionCardProps) {
+export default function CompetitionCard({ competition, userResult, onInvite, onJoin, onDismiss }: CompetitionCardProps) {
   return (
     <Card className={`card-modern hover-lift fade-in group ${competition.isActive ? 'ring-2 ring-military-green/30 border-military-green/50' : ''}`}>
       <CardHeader className="pb-4">
@@ -35,20 +42,56 @@ export default function CompetitionCard({ competition, onInvite, onJoin }: Compe
             <CardTitle className="text-heading text-xl mb-2 group-hover:text-military-green transition-colors">
               {competition.name}
             </CardTitle>
-            {competition.joinWindowStatus === 'open' && (
-              <div className="text-xs text-military-green font-medium bg-military-green/10 px-2 py-1 rounded-full inline-block mb-2">
-                🟢 Join Window Open
+            {competition.isCompleted && userResult ? (
+              <div className="flex items-center gap-2 mb-2">
+                {userResult.finalRank === 1 && (
+                  <div className="text-xs text-yellow-400 font-medium bg-yellow-400/10 px-2 py-1 rounded-full inline-flex items-center gap-1">
+                    <Trophy className="w-3 h-3" />
+                    1st Place Winner!
+                  </div>
+                )}
+                {userResult.finalRank === 2 && (
+                  <div className="text-xs text-gray-300 font-medium bg-gray-300/10 px-2 py-1 rounded-full inline-flex items-center gap-1">
+                    <Medal className="w-3 h-3" />
+                    2nd Place
+                  </div>
+                )}
+                {userResult.finalRank === 3 && (
+                  <div className="text-xs text-orange-400 font-medium bg-orange-400/10 px-2 py-1 rounded-full inline-flex items-center gap-1">
+                    <Medal className="w-3 h-3" />
+                    3rd Place
+                  </div>
+                )}
+                {userResult.finalRank && userResult.finalRank > 3 && (
+                  <div className="text-xs text-gray-400 font-medium bg-gray-400/10 px-2 py-1 rounded-full inline-block">
+                    {userResult.finalRank}th Place
+                  </div>
+                )}
+                {userResult.pointsEarned > 0 && (
+                  <div className="text-xs text-military-green font-medium bg-military-green/10 px-2 py-1 rounded-full inline-flex items-center gap-1">
+                    <Star className="w-3 h-3" />
+                    +{userResult.pointsEarned} pts
+                  </div>
+                )}
               </div>
-            )}
-            {competition.joinWindowStatus === 'closed' && (
-              <div className="text-xs text-red-400 font-medium bg-red-400/10 px-2 py-1 rounded-full inline-block mb-2">
-                🔴 Join Window Closed
-              </div>
-            )}
-            {competition.joinWindowStatus === 'not-opened' && (
-              <div className="text-xs text-yellow-400 font-medium bg-yellow-400/10 px-2 py-1 rounded-full inline-block mb-2">
-                🟡 Join Window Not Yet Open
-              </div>
+            ) : (
+              <>
+                {competition.joinWindowStatus === 'open' && (
+                  <div className="text-xs text-military-green font-medium bg-military-green/10 px-2 py-1 rounded-full inline-block mb-2">
+                    🟢 Join Window Open
+                  </div>
+                )}
+                {competition.joinWindowStatus === 'closed' && (
+                  <div className="text-xs text-red-400 font-medium bg-red-400/10 px-2 py-1 rounded-full inline-block mb-2">
+                    🔴 Join Window Closed
+                  </div>
+                )}
+                {competition.joinWindowStatus === 'not-opened' && (
+                  <div className="text-xs text-yellow-400 font-medium bg-yellow-400/10 px-2 py-1 rounded-full inline-block mb-2">
+                    🟡 Join Window Not Yet Open
+                  </div>
+                )}
+              </>
             )}
           </div>
           <Badge 
@@ -155,29 +198,62 @@ export default function CompetitionCard({ competition, onInvite, onJoin }: Compe
         
         <div className="mt-6 pt-4 border-t border-border-subtle">
           <div className="flex gap-3">
-            <Button 
-              onClick={() => onJoin?.(competition.id)}
-              disabled={!competition.canJoin}
-              className={`flex-1 ${competition.canJoin ? 'btn-primary' : 'btn-secondary opacity-50 cursor-not-allowed'}`}
-            >
-              <Trophy className="mr-2 h-4 w-4" />
-              {competition.joinWindowStatus === 'open' ? 
-                (competition.paymentType === 'one_time' && competition.entryFee ? 
-                  `Join - $${(competition.entryFee / 100).toFixed(2)}` : 
-                  "Join Now"
-                ) : 
-               competition.joinWindowStatus === 'closed' ? "Join Closed" : 
-               competition.joinWindowStatus === 'not-opened' ? "Not Open Yet" : 
-               competition.isActive ? "Join Now" : "Register Interest"}
-            </Button>
-            {onInvite && (
-              <Button 
-                onClick={() => onInvite(competition.id, competition.name)}
-                variant="outline"
-                className="btn-secondary border-military-green text-military-green hover:bg-military-green hover:text-white"
-              >
-                <Share2 className="h-4 w-4" />
-              </Button>
+            {competition.isCompleted && userResult ? (
+              // Show results and dismiss option for completed competitions
+              <>
+                <div className="flex-1 space-y-2">
+                  {userResult.teamName && (
+                    <p className="text-sm text-gray-300">
+                      Team: <span className="text-white font-medium">{userResult.teamName}</span>
+                    </p>
+                  )}
+                  <p className="text-sm text-gray-300">
+                    Final Ranking: <span className="text-military-green font-medium">
+                      {userResult.finalRank === 1 ? '1st' : 
+                       userResult.finalRank === 2 ? '2nd' : 
+                       userResult.finalRank === 3 ? '3rd' : 
+                       `${userResult.finalRank}th`} Place
+                    </span>
+                  </p>
+                </div>
+                <Button 
+                  onClick={() => onDismiss?.(competition.id)}
+                  variant="outline"
+                  size="sm"
+                  className="btn-secondary border-gray-500 text-gray-400 hover:bg-red-500 hover:text-white hover:border-red-500"
+                >
+                  <X className="mr-1 h-3 w-3" />
+                  Dismiss
+                </Button>
+              </>
+            ) : (
+              // Show join options for active competitions
+              <>
+                <Button 
+                  onClick={() => onJoin?.(competition.id)}
+                  disabled={!competition.canJoin}
+                  className={`flex-1 ${competition.canJoin ? 'btn-primary' : 'btn-secondary opacity-50 cursor-not-allowed'}`}
+                >
+                  <Trophy className="mr-2 h-4 w-4" />
+                  {competition.joinWindowStatus === 'open' ? 
+                    (competition.paymentType === 'one_time' && competition.entryFee ? 
+                      `Join - $${(competition.entryFee / 100).toFixed(2)}` : 
+                      "Join Now"
+                    ) : 
+                   competition.joinWindowStatus === 'closed' ? "Join Closed" : 
+                   competition.joinWindowStatus === 'not-opened' ? "Not Open Yet" : 
+                   competition.isActive ? "Join Now" : "Register Interest"}
+                </Button>
+                {onInvite && (
+                  <Button 
+                    onClick={() => onInvite(competition.id, competition.name)}
+                    variant="outline"
+                    className="btn-secondary border-military-green text-military-green hover:bg-military-green hover:text-white"
+                  >
+                    <Share2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </>
             )}
           </div>
         </div>

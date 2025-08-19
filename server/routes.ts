@@ -99,7 +99,7 @@ if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
 }
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2024-06-20",
+  apiVersion: "2023-10-16",
 });
 
 // Competition completion and reward logic
@@ -117,7 +117,7 @@ async function completeCompetition(competitionId: number) {
     const teams = await storage.getTeamsByCompetition(competitionId);
     const sortedTeams = teams.sort((a, b) => (b.points || 0) - (a.points || 0));
     
-    // Distribute rewards based on placement
+    // Distribute rewards based on placement and record in history
     for (let i = 0; i < sortedTeams.length; i++) {
       const team = sortedTeams[i];
       const placement = i + 1;
@@ -136,23 +136,36 @@ async function completeCompetition(competitionId: number) {
         captainPoints = 500;
         memberPoints = 250;
       } else {
-        // No rewards for 3rd place and below
-        continue;
+        // Still record participation for 3rd place and below
+        captainPoints = 0;
+        memberPoints = 0;
       }
       
-      // Award points to team members
+      // Award points to team members and record history
       for (const member of teamMembers) {
         const user = await storage.getUser(member.userId!);
         if (!user) continue;
         
         const pointsToAward = member.role === 'captain' ? captainPoints : memberPoints;
-        const newPointTotal = (user.points || 0) + pointsToAward;
         
-        await storage.updateUser(user.id, {
-          points: newPointTotal
+        if (pointsToAward > 0) {
+          const newPointTotal = (user.points || 0) + pointsToAward;
+          await storage.updateUser(user.id, {
+            points: newPointTotal
+          });
+        }
+        
+        // Record competition history for all participants
+        await storage.createCompetitionHistory({
+          userId: user.id,
+          competitionId: competitionId,
+          teamId: team.id,
+          finalRank: placement,
+          pointsEarned: pointsToAward,
+          completedAt: new Date()
         });
         
-        console.log(`Awarded ${pointsToAward} points to ${user.username} (${member.role}) from team ${team.name} (${placement === 1 ? '1st' : '2nd'} place)`);
+        console.log(`${pointsToAward > 0 ? `Awarded ${pointsToAward} points to` : 'Recorded participation for'} ${user.username} (${member.role}) from team ${team.name} (${placement === 1 ? '1st' : placement === 2 ? '2nd' : placement === 3 ? '3rd' : `${placement}th`} place)`);
       }
     }
     
@@ -3367,6 +3380,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('Free competition entry error:', error);
       res.status(500).json({ message: error.message || "Error joining free competition" });
+    }
+  });
+
+  // Get user's competition results and current participation
+  app.get("/api/users/:id/competition-results", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      // Get competition history (completed competitions)
+      const history = await storage.getCompetitionHistory(userId);
+      
+      // Get current competition entries
+      const entries = await storage.getUserCompetitionEntries(userId);
+      
+      // Enrich history with competition details
+      const enrichedHistory = await Promise.all(
+        history.map(async (record) => {
+          const competition = await storage.getCompetition(record.competitionId!);
+          const team = record.teamId ? await storage.getTeam(record.teamId) : null;
+          return {
+            ...record,
+            competition,
+            team
+          };
+        })
+      );
+      
+      // Enrich entries with competition details
+      const enrichedEntries = await Promise.all(
+        entries.map(async (entry) => {
+          const competition = await storage.getCompetition(entry.competitionId!);
+          return {
+            ...entry,
+            competition
+          };
+        })
+      );
+      
+      res.json({
+        history: enrichedHistory,
+        currentEntries: enrichedEntries
+      });
+    } catch (error) {
+      console.error('Error fetching competition results:', error);
+      res.status(500).json({ message: "Error fetching competition results" });
+    }
+  });
+
+  // Dismiss/leave a completed competition (remove from user's view)
+  app.post("/api/competitions/:id/dismiss", async (req, res) => {
+    try {
+      const competitionId = parseInt(req.params.id);
+      const { userId } = req.body;
+      
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
+
+      const competition = await storage.getCompetition(competitionId);
+      if (!competition) {
+        return res.status(404).json({ message: "Competition not found" });
+      }
+
+      if (!competition.isCompleted) {
+        return res.status(400).json({ message: "Can only dismiss completed competitions" });
+      }
+
+      // Remove the user's competition entry (this dismisses it from their view)
+      const entry = await storage.getCompetitionEntry(userId, competitionId);
+      if (entry) {
+        await storage.deleteCompetitionEntry(entry.id);
+      }
+
+      res.json({ message: "Competition dismissed successfully" });
+    } catch (error) {
+      console.error('Error dismissing competition:', error);
+      res.status(500).json({ message: "Error dismissing competition" });
     }
   });
 

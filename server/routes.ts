@@ -105,6 +105,16 @@ async function completeCompetition(competitionId: number) {
   try {
     console.log(`Completing competition ${competitionId}...`);
     
+    // Get competition details to check if it's free
+    const competition = await storage.getCompetition(competitionId);
+    if (!competition) {
+      console.error(`Competition ${competitionId} not found`);
+      return;
+    }
+    
+    const isFreeCompetition = competition.paymentType === 'free';
+    console.log(`Competition type: ${competition.paymentType} ${isFreeCompetition ? '(no completion rewards)' : '(with completion rewards)'}`);
+    
     // Mark competition as completed
     await storage.updateCompetition(competitionId, {
       isCompleted: true,
@@ -126,17 +136,20 @@ async function completeCompetition(competitionId: number) {
       let captainPoints = 0;
       let memberPoints = 0;
       
-      // Determine points based on placement
-      if (placement === 1) {
-        captainPoints = 1000;
-        memberPoints = 500;
-      } else if (placement === 2) {
-        captainPoints = 500;
-        memberPoints = 250;
-      } else {
-        // Still record participation for 3rd place and below
-        captainPoints = 0;
-        memberPoints = 0;
+      // Only award completion points for paid competitions
+      if (!isFreeCompetition) {
+        // Determine points based on placement
+        if (placement === 1) {
+          captainPoints = 1000;
+          memberPoints = 500;
+        } else if (placement === 2) {
+          captainPoints = 500;
+          memberPoints = 250;
+        } else {
+          // Still record participation for 3rd place and below
+          captainPoints = 0;
+          memberPoints = 0;
+        }
       }
       
       // Award points to team members and record history
@@ -163,7 +176,11 @@ async function completeCompetition(competitionId: number) {
           completedAt: new Date()
         });
         
-        console.log(`${pointsToAward > 0 ? `Awarded ${pointsToAward} points to` : 'Recorded participation for'} ${user.username} (${member.role}) from team ${team.name} (${placement === 1 ? '1st' : placement === 2 ? '2nd' : placement === 3 ? '3rd' : `${placement}th`} place)`);
+        if (isFreeCompetition) {
+          console.log(`Recorded participation for ${user.username} (${member.role}) from team ${team.name} (${placement === 1 ? '1st' : placement === 2 ? '2nd' : placement === 3 ? '3rd' : `${placement}th`} place) - Free competition, no completion rewards`);
+        } else {
+          console.log(`${pointsToAward > 0 ? `Awarded ${pointsToAward} points to` : 'Recorded participation for'} ${user.username} (${member.role}) from team ${team.name} (${placement === 1 ? '1st' : placement === 2 ? '2nd' : placement === 3 ? '3rd' : `${placement}th`} place)`);
+        }
       }
     }
     

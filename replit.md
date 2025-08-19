@@ -128,3 +128,10 @@ The platform follows a military/tactical theme across its UI/UX, language, and i
 - **ADMIN INTERFACE**: Added configuration UI in admin panel for text input requirements
 - **FIXED**: TypeScript compilation errors that were causing admin page crashes during text input configuration
 - **STATUS**: Text input requirements fully operational with 50-word minimum, 100-word maximum
+
+### Competition Reward System Update (August 2025)
+- **UPDATED**: Free competitions no longer award point rewards upon completion
+- **PRESERVED**: Individual activity submissions still award points in free competitions (15/30 points per activity)
+- **MAINTAINED**: Paid competitions continue to award completion rewards (1st: 1000/500 points, 2nd: 500/250 points for captain/members)
+- **LOGGING**: Enhanced completion logging to distinguish between free and paid competition types
+- **STATUS**: Competition reward system properly differentiated between free and paid competitions

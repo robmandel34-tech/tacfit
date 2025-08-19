@@ -1114,42 +1114,7 @@ export default function Profile() {
 
 
 
-            {/* Competition History */}
-            <Card className="bg-tactical-gray-light border-tactical-gray">
-              <CardHeader>
-                <CardTitle className="text-white">Competition History</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {totalCompetitions === 0 ? (
-                  <div className="text-center py-8">
-                    <Calendar className="mx-auto h-12 w-12 text-gray-300 mb-4" />
-                    <p className="text-gray-300">No competition history yet</p>
-                    <p className="text-sm text-gray-400">Join your first competition to get started</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {history.map((record: any) => (
-                      <div key={record.id} className="bg-tactical-gray-lighter rounded-lg p-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="text-white font-bold">{record.competition?.name}</h3>
-                            <p className="text-gray-300 text-sm">Team: {record.team?.name}</p>
-                          </div>
-                          <div className="text-right">
-                            <Badge variant="outline" className="mb-2">
-                              {record.finalRank ? `#${record.finalRank}` : "Completed"}
-                            </Badge>
-                            <div className="text-sm text-gray-400">
-                              {record.pointsEarned} points earned
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+
           </div>
         </div>
       </main>

@@ -48,7 +48,7 @@ function Router() {
         <Route path="/invite/:token" component={Invitation} />
         <Route path="/team-invite/:token" component={TeamInvite} />
         <Route path="/admin" component={AdminPage} />
-        <Route path="/checkout" component={Checkout} />
+        <Route path="/checkout/:id" component={Checkout} />
         <Route path="/subscribe" component={Subscribe} />
         <Route path="/help/competition-system" component={CompetitionSystemHelp} />
         <Route path="/help/team-formation" component={TeamFormationHelp} />

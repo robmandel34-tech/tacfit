@@ -45,6 +45,11 @@ export const competitions = pgTable("competitions", {
   targetGoals: text("target_goals").array().default([]),
   isCompleted: boolean("is_completed").default(false),
   completedAt: timestamp("completed_at"),
+  // Payment fields
+  entryFee: integer("entry_fee").default(0), // Fee in cents (0 = free)
+  paymentType: text("payment_type").default("free"), // "free", "one_time", "subscription"
+  stripeProductId: text("stripe_product_id"), // Stripe product ID for paid competitions
+  stripePriceId: text("stripe_price_id"), // Stripe price ID for paid competitions
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -177,6 +182,7 @@ export const competitionEntries = pgTable("competition_entries", {
   paymentStatus: text("payment_status").default("pending"), // pending, completed, failed, refunded
   stripePaymentIntentId: text("stripe_payment_intent_id"),
   pointsUsed: integer("points_used").default(0),
+  amountPaid: integer("amount_paid").default(0), // Amount paid in cents
   createdAt: timestamp("created_at").defaultNow(),
   paymentMethod: text("payment_method"), // Additional method info
   refundedAt: timestamp("refunded_at"), // When refund was processed

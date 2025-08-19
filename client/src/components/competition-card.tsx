@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Trophy, Calendar, Users, Target, Share2, Activity, CheckCircle } from "lucide-react";
+import { Trophy, Calendar, Users, Target, Share2, Activity, CheckCircle, DollarSign } from "lucide-react";
 
 interface CompetitionCardProps {
   competition: {
@@ -19,6 +19,8 @@ interface CompetitionCardProps {
     targetGoals?: string[];
     joinWindowStatus?: string;
     canJoin?: boolean;
+    paymentType?: 'free' | 'one_time';
+    entryFee?: number;
   };
   onInvite?: (competitionId: number, competitionName: string) => void;
   onJoin?: (competitionId: number) => void;
@@ -92,6 +94,20 @@ export default function CompetitionCard({ competition, onInvite, onJoin }: Compe
             <Users className="mr-3 h-4 w-4 text-steel-blue" />
             <span className="font-medium">Max {competition.maxTeams} squads</span>
           </div>
+
+          {/* Payment Information */}
+          <div className="flex items-center text-sm text-muted">
+            <DollarSign className="mr-3 h-4 w-4 text-military-green" />
+            <div className="flex flex-col">
+              <span className="font-medium text-military-green text-xs">Entry Cost:</span>
+              <span className="font-medium">
+                {competition.paymentType === 'free' || !competition.entryFee ? 
+                  'Free to join' : 
+                  `$${(competition.entryFee / 100).toFixed(2)} per participant`
+                }
+              </span>
+            </div>
+          </div>
           
           {competition.requiredActivities && competition.requiredActivities.length > 0 && (
             <>
@@ -145,7 +161,11 @@ export default function CompetitionCard({ competition, onInvite, onJoin }: Compe
               className={`flex-1 ${competition.canJoin ? 'btn-primary' : 'btn-secondary opacity-50 cursor-not-allowed'}`}
             >
               <Trophy className="mr-2 h-4 w-4" />
-              {competition.joinWindowStatus === 'open' ? "Join Now" : 
+              {competition.joinWindowStatus === 'open' ? 
+                (competition.paymentType === 'one_time' && competition.entryFee ? 
+                  `Join - $${(competition.entryFee / 100).toFixed(2)}` : 
+                  "Join Now"
+                ) : 
                competition.joinWindowStatus === 'closed' ? "Join Closed" : 
                competition.joinWindowStatus === 'not-opened' ? "Not Open Yet" : 
                competition.isActive ? "Join Now" : "Register Interest"}

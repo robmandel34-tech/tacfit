@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { useAuthRequired } from "@/lib/auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -13,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy, Users } from "lucide-react";
 
 export default function Competitions() {
+  const [, setLocation] = useLocation();
   const { user, isLoading } = useAuthRequired();
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [teamSelectionModalOpen, setTeamSelectionModalOpen] = useState(false);
@@ -100,14 +102,19 @@ export default function Competitions() {
   const handleJoin = (competitionId: number, competitionName: string) => {
     const competition = competitions.find(c => c.id === competitionId);
     if (competition) {
-      setSelectedCompetition({ 
-        id: competition.id, 
-        name: competition.name, 
-        description: competition.description 
-      });
-      
-      // Open payment modal to choose payment method (points or stripe)
-      setPaymentModalOpen(true);
+      // Check if competition requires payment
+      if (competition.paymentType === 'one_time' && competition.entryFee) {
+        // Redirect to checkout page for paid competitions
+        setLocation(`/checkout/${competitionId}`);
+      } else {
+        // For free competitions, continue with existing flow
+        setSelectedCompetition({ 
+          id: competition.id, 
+          name: competition.name, 
+          description: competition.description 
+        });
+        setPaymentModalOpen(true);
+      }
     }
   };
 

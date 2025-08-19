@@ -99,7 +99,7 @@ if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
 }
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2025-06-30.basil",
+  apiVersion: "2024-06-20",
 });
 
 // Competition completion and reward logic
@@ -3206,6 +3206,167 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('Admin get mood logs error:', error);
       res.status(500).json({ message: error.message || "Error fetching mood logs" });
+    }
+  });
+
+  // Stripe payment intent for competition entry
+  app.post("/api/create-payment-intent", async (req, res) => {
+    try {
+      const { amount, competitionId, userId } = req.body;
+      
+      if (!amount || !competitionId || !userId) {
+        return res.status(400).json({ message: "Amount, competition ID, and user ID are required" });
+      }
+
+      // Verify competition exists and is paid
+      const competition = await storage.getCompetition(competitionId);
+      if (!competition) {
+        return res.status(404).json({ message: "Competition not found" });
+      }
+
+      if (competition.paymentType !== 'one_time' || !competition.entryFee) {
+        return res.status(400).json({ message: "Competition does not require payment" });
+      }
+
+      // Verify amount matches competition entry fee
+      if (amount !== competition.entryFee) {
+        return res.status(400).json({ message: "Payment amount does not match competition entry fee" });
+      }
+
+      // Get user for metadata
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        metadata: {
+          competitionId: competitionId.toString(),
+          userId: userId.toString(),
+          competitionName: competition.name,
+          userEmail: user.email
+        },
+        description: `Entry fee for ${competition.name} competition`
+      });
+
+      res.json({ clientSecret: paymentIntent.client_secret });
+    } catch (error: any) {
+      console.error("Error creating payment intent:", error);
+      res.status(500).json({ message: "Error creating payment intent: " + error.message });
+    }
+  });
+
+  // Competition entry after successful payment
+  app.post("/api/competitions/:id/enter-with-payment", async (req, res) => {
+    try {
+      const competitionId = parseInt(req.params.id);
+      const { userId, paymentIntentId } = req.body;
+      
+      if (!userId || !paymentIntentId) {
+        return res.status(400).json({ message: "User ID and payment intent ID are required" });
+      }
+
+      // Verify payment intent with Stripe
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+      if (paymentIntent.status !== 'succeeded') {
+        return res.status(400).json({ message: "Payment has not been completed successfully" });
+      }
+
+      // Verify payment metadata matches request
+      if (parseInt(paymentIntent.metadata.competitionId) !== competitionId || 
+          parseInt(paymentIntent.metadata.userId) !== userId) {
+        return res.status(400).json({ message: "Payment verification failed" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const competition = await storage.getCompetition(competitionId);
+      if (!competition) {
+        return res.status(404).json({ message: "Competition not found" });
+      }
+
+      // Check if user already has an entry for this competition
+      const existingEntry = await storage.getCompetitionEntry(userId, competitionId);
+      if (existingEntry) {
+        return res.status(400).json({ message: "You have already entered this competition" });
+      }
+
+      // Create competition entry
+      const entry = await storage.createCompetitionEntry({
+        userId: userId,
+        competitionId: competitionId,
+        paymentType: 'stripe',
+        paymentStatus: 'completed',
+        paymentMethod: 'card',
+        stripePaymentIntentId: paymentIntentId,
+        amountPaid: paymentIntent.amount
+      });
+
+      res.json({
+        message: "Successfully entered competition with payment",
+        entry
+      });
+
+    } catch (error: any) {
+      console.error('Stripe payment entry error:', error);
+      res.status(500).json({ message: error.message || "Error processing payment entry" });
+    }
+  });
+
+  // Competition entry for free competitions
+  app.post("/api/competitions/:id/enter-free", async (req, res) => {
+    try {
+      const competitionId = parseInt(req.params.id);
+      const { userId } = req.body;
+      
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const competition = await storage.getCompetition(competitionId);
+      if (!competition) {
+        return res.status(404).json({ message: "Competition not found" });
+      }
+
+      // Verify competition is free
+      if (competition.paymentType !== 'free') {
+        return res.status(400).json({ message: "This competition requires payment" });
+      }
+
+      // Check if user already has an entry for this competition
+      const existingEntry = await storage.getCompetitionEntry(userId, competitionId);
+      if (existingEntry) {
+        return res.status(400).json({ message: "You have already entered this competition" });
+      }
+
+      // Create competition entry
+      const entry = await storage.createCompetitionEntry({
+        userId: userId,
+        competitionId: competitionId,
+        paymentType: 'free',
+        paymentStatus: 'completed',
+        paymentMethod: 'none',
+        amountPaid: 0
+      });
+
+      res.json({
+        message: "Successfully joined the free competition",
+        entry
+      });
+
+    } catch (error: any) {
+      console.error('Free competition entry error:', error);
+      res.status(500).json({ message: error.message || "Error joining free competition" });
     }
   });
 

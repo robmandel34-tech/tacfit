@@ -104,3 +104,9 @@ The platform follows a military/tactical theme across its UI/UX, language, and i
 - **ROUTES**: Added /api/auth/verify-email, /api/auth/resend-verification, and /verify-email page
 - **DEVELOPMENT EXCEPTION**: test.com accounts skip email verification for development convenience
 - **STATUS**: Complete email verification workflow operational, new users must verify before platform access (except test.com accounts)
+
+### User Deletion Foreign Key Fix (August 2025)
+- **ISSUE**: Admin user deletion failing due to foreign key constraints with activities table
+- **RESOLUTION**: Updated deleteUser function to cascade delete all related data before removing user
+- **AFFECTED TABLES**: activities, mood entries, team memberships, buddy requests, chat messages, phone invitations, activity interactions
+- **STATUS**: User deletion now works properly for admin operations

@@ -62,7 +62,33 @@ export class DatabaseStorage implements IStorage {
 
   async deleteUser(id: number): Promise<boolean> {
     try {
-      // Delete user and all associated data (cascade will handle most relationships)
+      // First, delete all related data that references this user
+      
+      // Delete user's activity likes, comments, and flags
+      await db.delete(activityLikes).where(eq(activityLikes.userId, id));
+      await db.delete(activityComments).where(eq(activityComments.userId, id));
+      await db.delete(activityFlags).where(eq(activityFlags.userId, id));
+      
+      // Delete user's activities
+      await db.delete(activities).where(eq(activities.userId, id));
+      
+      // Delete user's mood entries
+      await db.delete(moodEntries).where(eq(moodEntries.userId, id));
+      
+      // Delete user's team memberships
+      await db.delete(teamMembers).where(eq(teamMembers.userId, id));
+      
+      // Delete user's buddy relationships (both directions)
+      await db.delete(buddyRequests).where(eq(buddyRequests.senderId, id));
+      await db.delete(buddyRequests).where(eq(buddyRequests.receiverId, id));
+      
+      // Delete user's chat messages
+      await db.delete(chatMessages).where(eq(chatMessages.senderId, id));
+      
+      // Delete user's phone invitations
+      await db.delete(phoneInvitations).where(eq(phoneInvitations.invitedBy, id));
+      
+      // Finally, delete the user
       const result = await db.delete(users).where(eq(users.id, id));
       return (result.rowCount ?? 0) > 0;
     } catch (error) {

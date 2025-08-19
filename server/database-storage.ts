@@ -196,6 +196,14 @@ export class DatabaseStorage implements IStorage {
     return team || undefined;
   }
 
+  async updateActivitiesTeamId(oldTeamId: number, newTeamId: number | null): Promise<boolean> {
+    const result = await db
+      .update(activities)
+      .set({ teamId: newTeamId })
+      .where(eq(activities.teamId, oldTeamId));
+    return (result.rowCount ?? 0) > 0;
+  }
+
   async deleteTeam(id: number): Promise<boolean> {
     const result = await db.delete(teams).where(eq(teams.id, id));
     return (result.rowCount ?? 0) > 0;

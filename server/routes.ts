@@ -1593,12 +1593,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const success = await storage.removeTeamMember(memberToRemove.teamId, memberToRemove.userId);
       
       if (success) {
-        // Check if team is now empty and delete it
+        // Check if team is now empty and handle it
         const remainingMembers = await storage.getTeamMembers(memberToRemove.teamId);
         if (remainingMembers.length === 0) {
-          await storage.deleteTeam(memberToRemove.teamId);
-          captainshipMessage = " Team was disbanded as it became empty.";
-          console.log(`Deleted empty team ${teamToLeave.name} after last member left`);
+          // First, update any activities that reference this team to have null teamId
+          try {
+            await storage.updateActivitiesTeamId(memberToRemove.teamId, null);
+            await storage.deleteTeam(memberToRemove.teamId);
+            captainshipMessage = " Team was disbanded as it became empty.";
+            console.log(`Deleted empty team ${teamToLeave.name} after last member left`);
+          } catch (error) {
+            console.error(`Failed to delete team ${memberToRemove.teamId}:`, error);
+            captainshipMessage = " Team is now empty but could not be disbanded due to existing activities.";
+          }
         }
         
         const message = competitionStarted 

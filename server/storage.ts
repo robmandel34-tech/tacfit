@@ -33,6 +33,7 @@ export interface IStorage {
   createTeam(team: InsertTeam): Promise<Team>;
   updateTeam(id: number, updates: Partial<Team>): Promise<Team | undefined>;
   deleteTeam(id: number): Promise<boolean>;
+  updateActivitiesTeamId(oldTeamId: number, newTeamId: number | null): Promise<boolean>;
   
   // Team member operations
   getTeamMembers(teamId: number): Promise<TeamMember[]>;

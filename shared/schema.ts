@@ -21,6 +21,11 @@ export const users = pgTable("users", {
   referredBy: integer("referred_by"),
   referralToken: text("referral_token"),
   onboardingCompleted: boolean("onboarding_completed").default(false),
+  
+  // Email verification fields
+  isEmailVerified: boolean("is_email_verified").default(false),
+  emailVerificationToken: text("email_verification_token"),
+  emailVerificationTokenExpiresAt: timestamp("email_verification_token_expires_at"),
 
   createdAt: timestamp("created_at").defaultNow(),
 });

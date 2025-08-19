@@ -33,6 +33,11 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
+  async getUserByEmailVerificationToken(token: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.emailVerificationToken, token));
+    return user || undefined;
+  }
+
   async getUserByUsername(username: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.username, username));
     return user || undefined;
@@ -609,7 +614,7 @@ export class DatabaseStorage implements IStorage {
           eq(missionTasks.assignedTo, userId.toString()),
           eq(missionTasks.completed, false),
           eq(missionTasks.status, 'pending'),
-          eq(missionTasks.teamId, currentMembership.teamId)
+          eq(missionTasks.teamId, currentMembership.teamId!)
         )
       )
       .orderBy(desc(missionTasks.createdAt));

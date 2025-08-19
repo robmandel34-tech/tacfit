@@ -14,7 +14,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (username: string, email: string, password: string, phoneNumber?: string) => Promise<void>;
+  register: (username: string, email: string, password: string, phoneNumber?: string) => Promise<any>;
   logout: () => void;
   updateUser: (updatedUser: Partial<User>) => void;
   refreshUser: () => Promise<void>;
@@ -71,7 +71,10 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
       });
 
       if (!response.ok) {
-        throw new Error("Login failed");
+        const errorData = await response.json();
+        const error = new Error(errorData.message || "Login failed");
+        (error as any).requiresEmailVerification = errorData.requiresEmailVerification;
+        throw error;
       }
 
       const userData = await response.json();
@@ -97,18 +100,14 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
       });
 
       if (!response.ok) {
-        throw new Error("Registration failed");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Registration failed");
       }
 
       const data = await response.json();
-      setUser(data.user);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      setLocation("/");
       
-      // Show referral success message if applicable
-      if (data.referralAwarded) {
-        console.log("Referral bonus awarded to inviter!");
-      }
+      // Return data to let component handle verification flow
+      return data;
     } catch (error) {
       throw error;
     }

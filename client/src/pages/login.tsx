@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ShieldPlus } from "lucide-react";
+import { ShieldPlus, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Login() {
@@ -14,6 +14,41 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showResendVerification, setShowResendVerification] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+
+  const handleResendVerification = async () => {
+    setIsResending(true);
+    try {
+      const response = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Verification email sent",
+          description: "Please check your email for the verification link.",
+        });
+      } else {
+        const data = await response.json();
+        toast({
+          title: "Failed to send email",
+          description: data.message || "Please try again later.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Unable to resend verification email.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsResending(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,12 +60,22 @@ export default function Login() {
         title: "Mission briefing ready",
         description: "Access granted. Welcome back, operator.",
       });
-    } catch (error) {
-      toast({
-        title: "Access denied",
-        description: "Invalid credentials. Check your intel and try again.",
-        variant: "destructive",
-      });
+    } catch (error: any) {
+      // Check if email verification is required
+      if (error?.requiresEmailVerification) {
+        setShowResendVerification(true);
+        toast({
+          title: "Email verification required",
+          description: "Please verify your email before logging in.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Access denied",
+          description: error?.message || "Invalid credentials. Check your intel and try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -49,8 +94,17 @@ export default function Login() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
+          {showResendVerification ? (
+            <ResendVerificationForm
+              userEmail={email}
+              isResending={isResending}
+              onResend={handleResendVerification}
+              onBackToLogin={() => setShowResendVerification(false)}
+            />
+          ) : (
+            <>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
               <Label htmlFor="email" className="text-gray-300 font-medium">Email</Label>
               <Input
                 id="email"
@@ -82,16 +136,62 @@ export default function Login() {
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
-          <div className="text-center">
+            
+            <div className="text-center">
             <span className="text-secondary text-sm">
-              Don't have an account?{" "}
+              Need tactical clearance?{" "}
               <Link href="/register" className="text-military-green hover:text-military-green-light font-semibold transition-colors">
-                Sign up
+                Join the force
               </Link>
             </span>
-          </div>
+            </div>
+            </>
+          )}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+// Resend verification form component
+function ResendVerificationForm({
+  userEmail,
+  isResending,
+  onResend,
+  onBackToLogin,
+}: {
+  userEmail: string;
+  isResending: boolean;
+  onResend: () => void;
+  onBackToLogin: () => void;
+}) {
+  return (
+    <div className="text-center space-y-4">
+      <Mail className="h-16 w-16 text-military-green mx-auto mb-4" />
+      <h3 className="text-xl font-semibold text-heading">Email Verification Required</h3>
+      <p className="text-muted">
+        Your account requires email verification before you can log in.
+      </p>
+      <p className="text-sm text-muted">
+        Check your email for the verification link, or request a new one below.
+      </p>
+      
+      <div className="space-y-3 pt-4">
+        <Button
+          onClick={onResend}
+          disabled={isResending}
+          className="w-full bg-military-green hover:bg-military-green/90"
+        >
+          {isResending ? "Sending..." : "Resend Verification Email"}
+        </Button>
+        <Button
+          onClick={onBackToLogin}
+          variant="ghost"
+          className="w-full text-muted hover:text-primary"
+        >
+          Back to Login
+        </Button>
+      </div>
     </div>
   );
 }

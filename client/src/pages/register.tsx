@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield } from "lucide-react";
+import { Shield, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Register() {
@@ -15,21 +15,34 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showVerificationMessage, setShowVerificationMessage] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      await register(username, email, password);
-      toast({
-        title: "Operator registered",
-        description: "Your tactical command access has been granted.",
-      });
-    } catch (error) {
+      const result = await register(username, email, password);
+      
+      // Check if email verification is required
+      if (result?.requiresEmailVerification) {
+        setUserEmail(email);
+        setShowVerificationMessage(true);
+        toast({
+          title: "Registration successful",
+          description: "Please check your email to verify your account.",
+        });
+      } else {
+        toast({
+          title: "Operator registered",
+          description: "Your tactical command access has been granted.",
+        });
+      }
+    } catch (error: any) {
       toast({
         title: "Registration denied",
-        description: "Unable to process registration. Check your details and try again.",
+        description: error?.message || "Unable to process registration. Check your details and try again.",
         variant: "destructive",
       });
     } finally {
@@ -50,8 +63,15 @@ export default function Register() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
+          {showVerificationMessage ? (
+            <EmailVerificationNotice 
+              userEmail={userEmail} 
+              onBackToRegister={() => setShowVerificationMessage(false)} 
+            />
+          ) : (
+            <>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
               <Label htmlFor="username" className="text-gray-300 font-medium">Username</Label>
               <Input
                 id="username"
@@ -95,16 +115,92 @@ export default function Register() {
               {isLoading ? "Registering operator..." : "Join the Force"}
             </Button>
           </form>
-          <div className="text-center">
+            
+            <div className="text-center">
             <span className="text-secondary text-sm">
               Already have tactical access?{" "}
               <Link href="/login" className="text-military-green hover:text-military-green-light font-semibold transition-colors">
                 Access command center
               </Link>
             </span>
-          </div>
+            </div>
+            </>
+          )}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+// Email verification notice component
+function EmailVerificationNotice({ userEmail, onBackToRegister }: { 
+  userEmail: string; 
+  onBackToRegister: () => void; 
+}) {
+  const { toast } = useToast();
+  const [isResending, setIsResending] = useState(false);
+
+  const handleResendVerification = async () => {
+    setIsResending(true);
+    try {
+      const response = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: userEmail }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Verification email sent",
+          description: "Please check your email for the verification link.",
+        });
+      } else {
+        const data = await response.json();
+        toast({
+          title: "Failed to send email",
+          description: data.message || "Please try again later.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Unable to resend verification email.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  return (
+    <div className="text-center space-y-4">
+      <Mail className="h-16 w-16 text-military-green mx-auto mb-4" />
+      <h3 className="text-xl font-semibold text-heading">Check Your Email</h3>
+      <p className="text-muted">
+        We've sent a verification link to <span className="text-military-green font-medium">{userEmail}</span>
+      </p>
+      <p className="text-sm text-muted">
+        Click the link in the email to verify your account and complete registration.
+      </p>
+      
+      <div className="space-y-3 pt-4">
+        <Button
+          onClick={handleResendVerification}
+          disabled={isResending}
+          variant="outline"
+          className="w-full"
+        >
+          {isResending ? "Sending..." : "Resend Verification Email"}
+        </Button>
+        <Button
+          onClick={onBackToRegister}
+          variant="ghost"
+          className="w-full text-muted hover:text-primary"
+        >
+          Back to Registration
+        </Button>
+      </div>
     </div>
   );
 }

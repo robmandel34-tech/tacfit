@@ -67,7 +67,7 @@ export default function CompetitionCard({ competition, userResult, onInvite, onJ
                     {userResult.finalRank}th Place
                   </div>
                 )}
-                {userResult.pointsEarned > 0 && (
+                {userResult.pointsEarned && userResult.pointsEarned > 0 && (
                   <div className="text-xs text-military-green font-medium bg-military-green/10 px-2 py-1 rounded-full inline-flex items-center gap-1">
                     <Star className="w-3 h-3" />
                     +{userResult.pointsEarned} pts

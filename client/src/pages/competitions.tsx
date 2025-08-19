@@ -200,7 +200,7 @@ export default function Competitions() {
           ) : (
             competitions.map((competition: any) => {
               // Find user result for this competition if it's completed
-              const userResult = userResults?.history?.find(
+              const userResult = (userResults as any)?.history?.find(
                 (h: any) => h.competitionId === competition.id
               );
               

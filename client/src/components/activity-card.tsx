@@ -20,6 +20,7 @@ interface ActivityCardProps {
     type: string;
     description: string;
     quantity?: string;
+    textInput?: string; // Add text input field
     evidenceUrl?: string;
     evidenceType?: string; // Add evidence type field (video, photo, etc.)
     imageUrl?: string;
@@ -306,6 +307,13 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
                 {activity.quantity && activity.description && ' - '}
                 {activity.description}
               </p>
+              {activity.textInput && (
+                <div className="mt-3 p-3 bg-tactical-gray-lighter rounded-lg border border-gray-600">
+                  <p className="text-gray-300 text-sm leading-relaxed">
+                    {activity.textInput}
+                  </p>
+                </div>
+              )}
               {activity.competition && (
                 <p className="text-xs text-military-green mt-1 flex items-center gap-1">
                   <Mountain className="h-3 w-3" />

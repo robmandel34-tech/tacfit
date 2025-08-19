@@ -308,36 +308,6 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
                 {activity.quantity && activity.description && ' - '}
                 {activity.description}
               </p>
-              {activity.textInput && (
-                <div className="mt-3 p-3 bg-tactical-gray-lighter rounded-lg border border-gray-600">
-                  <p className="text-gray-300 text-sm leading-relaxed">
-                    {isTextExpanded 
-                      ? activity.textInput 
-                      : activity.textInput.length > 150 
-                        ? `${activity.textInput.substring(0, 150)}...`
-                        : activity.textInput
-                    }
-                  </p>
-                  {activity.textInput.length > 150 && (
-                    <button 
-                      onClick={() => setIsTextExpanded(!isTextExpanded)}
-                      className="mt-2 text-military-green hover:text-military-green-light text-xs flex items-center gap-1 transition-colors"
-                    >
-                      {isTextExpanded ? (
-                        <>
-                          <ChevronUp className="h-3 w-3" />
-                          Show less
-                        </>
-                      ) : (
-                        <>
-                          <ChevronDown className="h-3 w-3" />
-                          Read more
-                        </>
-                      )}
-                    </button>
-                  )}
-                </div>
-              )}
               {activity.competition && (
                 <p className="text-xs text-military-green mt-1 flex items-center gap-1">
                   <Mountain className="h-3 w-3" />
@@ -365,6 +335,40 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
               videoUrl={activity.evidenceUrl && isVideoFile(activity.evidenceUrl) ? activity.evidenceUrl : undefined}
               thumbnailUrl={activity.thumbnailUrl}
             />
+          </div>
+        )}
+        
+        {/* Full-width text input section */}
+        {activity.textInput && (
+          <div className="px-6 py-4 border-t border-gray-600">
+            <div className="p-3 bg-tactical-gray-lighter rounded-lg border border-gray-600">
+              <p className="text-gray-300 text-sm leading-relaxed">
+                {isTextExpanded 
+                  ? activity.textInput 
+                  : activity.textInput.length > 150 
+                    ? `${activity.textInput.substring(0, 150)}...`
+                    : activity.textInput
+                }
+              </p>
+              {activity.textInput.length > 150 && (
+                <button 
+                  onClick={() => setIsTextExpanded(!isTextExpanded)}
+                  className="mt-2 text-military-green hover:text-military-green-light text-xs flex items-center gap-1 transition-colors"
+                >
+                  {isTextExpanded ? (
+                    <>
+                      <ChevronUp className="h-3 w-3" />
+                      Show less
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="h-3 w-3" />
+                      Read more
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
           </div>
         )}
         

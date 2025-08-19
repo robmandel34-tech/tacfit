@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ThumbsUp, MessageCircle, Flag, Users, Image, Mountain, Trash2 } from "lucide-react";
+import { ThumbsUp, MessageCircle, Flag, Users, Image, Mountain, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -56,6 +56,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
   const { user } = useAuth();
   const { toast } = useToast();
   const [showComments, setShowComments] = useState(false);
+  const [isTextExpanded, setIsTextExpanded] = useState(false);
 
 
 
@@ -310,8 +311,31 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
               {activity.textInput && (
                 <div className="mt-3 p-3 bg-tactical-gray-lighter rounded-lg border border-gray-600">
                   <p className="text-gray-300 text-sm leading-relaxed">
-                    {activity.textInput}
+                    {isTextExpanded 
+                      ? activity.textInput 
+                      : activity.textInput.length > 150 
+                        ? `${activity.textInput.substring(0, 150)}...`
+                        : activity.textInput
+                    }
                   </p>
+                  {activity.textInput.length > 150 && (
+                    <button 
+                      onClick={() => setIsTextExpanded(!isTextExpanded)}
+                      className="mt-2 text-military-green hover:text-military-green-light text-xs flex items-center gap-1 transition-colors"
+                    >
+                      {isTextExpanded ? (
+                        <>
+                          <ChevronUp className="h-3 w-3" />
+                          Show less
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="h-3 w-3" />
+                          Read more
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
               )}
               {activity.competition && (

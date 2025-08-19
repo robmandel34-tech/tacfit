@@ -118,3 +118,13 @@ The platform follows a military/tactical theme across its UI/UX, language, and i
 - **RECOMMENDATION**: Configure proper SMTP credentials (SMTP_HOST, SMTP_USER, SMTP_PASS, FROM_EMAIL) for production
 - **WORKAROUND**: Test accounts (@test.com) skip email verification automatically
 - **STATUS**: Email verification system functional with fallback manual verification capability
+
+### Text Input Requirements Implementation (August 2025)
+- **IMPLEMENTED**: Complete text input requirements system for activity types
+- **FEATURES**: Admin configurable text input with custom descriptions and minimum word count validation
+- **DATABASE**: Added requiresTextInput, textInputDescription, textInputMinWords fields to activity types
+- **FRONTEND**: Real-time word count validation with visual feedback in activity submission modal
+- **BACKEND**: Updated activity creation routes to handle and store text input data
+- **ADMIN INTERFACE**: Added configuration UI in admin panel for text input requirements
+- **FIXED**: TypeScript compilation errors that were causing admin page crashes during text input configuration
+- **STATUS**: Text input requirements fully operational with 50-word default minimum

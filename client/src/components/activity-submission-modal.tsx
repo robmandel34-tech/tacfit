@@ -97,9 +97,10 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   const selectedActivityType = competitionActivityTypes.find(at => at.name === type);
   const requiresTextInput = selectedActivityType?.requiresTextInput || false;
   const textInputDescription = selectedActivityType?.textInputDescription || "";
-  const minWords = selectedActivityType?.textInputMinWords || 100;
+  const minWords = selectedActivityType?.textInputMinWords || 50;
+  const maxWords = 100;
   const currentWordCount = countWords(textInput);
-  const isTextInputValid = !requiresTextInput || currentWordCount >= minWords;
+  const isTextInputValid = !requiresTextInput || (currentWordCount >= minWords && currentWordCount <= maxWords);
 
 
 
@@ -384,17 +385,24 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                 className={`bg-tactical-gray-lighter border-2 ${
                   isTextInputValid ? 'border-tactical-gray' : 'border-red-500'
                 } text-white h-32 focus:border-white focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed`}
-                placeholder={!competitionHasStarted ? "Competition not started" : `Write at least ${minWords} words...`}
+                placeholder={!competitionHasStarted ? "Competition not started" : `Write ${minWords}-${maxWords} words...`}
                 disabled={!competitionHasStarted}
                 required
               />
               <div className="flex justify-between items-center mt-2">
-                <div className={`text-sm ${currentWordCount >= minWords ? 'text-green-400' : 'text-gray-400'}`}>
-                  Word count: {currentWordCount} / {minWords} minimum
+                <div className={`text-sm ${
+                  currentWordCount >= minWords && currentWordCount <= maxWords 
+                    ? 'text-green-400' 
+                    : 'text-gray-400'
+                }`}>
+                  Word count: {currentWordCount} / {minWords}-{maxWords} words
                 </div>
-                {currentWordCount < minWords && currentWordCount > 0 && (
+                {currentWordCount > 0 && !isTextInputValid && (
                   <div className="text-xs text-red-400">
-                    {minWords - currentWordCount} more words needed
+                    {currentWordCount < minWords 
+                      ? `${minWords - currentWordCount} more words needed`
+                      : `${currentWordCount - maxWords} words over limit`
+                    }
                   </div>
                 )}
               </div>

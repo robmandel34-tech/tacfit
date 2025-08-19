@@ -191,7 +191,7 @@ export default function AdminPage() {
     isActive: true,
     requiresTextInput: false,
     textInputDescription: '',
-    textInputMinWords: 100
+    textInputMinWords: 50
   });
 
   const [editingActivityType, setEditingActivityType] = useState<ActivityType | null>(null);
@@ -663,7 +663,7 @@ export default function AdminPage() {
       isActive: activityType.isActive,
       requiresTextInput: activityType.requiresTextInput || false,
       textInputDescription: activityType.textInputDescription || '',
-      textInputMinWords: activityType.textInputMinWords || 100
+      textInputMinWords: activityType.textInputMinWords || 50
     });
     setIsCreateActivityTypeOpen(true);
   };
@@ -1636,12 +1636,12 @@ export default function AdminPage() {
                               id="textInputMinWords"
                               type="number"
                               min="10"
-                              max="500"
+                              max="100"
                               value={activityTypeForm.textInputMinWords}
-                              onChange={(e) => setActivityTypeForm(prev => ({ ...prev, textInputMinWords: parseInt(e.target.value) || 100 }))}
+                              onChange={(e) => setActivityTypeForm(prev => ({ ...prev, textInputMinWords: parseInt(e.target.value) || 50 }))}
                               className="bg-tactical-gray-lighter border-tactical-gray text-white"
                             />
-                            <p className="text-xs text-gray-500 mt-1">Users must write at least this many words (default: 100)</p>
+                            <p className="text-xs text-gray-500 mt-1">Users must write at least this many words (minimum: 10, maximum: 100, default: 50)</p>
                           </div>
                         </>
                       )}

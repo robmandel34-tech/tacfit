@@ -97,7 +97,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   const selectedActivityType = competitionActivityTypes.find(at => at.name === type);
   const requiresTextInput = selectedActivityType?.requiresTextInput || false;
   const textInputDescription = selectedActivityType?.textInputDescription || "";
-  const minWords = selectedActivityType?.textInputMinWords || 50;
+  const minWords = selectedActivityType?.textInputMinWords || 100;
   const currentWordCount = countWords(textInput);
   const isTextInputValid = !requiresTextInput || currentWordCount >= minWords;
 

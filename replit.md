@@ -127,4 +127,4 @@ The platform follows a military/tactical theme across its UI/UX, language, and i
 - **BACKEND**: Updated activity creation routes to handle and store text input data
 - **ADMIN INTERFACE**: Added configuration UI in admin panel for text input requirements
 - **FIXED**: TypeScript compilation errors that were causing admin page crashes during text input configuration
-- **STATUS**: Text input requirements fully operational with 50-word default minimum
+- **STATUS**: Text input requirements fully operational with 100-word default minimum

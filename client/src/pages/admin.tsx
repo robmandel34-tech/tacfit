@@ -1535,7 +1535,7 @@ export default function AdminPage() {
                     Create Activity Type
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-tactical-dark border-tactical-gray max-w-md" aria-describedby="activity-type-dialog-description">
+                <DialogContent className="bg-tactical-dark border-tactical-gray max-w-md max-h-[90vh] overflow-y-auto" aria-describedby="activity-type-dialog-description">
                   <DialogHeader>
                     <DialogTitle className="text-white">
                       {editingActivityType ? 'Edit Activity Type' : 'Create New Activity Type'}
@@ -1544,7 +1544,7 @@ export default function AdminPage() {
                   <div id="activity-type-dialog-description" className="sr-only">
                     {editingActivityType ? 'Edit existing activity type settings and measurement units' : 'Create a new activity type with custom measurement units'}
                   </div>
-                  <form onSubmit={handleActivityTypeSubmit} className="space-y-4">
+                  <form onSubmit={handleActivityTypeSubmit} className="space-y-4 overflow-y-auto max-h-[70vh] pr-2">
                     <div>
                       <Label htmlFor="name" className="text-gray-300">Activity Name (System Key)</Label>
                       <Input

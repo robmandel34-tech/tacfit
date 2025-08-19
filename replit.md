@@ -102,4 +102,5 @@ The platform follows a military/tactical theme across its UI/UX, language, and i
 - **SECURITY**: 24-hour token expiration, secure token generation, and proper error handling
 - **USER EXPERIENCE**: Tactical-themed verification emails, resend functionality, and clear status messaging
 - **ROUTES**: Added /api/auth/verify-email, /api/auth/resend-verification, and /verify-email page
-- **STATUS**: Complete email verification workflow operational, new users must verify before platform access
+- **DEVELOPMENT EXCEPTION**: test.com accounts skip email verification for development convenience
+- **STATUS**: Complete email verification workflow operational, new users must verify before platform access (except test.com accounts)

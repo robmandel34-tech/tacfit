@@ -238,37 +238,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Generate email verification token
-      const verificationToken = generateVerificationToken();
-      const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
+      // Check if this is a test.com account (skip verification for development)
+      const isTestAccount = parsedData.email.endsWith('@test.com');
+      
+      let verificationToken = null;
+      let tokenExpiresAt = null;
+      
+      if (!isTestAccount) {
+        // Generate email verification token for non-test accounts
+        verificationToken = generateVerificationToken();
+        tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
+      }
 
       console.log('Creating user in database...');
       const user = await storage.createUser({
         ...parsedData,
         referredBy,
         points: 100, // Starting points for new users
-        isEmailVerified: false,
+        isEmailVerified: isTestAccount, // Test accounts are auto-verified
         emailVerificationToken: verificationToken,
         emailVerificationTokenExpiresAt: tokenExpiresAt,
       });
 
-      console.log('Sending verification email...');
-      try {
-        await sendVerificationEmail(user.email, user.username, verificationToken);
-        console.log('Verification email sent successfully');
-      } catch (emailError) {
-        console.error('Failed to send verification email:', emailError);
-        // Continue with registration even if email fails
+      // Send verification email only for non-test accounts
+      if (!isTestAccount && verificationToken) {
+        console.log('Sending verification email...');
+        try {
+          await sendVerificationEmail(user.email, user.username, verificationToken);
+          console.log('Verification email sent successfully');
+        } catch (emailError) {
+          console.error('Failed to send verification email:', emailError);
+          // Continue with registration even if email fails
+        }
+      } else if (isTestAccount) {
+        console.log('Test account created - skipping email verification');
       }
+      
       console.log('User created successfully:', user.id);
       
       // Don't send password or sensitive verification info back
       const { password: _, emailVerificationToken: __, emailVerificationTokenExpiresAt: ___, ...userWithoutSensitiveData } = user;
+      
+      const message = isTestAccount 
+        ? "Registration successful! Test account is ready for immediate use."
+        : "Registration successful! Please check your email to verify your account before logging in.";
+      
       res.status(201).json({
         user: userWithoutSensitiveData,
         referralAwarded: !!referredBy,
-        message: "Registration successful! Please check your email to verify your account before logging in.",
-        requiresEmailVerification: true
+        message,
+        requiresEmailVerification: !isTestAccount
       });
     } catch (error) {
       console.error('Registration error:', error);
@@ -309,8 +328,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
-      // Check if email is verified
-      if (!user.isEmailVerified) {
+      // Check if email is verified (skip for test.com accounts)
+      const isTestAccount = user.email.endsWith('@test.com');
+      if (!user.isEmailVerified && !isTestAccount) {
         console.log(`Email not verified for user: ${email}`);
         return res.status(403).json({ 
           message: "Email not verified. Please check your email and verify your account before logging in.",
@@ -447,7 +467,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Email is already verified" });
       }
 
-      // Generate new verification token
+      // Skip verification for test.com accounts
+      const isTestAccount = user.email.endsWith('@test.com');
+      if (isTestAccount) {
+        // Auto-verify test accounts
+        await storage.updateUser(user.id, {
+          isEmailVerified: true,
+          emailVerificationToken: null,
+          emailVerificationTokenExpiresAt: null
+        });
+        return res.json({ message: "Test account verified automatically" });
+      }
+
+      // Generate new verification token for non-test accounts
       const verificationToken = generateVerificationToken();
       const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
 

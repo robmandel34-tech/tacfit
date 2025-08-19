@@ -16,6 +16,31 @@ interface ActivitySubmissionModalProps {
   onClose: () => void;
 }
 
+interface ActivityType {
+  id: number;
+  name: string;
+  displayName: string;
+  description?: string;
+  measurementUnit: string;
+  defaultQuantity: number;
+  isActive: boolean;
+  requiresTextInput?: boolean;
+  textInputDescription?: string;
+  textInputMinWords?: number;
+}
+
+interface Competition {
+  id: number;
+  name: string;
+  startDate: string;
+  requiredActivities?: string[];
+}
+
+interface Team {
+  id: number;
+  competitionId: number;
+}
+
 export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySubmissionModalProps) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -29,27 +54,27 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
 
 
   // Get user's current team membership
-  const { data: userTeamMember } = useQuery({
+  const { data: userTeamMember } = useQuery<any[]>({
     queryKey: [`/api/team-members/${user?.id}`],
     enabled: !!user,
   });
 
   // Get current team details to find competition
-  const { data: currentTeam } = useQuery({
+  const { data: currentTeam } = useQuery<Team>({
     queryKey: [`/api/teams/${userTeamMember?.[0]?.teamId}`],
     enabled: !!userTeamMember?.[0]?.teamId,
   });
 
   // Get competition details to find required activities
-  const { data: competition } = useQuery({
+  const { data: competition } = useQuery<Competition>({
     queryKey: [`/api/competitions/${currentTeam?.competitionId}`],
     enabled: !!currentTeam?.competitionId,
   });
 
   // Fetch activity types from database
-  const { data: activityTypes = [] } = useQuery({
+  const { data: activityTypes = [] } = useQuery<ActivityType[]>({
     queryKey: ["/api/activity-types"],
-    select: (data: any[]) => data.filter(at => at.isActive).sort((a, b) => a.name.localeCompare(b.name))
+    select: (data: ActivityType[]) => data.filter(at => at.isActive).sort((a, b) => a.name.localeCompare(b.name))
   });
 
   // Get required activities for current competition or fallback to all active types
@@ -99,7 +124,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
       // Invalidate all activity-related queries
       queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
       queryClient.invalidateQueries({ predicate: (query) => 
-        query.queryKey[0]?.toString().includes("/api/activities") 
+        query.queryKey[0]?.toString()?.includes("/api/activities") ?? false
       });
       // Invalidate user-specific activity queries for profile page
       queryClient.invalidateQueries({ queryKey: ["/api/activities", "user", user?.id] });
@@ -109,11 +134,11 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
       queryClient.invalidateQueries({ queryKey: ["/api/team-members", user?.id] });
       queryClient.invalidateQueries({ queryKey: ["/api/team-members"] });
       queryClient.invalidateQueries({ predicate: (query) => 
-        query.queryKey[0]?.toString().includes("/api/team-members") 
+        query.queryKey[0]?.toString()?.includes("/api/team-members") ?? false
       });
       // Invalidate competition data
       queryClient.invalidateQueries({ predicate: (query) => 
-        query.queryKey[0]?.toString().includes("/api/competitions") 
+        query.queryKey[0]?.toString()?.includes("/api/competitions") ?? false
       });
       onClose();
       resetForm();

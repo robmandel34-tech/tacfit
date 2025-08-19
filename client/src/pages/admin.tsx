@@ -30,6 +30,8 @@ interface Competition {
   targetGoals: string[];
   isCompleted?: boolean;
   completedAt?: string;
+  paymentType?: string;
+  entryFee?: number;
   createdAt: string;
 }
 

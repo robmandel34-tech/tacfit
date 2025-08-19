@@ -97,6 +97,13 @@ export class DatabaseStorage implements IStorage {
       // Delete user's phone invitations
       await db.delete(phoneInvitations).where(eq(phoneInvitations.invitedBy, id));
       
+      // Delete user's competition entries
+      await db.delete(competitionEntries).where(eq(competitionEntries.userId, id));
+      
+      // Delete user's competition invitations
+      await db.delete(competitionInvitations).where(eq(competitionInvitations.invitedUserId, id));
+      await db.delete(competitionInvitations).where(eq(competitionInvitations.invitedBy, id));
+      
       // Finally, delete the user
       const result = await db.delete(users).where(eq(users.id, id));
       return (result.rowCount ?? 0) > 0;

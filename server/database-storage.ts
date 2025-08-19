@@ -91,8 +91,9 @@ export class DatabaseStorage implements IStorage {
       await db.delete(friendships).where(eq(friendships.userId, id));
       await db.delete(friendships).where(eq(friendships.friendId, id));
       
-      // Delete user's chat messages
+      // Delete user's chat messages (both sent and received)
       await db.delete(chatMessages).where(eq(chatMessages.senderId, id));
+      await db.delete(chatMessages).where(eq(chatMessages.receiverId, id));
       
       // Delete user's phone invitations
       await db.delete(phoneInvitations).where(eq(phoneInvitations.invitedBy, id));
@@ -111,6 +112,15 @@ export class DatabaseStorage implements IStorage {
       
       // Delete admin posts created by user
       await db.delete(adminPosts).where(eq(adminPosts.createdBy, id));
+      
+      // Delete competition history for user
+      await db.delete(competitionHistory).where(eq(competitionHistory.userId, id));
+      
+      // Delete competitions created by user (if any)
+      await db.delete(competitions).where(eq(competitions.createdBy, id));
+      
+      // Update teams where user is captain (set captain to null or handle as needed)
+      await db.update(teams).set({ captainId: null }).where(eq(teams.captainId, id));
       
       // Finally, delete the user
       const result = await db.delete(users).where(eq(users.id, id));

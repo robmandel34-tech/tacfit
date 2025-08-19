@@ -80,6 +80,10 @@ export const activityTypes = pgTable("activity_types", {
   measurementUnit: text("measurement_unit").notNull(), // minutes, reps, miles, etc.
   defaultQuantity: integer("default_quantity").default(1),
   isActive: boolean("is_active").default(true),
+  // Text input requirements
+  requiresTextInput: boolean("requires_text_input").default(false),
+  textInputDescription: text("text_input_description"), // What should be entered in the text box
+  textInputMinWords: integer("text_input_min_words").default(50), // Minimum word count required
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -95,6 +99,7 @@ export const activities = pgTable("activities", {
   evidenceUrl: text("evidence_url"), // Video URL (only one allowed)
   thumbnailUrl: text("thumbnail_url"), // Video thumbnail image URL
   imageUrls: text("image_urls").array().default([]), // Multiple image URLs
+  textInput: text("text_input"), // Required text input for certain activity types
   points: integer("points").default(10),
   isFlagged: boolean("is_flagged").default(false),
   createdAt: timestamp("created_at").defaultNow(),

@@ -1927,6 +1927,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         type: req.body.type,
         description: description,
         quantity: req.body.quantity,
+        textInput: req.body.textInput || null,
         points: finalPoints,
         evidenceType: evidenceType,
         evidenceUrl: evidenceUrl,

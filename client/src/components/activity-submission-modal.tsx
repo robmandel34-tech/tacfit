@@ -23,6 +23,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   const [type, setType] = useState("");
   const [description, setDescription] = useState("");
   const [quantity, setQuantity] = useState("");
+  const [textInput, setTextInput] = useState("");
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [videoFile, setVideoFile] = useState<File | null>(null);
 
@@ -62,6 +63,18 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   const daysUntilStart = competition && !competitionHasStarted 
     ? Math.ceil((new Date(competition.startDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24))
     : 0;
+
+  // Helper functions for text input validation
+  const countWords = (text: string): number => {
+    return text.trim().split(/\s+/).filter(word => word.length > 0).length;
+  };
+
+  const selectedActivityType = competitionActivityTypes.find(at => at.name === type);
+  const requiresTextInput = selectedActivityType?.requiresTextInput || false;
+  const textInputDescription = selectedActivityType?.textInputDescription || "";
+  const minWords = selectedActivityType?.textInputMinWords || 50;
+  const currentWordCount = countWords(textInput);
+  const isTextInputValid = !requiresTextInput || currentWordCount >= minWords;
 
 
 
@@ -119,6 +132,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     setType("");
     setDescription("");
     setQuantity("");
+    setTextInput("");
     setImageFiles([]);
     setVideoFile(null);
   };
@@ -140,11 +154,26 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
       return;
     }
 
+    // Validate text input if required
+    if (!isTextInputValid) {
+      toast({
+        title: "Text input required",
+        description: `Please write at least ${minWords} words in the required text input.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     const formData = new FormData();
     formData.append("userId", user.id.toString());
     formData.append("type", type);
     formData.append("description", description);
     formData.append("quantity", quantity);
+    
+    // Add text input if provided
+    if (textInput.trim()) {
+      formData.append("textInput", textInput.trim());
+    }
     
 
     
@@ -311,6 +340,41 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
               required
             />
           </div>
+
+          {/* Text Input Field (conditionally rendered) */}
+          {requiresTextInput && (
+            <div>
+              <Label className="text-gray-300 font-medium mb-2">
+                Additional Details Required
+                <span className="text-red-400 ml-1">*</span>
+              </Label>
+              {textInputDescription && (
+                <div className="text-sm text-military-green font-medium mb-2">
+                  {textInputDescription}
+                </div>
+              )}
+              <Textarea 
+                value={textInput}
+                onChange={(e) => setTextInput(e.target.value)}
+                className={`bg-tactical-gray-lighter border-2 ${
+                  isTextInputValid ? 'border-tactical-gray' : 'border-red-500'
+                } text-white h-32 focus:border-white focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed`}
+                placeholder={!competitionHasStarted ? "Competition not started" : `Write at least ${minWords} words...`}
+                disabled={!competitionHasStarted}
+                required
+              />
+              <div className="flex justify-between items-center mt-2">
+                <div className={`text-sm ${currentWordCount >= minWords ? 'text-green-400' : 'text-gray-400'}`}>
+                  Word count: {currentWordCount} / {minWords} minimum
+                </div>
+                {currentWordCount < minWords && currentWordCount > 0 && (
+                  <div className="text-xs text-red-400">
+                    {minWords - currentWordCount} more words needed
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           
           {/* Points Display */}
           <div className="p-3 bg-tactical-gray-lighter rounded-lg border border-tactical-gray">

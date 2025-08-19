@@ -54,6 +54,9 @@ interface ActivityType {
   measurementUnit: string;
   defaultQuantity: number;
   isActive: boolean;
+  requiresTextInput: boolean;
+  textInputDescription?: string;
+  textInputMinWords: number;
   createdAt: string;
 }
 
@@ -183,7 +186,10 @@ export default function AdminPage() {
     description: '',
     measurementUnit: '',
     defaultQuantity: 1,
-    isActive: true
+    isActive: true,
+    requiresTextInput: false,
+    textInputDescription: '',
+    textInputMinWords: 50
   });
 
   const [editingActivityType, setEditingActivityType] = useState<ActivityType | null>(null);
@@ -478,7 +484,10 @@ export default function AdminPage() {
       description: '',
       measurementUnit: '',
       defaultQuantity: 1,
-      isActive: true
+      isActive: true,
+      requiresTextInput: false,
+      textInputDescription: '',
+      textInputMinWords: 50
     });
   };
 
@@ -649,7 +658,10 @@ export default function AdminPage() {
       description: activityType.description || '',
       measurementUnit: activityType.measurementUnit,
       defaultQuantity: activityType.defaultQuantity,
-      isActive: activityType.isActive
+      isActive: activityType.isActive,
+      requiresTextInput: activityType.requiresTextInput,
+      textInputDescription: activityType.textInputDescription || '',
+      textInputMinWords: activityType.textInputMinWords
     });
     setIsCreateActivityTypeOpen(true);
   };
@@ -1587,13 +1599,57 @@ export default function AdminPage() {
                         required
                       />
                     </div>
+                    
+                    {/* Text Input Requirements */}
+                    <div className="border-t border-tactical-gray pt-4">
+                      <h3 className="text-white text-sm font-medium mb-3">Text Input Requirements</h3>
+                      
+                      <div className="flex items-center space-x-2 mb-3">
+                        <Switch
+                          id="requiresTextInput"
+                          checked={activityTypeForm.requiresTextInput}
+                          onCheckedChange={(checked) => setActivityTypeForm(prev => ({ ...prev, requiresTextInput: checked }))}
+                        />
+                        <Label htmlFor="requiresTextInput" className="text-gray-300">Require text input for this activity</Label>
+                      </div>
+
+                      {activityTypeForm.requiresTextInput && (
+                        <>
+                          <div className="mb-3">
+                            <Label htmlFor="textInputDescription" className="text-gray-300">Text Input Description</Label>
+                            <Textarea
+                              id="textInputDescription"
+                              value={activityTypeForm.textInputDescription}
+                              onChange={(e) => setActivityTypeForm(prev => ({ ...prev, textInputDescription: e.target.value }))}
+                              className="bg-tactical-gray-lighter border-tactical-gray text-white"
+                              placeholder="e.g., Describe your workout routine and how you felt during the exercise"
+                              rows={2}
+                            />
+                            <p className="text-xs text-gray-500 mt-1">This will be shown to users when they submit this activity</p>
+                          </div>
+
+                          <div>
+                            <Label htmlFor="textInputMinWords" className="text-gray-300">Minimum Word Count</Label>
+                            <Input
+                              id="textInputMinWords"
+                              type="number"
+                              min="10"
+                              max="500"
+                              value={activityTypeForm.textInputMinWords}
+                              onChange={(e) => setActivityTypeForm(prev => ({ ...prev, textInputMinWords: parseInt(e.target.value) || 50 }))}
+                              className="bg-tactical-gray-lighter border-tactical-gray text-white"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">Users must write at least this many words (default: 50)</p>
+                          </div>
+                        </>
+                      )}
+                    </div>
+
                     <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
+                      <Switch
                         id="isActive"
                         checked={activityTypeForm.isActive}
-                        onChange={(e) => setActivityTypeForm(prev => ({ ...prev, isActive: e.target.checked }))}
-                        className="rounded border-tactical-gray"
+                        onCheckedChange={(checked) => setActivityTypeForm(prev => ({ ...prev, isActive: checked }))}
                       />
                       <Label htmlFor="isActive" className="text-gray-300">Active</Label>
                     </div>
@@ -1632,6 +1688,7 @@ export default function AdminPage() {
                       <TableHead className="text-gray-300">Display Name</TableHead>
                       <TableHead className="text-gray-300">Unit</TableHead>
                       <TableHead className="text-gray-300">Default</TableHead>
+                      <TableHead className="text-gray-300">Text Input</TableHead>
                       <TableHead className="text-gray-300">Status</TableHead>
                       <TableHead className="text-gray-300">Actions</TableHead>
                     </TableRow>
@@ -1643,6 +1700,17 @@ export default function AdminPage() {
                         <TableCell className="text-gray-300">{activityType.displayName}</TableCell>
                         <TableCell className="text-gray-300">{activityType.measurementUnit}</TableCell>
                         <TableCell className="text-gray-300">{activityType.defaultQuantity}</TableCell>
+                        <TableCell>
+                          {activityType.requiresTextInput ? (
+                            <Badge variant="outline" className="text-blue-400 border-blue-400">
+                              Required ({activityType.textInputMinWords} words)
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary" className="text-gray-500">
+                              Optional
+                            </Badge>
+                          )}
+                        </TableCell>
                         <TableCell>
                           <Badge variant={activityType.isActive ? "default" : "secondary"}>
                             {activityType.isActive ? "Active" : "Inactive"}

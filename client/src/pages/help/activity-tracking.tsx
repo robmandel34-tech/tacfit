@@ -41,83 +41,7 @@ export default function ActivityTrackingHelp() {
             </CardContent>
           </Card>
 
-          {/* Activity Types */}
-          <Card className="bg-gray-800/50 border-gray-700">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center">
-                <Clock className="h-6 w-6 mr-2 text-military-green" />
-                Activity Categories
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <p className="text-gray-300">
-                TacFit organizes all fitness activities into three main categories. Each competition 
-                will specify which activities are required and set target goals for teams to achieve.
-              </p>
-              
-              <div className="grid md:grid-cols-3 gap-4">
-                <div className="bg-red-900/20 border border-red-600/30 p-4 rounded-lg">
-                  <h4 className="font-semibold text-red-300 mb-3 flex items-center">
-                    <Activity className="h-5 w-5 mr-2" />
-                    Cardio Training
-                  </h4>
-                  <p className="text-sm text-gray-300 mb-3">Measured in minutes</p>
-                  <div className="space-y-2">
-                    <h5 className="font-medium text-white text-sm">Examples:</h5>
-                    <ul className="text-xs text-gray-400 space-y-1">
-                      <li>• Running, jogging, walking</li>
-                      <li>• Cycling (indoor/outdoor)</li>
-                      <li>• Swimming laps</li>
-                      <li>• HIIT workouts</li>
-                      <li>• Dance fitness classes</li>
-                      <li>• Rowing machine</li>
-                      <li>• Elliptical training</li>
-                    </ul>
-                  </div>
-                </div>
 
-                <div className="bg-blue-900/20 border border-blue-600/30 p-4 rounded-lg">
-                  <h4 className="font-semibold text-blue-300 mb-3 flex items-center">
-                    <Award className="h-5 w-5 mr-2" />
-                    Strength Training
-                  </h4>
-                  <p className="text-sm text-gray-300 mb-3">Measured in repetitions</p>
-                  <div className="space-y-2">
-                    <h5 className="font-medium text-white text-sm">Examples:</h5>
-                    <ul className="text-xs text-gray-400 space-y-1">
-                      <li>• Weight lifting (any type)</li>
-                      <li>• Push-ups, pull-ups, squats</li>
-                      <li>• Resistance band training</li>
-                      <li>• Bodyweight exercises</li>
-                      <li>• Functional movements</li>
-                      <li>• Core strengthening</li>
-                      <li>• Kettlebell workouts</li>
-                    </ul>
-                  </div>
-                </div>
-
-                <div className="bg-green-900/20 border border-green-600/30 p-4 rounded-lg">
-                  <h4 className="font-semibold text-green-300 mb-3 flex items-center">
-                    <Clock className="h-5 w-5 mr-2" />
-                    Mobility Training
-                  </h4>
-                  <p className="text-sm text-gray-300 mb-3">Measured in minutes</p>
-                  <div className="space-y-2">
-                    <h5 className="font-medium text-white text-sm">Examples:</h5>
-                    <ul className="text-xs text-gray-400 space-y-1">
-                      <li>• Yoga sessions</li>
-                      <li>• Stretching routines</li>
-                      <li>• Pilates classes</li>
-                      <li>• Mobility work</li>
-                      <li>• Recovery sessions</li>
-                      <li>• Balance training</li>
-                      <li>• Foam rolling</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
           {/* Submission Process */}
           <Card className="bg-gray-800/50 border-gray-700">
@@ -149,7 +73,7 @@ export default function ActivityTrackingHelp() {
                     <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-black mr-3">3</div>
                     <div>
                       <p className="text-sm font-medium text-white">Enter Quantity</p>
-                      <p className="text-xs text-gray-400">Input minutes for cardio/mobility, reps for strength</p>
+                      <p className="text-xs text-gray-400">Input the quantity based on the measurement unit</p>
                     </div>
                   </div>
                   <div className="flex items-start">

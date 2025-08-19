@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Users, Crown, Target, Camera, Send, MessageCircle, Edit2, Check, X, ChevronDown, ChevronUp, UserPlus } from "lucide-react";
+import { Users, Crown, Target, Camera, Send, MessageCircle, Edit2, Check, X, ChevronDown, ChevronUp, UserPlus, Trophy } from "lucide-react";
 import ChatCard from "@/components/chat-card";
 import MissionPlanningBoard from "@/components/mission-planning-board";
 import TeamInviteModal from "@/components/team-invite-modal";
@@ -66,6 +66,12 @@ export default function Team() {
   const { data: competition } = useQuery({
     queryKey: [`/api/competitions/${team?.competitionId}`],
     enabled: !!team?.competitionId,
+  });
+
+  // Get user's competition results for team display
+  const { data: userResults } = useQuery({
+    queryKey: ["/api/users", user?.id, "competition-results"],
+    enabled: !!user,
   });
 
   // Get mission tasks
@@ -540,7 +546,48 @@ export default function Team() {
               />
               
               {/* Activity Progress Section - Collapsible */}
-              {competition && competition.requiredActivities && competition.requiredActivities.length > 0 && (
+              {/* Competition Results Display */}
+              {(competition as any)?.isCompleted && (userResults as any)?.history?.find((h: any) => h.competitionId === (competition as any)?.id) && (
+                <div className="mt-4">
+                  <div className="p-4 bg-gradient-to-r from-military-green-dark to-military-green border border-military-green/30 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Trophy className="h-5 w-5 text-yellow-400" />
+                      <h3 className="font-semibold text-white">Competition Results</h3>
+                    </div>
+                    {(() => {
+                      const userResult = (userResults as any)?.history?.find((h: any) => h.competitionId === (competition as any)?.id);
+                      if (userResult) {
+                        return (
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-gray-300">Final Ranking:</span>
+                              <span className="text-military-green font-bold">
+                                {userResult.finalRank === 1 ? '🥇 1st Place' : 
+                                 userResult.finalRank === 2 ? '🥈 2nd Place' : 
+                                 userResult.finalRank === 3 ? '🥉 3rd Place' : 
+                                 `${userResult.finalRank}th Place`}
+                              </span>
+                            </div>
+                            {userResult.pointsEarned > 0 && (
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm text-gray-300">Points Earned:</span>
+                                <span className="text-yellow-400 font-bold">+{userResult.pointsEarned} pts</span>
+                              </div>
+                            )}
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-gray-300">Team:</span>
+                              <span className="text-white font-medium">{userResult.team?.name || (team as any)?.name}</span>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
+                  </div>
+                </div>
+              )}
+
+              {(competition as any) && (competition as any).requiredActivities && (competition as any).requiredActivities.length > 0 && (
                 <div className="mt-4">
                   {/* Competition Not Started Warning */}
                   {(() => {

@@ -13,7 +13,7 @@ import {
   whiteboardItems, missionTasks, adminPosts, moodLogs
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, or, desc, isNull, gt } from "drizzle-orm";
+import { eq, and, or, desc, isNull, gt, inArray } from "drizzle-orm";
 import { IStorage } from "./storage";
 
 export class DatabaseStorage implements IStorage {
@@ -62,25 +62,34 @@ export class DatabaseStorage implements IStorage {
 
   async deleteUser(id: number): Promise<boolean> {
     try {
-      // First, delete all related data that references this user
+      // Get user's activities first to delete all their related data
+      const userActivities = await db.select({ id: activities.id }).from(activities).where(eq(activities.userId, id));
+      const activityIds = userActivities.map(a => a.id);
       
-      // Delete user's activity likes, comments, and flags
+      // Delete all data related to user's activities (by activityId)
+      if (activityIds.length > 0) {
+        await db.delete(activityLikes).where(inArray(activityLikes.activityId, activityIds));
+        await db.delete(activityComments).where(inArray(activityComments.activityId, activityIds));
+        await db.delete(activityFlags).where(inArray(activityFlags.activityId, activityIds));
+      }
+      
+      // Delete user's own interactions with other activities (by userId)
       await db.delete(activityLikes).where(eq(activityLikes.userId, id));
       await db.delete(activityComments).where(eq(activityComments.userId, id));
       await db.delete(activityFlags).where(eq(activityFlags.userId, id));
       
-      // Delete user's activities
+      // Now safe to delete user's activities
       await db.delete(activities).where(eq(activities.userId, id));
       
       // Delete user's mood entries
-      await db.delete(moodEntries).where(eq(moodEntries.userId, id));
+      await db.delete(moodLogs).where(eq(moodLogs.userId, id));
       
       // Delete user's team memberships
       await db.delete(teamMembers).where(eq(teamMembers.userId, id));
       
       // Delete user's buddy relationships (both directions)
-      await db.delete(buddyRequests).where(eq(buddyRequests.senderId, id));
-      await db.delete(buddyRequests).where(eq(buddyRequests.receiverId, id));
+      await db.delete(friendships).where(eq(friendships.userId, id));
+      await db.delete(friendships).where(eq(friendships.friendId, id));
       
       // Delete user's chat messages
       await db.delete(chatMessages).where(eq(chatMessages.senderId, id));

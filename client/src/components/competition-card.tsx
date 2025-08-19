@@ -45,19 +45,19 @@ export default function CompetitionCard({ competition, userResult, onInvite, onJ
             {competition.isCompleted && userResult ? (
               <div className="flex items-center gap-2 mb-2">
                 {userResult.finalRank === 1 && (
-                  <div className="text-xs text-yellow-400 font-medium bg-yellow-400/10 px-2 py-1 rounded-full inline-flex items-center gap-1">
+                  <div className="text-xs text-yellow-300 font-medium bg-yellow-500/20 px-2 py-1 rounded-full inline-flex items-center gap-1 border border-yellow-500/30">
                     <Trophy className="w-3 h-3" />
                     1st Place Winner!
                   </div>
                 )}
                 {userResult.finalRank === 2 && (
-                  <div className="text-xs text-gray-300 font-medium bg-gray-300/10 px-2 py-1 rounded-full inline-flex items-center gap-1">
+                  <div className="text-xs text-gray-200 font-medium bg-gray-500/20 px-2 py-1 rounded-full inline-flex items-center gap-1 border border-gray-500/30">
                     <Medal className="w-3 h-3" />
                     2nd Place
                   </div>
                 )}
                 {userResult.finalRank === 3 && (
-                  <div className="text-xs text-orange-400 font-medium bg-orange-400/10 px-2 py-1 rounded-full inline-flex items-center gap-1">
+                  <div className="text-xs text-orange-300 font-medium bg-orange-500/20 px-2 py-1 rounded-full inline-flex items-center gap-1 border border-orange-500/30">
                     <Medal className="w-3 h-3" />
                     3rd Place
                   </div>
@@ -208,11 +208,11 @@ export default function CompetitionCard({ competition, userResult, onInvite, onJ
                     </p>
                   )}
                   <p className="text-sm text-gray-300">
-                    Final Ranking: <span className="text-military-green font-medium">
-                      {userResult.finalRank === 1 ? '1st' : 
-                       userResult.finalRank === 2 ? '2nd' : 
-                       userResult.finalRank === 3 ? '3rd' : 
-                       `${userResult.finalRank}th`} Place
+                    Final Ranking: <span className="font-medium">
+                      {userResult.finalRank === 1 ? <span className="text-yellow-400">1st Place</span> : 
+                       userResult.finalRank === 2 ? <span className="text-gray-300">2nd Place</span> : 
+                       userResult.finalRank === 3 ? <span className="text-orange-400">3rd Place</span> : 
+                       <span className="text-white">{userResult.finalRank}th Place</span>}
                     </span>
                   </p>
                 </div>

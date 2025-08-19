@@ -561,11 +561,11 @@ export default function Team() {
                           <div className="space-y-2">
                             <div className="flex items-center justify-between">
                               <span className="text-sm text-gray-300">Final Ranking:</span>
-                              <span className="text-military-green font-bold">
-                                {userResult.finalRank === 1 ? '🥇 1st Place' : 
-                                 userResult.finalRank === 2 ? '🥈 2nd Place' : 
-                                 userResult.finalRank === 3 ? '🥉 3rd Place' : 
-                                 `${userResult.finalRank}th Place`}
+                              <span className="font-bold">
+                                {userResult.finalRank === 1 ? <span className="text-yellow-400">🥇 1st Place</span> : 
+                                 userResult.finalRank === 2 ? <span className="text-gray-300">🥈 2nd Place</span> : 
+                                 userResult.finalRank === 3 ? <span className="text-orange-400">🥉 3rd Place</span> : 
+                                 <span className="text-white">{userResult.finalRank}th Place</span>}
                               </span>
                             </div>
                             {userResult.pointsEarned > 0 && (

@@ -68,7 +68,13 @@ export default function AdvertisementCard({ advertisement }: AdvertisementCardPr
           </div>
 
           {advertisement.imageUrl && (
-            <div className="rounded-lg overflow-hidden bg-tactical-gray-lighter">
+            <div 
+              className={`rounded-lg overflow-hidden bg-tactical-gray-lighter ${
+                advertisement.targetUrl ? 'cursor-pointer hover:opacity-80 transition-opacity duration-200' : ''
+              }`}
+              onClick={advertisement.targetUrl ? handleClick : undefined}
+              title={advertisement.targetUrl ? 'Click to open link' : undefined}
+            >
               <img
                 src={advertisement.imageUrl}
                 alt={advertisement.title}

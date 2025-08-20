@@ -49,11 +49,11 @@ export default function AdvertisementCard({ advertisement }: AdvertisementCardPr
 
   return (
     <Card className="tile-card border-2 border-yellow-600/30 bg-gradient-to-br from-yellow-900/20 to-orange-900/20 mb-6 hover:border-yellow-500/50 transition-colors duration-200">
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-4">
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-3">
             <div className="flex items-center space-x-2">
-              <Target className="h-5 w-5 text-yellow-400" />
+              <Target className="h-4 w-4 text-yellow-400" />
               <Badge variant="outline" className="bg-yellow-900/30 border-yellow-600/50 text-yellow-300 text-xs">
                 Sponsored
               </Badge>
@@ -61,10 +61,10 @@ export default function AdvertisementCard({ advertisement }: AdvertisementCardPr
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div>
-            <h3 className="text-xl font-bold text-white mb-2">{advertisement.title}</h3>
-            <p className="text-gray-300 leading-relaxed">{advertisement.content}</p>
+            <h3 className="text-lg font-bold text-white mb-1">{advertisement.title}</h3>
+            <p className="text-gray-300 leading-relaxed text-sm">{advertisement.content}</p>
           </div>
 
           {advertisement.imageUrl && (
@@ -72,7 +72,7 @@ export default function AdvertisementCard({ advertisement }: AdvertisementCardPr
               <img
                 src={advertisement.imageUrl}
                 alt={advertisement.title}
-                className="w-full h-48 object-cover"
+                className="w-full h-24 object-cover"
                 onLoad={() => {
                   setImageLoaded(true);
                   console.log("Advertisement image loaded successfully:", advertisement.imageUrl);

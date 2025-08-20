@@ -1845,12 +1845,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const hasImageEvidence = files['images'] && files['images'].length > 0;
       const hasBothEvidenceTypes = hasVideoEvidence && hasImageEvidence;
       
-      // Set evidence type based on file uploads
+      // Set evidence type based on file uploads or HealthKit data
       let description = req.body.description;
-      let evidenceType = null;
+      let evidenceType = req.body.evidenceType || null;
       
-      // Apply points logic: full 30 points only if both evidence types are provided
-      const finalPoints = hasBothEvidenceTypes ? 30 : basePoints;
+      // Check for HealthKit workout data
+      const isHealthKitActivity = req.body.healthKitWorkoutId;
+      
+      // Apply points logic: HealthKit gets 30 points, otherwise full 30 points only if both evidence types are provided
+      const finalPoints = isHealthKitActivity ? 30 : (hasBothEvidenceTypes ? 30 : basePoints);
 
       // Handle video file (primary evidence) first
       let evidenceUrl = '';
@@ -1952,7 +1955,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         type: req.body.type,
         description: description,
         quantity: req.body.quantity,
-        textInput: req.body.textInput || null,
+        textInput: req.body.healthKitTextInput || req.body.textInput || null,
         points: finalPoints,
         evidenceType: evidenceType,
         evidenceUrl: evidenceUrl,
@@ -1969,6 +1972,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertActivitySchema.parse(activityData);
       
       const activity = await storage.createActivity(validatedData);
+      
+      // If this is a HealthKit activity, mark the workout as converted
+      if (isHealthKitActivity) {
+        try {
+          await storage.updateAppleHealthWorkout(parseInt(req.body.healthKitWorkoutId), {
+            activityId: activity.id,
+            isConverted: true
+          });
+          console.log(`HealthKit workout ${req.body.healthKitWorkoutId} marked as converted to activity ${activity.id}`);
+        } catch (error) {
+          console.error('Failed to update HealthKit workout status:', error);
+        }
+      }
       
       // Update user and team points
       if (activity.userId && activity.points) {

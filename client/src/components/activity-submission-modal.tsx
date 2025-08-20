@@ -307,7 +307,14 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
       formData.append("textInput", textInput.trim());
     }
     
-
+    // Add HealthKit workout information if selected
+    if (selectedHealthKitWorkout) {
+      formData.append("healthKitWorkoutId", selectedHealthKitWorkout.id.toString());
+      formData.append("evidenceType", "apple_health");
+      // Enhanced text input with HealthKit data
+      const healthKitDetails = `HealthKit Workout Data:\n- Type: ${selectedHealthKitWorkout.workoutType}\n- Duration: ${formatWorkoutDuration(selectedHealthKitWorkout.duration)}\n- Date: ${new Date(selectedHealthKitWorkout.startDate).toLocaleDateString()}${selectedHealthKitWorkout.totalEnergyBurned ? `\n- Calories: ${selectedHealthKitWorkout.totalEnergyBurned}` : ''}${selectedHealthKitWorkout.totalDistance ? `\n- Distance: ${selectedHealthKitWorkout.totalDistance}` : ''}${textInput.trim() ? `\n\nAdditional Notes:\n${textInput.trim()}` : ''}`;
+      formData.append("healthKitTextInput", healthKitDetails);
+    }
     
     if (videoFile) {
       formData.append("evidence", videoFile);
@@ -470,11 +477,14 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                     <Select onValueChange={(value) => {
                       if (value === "manual") {
                         setSelectedHealthKitWorkout(null);
+                        setDescription("");
+                        setQuantity("");
                       } else {
                         const workout = healthKitWorkouts.find(w => w.id.toString() === value);
                         if (workout) {
                           setSelectedHealthKitWorkout(workout);
-                          setDescription(`${workout.workoutType} workout from Apple HealthKit`);
+                          // Auto-fill form but allow customization
+                          setDescription(`${workout.workoutType} workout - ${formatWorkoutDuration(workout.duration)}`);
                           setQuantity(workout.duration?.toString() || "30");
                         }
                       }
@@ -519,17 +529,9 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <span className="text-military-green font-medium">HealthKit Workout Selected</span>
-                            <span className="text-xs text-green-400 bg-green-400/20 px-2 py-1 rounded">30 points</span>
+                            <span className="text-xs text-green-400 bg-green-400/20 px-2 py-1 rounded">Auto-filled</span>
                           </div>
-                          <Button
-                            type="button"
-                            size="sm"
-                            onClick={() => handleHealthKitWorkoutSelect(selectedHealthKitWorkout)}
-                            disabled={convertHealthKitWorkout.isPending}
-                            className="bg-military-green hover:bg-military-green-light text-black text-xs px-3 py-1"
-                          >
-                            {convertHealthKitWorkout.isPending ? "Converting..." : "Convert to Activity"}
-                          </Button>
+                          <span className="text-xs text-military-green">Verified data</span>
                         </div>
                         <div className="text-xs text-gray-300 space-y-1">
                           <div><strong>Type:</strong> {selectedHealthKitWorkout.workoutType}</div>
@@ -543,7 +545,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                           )}
                         </div>
                         <p className="text-xs text-gray-400 mt-2">
-                          💡 This will automatically create a verified activity with full points and close this modal
+                          💡 Form auto-filled with HealthKit data. Customize description and add photos/videos below, then submit normally.
                         </p>
                       </div>
                     )}

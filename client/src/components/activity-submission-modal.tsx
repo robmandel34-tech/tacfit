@@ -515,6 +515,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                                   <span>{new Date(workout.startDate).toLocaleDateString()}</span>
                                   {workout.totalEnergyBurned && <span>• {workout.totalEnergyBurned} cal</span>}
                                   {workout.totalDistance && <span>• {workout.totalDistance}</span>}
+                                  {(workout as any).hasRoute && <span className="text-green-400">• GPS route</span>}
                                 </div>
                               </div>
                               <span className="text-xs text-green-400 bg-green-400/20 px-2 py-1 rounded ml-2">Auto-fill</span>
@@ -542,6 +543,16 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                           )}
                           {selectedHealthKitWorkout.totalDistance && (
                             <div><strong>Distance:</strong> {selectedHealthKitWorkout.totalDistance}</div>
+                          )}
+                          {(selectedHealthKitWorkout as any).hasRoute && (
+                            <div className="flex items-center gap-1">
+                              <strong>Route:</strong> 
+                              <span className="text-green-400">GPS tracked</span>
+                              <span className="text-xs bg-green-400/20 px-1 rounded">Map included</span>
+                            </div>
+                          )}
+                          {(selectedHealthKitWorkout as any).elevationGain > 0 && (
+                            <div><strong>Elevation:</strong> {(selectedHealthKitWorkout as any).elevationGain}m gain</div>
                           )}
                         </div>
                         <p className="text-xs text-gray-400 mt-2">

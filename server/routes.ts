@@ -1973,10 +1973,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const activity = await storage.createActivity(validatedData);
       
-      // If this is a HealthKit activity, mark the workout as converted
+      // If this is a HealthKit activity, mark the workout as converted and include route map
       if (isHealthKitActivity) {
         try {
-          await storage.updateAppleHealthWorkout(parseInt(req.body.healthKitWorkoutId), {
+          const workoutId = parseInt(req.body.healthKitWorkoutId);
+          const workout = await storage.getAppleHealthWorkout(workoutId);
+          
+          // If workout has a route map, add it to the activity's image URLs
+          if (workout && workout.routeMapUrl && workout.hasRoute) {
+            const updatedImageUrls = [...imageUrls, workout.routeMapUrl];
+            await storage.updateActivity(activity.id, {
+              imageUrls: updatedImageUrls
+            });
+            console.log(`Added route map to activity ${activity.id}: ${workout.routeMapUrl}`);
+          }
+          
+          await storage.updateAppleHealthWorkout(workoutId, {
             activityId: activity.id,
             isConverted: true
           });
@@ -3565,6 +3577,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Process workout data
       if (workouts && workouts.length > 0) {
         for (const workout of workouts) {
+          // Process route data if available
+          let routeData = null;
+          let routeMapUrl = null;
+          let hasRoute = false;
+          let elevationGain = 0;
+
+          if (workout.route && Array.isArray(workout.route) && workout.route.length > 0) {
+            const { routeMapService } = await import('./route-map-service');
+            const coordinates = routeMapService.parseHealthKitRoute(workout.route);
+            
+            if (coordinates.length > 1) {
+              hasRoute = true;
+              routeData = JSON.stringify(coordinates);
+              
+              // Generate route map
+              const routeResult = await routeMapService.processWorkoutRoute(
+                workout.id || Date.now(),
+                coordinates
+              );
+              
+              routeMapUrl = routeResult.localImageUrl;
+              elevationGain = routeResult.elevationGain;
+              
+              if (routeMapUrl) {
+                console.log(`Generated route map for workout: ${routeMapUrl}`);
+              }
+            }
+          }
+
           const workoutData = await storage.createAppleHealthWorkout({
             userId,
             workoutType: workout.workoutActivityType || 'Other',
@@ -3575,7 +3616,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             endDate: new Date(workout.endDate),
             sourceApp: workout.sourceName || 'Fitness',
             metadata: JSON.stringify(workout),
-            isConverted: false
+            isConverted: false,
+            routeData,
+            routeMapUrl,
+            hasRoute,
+            elevationGain
           });
           syncedData.push({ type: 'workout', data: workoutData });
         }

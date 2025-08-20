@@ -297,6 +297,11 @@ export const appleHealthWorkouts = pgTable("apple_health_workouts", {
   metadata: text("metadata"), // JSON for additional workout data
   healthKitWorkoutId: text("healthkit_workout_id"), // Unique HealthKit workout identifier
   isConverted: boolean("is_converted").default(false), // Whether converted to TacFit activity
+  // Route data fields
+  routeData: text("route_data"), // JSON array of GPS coordinates
+  routeMapUrl: text("route_map_url"), // Generated static map URL
+  hasRoute: boolean("has_route").default(false), // Whether workout includes route data
+  elevationGain: integer("elevation_gain"), // Total elevation gain in meters
   syncedAt: timestamp("synced_at").defaultNow(),
 });
 

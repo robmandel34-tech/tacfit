@@ -4,8 +4,8 @@ import os
 
 def create_workout_details_page(workout_data):
     """Create a comprehensive workout details page similar to Apple Fitness"""
-    # Create a dark-themed image
-    width, height = 400, 800
+    # Create a much taller dark-themed image to show everything
+    width, height = 400, 1200
     img = Image.new('RGB', (width, height), '#1c1c1e')
     draw = ImageDraw.Draw(img)
     
@@ -114,12 +114,76 @@ def create_workout_details_page(workout_data):
     
     y_pos += 20
     
-    # Add GPS route indicator
+    # Add GPS route map section
     if workout_data.get('has_route', False):
-        draw.rectangle([20, y_pos, 360, y_pos + 80], fill='#2c2c2e', outline='#3a3a3c', width=1)
-        draw.text((30, y_pos + 10), "GPS Route Map", fill='#ffffff', font=font_medium)
-        draw.text((30, y_pos + 35), "Route data recorded", fill='#34c759', font=font_small)
-        draw.text((30, y_pos + 55), f"Distance: {workout_data['distance']}", fill='#8e8e93', font=font_tiny)
+        # Map section header
+        draw.text((20, y_pos), "Route Map", fill='#ffffff', font=font_title)
+        y_pos += 30
+        
+        # Map placeholder/visualization
+        draw.rectangle([20, y_pos, 360, y_pos + 120], fill='#2c2c2e', outline='#3a3a3c', width=1)
+        
+        # Add simple route visualization
+        # Start point
+        draw.ellipse([30, y_pos + 20, 50, y_pos + 40], fill='#34c759')
+        draw.text((55, y_pos + 25), "START", fill='#34c759', font=font_tiny)
+        
+        # Route line
+        route_points = [(60, y_pos + 30), (120, y_pos + 50), (180, y_pos + 40), (240, y_pos + 60), (300, y_pos + 45), (340, y_pos + 35)]
+        for i in range(len(route_points) - 1):
+            draw.line([route_points[i], route_points[i + 1]], fill='#3498db', width=3)
+        
+        # End point
+        draw.ellipse([330, y_pos + 25, 350, y_pos + 45], fill='#e74c3c')
+        draw.text((285, y_pos + 25), "FINISH", fill='#e74c3c', font=font_tiny)
+        
+        # Map info
+        draw.text((30, y_pos + 60), "GPS route recorded", fill='#34c759', font=font_small)
+        draw.text((30, y_pos + 80), f"Total distance: {workout_data['distance']}", fill='#8e8e93', font=font_tiny)
+        draw.text((30, y_pos + 95), f"Elevation gain: {workout_data['elevation']}ft", fill='#8e8e93', font=font_tiny)
+        
+        y_pos += 140
+    
+    # Heart Rate Zones section
+    draw.text((20, y_pos), "Heart Rate Zones", fill='#ffffff', font=font_title)
+    y_pos += 30
+    
+    zones = [
+        ("Zone 1", "50-60%", "5:23", '#3498db'),
+        ("Zone 2", "60-70%", "15:42", '#2ecc71'),
+        ("Zone 3", "70-80%", "25:18", '#f39c12'),
+        ("Zone 4", "80-90%", "12:37", '#e67e22'),
+        ("Zone 5", "90-100%", "1:00", '#e74c3c')
+    ]
+    
+    for zone, percent, time, color in zones:
+        draw.text((20, y_pos), zone, fill='#8e8e93', font=font_tiny)
+        draw.text((80, y_pos), percent, fill=color, font=font_small)
+        draw.text((150, y_pos), time, fill='#ffffff', font=font_small)
+        y_pos += 25
+    
+    y_pos += 20
+    
+    # Summary section
+    draw.text((20, y_pos), "Workout Summary", fill='#ffffff', font=font_title)
+    y_pos += 30
+    
+    summary_items = [
+        ("Training Effect", "Improving", '#34c759'),
+        ("Recovery Time", "24-48 hours", '#f39c12'),
+        ("Calories per Hour", f"{int(int(workout_data['total_calories']) * 60 / int(workout_data['duration'].split(':')[0]))}", '#3498db'),
+        ("Weather", "Clear, 72°F", '#8e8e93')
+    ]
+    
+    for label, value, color in summary_items:
+        draw.text((20, y_pos), label, fill='#8e8e93', font=font_tiny)
+        draw.text((20, y_pos + 15), value, fill=color, font=font_small)
+        y_pos += 40
+    
+    # Footer
+    y_pos += 20
+    draw.text((20, y_pos), "Synced from Apple Health", fill='#8e8e93', font=font_tiny)
+    draw.text((20, y_pos + 15), "TacFit Fitness Platform", fill='#34c759', font=font_tiny)
     
     return img
 

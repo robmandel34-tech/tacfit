@@ -1,0 +1,38 @@
+<svg width="800" height="400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="800" height="400" fill="#f0f8ff"/>
+  
+  <!-- Terrain base -->
+  <rect x="0" y="250" width="800" height="150" fill="#90EE90"/>
+  
+  <!-- Roads -->
+  <rect x="0" y="180" width="800" height="8" fill="#D3D3D3"/>
+  <rect x="0" y="280" width="800" height="6" fill="#D3D3D3"/>
+  
+  <!-- GPS Route -->
+  <path d="M 50 200 Q 200 150 350 180 Q 500 220 650 190 Q 750 160 800 180" 
+        stroke="#4CAF50" stroke-width="8" fill="none" stroke-linecap="round"/>
+  
+  <!-- Start marker -->
+  <circle cx="50" cy="200" r="12" fill="#4CAF50"/>
+  <text x="50" y="180" text-anchor="middle" fill="#333" font-family="Arial" font-size="14" font-weight="bold">START</text>
+  
+  <!-- End marker -->
+  <circle cx="750" cy="180" r="12" fill="#ff4444"/>
+  <text x="750" y="160" text-anchor="middle" fill="#333" font-family="Arial" font-size="14" font-weight="bold">FINISH</text>
+  
+  <!-- Info panel -->
+  <rect x="20" y="20" width="220" height="80" fill="white" stroke="#333" stroke-width="2" rx="8" opacity="0.95"/>
+  <text x="30" y="40" fill="#333" font-family="Arial" font-size="16" font-weight="bold">GPS Route Map</text>
+  <text x="30" y="60" fill="#666" font-family="Arial" font-size="12">Distance: 15.3 km</text>
+  <text x="30" y="75" fill="#666" font-family="Arial" font-size="12">Elevation: 85m gain</text>
+  <text x="30" y="90" fill="#666" font-family="Arial" font-size="12">Duration: 60 minutes</text>
+  
+  <!-- Scale -->
+  <text x="600" y="380" fill="#666" font-family="Arial" font-size="10">Scale: 1:10000</text>
+  
+  <!-- Compass -->
+  <circle cx="750" cy="50" r="20" fill="white" stroke="#333" stroke-width="1"/>
+  <path d="M 750 35 L 755 50 L 750 65 L 745 50 Z" fill="#4CAF50"/>
+  <text x="750" y="80" text-anchor="middle" fill="#666" font-family="Arial" font-size="10">N</text>
+</svg>

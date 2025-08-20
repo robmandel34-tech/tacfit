@@ -43,7 +43,14 @@ export default function AdvertisementCard({ advertisement }: AdvertisementCardPr
 
   const handleClick = () => {
     if (advertisement.linkUrl) {
-      window.open(advertisement.linkUrl, '_blank', 'noopener,noreferrer');
+      // Create a temporary anchor element to ensure proper external navigation
+      const link = document.createElement('a');
+      link.href = advertisement.linkUrl;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
   };
 
@@ -69,12 +76,17 @@ export default function AdvertisementCard({ advertisement }: AdvertisementCardPr
 
           {advertisement.imageUrl && (
             <div 
-              className={`rounded-lg overflow-hidden bg-tactical-gray-lighter ${
+              className={`rounded-lg overflow-hidden bg-tactical-gray-lighter relative ${
                 advertisement.linkUrl ? 'cursor-pointer hover:opacity-80 transition-opacity duration-200' : ''
               }`}
               onClick={advertisement.linkUrl ? handleClick : undefined}
               title={advertisement.linkUrl ? 'Click to open link' : undefined}
             >
+              {advertisement.linkUrl && (
+                <div className="absolute top-2 right-2 bg-black/60 rounded-full p-1">
+                  <ExternalLink className="h-3 w-3 text-white" />
+                </div>
+              )}
               <img
                 src={advertisement.imageUrl}
                 alt={advertisement.title}

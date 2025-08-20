@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 import { 
   Smartphone, 
   Heart, 
@@ -162,32 +162,7 @@ export function AppleHealthKitIntegration({ userId, competitionId, teamId }: { u
     }
   };
 
-  // Convert workout to activity
-  const convertWorkoutMutation = useMutation({
-    mutationFn: async ({ workoutId, activityType }: { workoutId: number; activityType: string }) => {
-      const response = await apiRequest('POST', `/api/apple-healthkit/workouts/${workoutId}/convert`, {
-        activityType,
-        competitionId,
-        teamId
-      });
-      return await response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['apple-healthkit-workouts'] });
-      queryClient.invalidateQueries({ queryKey: ['activities'] });
-      toast({
-        title: "Workout Converted",
-        description: "Apple HealthKit workout has been converted to a TacFit activity with full points!",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Conversion Failed",
-        description: error.message || "Failed to convert workout to activity",
-        variant: "destructive",
-      });
-    }
-  });
+
 
   // Manual sync
   const syncMutation = useMutation({
@@ -296,7 +271,6 @@ export function AppleHealthKitIntegration({ userId, competitionId, teamId }: { u
 
   const isConnected = connection?.isEnabled && connection?.setupCompleted;
   const hasWorkouts = workouts && workouts.length > 0;
-  const unconvertedWorkouts = workouts?.filter(w => !w.isConverted) || [];
 
   return (
     <>
@@ -322,8 +296,8 @@ export function AppleHealthKitIntegration({ userId, competitionId, teamId }: { u
                   Connect Your Apple HealthKit
                 </h4>
                 <p className="text-sm text-gray-300 mb-4">
-                  Automatically sync your workouts, steps, heart rate, and calories from Apple Health. 
-                  Get full points (30) for verified health data from your iPhone and Apple Watch.
+                  Connect your Apple Health to sync workouts, steps, heart rate, and calories data. 
+                  View your health statistics and track your fitness progress over time.
                   {isIOSChrome && (
                     <span className="block mt-2 text-xs text-blue-300">
                       Works with Chrome on iOS! All iOS browsers support HealthKit.
@@ -433,7 +407,7 @@ export function AppleHealthKitIntegration({ userId, competitionId, teamId }: { u
                       className="flex-1 border-gray-600 hover:bg-gray-700 w-full sm:flex-1"
                     >
                       <Calendar className="h-4 w-4 mr-2" />
-                      <span className="truncate">View Workouts ({unconvertedWorkouts.length} new)</span>
+                      <span className="truncate">View Workouts ({workouts.length})</span>
                     </Button>
                   )}
                 </div>
@@ -459,11 +433,9 @@ export function AppleHealthKitIntegration({ userId, competitionId, teamId }: { u
             <DialogTitle className="text-white flex items-center space-x-2">
               <Activity className="h-5 w-5 text-military-green" />
               <span>Apple HealthKit Workouts</span>
-              {unconvertedWorkouts.length > 0 && (
-                <Badge variant="outline" className="bg-blue-900/20 text-blue-300 border-blue-600/30">
-                  {unconvertedWorkouts.length} new
-                </Badge>
-              )}
+              <Badge variant="outline" className="bg-blue-900/20 text-blue-300 border-blue-600/30">
+                {workouts?.length || 0} workouts
+              </Badge>
             </DialogTitle>
           </DialogHeader>
           
@@ -472,11 +444,6 @@ export function AppleHealthKitIntegration({ userId, competitionId, teamId }: { u
               <HealthKitWorkoutCard
                 key={workout.id}
                 workout={workout}
-                onConvert={(activityType) => 
-                  convertWorkoutMutation.mutate({ workoutId: workout.id, activityType })
-                }
-                isConverting={convertWorkoutMutation.isPending}
-                canConvert={!!competitionId && !!teamId && !workout.isConverted}
               />
             ))}
           </div>
@@ -487,17 +454,10 @@ export function AppleHealthKitIntegration({ userId, competitionId, teamId }: { u
 }
 
 function HealthKitWorkoutCard({ 
-  workout, 
-  onConvert, 
-  isConverting, 
-  canConvert 
+  workout
 }: { 
   workout: AppleHealthWorkout;
-  onConvert: (activityType: string) => void;
-  isConverting: boolean;
-  canConvert: boolean;
 }) {
-  const [selectedActivityType, setSelectedActivityType] = useState<string>('');
 
   const getWorkoutIcon = (type: string) => {
     const lowerType = type.toLowerCase();
@@ -508,19 +468,13 @@ function HealthKitWorkoutCard({
   };
 
   return (
-    <Card className={`${workout.isConverted ? 'bg-green-900/20 border-green-600/30' : 'bg-gray-800/50 border-gray-700'}`}>
+    <Card className="bg-gray-800/50 border-gray-700">
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center space-x-2 mb-2">
               {getWorkoutIcon(workout.workoutType)}
               <h4 className="font-semibold text-white">{workout.workoutType}</h4>
-              {workout.isConverted && (
-                <Badge variant="outline" className="bg-green-900/20 text-green-300 border-green-600/30">
-                  <CheckCircle className="h-3 w-3 mr-1" />
-                  Converted
-                </Badge>
-              )}
             </div>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm text-gray-400">
@@ -552,35 +506,6 @@ function HealthKitWorkoutCard({
               </div>
             )}
           </div>
-
-          {canConvert && (
-            <div className="flex items-center space-x-2">
-              <Select value={selectedActivityType} onValueChange={setSelectedActivityType}>
-                <SelectTrigger className="w-32 bg-gray-800 border-gray-600">
-                  <SelectValue placeholder="Activity" />
-                </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-600">
-                  <SelectItem value="cardio">Cardio</SelectItem>
-                  <SelectItem value="strength">Strength</SelectItem>
-                  <SelectItem value="flexibility">Flexibility</SelectItem>
-                  <SelectItem value="sports">Sports</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              <Button
-                size="sm"
-                onClick={() => selectedActivityType && onConvert(selectedActivityType)}
-                disabled={!selectedActivityType || isConverting}
-                className="bg-military-green hover:bg-military-green/80"
-              >
-                {isConverting ? (
-                  <div className="animate-spin w-3 h-3 border-2 border-white border-t-transparent rounded-full" />
-                ) : (
-                  <Download className="h-3 w-3" />
-                )}
-              </Button>
-            </div>
-          )}
         </div>
       </CardContent>
     </Card>

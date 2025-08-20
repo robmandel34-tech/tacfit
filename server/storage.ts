@@ -6,7 +6,10 @@ import {
   InsertCompetitionInvitation, CompetitionEntry, InsertCompetitionEntry,
   PhoneInvitation, InsertPhoneInvitation, WhiteboardItem, InsertWhiteboardItem, 
   MissionTask, InsertMissionTask, ActivityType, InsertActivityType,
-  AdminPost, InsertAdminPost, MoodLog, InsertMoodLog
+  AdminPost, InsertAdminPost, MoodLog, InsertMoodLog,
+  AppleHealthConnection, InsertAppleHealthConnection,
+  AppleHealthData, InsertAppleHealthData,
+  AppleHealthWorkout, InsertAppleHealthWorkout
 } from "@shared/schema";
 
 export interface IStorage {
@@ -139,6 +142,17 @@ export interface IStorage {
   getUserMoodLogs(userId: number, limit?: number): Promise<MoodLog[]>;
   getLatestMoodLog(userId: number): Promise<MoodLog | undefined>;
   hasLoggedMoodToday(userId: number): Promise<boolean>;
+  
+  // Apple Health integration operations
+  getAppleHealthConnection(userId: number): Promise<AppleHealthConnection | undefined>;
+  createOrUpdateAppleHealthConnection(userId: number, updates: Partial<AppleHealthConnection>): Promise<AppleHealthConnection>;
+  updateAppleHealthConnection(userId: number, updates: Partial<AppleHealthConnection>): Promise<AppleHealthConnection | undefined>;
+  createAppleHealthData(data: InsertAppleHealthData): Promise<AppleHealthData>;
+  getAppleHealthData(userId: number, dataType?: string, startDate?: string, endDate?: string, limit?: number): Promise<AppleHealthData[]>;
+  createAppleHealthWorkout(workout: InsertAppleHealthWorkout): Promise<AppleHealthWorkout>;
+  getAppleHealthWorkouts(userId: number, startDate?: string, endDate?: string, limit?: number): Promise<AppleHealthWorkout[]>;
+  getAppleHealthWorkout(id: number): Promise<AppleHealthWorkout | undefined>;
+  updateAppleHealthWorkout(id: number, updates: Partial<AppleHealthWorkout>): Promise<AppleHealthWorkout | undefined>;
 }
 
 import { DatabaseStorage } from "./database-storage";

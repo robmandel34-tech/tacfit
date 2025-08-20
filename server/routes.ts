@@ -8,7 +8,8 @@ import {
   insertTeamMemberSchema, insertActivitySchema, insertActivityCommentSchema,
   insertChatMessageSchema, insertFriendshipSchema, insertCompetitionInvitationSchema,
   insertCompetitionEntrySchema, insertMissionTaskSchema, insertActivityTypeSchema,
-  insertAdminPostSchema, insertMoodLogSchema, friendships, type User
+  insertAdminPostSchema, insertMoodLogSchema, friendships, type User,
+  insertAppleHealthConnectionSchema, insertAppleHealthDataSchema, insertAppleHealthWorkoutSchema
 } from "@shared/schema";
 import { db } from "./db";
 import { and, eq } from "drizzle-orm";
@@ -3242,6 +3243,281 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('Admin get mood logs error:', error);
       res.status(500).json({ message: error.message || "Error fetching mood logs" });
+    }
+  });
+
+  // Apple Health Integration routes
+
+  // Generate API key for user's Apple Shortcuts integration
+  app.post("/api/apple-health/setup", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.sendStatus(401);
+      }
+
+      const userId = req.session.user.id;
+      const apiKey = `th_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+      
+      // Create or update Apple Health connection
+      const connection = await storage.createOrUpdateAppleHealthConnection(userId, {
+        isEnabled: true,
+        setupCompleted: false,
+        apiKey: apiKey,
+        shortcutVersion: "1.0"
+      });
+
+      res.json({ 
+        apiKey,
+        setupUrl: `${req.protocol}://${req.get('host')}/api/apple-health/sync?key=${apiKey}&user=${userId}`,
+        connection
+      });
+    } catch (error: any) {
+      console.error('Apple Health setup error:', error);
+      res.status(500).json({ message: error.message || "Error setting up Apple Health integration" });
+    }
+  });
+
+  // Get user's Apple Health connection status
+  app.get("/api/apple-health/status", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.sendStatus(401);
+      }
+
+      const connection = await storage.getAppleHealthConnection(req.session.user.id);
+      res.json(connection || { isEnabled: false, setupCompleted: false });
+    } catch (error: any) {
+      console.error('Apple Health status error:', error);
+      res.status(500).json({ message: error.message || "Error fetching Apple Health status" });
+    }
+  });
+
+  // Receive health data from Apple Shortcuts
+  app.post("/api/apple-health/sync", async (req, res) => {
+    try {
+      const { key, user } = req.query;
+      const { steps, heartRate, activeEnergy, workouts, date } = req.body;
+
+      if (!key || !user) {
+        return res.status(400).json({ message: "API key and user ID required" });
+      }
+
+      const userId = parseInt(user as string);
+      const connection = await storage.getAppleHealthConnection(userId);
+
+      if (!connection || connection.apiKey !== key || !connection.isEnabled) {
+        return res.status(401).json({ message: "Invalid API key or disabled integration" });
+      }
+
+      // Parse and store different types of health data
+      const syncDate = date ? new Date(date) : new Date();
+      const syncedData: any[] = [];
+
+      // Process steps data
+      if (steps && steps.values) {
+        for (const stepEntry of steps.values) {
+          const healthData = await storage.createAppleHealthData({
+            userId,
+            dataType: 'steps',
+            value: stepEntry.quantity.toString(),
+            unit: 'count',
+            sourceApp: stepEntry.sourceName || 'Health',
+            startDate: new Date(stepEntry.startDate),
+            endDate: new Date(stepEntry.endDate),
+            metadata: JSON.stringify(stepEntry)
+          });
+          syncedData.push({ type: 'steps', data: healthData });
+        }
+      }
+
+      // Process heart rate data
+      if (heartRate && heartRate.values) {
+        for (const hrEntry of heartRate.values) {
+          const healthData = await storage.createAppleHealthData({
+            userId,
+            dataType: 'heart_rate',
+            value: hrEntry.quantity.toString(),
+            unit: 'bpm',
+            sourceApp: hrEntry.sourceName || 'Health',
+            startDate: new Date(hrEntry.startDate),
+            endDate: new Date(hrEntry.endDate),
+            metadata: JSON.stringify(hrEntry)
+          });
+          syncedData.push({ type: 'heart_rate', data: healthData });
+        }
+      }
+
+      // Process active energy data
+      if (activeEnergy && activeEnergy.values) {
+        for (const energyEntry of activeEnergy.values) {
+          const healthData = await storage.createAppleHealthData({
+            userId,
+            dataType: 'active_energy',
+            value: energyEntry.quantity.toString(),
+            unit: 'cal',
+            sourceApp: energyEntry.sourceName || 'Health',
+            startDate: new Date(energyEntry.startDate),
+            endDate: new Date(energyEntry.endDate),
+            metadata: JSON.stringify(energyEntry)
+          });
+          syncedData.push({ type: 'active_energy', data: healthData });
+        }
+      }
+
+      // Process workout data
+      if (workouts && workouts.length > 0) {
+        for (const workout of workouts) {
+          const workoutData = await storage.createAppleHealthWorkout({
+            userId,
+            workoutType: workout.workoutActivityType || 'Other',
+            duration: Math.round(workout.duration / 60) || 0, // Convert to minutes
+            totalEnergyBurned: workout.totalEnergyBurned || 0,
+            totalDistance: workout.totalDistance?.toString() || '0',
+            startDate: new Date(workout.startDate),
+            endDate: new Date(workout.endDate),
+            sourceApp: workout.sourceName || 'Fitness',
+            metadata: JSON.stringify(workout),
+            isConverted: false
+          });
+          syncedData.push({ type: 'workout', data: workoutData });
+        }
+      }
+
+      // Update connection with last sync time and mark as completed
+      await storage.updateAppleHealthConnection(userId, {
+        lastSyncAt: new Date(),
+        setupCompleted: true
+      });
+
+      res.json({ 
+        success: true, 
+        message: `Synced ${syncedData.length} health data entries`,
+        syncedData: syncedData.length,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error: any) {
+      console.error('Apple Health sync error:', error);
+      res.status(500).json({ message: error.message || "Error syncing Apple Health data" });
+    }
+  });
+
+  // Get user's Apple Health data
+  app.get("/api/apple-health/data", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.sendStatus(401);
+      }
+
+      const { type, startDate, endDate, limit = 100 } = req.query;
+      
+      const healthData = await storage.getAppleHealthData(
+        req.session.user.id,
+        type as string,
+        startDate as string,
+        endDate as string,
+        parseInt(limit as string)
+      );
+
+      res.json(healthData);
+    } catch (error: any) {
+      console.error('Get Apple Health data error:', error);
+      res.status(500).json({ message: error.message || "Error fetching Apple Health data" });
+    }
+  });
+
+  // Get user's Apple Health workouts
+  app.get("/api/apple-health/workouts", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.sendStatus(401);
+      }
+
+      const { startDate, endDate, limit = 50 } = req.query;
+      
+      const workouts = await storage.getAppleHealthWorkouts(
+        req.session.user.id,
+        startDate as string,
+        endDate as string,
+        parseInt(limit as string)
+      );
+
+      res.json(workouts);
+    } catch (error: any) {
+      console.error('Get Apple Health workouts error:', error);
+      res.status(500).json({ message: error.message || "Error fetching Apple Health workouts" });
+    }
+  });
+
+  // Convert Apple Health workout to TacFit activity
+  app.post("/api/apple-health/workouts/:id/convert", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.sendStatus(401);
+      }
+
+      const workoutId = parseInt(req.params.id);
+      const { activityType, competitionId, teamId } = req.body;
+
+      const workout = await storage.getAppleHealthWorkout(workoutId);
+      if (!workout || workout.userId !== req.session.user.id) {
+        return res.status(404).json({ message: "Workout not found" });
+      }
+
+      if (workout.isConverted) {
+        return res.status(400).json({ message: "Workout has already been converted" });
+      }
+
+      // Create TacFit activity from workout
+      const activity = await storage.createActivity({
+        userId: req.session.user.id,
+        competitionId,
+        teamId,
+        type: activityType,
+        description: `${workout.workoutType} workout synced from Apple Health`,
+        quantity: workout.duration?.toString() || "0",
+        evidenceType: "apple_health",
+        textInput: `Workout imported from Apple Health:\n- Type: ${workout.workoutType}\n- Duration: ${workout.duration} minutes\n- Calories burned: ${workout.totalEnergyBurned || 0}\n- Distance: ${workout.totalDistance || 'N/A'}`,
+        points: 30 // Full points for Apple Health verified data
+      });
+
+      // Mark workout as converted
+      await storage.updateAppleHealthWorkout(workoutId, {
+        activityId: activity.id,
+        isConverted: true
+      });
+
+      // Award points to team
+      if (teamId) {
+        const team = await storage.getTeam(teamId);
+        if (team) {
+          await storage.updateTeam(teamId, {
+            points: (team.points || 0) + 30
+          });
+        }
+      }
+
+      res.json({ activity, workout, message: "Workout converted to TacFit activity successfully" });
+    } catch (error: any) {
+      console.error('Convert workout error:', error);
+      res.status(500).json({ message: error.message || "Error converting workout" });
+    }
+  });
+
+  // Disable Apple Health integration
+  app.post("/api/apple-health/disable", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.sendStatus(401);
+      }
+
+      await storage.updateAppleHealthConnection(req.session.user.id, {
+        isEnabled: false
+      });
+
+      res.json({ message: "Apple Health integration disabled" });
+    } catch (error: any) {
+      console.error('Disable Apple Health error:', error);
+      res.status(500).json({ message: error.message || "Error disabling Apple Health integration" });
     }
   });
 

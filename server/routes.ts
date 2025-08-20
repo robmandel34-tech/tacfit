@@ -2943,6 +2943,156 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Advertisement routes
+  app.get("/api/advertisements", async (req, res) => {
+    try {
+      const ads = await storage.getAdvertisements();
+      res.json(ads);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching advertisements" });
+    }
+  });
+
+  app.get("/api/advertisements/active", async (req, res) => {
+    try {
+      const ads = await storage.getActiveAdvertisements();
+      res.json(ads);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching active advertisements" });
+    }
+  });
+
+  app.post("/api/advertisements", async (req, res) => {
+    try {
+      // Check admin privileges
+      const users = await storage.getUsers();
+      const adminUser = users.find(u => u.isAdmin === true);
+      
+      if (!adminUser) {
+        return res.status(403).json({ message: "Admin privileges required" });
+      }
+
+      const { insertAdvertisementSchema } = await import("@shared/schema");
+      
+      // Transform request body to handle empty dates
+      const requestBody = {
+        ...req.body,
+        startDate: req.body.startDate && req.body.startDate.trim() !== '' 
+          ? new Date(req.body.startDate) 
+          : null,
+        endDate: req.body.endDate && req.body.endDate.trim() !== '' 
+          ? new Date(req.body.endDate) 
+          : null
+      };
+      
+      const validationResult = insertAdvertisementSchema.safeParse(requestBody);
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          message: "Invalid advertisement data",
+          errors: validationResult.error.errors
+        });
+      }
+
+      const adData = {
+        ...validationResult.data,
+        createdBy: adminUser.id
+      };
+
+      const ad = await storage.createAdvertisement(adData);
+      res.json(ad);
+    } catch (error) {
+      console.error("Error creating advertisement:", error);
+      res.status(500).json({ message: "Error creating advertisement" });
+    }
+  });
+
+  app.post("/api/advertisements/upload-image", upload.single('image'), async (req, res) => {
+    try {
+      // Check admin privileges
+      const users = await storage.getUsers();
+      const adminUser = users.find(u => u.isAdmin === true);
+      
+      if (!adminUser) {
+        return res.status(403).json({ message: "Admin privileges required" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ message: "No image file provided" });
+      }
+
+      // Generate unique filename
+      const timestamp = Date.now();
+      const originalName = req.file.originalname;
+      const extension = path.extname(originalName);
+      const filename = `advertisement_${timestamp}${extension}`;
+      const filePath = path.join('uploads', filename);
+
+      // Move the uploaded file to the correct location
+      fs.renameSync(req.file.path, filePath);
+
+      // Return the image URL
+      res.json({ 
+        imageUrl: `/uploads/${filename}`,
+        filename: filename
+      });
+    } catch (error) {
+      console.error("Error uploading advertisement image:", error);
+      res.status(500).json({ message: "Error uploading image" });
+    }
+  });
+
+  app.patch("/api/advertisements/:id", async (req, res) => {
+    try {
+      // Check admin privileges
+      const users = await storage.getUsers();
+      const adminUser = users.find(u => u.isAdmin === true);
+      
+      if (!adminUser) {
+        return res.status(403).json({ message: "Admin privileges required" });
+      }
+
+      const id = parseInt(req.params.id);
+      const ad = await storage.updateAdvertisement(id, req.body);
+      if (!ad) {
+        return res.status(404).json({ message: "Advertisement not found" });
+      }
+      res.json(ad);
+    } catch (error) {
+      res.status(500).json({ message: "Error updating advertisement" });
+    }
+  });
+
+  app.delete("/api/advertisements/:id", async (req, res) => {
+    try {
+      // Check admin privileges
+      const users = await storage.getUsers();
+      const adminUser = users.find(u => u.isAdmin === true);
+      
+      if (!adminUser) {
+        return res.status(403).json({ message: "Admin privileges required" });
+      }
+
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteAdvertisement(id);
+      if (!success) {
+        return res.status(404).json({ message: "Advertisement not found" });
+      }
+      res.json({ message: "Advertisement deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Error deleting advertisement" });
+    }
+  });
+
+  app.post("/api/advertisements/:id/impression", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.incrementAdvertisementImpressions(id);
+      res.json({ message: "Impression recorded" });
+    } catch (error) {
+      res.status(500).json({ message: "Error recording impression" });
+    }
+  });
+
   // Serve uploaded files with proper MIME types and video support
   app.use('/uploads', (req, res, next) => {
     const ext = path.extname(req.path).toLowerCase();

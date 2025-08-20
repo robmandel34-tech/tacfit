@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { Plus, Edit2, Trash2, Users, Trophy, Calendar, Settings, X, Activity, AlertTriangle, MessageSquare, BarChart3 } from "lucide-react";
+import { Plus, Edit2, Trash2, Users, Trophy, Calendar, Settings, X, Activity, AlertTriangle, MessageSquare, BarChart3, Target } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 
@@ -85,6 +85,22 @@ interface MoodLog {
   loggedAt: string;
 }
 
+interface Advertisement {
+  id: number;
+  title: string;
+  content: string;
+  imageUrl?: string;
+  targetUrl?: string;
+  isActive: boolean;
+  startDate?: string;
+  endDate?: string;
+  currentImpressions: number;
+  maxImpressions?: number;
+  createdBy: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 
 
 export default function AdminPage() {
@@ -92,7 +108,7 @@ export default function AdminPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
-  const [activeTab, setActiveTab] = useState<'competitions' | 'users' | 'activity-types' | 'posts' | 'settings'>('competitions');
+  const [activeTab, setActiveTab] = useState<'competitions' | 'users' | 'activity-types' | 'posts' | 'advertisements' | 'settings'>('competitions');
   const [isCreateCompetitionOpen, setIsCreateCompetitionOpen] = useState(false);
   const [editingCompetition, setEditingCompetition] = useState<Competition | null>(null);
   const [pointsAdjustmentUser, setPointsAdjustmentUser] = useState<User | null>(null);
@@ -159,6 +175,12 @@ export default function AdminPage() {
     select: (data: AdminPost[]) => data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
   });
 
+  // Fetch advertisements
+  const { data: advertisements = [], isLoading: advertisementsLoading } = useQuery({
+    queryKey: ["/api/advertisements"],
+    select: (data: Advertisement[]) => data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  });
+
   // Fetch mood logs for selected user
   const { data: userMoodLogs = [], isLoading: moodLogsLoading } = useQuery<MoodLog[]>({
     queryKey: ["/api/admin/mood-logs/user", viewCheckInsUser?.id],
@@ -211,6 +233,21 @@ export default function AdminPage() {
   
   const [adminPostImage, setAdminPostImage] = useState<File | null>(null);
   const [adminPostImagePreview, setAdminPostImagePreview] = useState<string | null>(null);
+
+  // Advertisement management state
+  const [isCreateAdvertisementOpen, setIsCreateAdvertisementOpen] = useState(false);
+  const [editingAdvertisement, setEditingAdvertisement] = useState<Advertisement | null>(null);
+  const [advertisementForm, setAdvertisementForm] = useState({
+    title: '',
+    content: '',
+    targetUrl: '',
+    isActive: true,
+    startDate: '',
+    endDate: '',
+    maxImpressions: ''
+  });
+  const [advertisementImage, setAdvertisementImage] = useState<File | null>(null);
+  const [advertisementImagePreview, setAdvertisementImagePreview] = useState<string | null>(null);
 
   const [editingAdminPost, setEditingAdminPost] = useState<AdminPost | null>(null);
   const [isCreateAdminPostOpen, setIsCreateAdminPostOpen] = useState(false);
@@ -563,7 +600,150 @@ export default function AdminPage() {
     }
   });
 
+  // Advertisement management mutations
+  const createAdvertisement = useMutation({
+    mutationFn: async (data: typeof advertisementForm & { imageUrl?: string }) => {
+      return apiRequest("POST", "/api/advertisements", data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Advertisement created",
+        description: "The new advertisement is now active.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/advertisements"] });
+      setIsCreateAdvertisementOpen(false);
+      resetAdvertisementForm();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to create advertisement",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
 
+  const updateAdvertisement = useMutation({
+    mutationFn: async (data: { id: number; updates: Partial<Advertisement> }) => {
+      return apiRequest("PATCH", `/api/advertisements/${data.id}`, data.updates);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Advertisement updated",
+        description: "Changes have been saved.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/advertisements"] });
+      setEditingAdvertisement(null);
+      setIsCreateAdvertisementOpen(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to update advertisement",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  const deleteAdvertisement = useMutation({
+    mutationFn: async (id: number) => {
+      return apiRequest("DELETE", `/api/advertisements/${id}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Advertisement deleted",
+        description: "The advertisement has been removed.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/advertisements"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to delete advertisement",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  const resetAdvertisementForm = () => {
+    setAdvertisementForm({
+      title: '',
+      content: '',
+      targetUrl: '',
+      isActive: true,
+      startDate: '',
+      endDate: '',
+      maxImpressions: ''
+    });
+    setAdvertisementImage(null);
+    setAdvertisementImagePreview(null);
+  };
+
+  const handleAdvertisementSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    let imageUrl: string | null = null;
+    
+    // Upload image if provided
+    if (advertisementImage) {
+      const formData = new FormData();
+      formData.append('image', advertisementImage);
+      
+      try {
+        const response = await fetch('/api/advertisements/upload-image', {
+          method: 'POST',
+          body: formData,
+          credentials: 'include'
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText);
+        }
+        
+        const uploadResponse = await response.json();
+        imageUrl = uploadResponse.imageUrl;
+      } catch (error: any) {
+        toast({
+          title: "Failed to upload image",
+          description: error.message,
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+    
+    const adData = {
+      ...advertisementForm,
+      maxImpressions: advertisementForm.maxImpressions ? parseInt(advertisementForm.maxImpressions) : undefined,
+      ...(imageUrl && { imageUrl: imageUrl })
+    };
+    
+    if (editingAdvertisement) {
+      updateAdvertisement.mutate({
+        id: editingAdvertisement.id,
+        updates: adData
+      });
+    } else {
+      createAdvertisement.mutate(adData);
+    }
+  };
+
+  const handleEditAdvertisement = (ad: Advertisement) => {
+    setEditingAdvertisement(ad);
+    setAdvertisementForm({
+      title: ad.title,
+      content: ad.content,
+      targetUrl: ad.targetUrl || '',
+      isActive: ad.isActive,
+      startDate: ad.startDate ? format(new Date(ad.startDate), 'yyyy-MM-dd') : '',
+      endDate: ad.endDate ? format(new Date(ad.endDate), 'yyyy-MM-dd') : '',
+      maxImpressions: ad.maxImpressions ? ad.maxImpressions.toString() : ''
+    });
+    setAdvertisementImage(null);
+    setAdvertisementImagePreview(null);
+    setIsCreateAdvertisementOpen(true);
+  };
 
   const resetAdminPostForm = () => {
     setAdminPostForm({
@@ -788,6 +968,14 @@ export default function AdminPage() {
           >
             <MessageSquare className="h-4 w-4" />
             <span>Intel Posts</span>
+          </Button>
+          <Button
+            variant={activeTab === 'advertisements' ? 'default' : 'ghost'}
+            onClick={() => setActiveTab('advertisements')}
+            className="flex items-center space-x-2"
+          >
+            <Target className="h-4 w-4" />
+            <span>Advertisements</span>
           </Button>
           <Button
             variant={activeTab === 'settings' ? 'default' : 'ghost'}
@@ -2046,6 +2234,261 @@ export default function AdminPage() {
           </div>
         )}
 
+        {/* Advertisements Tab */}
+        {activeTab === 'advertisements' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Advertisement Management</h2>
+              <Dialog open={isCreateAdvertisementOpen} onOpenChange={setIsCreateAdvertisementOpen}>
+                <DialogTrigger asChild>
+                  <Button 
+                    className="bg-military-green hover:bg-military-green-light"
+                    onClick={() => {
+                      setEditingAdvertisement(null);
+                      resetAdvertisementForm();
+                    }}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Advertisement
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-tactical-dark border-tactical-gray max-w-2xl" aria-describedby="advertisement-dialog-description">
+                  <DialogHeader>
+                    <DialogTitle className="text-white">
+                      {editingAdvertisement ? 'Edit Advertisement' : 'Create New Advertisement'}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div id="advertisement-dialog-description" className="sr-only">
+                    {editingAdvertisement ? 'Edit existing advertisement' : 'Create a new advertisement for the Intel Feed'}
+                  </div>
+                  <form onSubmit={handleAdvertisementSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto">
+                    <div>
+                      <Label htmlFor="ad-title" className="text-gray-300">Title</Label>
+                      <Input
+                        id="ad-title"
+                        value={advertisementForm.title}
+                        onChange={(e) => setAdvertisementForm(prev => ({ ...prev, title: e.target.value }))}
+                        className="bg-tactical-gray-lighter border-tactical-gray text-white"
+                        placeholder="Enter advertisement title..."
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="ad-content" className="text-gray-300">Content</Label>
+                      <Textarea
+                        id="ad-content"
+                        value={advertisementForm.content}
+                        onChange={(e) => setAdvertisementForm(prev => ({ ...prev, content: e.target.value }))}
+                        className="bg-tactical-gray-lighter border-tactical-gray text-white min-h-[120px]"
+                        placeholder="Enter advertisement content..."
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="ad-target-url" className="text-gray-300">Target URL (Optional)</Label>
+                      <Input
+                        id="ad-target-url"
+                        type="url"
+                        value={advertisementForm.targetUrl}
+                        onChange={(e) => setAdvertisementForm(prev => ({ ...prev, targetUrl: e.target.value }))}
+                        className="bg-tactical-gray-lighter border-tactical-gray text-white"
+                        placeholder="https://example.com"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="ad-image" className="text-gray-300">Advertisement Image (Optional)</Label>
+                      <div className="space-y-3">
+                        <input
+                          id="ad-image"
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setAdvertisementImage(file);
+                              const reader = new FileReader();
+                              reader.onload = (e) => {
+                                setAdvertisementImagePreview(e.target?.result as string);
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                          className="bg-tactical-gray-lighter border-tactical-gray text-white file:bg-military-green file:text-white file:border-0 file:rounded-md file:px-3 file:py-1"
+                        />
+                        {advertisementImagePreview && (
+                          <div className="relative">
+                            <img 
+                              src={advertisementImagePreview} 
+                              alt="Preview" 
+                              className="w-full max-w-xs h-32 object-cover rounded-md border border-tactical-gray"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setAdvertisementImage(null);
+                                setAdvertisementImagePreview(null);
+                              }}
+                              className="absolute top-1 right-1 h-6 w-6 p-0 bg-red-600 hover:bg-red-700 text-white"
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="ad-start-date" className="text-gray-300">Start Date (Optional)</Label>
+                        <Input
+                          id="ad-start-date"
+                          type="date"
+                          value={advertisementForm.startDate}
+                          onChange={(e) => setAdvertisementForm(prev => ({ ...prev, startDate: e.target.value }))}
+                          className="bg-tactical-gray-lighter border-tactical-gray text-white"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="ad-end-date" className="text-gray-300">End Date (Optional)</Label>
+                        <Input
+                          id="ad-end-date"
+                          type="date"
+                          value={advertisementForm.endDate}
+                          onChange={(e) => setAdvertisementForm(prev => ({ ...prev, endDate: e.target.value }))}
+                          className="bg-tactical-gray-lighter border-tactical-gray text-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="ad-max-impressions" className="text-gray-300">Max Impressions (Optional)</Label>
+                      <Input
+                        id="ad-max-impressions"
+                        type="number"
+                        min="1"
+                        value={advertisementForm.maxImpressions}
+                        onChange={(e) => setAdvertisementForm(prev => ({ ...prev, maxImpressions: e.target.value }))}
+                        className="bg-tactical-gray-lighter border-tactical-gray text-white"
+                        placeholder="Leave empty for unlimited impressions"
+                      />
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="ad-active"
+                        checked={advertisementForm.isActive}
+                        onCheckedChange={(checked) => setAdvertisementForm(prev => ({ ...prev, isActive: checked }))}
+                      />
+                      <Label htmlFor="ad-active" className="text-gray-300">Active</Label>
+                    </div>
+
+                    <div className="flex justify-end space-x-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsCreateAdvertisementOpen(false)}
+                        className="border-tactical-gray text-gray-300 hover:bg-tactical-gray-lighter"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        disabled={createAdvertisement.isPending || updateAdvertisement.isPending}
+                        className="bg-military-green hover:bg-military-green-light"
+                      >
+                        {editingAdvertisement ? 'Update' : 'Create'}
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            <Card className="bg-tactical-gray-lighter border-tactical-gray">
+              <CardHeader>
+                <CardTitle className="text-white">Active Advertisements</CardTitle>
+                <CardDescription className="text-gray-400">
+                  Manage advertisements that appear in the Intel Feed timeline
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {advertisementsLoading ? (
+                  <div className="space-y-4">
+                    <div className="h-4 bg-tactical-gray-lighter rounded animate-pulse" />
+                    <div className="h-4 bg-tactical-gray-lighter rounded animate-pulse" />
+                    <div className="h-4 bg-tactical-gray-lighter rounded animate-pulse" />
+                  </div>
+                ) : advertisements.length === 0 ? (
+                  <p className="text-gray-400 text-center py-4">No advertisements created yet.</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-tactical-gray hover:bg-transparent">
+                        <TableHead className="text-gray-300">Title</TableHead>
+                        <TableHead className="text-gray-300">Status</TableHead>
+                        <TableHead className="text-gray-300">Impressions</TableHead>
+                        <TableHead className="text-gray-300">Start Date</TableHead>
+                        <TableHead className="text-gray-300">End Date</TableHead>
+                        <TableHead className="text-gray-300">Created</TableHead>
+                        <TableHead className="text-gray-300">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {advertisements.map((ad) => (
+                        <TableRow key={ad.id} className="border-tactical-gray hover:bg-tactical-gray-lighter">
+                          <TableCell className="text-white font-medium">{ad.title}</TableCell>
+                          <TableCell>
+                            <Badge variant={ad.isActive ? 'default' : 'secondary'} className="text-xs">
+                              {ad.isActive ? 'Active' : 'Inactive'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-gray-300">
+                            {ad.currentImpressions}{ad.maxImpressions ? ` / ${ad.maxImpressions}` : ''}
+                          </TableCell>
+                          <TableCell className="text-gray-300">
+                            {ad.startDate ? format(new Date(ad.startDate), 'MMM d, yyyy') : 'Immediately'}
+                          </TableCell>
+                          <TableCell className="text-gray-300">
+                            {ad.endDate ? format(new Date(ad.endDate), 'MMM d, yyyy') : 'Never'}
+                          </TableCell>
+                          <TableCell className="text-gray-300">
+                            {format(new Date(ad.createdAt), 'MMM d, yyyy')}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleEditAdvertisement(ad)}
+                                className="h-8 w-8 p-0 hover:bg-tactical-gray-lighter"
+                              >
+                                <Edit2 className="h-4 w-4 text-gray-400" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => deleteAdvertisement.mutate(ad.id)}
+                                disabled={deleteAdvertisement.isPending}
+                                className="h-8 w-8 p-0 hover:bg-red-900/20"
+                              >
+                                <Trash2 className="h-4 w-4 text-red-400" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Settings Tab */}
         {activeTab === 'settings' && (

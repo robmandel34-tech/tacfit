@@ -241,6 +241,24 @@ export const adminPosts = pgTable("admin_posts", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const advertisements = pgTable("advertisements", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  imageUrl: text("image_url"),
+  linkUrl: text("link_url"), // Optional external link
+  adType: text("ad_type").default("banner"), // banner, sponsored_post, video, carousel
+  targetAudience: text("target_audience"), // all, premium_users, competition_participants
+  isActive: boolean("is_active").default(true),
+  startDate: timestamp("start_date"),
+  endDate: timestamp("end_date"),
+  maxImpressions: integer("max_impressions"), // Optional impression limit
+  currentImpressions: integer("current_impressions").default(0),
+  createdBy: integer("created_by").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const moodLogs = pgTable("mood_logs", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id).notNull(),
@@ -389,6 +407,14 @@ export const insertAdminPostSchema = createInsertSchema(adminPosts).omit({
   updatedAt: true,
 });
 
+export const insertAdvertisementSchema = createInsertSchema(advertisements).omit({
+  id: true,
+  createdBy: true,
+  currentImpressions: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertMoodLogSchema = createInsertSchema(moodLogs).omit({
   id: true,
   loggedAt: true,
@@ -445,6 +471,8 @@ export type MissionTask = typeof missionTasks.$inferSelect;
 export type InsertMissionTask = z.infer<typeof insertMissionTaskSchema>;
 export type AdminPost = typeof adminPosts.$inferSelect;
 export type InsertAdminPost = z.infer<typeof insertAdminPostSchema>;
+export type Advertisement = typeof advertisements.$inferSelect;
+export type InsertAdvertisement = z.infer<typeof insertAdvertisementSchema>;
 export type MoodLog = typeof moodLogs.$inferSelect;
 export type InsertMoodLog = z.infer<typeof insertMoodLogSchema>;
 export type AppleHealthConnection = typeof appleHealthConnections.$inferSelect;

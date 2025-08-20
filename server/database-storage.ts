@@ -6,17 +6,17 @@ import {
   CompetitionInvitation, InsertCompetitionInvitation, CompetitionEntry, 
   InsertCompetitionEntry, PhoneInvitation, InsertPhoneInvitation, WhiteboardItem, 
   InsertWhiteboardItem, MissionTask, InsertMissionTask, ActivityType, InsertActivityType,
-  AdminPost, InsertAdminPost, MoodLog, InsertMoodLog,
+  AdminPost, InsertAdminPost, Advertisement, InsertAdvertisement, MoodLog, InsertMoodLog,
   AppleHealthConnection, InsertAppleHealthConnection, AppleHealthData, InsertAppleHealthData,
   AppleHealthWorkout, InsertAppleHealthWorkout,
   users, competitions, teams, teamMembers, activities, activityTypes,
   activityComments, activityLikes, activityFlags, chatMessages, friendships, 
   competitionHistory, competitionInvitations, competitionEntries, phoneInvitations, 
-  whiteboardItems, missionTasks, adminPosts, moodLogs,
+  whiteboardItems, missionTasks, adminPosts, advertisements, moodLogs,
   appleHealthConnections, appleHealthData, appleHealthWorkouts
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, or, desc, isNull, gt, inArray } from "drizzle-orm";
+import { eq, and, or, desc, isNull, gt, inArray, sql } from "drizzle-orm";
 import { IStorage } from "./storage";
 
 export class DatabaseStorage implements IStorage {
@@ -821,6 +821,69 @@ export class DatabaseStorage implements IStorage {
       .delete(adminPosts)
       .where(eq(adminPosts.id, id));
     return (result.rowCount ?? 0) > 0;
+  }
+
+  // Advertisement operations
+  async getAdvertisements(): Promise<Advertisement[]> {
+    return await db
+      .select()
+      .from(advertisements)
+      .orderBy(desc(advertisements.createdAt));
+  }
+
+  async getActiveAdvertisements(): Promise<Advertisement[]> {
+    const now = new Date();
+    return await db
+      .select()
+      .from(advertisements)
+      .where(
+        and(
+          eq(advertisements.isActive, true),
+          or(
+            isNull(advertisements.startDate),
+            gt(advertisements.startDate, now)
+          ),
+          or(
+            isNull(advertisements.endDate),
+            gt(advertisements.endDate, now)
+          )
+        )
+      )
+      .orderBy(desc(advertisements.createdAt));
+  }
+
+  async createAdvertisement(ad: InsertAdvertisement & { createdBy: number }): Promise<Advertisement> {
+    const [newAd] = await db
+      .insert(advertisements)
+      .values(ad)
+      .returning();
+    return newAd;
+  }
+
+  async updateAdvertisement(id: number, updates: Partial<Advertisement>): Promise<Advertisement | undefined> {
+    const [ad] = await db
+      .update(advertisements)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(advertisements.id, id))
+      .returning();
+    return ad || undefined;
+  }
+
+  async deleteAdvertisement(id: number): Promise<boolean> {
+    const result = await db
+      .delete(advertisements)
+      .where(eq(advertisements.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async incrementAdvertisementImpressions(id: number): Promise<void> {
+    await db
+      .update(advertisements)
+      .set({ 
+        currentImpressions: sql`${advertisements.currentImpressions} + 1`,
+        updatedAt: new Date()
+      })
+      .where(eq(advertisements.id, id));
   }
 
   // Mood log operations

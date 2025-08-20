@@ -461,74 +461,95 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
               </div>
             )}
 
-            {/* HealthKit Workouts Section */}
+            {/* HealthKit Workout Selection Dropdown */}
             {type && healthKitWorkouts.length > 0 && competitionHasStarted && (
               <div className="mt-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label className="text-gray-300 font-medium">Apple HealthKit Workouts</Label>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowHealthKitWorkouts(!showHealthKitWorkouts)}
-                    className="text-military-green hover:text-military-green-light"
-                  >
-                    {showHealthKitWorkouts ? 'Hide' : 'Show'} Workouts ({healthKitWorkouts.length})
-                  </Button>
-                </div>
-                
-                {showHealthKitWorkouts && (
-                  <div className="space-y-2 max-h-48 overflow-y-auto">
-                    <p className="text-xs text-gray-400 mb-3">
-                      💡 Select a HealthKit workout to automatically convert it to a TacFit activity (30 points)
-                    </p>
-                    
+                <Label className="text-gray-300 font-medium">Select from Apple HealthKit Workouts</Label>
+                <Select onValueChange={(value) => {
+                  if (value === "manual") {
+                    setSelectedHealthKitWorkout(null);
+                  } else {
+                    const workout = healthKitWorkouts.find(w => w.id.toString() === value);
+                    if (workout) {
+                      setSelectedHealthKitWorkout(workout);
+                      // Auto-populate fields from workout
+                      setDescription(`${workout.workoutType} workout from Apple HealthKit`);
+                      setQuantity(workout.duration?.toString() || "30");
+                    }
+                  }
+                }}>
+                  <SelectTrigger className="bg-tactical-gray-lighter border-2 border-tactical-gray text-white focus:border-white focus:ring-0 focus:ring-offset-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
+                    <SelectValue placeholder="Choose workout or enter manually" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-tactical-gray-light border-tactical-gray text-white">
+                    <SelectItem 
+                      value="manual" 
+                      className="text-white hover:bg-military-green focus:bg-military-green data-[highlighted]:bg-military-green data-[highlighted]:text-white"
+                    >
+                      📝 Enter activity manually
+                    </SelectItem>
                     {healthKitWorkouts.slice(0, 10).map((workout) => (
-                      <div
-                        key={workout.id}
-                        className="flex items-center justify-between p-3 bg-tactical-gray-lighter border border-tactical-gray rounded-lg hover:border-military-green transition-colors cursor-pointer"
-                        onClick={() => handleHealthKitWorkoutSelect(workout)}
+                      <SelectItem 
+                        key={workout.id} 
+                        value={workout.id.toString()}
+                        className="text-white hover:bg-military-green focus:bg-military-green data-[highlighted]:bg-military-green data-[highlighted]:text-white"
                       >
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-white font-medium text-sm">
-                              {formatWorkoutType(workout.workoutType)}
-                            </span>
-                            <span className="text-xs text-gray-400">
-                              {formatWorkoutDuration(workout.duration)}
-                            </span>
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex flex-col items-start">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{formatWorkoutType(workout.workoutType)}</span>
+                              <span className="text-xs text-gray-400">
+                                {formatWorkoutDuration(workout.duration)}
+                              </span>
+                            </div>
+                            <div className="text-xs text-gray-500 flex items-center gap-2">
+                              <span>{new Date(workout.startDate).toLocaleDateString()}</span>
+                              {workout.totalEnergyBurned && <span>• {workout.totalEnergyBurned} cal</span>}
+                              {workout.totalDistance && <span>• {workout.totalDistance}</span>}
+                            </div>
                           </div>
-                          
-                          <div className="flex items-center gap-3 text-xs text-gray-500">
-                            <span>{new Date(workout.startDate).toLocaleDateString()}</span>
-                            {workout.totalEnergyBurned && (
-                              <span>{workout.totalEnergyBurned} cal</span>
-                            )}
-                            {workout.totalDistance && (
-                              <span>{workout.totalDistance}</span>
-                            )}
-                            {workout.deviceModel && (
-                              <span>{workout.deviceModel}</span>
-                            )}
-                          </div>
+                          <span className="text-xs text-green-400 bg-green-400/20 px-2 py-1 rounded ml-2">
+                            Auto-fill
+                          </span>
                         </div>
-                        
-                        <Button
-                          type="button"
-                          size="sm"
-                          className="bg-military-green hover:bg-military-green-light text-black text-xs px-3 py-1"
-                          disabled={convertHealthKitWorkout.isPending}
-                        >
-                          {convertHealthKitWorkout.isPending ? "Converting..." : "Convert"}
-                        </Button>
-                      </div>
+                      </SelectItem>
                     ))}
-                    
-                    {healthKitWorkouts.length > 10 && (
-                      <p className="text-xs text-gray-500 text-center mt-2">
-                        Showing 10 most recent workouts
-                      </p>
-                    )}
+                  </SelectContent>
+                </Select>
+                
+                {selectedHealthKitWorkout && (
+                  <div className="bg-military-green/10 border border-military-green/30 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-military-green font-medium">HealthKit Workout Selected</span>
+                        <span className="text-xs text-green-400 bg-green-400/20 px-2 py-1 rounded">
+                          30 points
+                        </span>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => handleHealthKitWorkoutSelect(selectedHealthKitWorkout)}
+                        disabled={convertHealthKitWorkout.isPending}
+                        className="bg-military-green hover:bg-military-green-light text-black text-xs px-3 py-1"
+                      >
+                        {convertHealthKitWorkout.isPending ? "Converting..." : "Convert to Activity"}
+                      </Button>
+                    </div>
+                    <div className="text-xs text-gray-300 space-y-1">
+                      <div><strong>Type:</strong> {selectedHealthKitWorkout.workoutType}</div>
+                      <div><strong>Duration:</strong> {formatWorkoutDuration(selectedHealthKitWorkout.duration)}</div>
+                      <div><strong>Date:</strong> {new Date(selectedHealthKitWorkout.startDate).toLocaleDateString()}</div>
+                      {selectedHealthKitWorkout.totalEnergyBurned && (
+                        <div><strong>Calories:</strong> {selectedHealthKitWorkout.totalEnergyBurned}</div>
+                      )}
+                      {selectedHealthKitWorkout.totalDistance && (
+                        <div><strong>Distance:</strong> {selectedHealthKitWorkout.totalDistance}</div>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-400 mt-2">
+                      💡 This will automatically create a verified activity with full points and close this modal
+                    </p>
                   </div>
                 )}
               </div>

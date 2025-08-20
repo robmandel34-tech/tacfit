@@ -17,7 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import DirectMessageModal from "@/components/direct-message-modal";
 import FindFriendsModal from "@/components/find-friends-modal";
-import { AppleHealthIntegration } from "@/components/apple-health-integration";
+import { AppleHealthKitIntegration } from "@/components/apple-healthkit-integration";
 
 import type { User, CompetitionHistory, Activity, TeamMember, Team, Competition, Friendship, MissionTask } from "@shared/schema";
 
@@ -1113,9 +1113,9 @@ export default function Profile() {
               </Dialog>
             </div>
 
-            {/* Apple Health Integration - Only show on own profile */}
+            {/* Apple HealthKit Integration - Only show on own profile */}
             {isOwnProfile && (
-              <AppleHealthIntegration 
+              <AppleHealthKitIntegration 
                 userId={user?.id || 0}
                 competitionId={currentCompetition?.id}
                 teamId={currentTeam?.id}

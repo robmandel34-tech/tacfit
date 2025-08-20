@@ -3246,10 +3246,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Apple Health Integration routes
+  // Apple HealthKit Integration routes
 
-  // Get Apple Health connection status
-  app.get("/api/apple-health/status", async (req, res) => {
+  // Get Apple HealthKit connection status
+  app.get("/api/apple-healthkit/status", async (req, res) => {
     try {
       if (!req.session?.user?.id) {
         return res.sendStatus(401);
@@ -3269,8 +3269,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(connection);
     } catch (error: any) {
-      console.error('Get Apple Health status error:', error);
-      res.status(500).json({ message: error.message || "Error getting Apple Health status" });
+      console.error('Get Apple HealthKit status error:', error);
+      res.status(500).json({ message: error.message || "Error getting Apple HealthKit status" });
+    }
+  });
+
+  // Apple HealthKit authorization endpoint
+  app.get("/api/apple-healthkit/authorize", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.sendStatus(401);
+      }
+
+      const { permissions, userId } = req.query;
+      
+      if (parseInt(userId as string) !== req.session.user.id) {
+        return res.status(403).json({ message: "Invalid user ID" });
+      }
+
+      // In a real implementation, this would redirect to Apple's HealthKit authorization
+      // For now, we'll simulate the authorization flow
+      const authToken = `hk_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+      const refreshToken = `ref_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+      const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+
+      // Create or update HealthKit connection
+      const connection = await storage.createOrUpdateAppleHealthConnection(req.session.user.id, {
+        isEnabled: true,
+        setupCompleted: true,
+        healthKitAuthToken: authToken,
+        refreshToken: refreshToken,
+        tokenExpiresAt: expiresAt,
+        permissionsGranted: JSON.stringify(permissions?.toString().split(',') || []),
+        deviceInfo: JSON.stringify({
+          model: req.headers['user-agent']?.includes('iPhone') ? 'iPhone' : 'iPad',
+          osVersion: 'iOS 17.0'
+        })
+      });
+
+      // Redirect back to the app with success
+      const redirectUrl = `${req.protocol}://${req.get('host')}/profile?healthkit=success`;
+      res.redirect(redirectUrl);
+    } catch (error: any) {
+      console.error('Apple HealthKit authorization error:', error);
+      const redirectUrl = `${req.protocol}://${req.get('host')}/profile?healthkit=error`;
+      res.redirect(redirectUrl);
+    }
+  });
+
+  // Get Apple HealthKit workouts  
+  app.get("/api/apple-healthkit/workouts", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.sendStatus(401);
+      }
+
+      const { startDate, endDate, limit = 50 } = req.query;
+      
+      const workouts = await storage.getAppleHealthWorkouts(
+        req.session.user.id,
+        startDate as string,
+        endDate as string,
+        parseInt(limit as string)
+      );
+
+      res.json(workouts);
+    } catch (error: any) {
+      console.error('Get Apple HealthKit workouts error:', error);
+      res.status(500).json({ message: error.message || "Error fetching Apple HealthKit workouts" });
     }
   });
 
@@ -3474,8 +3540,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Convert Apple Health workout to TacFit activity
-  app.post("/api/apple-health/workouts/:id/convert", async (req, res) => {
+  // Convert Apple HealthKit workout to TacFit activity
+  app.post("/api/apple-healthkit/workouts/:id/convert", async (req, res) => {
     try {
       if (!req.session?.user?.id) {
         return res.sendStatus(401);
@@ -3529,8 +3595,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Disable Apple Health integration
-  app.post("/api/apple-health/disable", async (req, res) => {
+  // Disable Apple HealthKit integration
+  app.post("/api/apple-healthkit/disable", async (req, res) => {
     try {
       if (!req.session?.user?.id) {
         return res.sendStatus(401);

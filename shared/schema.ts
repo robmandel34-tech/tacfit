@@ -247,15 +247,18 @@ export const moodLogs = pgTable("mood_logs", {
   loggedAt: timestamp("logged_at").defaultNow(),
 });
 
-// Apple Health Integration Tables
+// Apple HealthKit Integration Tables
 export const appleHealthConnections = pgTable("apple_health_connections", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id).notNull(),
   isEnabled: boolean("is_enabled").default(false),
   setupCompleted: boolean("setup_completed").default(false),
-  apiKey: text("api_key"), // User-specific API key for Shortcuts authentication
+  healthKitAuthToken: text("healthkit_auth_token"), // Apple HealthKit authorization token
+  refreshToken: text("refresh_token"),
+  tokenExpiresAt: timestamp("token_expires_at"),
+  permissionsGranted: text("permissions_granted"), // JSON array of granted permission types
+  deviceInfo: text("device_info"), // JSON with iPhone/Apple Watch model info
   lastSyncAt: timestamp("last_sync_at"),
-  shortcutVersion: text("shortcut_version"), // Track which version of shortcut is used
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -263,13 +266,15 @@ export const appleHealthConnections = pgTable("apple_health_connections", {
 export const appleHealthData = pgTable("apple_health_data", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id).notNull(),
-  dataType: text("data_type").notNull(), // steps, heart_rate, active_energy, distance, workout
+  dataType: text("data_type").notNull(), // steps, heart_rate, active_energy, sleep_analysis, etc.
   value: text("value").notNull(), // Stored as text to handle different data types
   unit: text("unit"), // steps, bpm, calories, miles, minutes
   sourceApp: text("source_app"), // Which app provided the data (Health, Fitness, etc.)
+  deviceModel: text("device_model"), // iPhone 15, Apple Watch Series 9, etc.
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date").notNull(),
   metadata: text("metadata"), // JSON string for additional data
+  healthKitSampleId: text("healthkit_sample_id"), // Unique HealthKit sample identifier
   syncedAt: timestamp("synced_at").defaultNow(),
 });
 
@@ -277,14 +282,18 @@ export const appleHealthWorkouts = pgTable("apple_health_workouts", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id).notNull(),
   activityId: integer("activity_id").references(() => activities.id), // Link to TacFit activity if created
-  workoutType: text("workout_type").notNull(), // Running, Cycling, Strength Training, etc.
+  workoutType: text("workout_type").notNull(), // HKWorkoutActivityType values
   duration: integer("duration"), // Duration in minutes
   totalEnergyBurned: integer("total_energy_burned"), // Calories
   totalDistance: text("total_distance"), // Distance with unit
+  averageHeartRate: integer("average_heart_rate"), // BPM
+  maxHeartRate: integer("max_heart_rate"), // BPM
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date").notNull(),
   sourceApp: text("source_app"),
+  deviceModel: text("device_model"), // Apple Watch Series 9, iPhone 15, etc.
   metadata: text("metadata"), // JSON for additional workout data
+  healthKitWorkoutId: text("healthkit_workout_id"), // Unique HealthKit workout identifier
   isConverted: boolean("is_converted").default(false), // Whether converted to TacFit activity
   syncedAt: timestamp("synced_at").defaultNow(),
 });

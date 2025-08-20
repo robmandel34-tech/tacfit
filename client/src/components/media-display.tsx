@@ -110,10 +110,16 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
     if (!imageUrls.length) return [];
     
     const mapUrls = imageUrls.filter(url => 
-      url.includes('maps.googleapis.com') || url.includes('staticmap')
+      url.includes('maps.googleapis.com') || 
+      url.includes('staticmap') || 
+      url.includes('route_map') || 
+      url.includes('demo_route_map')
     );
     const otherUrls = imageUrls.filter(url => 
-      !url.includes('maps.googleapis.com') && !url.includes('staticmap')
+      !url.includes('maps.googleapis.com') && 
+      !url.includes('staticmap') && 
+      !url.includes('route_map') && 
+      !url.includes('demo_route_map')
     );
     
     // Put maps first, then other images

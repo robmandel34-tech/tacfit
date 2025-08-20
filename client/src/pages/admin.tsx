@@ -59,6 +59,7 @@ interface ActivityType {
   requiresTextInput: boolean;
   textInputDescription?: string;
   textInputMinWords: number;
+  requiresHealthKit: boolean;
   createdAt: string;
 }
 
@@ -191,7 +192,8 @@ export default function AdminPage() {
     isActive: true,
     requiresTextInput: false,
     textInputDescription: '',
-    textInputMinWords: 50
+    textInputMinWords: 50,
+    requiresHealthKit: false
   });
 
   const [editingActivityType, setEditingActivityType] = useState<ActivityType | null>(null);
@@ -489,7 +491,8 @@ export default function AdminPage() {
       isActive: true,
       requiresTextInput: false,
       textInputDescription: '',
-      textInputMinWords: 50
+      textInputMinWords: 50,
+      requiresHealthKit: false
     });
   };
 
@@ -663,7 +666,8 @@ export default function AdminPage() {
       isActive: activityType.isActive,
       requiresTextInput: activityType.requiresTextInput || false,
       textInputDescription: activityType.textInputDescription || '',
-      textInputMinWords: activityType.textInputMinWords || 50
+      textInputMinWords: activityType.textInputMinWords || 50,
+      requiresHealthKit: activityType.requiresHealthKit || false
     });
     setIsCreateActivityTypeOpen(true);
   };
@@ -1647,6 +1651,25 @@ export default function AdminPage() {
                       )}
                     </div>
 
+                    <div className="border-t border-tactical-gray pt-4">
+                      <h3 className="text-white text-sm font-medium mb-3">Apple HealthKit Integration</h3>
+                      
+                      <div className="flex items-center space-x-2 mb-3">
+                        <Switch
+                          id="requiresHealthKit"
+                          checked={activityTypeForm.requiresHealthKit}
+                          onCheckedChange={(checked) => setActivityTypeForm(prev => ({ ...prev, requiresHealthKit: checked }))}
+                        />
+                        <Label htmlFor="requiresHealthKit" className="text-gray-300">Require Apple HealthKit sync for this activity</Label>
+                      </div>
+                      
+                      {activityTypeForm.requiresHealthKit && (
+                        <p className="text-xs text-yellow-400 bg-yellow-400/10 border border-yellow-400/20 rounded-md p-2 mb-3">
+                          <strong>Note:</strong> When enabled, users must have Apple HealthKit connected and this activity type will only be available through HealthKit automatic sync. Manual submissions will not be allowed.
+                        </p>
+                      )}
+                    </div>
+
                     <div className="flex items-center space-x-2">
                       <Switch
                         id="isActive"
@@ -1691,6 +1714,7 @@ export default function AdminPage() {
                       <TableHead className="text-gray-300">Unit</TableHead>
                       <TableHead className="text-gray-300">Default</TableHead>
                       <TableHead className="text-gray-300">Text Input</TableHead>
+                      <TableHead className="text-gray-300">HealthKit</TableHead>
                       <TableHead className="text-gray-300">Status</TableHead>
                       <TableHead className="text-gray-300">Actions</TableHead>
                     </TableRow>
@@ -1706,6 +1730,17 @@ export default function AdminPage() {
                           {activityType.requiresTextInput ? (
                             <Badge variant="outline" className="text-blue-400 border-blue-400">
                               Required ({activityType.textInputMinWords} words)
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary" className="text-gray-500">
+                              Optional
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {activityType.requiresHealthKit ? (
+                            <Badge variant="outline" className="text-green-400 border-green-400">
+                              Required
                             </Badge>
                           ) : (
                             <Badge variant="secondary" className="text-gray-500">

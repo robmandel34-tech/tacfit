@@ -84,6 +84,8 @@ export const activityTypes = pgTable("activity_types", {
   requiresTextInput: boolean("requires_text_input").default(false),
   textInputDescription: text("text_input_description"), // What should be entered in the text box
   textInputMinWords: integer("text_input_min_words").default(50), // Minimum word count required
+  // HealthKit integration requirement
+  requiresHealthKit: boolean("requires_health_kit").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

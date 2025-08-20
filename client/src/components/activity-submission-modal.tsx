@@ -27,6 +27,7 @@ interface ActivityType {
   requiresTextInput?: boolean;
   textInputDescription?: string;
   textInputMinWords?: number;
+  requiresHealthKit?: boolean;
 }
 
 interface Competition {
@@ -96,6 +97,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
 
   const selectedActivityType = competitionActivityTypes.find(at => at.name === type);
   const requiresTextInput = selectedActivityType?.requiresTextInput || false;
+  const requiresHealthKit = selectedActivityType?.requiresHealthKit || false;
   const textInputDescription = selectedActivityType?.textInputDescription || "";
   const minWords = selectedActivityType?.textInputMinWords || 50;
   const maxWords = 100;
@@ -185,6 +187,15 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
       toast({
         title: "Text input required",
         description: `Please write at least ${minWords} words in the required text input.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (requiresHealthKit) {
+      toast({
+        title: "HealthKit Required",
+        description: "This activity type requires Apple HealthKit integration. Activities must be synced automatically from your HealthKit data.",
         variant: "destructive",
       });
       return;
@@ -310,7 +321,14 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                     value={activityType.name} 
                     className="text-white hover:bg-military-green focus:bg-military-green data-[highlighted]:bg-military-green data-[highlighted]:text-white"
                   >
-                    {activityType.displayName}
+                    <div className="flex items-center justify-between w-full">
+                      <span>{activityType.displayName}</span>
+                      {activityType.requiresHealthKit && (
+                        <span className="text-xs text-green-400 bg-green-400/20 px-2 py-1 rounded ml-2">
+                          HealthKit Required
+                        </span>
+                      )}
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -318,13 +336,33 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
             
             {/* Activity Description */}
             {type && (
-              <div className="mt-3 p-3 bg-tactical-gray-lighter rounded-lg border border-tactical-gray">
-                <p className="text-sm text-gray-300">
-                  <strong className="text-white">About {competitionActivityTypes.find(at => at.name === type)?.displayName}:</strong>
-                </p>
-                <p className="text-sm text-gray-400 mt-1">
-                  {competitionActivityTypes.find(at => at.name === type)?.description || "No description available"}
-                </p>
+              <div className="mt-3 space-y-2">
+                <div className="p-3 bg-tactical-gray-lighter rounded-lg border border-tactical-gray">
+                  <p className="text-sm text-gray-300">
+                    <strong className="text-white">About {competitionActivityTypes.find(at => at.name === type)?.displayName}:</strong>
+                  </p>
+                  <p className="text-sm text-gray-400 mt-1">
+                    {competitionActivityTypes.find(at => at.name === type)?.description || "No description available"}
+                  </p>
+                </div>
+                
+                {/* HealthKit Requirement Warning */}
+                {requiresHealthKit && (
+                  <div className="p-3 bg-yellow-400/10 border border-yellow-400/30 rounded-lg">
+                    <div className="flex items-start space-x-2">
+                      <div className="text-yellow-400 text-sm">⚠️</div>
+                      <div>
+                        <p className="text-sm text-yellow-400 font-medium">
+                          Apple HealthKit Required
+                        </p>
+                        <p className="text-xs text-yellow-300 mt-1">
+                          This activity type can only be submitted through Apple HealthKit automatic sync. 
+                          Manual submissions are not allowed. Connect your HealthKit in your profile to track this activity.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -555,10 +593,17 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
           <Button 
             type="submit" 
             form="activity-form"
-            disabled={submitActivity.isPending || !type || !description || !competitionHasStarted}
+            disabled={submitActivity.isPending || !type || !description || !competitionHasStarted || requiresHealthKit}
             className="flex-1 bg-military-green hover:bg-military-green-light text-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {submitActivity.isPending ? "Submitting..." : !competitionHasStarted ? "Competition Not Started" : "Submit"}
+            {requiresHealthKit 
+              ? "HealthKit Required - Manual Submission Disabled"
+              : submitActivity.isPending 
+                ? "Submitting..." 
+                : !competitionHasStarted 
+                  ? "Competition Not Started" 
+                  : "Submit"
+            }
           </Button>
         </div>
       </DialogContent>

@@ -1979,13 +1979,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const workoutId = parseInt(req.body.healthKitWorkoutId);
           const workout = await storage.getAppleHealthWorkout(workoutId);
           
-          // If workout has a route map, add it to the activity's image URLs
-          if (workout && workout.routeMapUrl && workout.hasRoute) {
+          // Add workout details image to the activity's image URLs
+          if (workout && workout.routeMapUrl) {
             const updatedImageUrls = [...imageUrls, workout.routeMapUrl];
             await storage.updateActivity(activity.id, {
               imageUrls: updatedImageUrls
             });
-            console.log(`Added route map to activity ${activity.id}: ${workout.routeMapUrl}`);
+            console.log(`Added workout details to activity ${activity.id}: ${workout.routeMapUrl}`);
           }
           
           await storage.updateAppleHealthWorkout(workoutId, {

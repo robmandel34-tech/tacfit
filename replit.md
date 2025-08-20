@@ -159,3 +159,14 @@ The platform follows a military/tactical theme across its UI/UX, language, and i
 - **CONVERSION**: HealthKit workouts automatically convert to TacFit activities with verified evidence (full points)
 - **RESPONSIVE DESIGN**: Fixed button layout issues with mobile-first responsive design
 - **STATUS**: Apple HealthKit web integration fully operational with automatic sync and conversion capabilities
+
+### HealthKit GPS Route Map Integration (August 2025)
+- **IMPLEMENTED**: Complete GPS route tracking and map generation for HealthKit workouts
+- **DATABASE**: Added route-specific fields (routeData, routeMapUrl, hasRoute, elevationGain) to apple_health_workouts table
+- **ROUTE SERVICE**: Created RouteMapService for processing GPS coordinates and generating static map images
+- **MAP GENERATION**: SVG-based route maps with GPS path visualization, start/finish markers, and elevation data
+- **AUTOMATIC INTEGRATION**: Route maps automatically included as evidence when HealthKit workouts with GPS data are selected
+- **VISUAL INDICATORS**: Workouts with GPS routes show "GPS route" indicator in selection dropdown and "Map included" badge
+- **ENHANCED DETAILS**: Route information displays GPS tracking status, elevation gain, distance, and TacFit branding
+- **FULL WORKFLOW**: Complete GPS route processing from HealthKit sync through activity submission with automatic evidence inclusion
+- **STATUS**: HealthKit GPS route integration fully operational with automatic map generation and activity evidence inclusion

@@ -793,11 +793,11 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
           <Button 
             type="submit" 
             form="activity-form"
-            disabled={submitActivity.isPending || !type || !description || !competitionHasStarted || requiresHealthKit}
+            disabled={submitActivity.isPending || !type || !description || !competitionHasStarted || (requiresHealthKit && !selectedHealthKitWorkout)}
             className="flex-1 bg-military-green hover:bg-military-green-light text-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {requiresHealthKit 
-              ? "HealthKit Required - Manual Submission Disabled"
+            {(requiresHealthKit && !selectedHealthKitWorkout)
+              ? "Select HealthKit Workout to Continue"
               : submitActivity.isPending 
                 ? "Submitting..." 
                 : !competitionHasStarted 

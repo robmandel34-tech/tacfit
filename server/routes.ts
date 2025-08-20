@@ -3052,13 +3052,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const id = parseInt(req.params.id);
+      console.log("Updating advertisement", id, "with data:", req.body);
       const ad = await storage.updateAdvertisement(id, req.body);
       if (!ad) {
         return res.status(404).json({ message: "Advertisement not found" });
       }
       res.json(ad);
-    } catch (error) {
-      res.status(500).json({ message: "Error updating advertisement" });
+    } catch (error: any) {
+      console.error("Error updating advertisement:", error);
+      res.status(500).json({ message: "Error updating advertisement", error: error.message });
     }
   });
 

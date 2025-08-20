@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Navigation from "@/components/navigation";
 import ActivityCard from "@/components/activity-card";
 import AdminPostCard from "@/components/admin-post-card";
+import AdvertisementCard from "@/components/advertisement-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OnboardingWalkthrough } from "@/components/onboarding-walkthrough";
 import { Activity, Users } from "lucide-react";
@@ -37,6 +38,17 @@ export default function Dashboard() {
         .sort((a: any, b: any) => {
           return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         });
+    }
+  });
+
+  const { data: advertisements = [] } = useQuery({
+    queryKey: ["/api/advertisements/active"],
+    enabled: !!user,
+    select: (data: any[]) => {
+      // Sort advertisements by creation date (newest first)
+      return data.sort((a: any, b: any) => {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
     }
   });
 
@@ -165,45 +177,44 @@ export default function Dashboard() {
 
         {/* Activity Feed */}
         <div className="max-w-2xl mx-auto">
-          {/* Admin Posts */}
-          {adminPosts.map((post: any) => (
-            <AdminPostCard key={`admin-${post.id}`} post={post} />
-          ))}
+          {(() => {
+            // Combine all content types into a unified timeline
+            const timelineItems: Array<{ 
+              type: 'admin-post' | 'advertisement' | 'activity';
+              data: any;
+              createdAt: string;
+            }> = [
+              ...adminPosts.map((post: any) => ({
+                type: 'admin-post' as const,
+                data: post,
+                createdAt: post.createdAt
+              })),
+              ...advertisements.map((ad: any) => ({
+                type: 'advertisement' as const,
+                data: ad,
+                createdAt: ad.createdAt
+              })),
+              ...activities.map((activity: any) => ({
+                type: 'activity' as const,
+                data: activity,
+                createdAt: activity.createdAt
+              }))
+            ];
 
-          {/* Regular Activities */}
-          {activities.length === 0 && adminPosts.length === 0 ? (
-            <Card className="tile-card">
-              <CardContent className="py-16">
-                <div className="text-center">
-                  <Users className="mx-auto h-16 w-16 text-gray-500 mb-4" />
-                  <h3 className="text-xl font-semibold text-white mb-2">No Activity Yet</h3>
-                  <p className="text-gray-400 mb-6">Be the first to submit an activity and start the action!</p>
-                  {!hasJoinedCompetition && (
-                    <div className="text-sm text-gray-500 bg-surface-overlay px-4 py-2 rounded-lg inline-block">
-                      Join a competition to start submitting activities
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-6">
-              {activities.map((activity: any) => (
-                <ActivityCard
-                  key={activity.id}
-                  activity={activity}
-                  showFlagButton={false}
-                />
-              ))}
-              
-              {/* Show empty state for activities if there are admin posts but no activities */}
-              {activities.length === 0 && adminPosts.length > 0 && (
+            // Sort all items by creation date (newest first)
+            const sortedTimeline = timelineItems.sort((a, b) => 
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+
+            // Show empty state if no content exists
+            if (sortedTimeline.length === 0) {
+              return (
                 <Card className="tile-card">
-                  <CardContent className="py-8">
+                  <CardContent className="py-16">
                     <div className="text-center">
-                      <Users className="mx-auto h-12 w-12 text-gray-500 mb-3" />
-                      <h3 className="text-lg font-semibold text-white mb-2">No User Activities Yet</h3>
-                      <p className="text-gray-400 mb-4">Be the first to submit an activity!</p>
+                      <Users className="mx-auto h-16 w-16 text-gray-500 mb-4" />
+                      <h3 className="text-xl font-semibold text-white mb-2">No Activity Yet</h3>
+                      <p className="text-gray-400 mb-6">Be the first to submit an activity and start the action!</p>
                       {!hasJoinedCompetition && (
                         <div className="text-sm text-gray-500 bg-surface-overlay px-4 py-2 rounded-lg inline-block">
                           Join a competition to start submitting activities
@@ -212,9 +223,51 @@ export default function Dashboard() {
                     </div>
                   </CardContent>
                 </Card>
-              )}
-            </div>
-          )}
+              );
+            }
+
+            // Render the mixed timeline
+            return (
+              <div className="space-y-6">
+                {sortedTimeline.map((item, index) => {
+                  switch (item.type) {
+                    case 'admin-post':
+                      return <AdminPostCard key={`admin-${item.data.id}`} post={item.data} />;
+                    case 'advertisement':
+                      return <AdvertisementCard key={`ad-${item.data.id}`} advertisement={item.data} />;
+                    case 'activity':
+                      return (
+                        <ActivityCard
+                          key={`activity-${item.data.id}`}
+                          activity={item.data}
+                          showFlagButton={false}
+                        />
+                      );
+                    default:
+                      return null;
+                  }
+                })}
+                
+                {/* Show message for user activities if only admin content exists */}
+                {activities.length === 0 && (adminPosts.length > 0 || advertisements.length > 0) && (
+                  <Card className="tile-card">
+                    <CardContent className="py-8">
+                      <div className="text-center">
+                        <Users className="mx-auto h-12 w-12 text-gray-500 mb-3" />
+                        <h3 className="text-lg font-semibold text-white mb-2">No User Activities Yet</h3>
+                        <p className="text-gray-400 mb-4">Be the first to submit an activity!</p>
+                        {!hasJoinedCompetition && (
+                          <div className="text-sm text-gray-500 bg-surface-overlay px-4 py-2 rounded-lg inline-block">
+                            Join a competition to start submitting activities
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            );
+          })()}
         </div>
       </main>
 

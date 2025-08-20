@@ -32,7 +32,10 @@ export const sendVerificationEmail = async (
   username: string,
   token: string
 ): Promise<void> => {
-  const verificationUrl = `${process.env.APP_URL || 'http://localhost:5000'}/verify-email?token=${token}`;
+  // For Replit deployments, use HTTP instead of HTTPS to avoid SSL issues
+  const baseUrl = process.env.APP_URL || 'http://localhost:5000';
+  const correctedUrl = baseUrl.replace('https://', 'http://');
+  const verificationUrl = `${correctedUrl}/verify-email?token=${token}`;
   
   const emailHtml = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -115,6 +118,10 @@ export const sendWelcomeEmail = async (
   email: string,
   username: string
 ): Promise<void> => {
+  // For Replit deployments, use HTTP instead of HTTPS to avoid SSL issues
+  const baseUrl = process.env.APP_URL || 'http://localhost:5000';
+  const correctedUrl = baseUrl.replace('https://', 'http://');
+  
   const emailHtml = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="text-align: center; margin-bottom: 30px;">
@@ -137,7 +144,7 @@ export const sendWelcomeEmail = async (
         </ul>
         
         <div style="text-align: center; margin: 30px 0;">
-          <a href="${process.env.APP_URL || 'http://localhost:5000'}" 
+          <a href="${correctedUrl}" 
              style="background-color: #7cb342; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
             Enter Command Center
           </a>

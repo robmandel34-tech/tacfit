@@ -37,6 +37,8 @@ export const sendVerificationEmail = async (
   const correctedUrl = baseUrl.replace('https://', 'http://');
   const verificationUrl = `${correctedUrl}/verify-email?token=${token}`;
   
+  console.log('Generated verification URL:', verificationUrl);
+  
   const emailHtml = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="text-align: center; margin-bottom: 30px;">

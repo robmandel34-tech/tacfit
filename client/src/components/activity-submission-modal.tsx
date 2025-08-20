@@ -95,7 +95,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
 
   // Fetch user's HealthKit workouts
   const { data: healthKitWorkouts = [] } = useQuery<HealthKitWorkout[]>({
-    queryKey: [`/api/apple-health/workouts/${user?.id}`],
+    queryKey: [`/api/apple-healthkit/workouts`],
     enabled: !!user?.id && isOpen,
     select: (data: HealthKitWorkout[]) => {
       // Filter out already converted workouts and sort by most recent

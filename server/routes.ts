@@ -3375,7 +3375,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             weatherCondition: 'Clear',
             temperature: '72°F'
           }),
-          healthKitWorkoutId: `hk_workout_${Date.now()}`
+          healthKitWorkoutId: `hk_workout_running_sample_${req.session.user.id}`
         }
       ];
 
@@ -3957,7 +3957,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "User not in a team" });
       }
 
-      const team = await storage.getTeam(currentTeamMember.teamId);
+      const team = await storage.getTeam(currentTeamMember.teamId!);
       if (!team) {
         return res.status(400).json({ message: "Team not found" });
       }

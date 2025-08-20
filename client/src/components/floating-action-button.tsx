@@ -9,7 +9,7 @@ export default function FloatingActionButton() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { user } = useAuth();
 
-  // Always call hooks in the same order
+  // Always call hooks in the same order - but only enable queries when user exists
   const { data: userTeamMembership } = useQuery({
     queryKey: [`/api/team-members/${user?.id}`],
     enabled: !!user?.id,
@@ -25,7 +25,7 @@ export default function FloatingActionButton() {
     enabled: !!competitionId,
   });
 
-  // Don't show the button if user is not authenticated
+  // Don't show the button if user is not authenticated - moved after all hooks
   if (!user) return null;
 
   // Check if the competition is active

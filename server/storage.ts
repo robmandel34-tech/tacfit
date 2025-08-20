@@ -152,6 +152,7 @@ export interface IStorage {
   createAppleHealthWorkout(workout: InsertAppleHealthWorkout): Promise<AppleHealthWorkout>;
   getAppleHealthWorkouts(userId: number, startDate?: string, endDate?: string, limit?: number): Promise<AppleHealthWorkout[]>;
   getAppleHealthWorkout(id: number): Promise<AppleHealthWorkout | undefined>;
+  getAppleHealthWorkoutByHealthKitId(userId: number, healthKitWorkoutId: string): Promise<AppleHealthWorkout | undefined>;
   updateAppleHealthWorkout(id: number, updates: Partial<AppleHealthWorkout>): Promise<AppleHealthWorkout | undefined>;
 }
 

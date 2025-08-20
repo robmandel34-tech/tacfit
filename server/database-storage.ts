@@ -971,6 +971,19 @@ export class DatabaseStorage implements IStorage {
     return workout || undefined;
   }
 
+  async getAppleHealthWorkoutByHealthKitId(userId: number, healthKitWorkoutId: string): Promise<AppleHealthWorkout | undefined> {
+    const [workout] = await db
+      .select()
+      .from(appleHealthWorkouts)
+      .where(
+        and(
+          eq(appleHealthWorkouts.userId, userId),
+          eq(appleHealthWorkouts.healthKitWorkoutId, healthKitWorkoutId)
+        )
+      );
+    return workout || undefined;
+  }
+
   async updateAppleHealthWorkout(id: number, updates: Partial<AppleHealthWorkout>): Promise<AppleHealthWorkout | undefined> {
     const [workout] = await db
       .update(appleHealthWorkouts)

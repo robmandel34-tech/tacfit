@@ -3379,11 +3379,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       ];
 
-      // Save workouts to database
+      // Save workouts to database (check for duplicates first)
       const syncedWorkouts = [];
       for (const workoutData of sampleWorkouts) {
-        const workout = await storage.createAppleHealthWorkout(workoutData);
-        syncedWorkouts.push(workout);
+        // Check if workout already exists by healthKitWorkoutId
+        const existingWorkout = await storage.getAppleHealthWorkoutByHealthKitId(
+          req.session.user.id, 
+          workoutData.healthKitWorkoutId
+        );
+        
+        if (!existingWorkout) {
+          const workout = await storage.createAppleHealthWorkout(workoutData);
+          syncedWorkouts.push(workout);
+        }
       }
 
       // Update last sync time

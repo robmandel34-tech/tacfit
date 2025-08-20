@@ -287,10 +287,10 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
       return;
     }
 
-    if (requiresHealthKit) {
+    if (requiresHealthKit && !selectedHealthKitWorkout) {
       toast({
-        title: "HealthKit Required",
-        description: "This activity type requires Apple HealthKit integration. Activities must be synced automatically from your HealthKit data.",
+        title: "HealthKit Workout Required",
+        description: "This activity type requires selecting a HealthKit workout from the dropdown above.",
         variant: "destructive",
       });
       return;

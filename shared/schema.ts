@@ -232,6 +232,7 @@ export const adminPosts = pgTable("admin_posts", {
   title: text("title").notNull(),
   content: text("content").notNull(),
   postImageUrl: text("post_image_url"),
+  postVideoUrl: text("post_video_url"),
   type: text("type").default("announcement"), // announcement, alert, news, competition_update, maintenance, promotion
   priority: text("priority").default("medium"), // low, medium, high, urgent
   isActive: boolean("is_active").default(true),

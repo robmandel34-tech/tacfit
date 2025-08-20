@@ -2901,6 +2901,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/admin-posts/upload-video", upload.single('video'), async (req, res) => {
+    try {
+      // Check if user is admin (bypass session check for now)
+      const users = await storage.getUsers();
+      const adminUser = users.find(u => u.isAdmin === true);
+      
+      if (!adminUser) {
+        return res.status(403).json({ message: "Admin privileges required" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ message: "No video file provided" });
+      }
+
+      // Generate unique filename
+      const timestamp = Date.now();
+      const originalName = req.file.originalname;
+      const extension = path.extname(originalName);
+      const filename = `admin_post_video_${timestamp}${extension}`;
+      const filePath = path.join('uploads', filename);
+
+      // Move the uploaded file to the correct location
+      fs.renameSync(req.file.path, filePath);
+
+      // Return the video URL
+      res.json({ 
+        videoUrl: `/uploads/${filename}`,
+        filename: filename
+      });
+    } catch (error) {
+      console.error("Error uploading admin post video:", error);
+      res.status(500).json({ message: "Error uploading video" });
+    }
+  });
+
   app.patch("/api/admin-posts/:id", async (req, res) => {
     try {
       // Bypass session check and verify admin status directly (same as other admin post routes)

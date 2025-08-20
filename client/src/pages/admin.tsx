@@ -68,6 +68,7 @@ interface AdminPost {
   title: string;
   content: string;
   postImageUrl?: string;
+  postVideoUrl?: string;
   type: 'announcement' | 'alert' | 'news' | 'competition_update' | 'maintenance' | 'promotion';
   priority: 'low' | 'medium' | 'high' | 'urgent';
   isActive: boolean;
@@ -233,6 +234,8 @@ export default function AdminPage() {
   
   const [adminPostImage, setAdminPostImage] = useState<File | null>(null);
   const [adminPostImagePreview, setAdminPostImagePreview] = useState<string | null>(null);
+  const [adminPostVideo, setAdminPostVideo] = useState<File | null>(null);
+  const [adminPostVideoPreview, setAdminPostVideoPreview] = useState<string | null>(null);
 
   // Advertisement management state
   const [isCreateAdvertisementOpen, setIsCreateAdvertisementOpen] = useState(false);
@@ -759,12 +762,15 @@ export default function AdminPage() {
     });
     setAdminPostImage(null);
     setAdminPostImagePreview(null);
+    setAdminPostVideo(null);
+    setAdminPostVideoPreview(null);
   };
 
   const handleAdminPostSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     let imageUrl: string | null = null;
+    let videoUrl: string | null = null;
     
     // Upload image if provided
     if (adminPostImage) {
@@ -795,9 +801,39 @@ export default function AdminPage() {
       }
     }
     
+    // Upload video if provided
+    if (adminPostVideo) {
+      const formData = new FormData();
+      formData.append('video', adminPostVideo);
+      
+      try {
+        const response = await fetch('/api/admin-posts/upload-video', {
+          method: 'POST',
+          body: formData,
+          credentials: 'include'
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText);
+        }
+        
+        const uploadResponse = await response.json();
+        videoUrl = uploadResponse.videoUrl;
+      } catch (error: any) {
+        toast({
+          title: "Failed to upload video",
+          description: error.message,
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+    
     const postData = {
       ...adminPostForm,
-      ...(imageUrl && { postImageUrl: imageUrl })
+      ...(imageUrl && { postImageUrl: imageUrl }),
+      ...(videoUrl && { postVideoUrl: videoUrl })
     };
     
     if (editingAdminPost) {
@@ -822,6 +858,8 @@ export default function AdminPage() {
     });
     setAdminPostImage(null);
     setAdminPostImagePreview(null);
+    setAdminPostVideo(null);
+    setAdminPostVideoPreview(null);
     setIsCreateAdminPostOpen(true);
   };
 
@@ -2060,6 +2098,52 @@ export default function AdminPage() {
                               onClick={() => {
                                 setAdminPostImage(null);
                                 setAdminPostImagePreview(null);
+                              }}
+                              className="absolute top-1 right-1 h-6 w-6 p-0 bg-red-600 hover:bg-red-700 text-white"
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Video Upload Section */}
+                    <div>
+                      <Label htmlFor="postVideo" className="text-gray-300">Post Video (Optional)</Label>
+                      <div className="space-y-2">
+                        <Input
+                          id="postVideo"
+                          type="file"
+                          accept="video/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setAdminPostVideo(file);
+                              const reader = new FileReader();
+                              reader.onload = (e) => {
+                                setAdminPostVideoPreview(e.target?.result as string);
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                          className="bg-tactical-gray-lighter border-tactical-gray text-white file:bg-military-green file:text-white file:border-0 file:rounded-md file:px-3 file:py-1"
+                        />
+                        {adminPostVideoPreview && (
+                          <div className="relative">
+                            <video 
+                              src={adminPostVideoPreview} 
+                              className="w-full max-w-xs h-32 object-cover rounded-md border border-tactical-gray"
+                              controls
+                              muted
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setAdminPostVideo(null);
+                                setAdminPostVideoPreview(null);
                               }}
                               className="absolute top-1 right-1 h-6 w-6 p-0 bg-red-600 hover:bg-red-700 text-white"
                             >

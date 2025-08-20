@@ -17,6 +17,7 @@ interface AdminPostCardProps {
     title: string;
     content: string;
     postImageUrl?: string;
+    postVideoUrl?: string;
     type: string;
     priority: string;
     isActive: boolean;
@@ -135,6 +136,25 @@ export default function AdminPostCard({ post }: AdminPostCardProps) {
                 console.log("Admin post image loaded successfully:", post.postImageUrl);
               }}
             />
+          </div>
+        )}
+
+        {post.postVideoUrl && (
+          <div className="mt-4">
+            <video 
+              src={post.postVideoUrl} 
+              className="w-full max-w-md rounded-lg border border-tactical-gray"
+              controls
+              onError={(e) => {
+                console.error("Admin post video failed to load:", post.postVideoUrl);
+                e.currentTarget.style.display = 'none';
+              }}
+              onLoadStart={() => {
+                console.log("Admin post video load started:", post.postVideoUrl);
+              }}
+            >
+              Your browser does not support the video tag.
+            </video>
           </div>
         )}
       </CardContent>

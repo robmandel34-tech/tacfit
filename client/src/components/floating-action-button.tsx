@@ -9,13 +9,10 @@ export default function FloatingActionButton() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { user } = useAuth();
 
-  // Don't show the button if user is not authenticated
-  if (!user) return null;
-
-  // Get user's current team membership to check competition status
+  // Always call hooks in the same order
   const { data: userTeamMembership } = useQuery({
-    queryKey: [`/api/team-members/${user.id}`],
-    enabled: !!user.id,
+    queryKey: [`/api/team-members/${user?.id}`],
+    enabled: !!user?.id,
   });
 
   // Get the competition ID from the first team membership
@@ -27,6 +24,9 @@ export default function FloatingActionButton() {
     queryKey: [`/api/competitions/${competitionId}`],
     enabled: !!competitionId,
   });
+
+  // Don't show the button if user is not authenticated
+  if (!user) return null;
 
   // Check if the competition is active
   const isCompetitionActive = () => {

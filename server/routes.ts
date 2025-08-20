@@ -3248,6 +3248,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Apple Health Integration routes
 
+  // Get Apple Health connection status
+  app.get("/api/apple-health/status", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.sendStatus(401);
+      }
+
+      const connection = await storage.getAppleHealthConnection(req.session.user.id);
+      
+      if (!connection) {
+        // Return default connection state for users without setup
+        return res.json({
+          id: 0,
+          userId: req.session.user.id,
+          isEnabled: false,
+          setupCompleted: false
+        });
+      }
+
+      res.json(connection);
+    } catch (error: any) {
+      console.error('Get Apple Health status error:', error);
+      res.status(500).json({ message: error.message || "Error getting Apple Health status" });
+    }
+  });
+
   // Generate API key for user's Apple Shortcuts integration
   app.post("/api/apple-health/setup", async (req, res) => {
     try {

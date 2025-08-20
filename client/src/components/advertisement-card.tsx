@@ -63,8 +63,8 @@ export default function AdvertisementCard({ advertisement }: AdvertisementCardPr
 
         <div className="space-y-3">
           <div>
-            <h3 className="text-lg font-bold text-white mb-1">{advertisement.title}</h3>
-            <p className="text-gray-300 leading-relaxed text-sm">{advertisement.content}</p>
+            <h3 className="text-base font-bold text-white mb-1">{advertisement.title}</h3>
+            <p className="text-gray-300 leading-tight text-xs line-clamp-2">{advertisement.content}</p>
           </div>
 
           {advertisement.imageUrl && (
@@ -72,7 +72,7 @@ export default function AdvertisementCard({ advertisement }: AdvertisementCardPr
               <img
                 src={advertisement.imageUrl}
                 alt={advertisement.title}
-                className="w-full h-24 object-cover"
+                className="w-full h-32 object-cover"
                 onLoad={() => {
                   setImageLoaded(true);
                   console.log("Advertisement image loaded successfully:", advertisement.imageUrl);

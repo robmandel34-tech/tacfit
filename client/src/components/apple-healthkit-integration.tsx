@@ -168,7 +168,11 @@ export function AppleHealthKitIntegration({ userId, competitionId, teamId }: { u
   // Manual sync
   const syncMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('POST', '/api/apple-healthkit/sync');
+      const response = await apiRequest('POST', '/api/apple-healthkit/sync', {});
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Sync failed: ${errorText}`);
+      }
       return await response.json();
     },
     onSuccess: () => {

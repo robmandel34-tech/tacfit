@@ -105,6 +105,16 @@ export function AppleHealthKitIntegration({ userId, competitionId, teamId }: { u
 
     setIsAuthorizing(true);
 
+    // Set a timeout to reset authorization state after 30 seconds
+    const authTimeout = setTimeout(() => {
+      setIsAuthorizing(false);
+      toast({
+        title: "Authorization Timeout",
+        description: "Authorization took too long. Please try again.",
+        variant: "destructive",
+      });
+    }, 30000);
+
     try {
       // Request HealthKit permissions
       const permissions = [
@@ -127,7 +137,11 @@ export function AppleHealthKitIntegration({ userId, competitionId, teamId }: { u
         const authUrl = `/api/apple-healthkit/authorize?permissions=${permissions.join(',')}&userId=${userId}`;
         window.location.href = authUrl;
       }
+
+      // Clear timeout if authorization succeeds before timeout
+      return () => clearTimeout(authTimeout);
     } catch (error) {
+      clearTimeout(authTimeout);
       console.error('HealthKit authorization error:', error);
       toast({
         title: "Authorization Failed",
@@ -207,7 +221,7 @@ export function AppleHealthKitIntegration({ userId, competitionId, teamId }: { u
     }
   });
 
-  // Handle authorization callback
+  // Handle authorization callback from WebView and URL redirects
   useEffect(() => {
     const handleHealthKitCallback = (event: MessageEvent) => {
       if (event.data?.source === 'healthkit') {
@@ -228,9 +242,34 @@ export function AppleHealthKitIntegration({ userId, competitionId, teamId }: { u
       }
     };
 
+    // Check URL parameters for authorization result (from Safari redirect)
+    const urlParams = new URLSearchParams(window.location.search);
+    const healthkitResult = urlParams.get('healthkit');
+    
+    if (healthkitResult && isAuthorizing) {
+      setIsAuthorizing(false);
+      if (healthkitResult === 'success') {
+        queryClient.invalidateQueries({ queryKey: ['apple-healthkit-status'] });
+        toast({
+          title: "HealthKit Connected",
+          description: "Successfully connected to Apple HealthKit!",
+        });
+        // Clean up URL parameters
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } else if (healthkitResult === 'error') {
+        toast({
+          title: "Authorization Failed",
+          description: "Failed to authorize HealthKit access. Please try again.",
+          variant: "destructive",
+        });
+        // Clean up URL parameters
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+
     window.addEventListener('message', handleHealthKitCallback);
     return () => window.removeEventListener('message', handleHealthKitCallback);
-  }, [queryClient, toast]);
+  }, [queryClient, toast, isAuthorizing]);
 
   if (isLoading) {
     return (
@@ -299,7 +338,12 @@ export function AppleHealthKitIntegration({ userId, competitionId, teamId }: { u
                   <div className="bg-orange-900/20 border border-orange-600/30 p-3 rounded-lg mb-4">
                     <div className="flex items-center space-x-2 text-orange-300 text-sm">
                       <AlertCircle className="h-4 w-4" />
-                      <span>HealthKit requires iOS Safari or supported WebView</span>
+                      <span>
+                        {isIOS 
+                          ? "Please use Safari on iOS for HealthKit integration" 
+                          : "HealthKit integration requires an iOS device"
+                        }
+                      </span>
                     </div>
                   </div>
                 )}
@@ -313,6 +357,7 @@ export function AppleHealthKitIntegration({ userId, competitionId, teamId }: { u
                 {isAuthorizing ? (
                   <>
                     <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                    Connecting to HealthKit...
                     Connecting...
                   </>
                 ) : (

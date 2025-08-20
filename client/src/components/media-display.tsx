@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import * as React from 'react';
-import { X, ChevronLeft, ChevronRight, Images } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Images, Maximize2 } from 'lucide-react';
 
 interface MediaDisplayProps {
   imageUrls: string[];
@@ -13,6 +13,49 @@ interface ImageGalleryModalProps {
   currentIndex: number;
   setCurrentIndex: (index: number) => void;
   onClose: () => void;
+}
+
+interface WorkoutDetailsModalProps {
+  imageUrl: string;
+  onClose: () => void;
+}
+
+function WorkoutDetailsModal({ imageUrl, onClose }: WorkoutDetailsModalProps) {
+  return (
+    <div className="fixed inset-0 bg-black/95 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="relative w-full h-full max-w-2xl mx-4 flex flex-col" onClick={(e) => e.stopPropagation()}>
+        {/* Header with close button */}
+        <div className="flex justify-between items-center p-4 bg-black/80 rounded-t-lg">
+          <h3 className="text-white text-lg font-semibold">Workout Details</h3>
+          <button
+            onClick={onClose}
+            className="bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        
+        {/* Scrollable content area */}
+        <div className="flex-1 overflow-y-auto bg-black rounded-b-lg">
+          <img
+            src={imageUrl}
+            alt="Complete workout details"
+            className="w-full h-auto block"
+            style={{ maxWidth: 'none' }}
+            onError={(e) => {
+              console.error("Workout details image failed to load:", imageUrl);
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        </div>
+        
+        {/* Footer hint */}
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-3 py-1 rounded-full text-xs">
+          Scroll to see all details
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function ImageGalleryModal({ images, currentIndex, setCurrentIndex, onClose }: ImageGalleryModalProps) {
@@ -102,28 +145,31 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
   const [isImageGalleryOpen, setIsImageGalleryOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showVideo, setShowVideo] = useState(false);
+  const [isWorkoutDetailsOpen, setIsWorkoutDetailsOpen] = useState(false);
+  const [workoutDetailsImageUrl, setWorkoutDetailsImageUrl] = useState('');
   
 
 
-  // Sort images to prioritize maps first
+  // Helper function to detect workout details images
+  const isWorkoutDetailsImage = (url: string) => {
+    return url.includes('workout_details_') || url.includes('route_map') || url.includes('demo_route_map');
+  };
+
+  // Function to open workout details modal
+  const openWorkoutDetails = (imageUrl: string) => {
+    setWorkoutDetailsImageUrl(imageUrl);
+    setIsWorkoutDetailsOpen(true);
+  };
+
+  // Sort images to prioritize workout details first
   const sortedImageUrls = React.useMemo(() => {
     if (!imageUrls.length) return [];
     
-    const mapUrls = imageUrls.filter(url => 
-      url.includes('maps.googleapis.com') || 
-      url.includes('staticmap') || 
-      url.includes('route_map') || 
-      url.includes('demo_route_map')
-    );
-    const otherUrls = imageUrls.filter(url => 
-      !url.includes('maps.googleapis.com') && 
-      !url.includes('staticmap') && 
-      !url.includes('route_map') && 
-      !url.includes('demo_route_map')
-    );
+    const workoutDetailsUrls = imageUrls.filter(url => isWorkoutDetailsImage(url));
+    const otherUrls = imageUrls.filter(url => !isWorkoutDetailsImage(url));
     
-    // Put maps first, then other images
-    return [...mapUrls, ...otherUrls];
+    // Put workout details first, then other images
+    return [...workoutDetailsUrls, ...otherUrls];
   }, [imageUrls]);
 
   // If we have a video, show it as the main content with image overlay
@@ -255,11 +301,22 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
           }}
         />
 
+        {/* Workout Details Button (if first image is workout details) */}
+        {isWorkoutDetailsImage(sortedImageUrls[0]) && (
+          <button
+            onClick={() => openWorkoutDetails(sortedImageUrls[0])}
+            className="absolute top-3 right-3 bg-military-green/80 text-white p-2 rounded-full hover:bg-military-green transition-colors backdrop-blur-sm"
+            title="View full workout details"
+          >
+            <Maximize2 className="w-5 h-5" />
+          </button>
+        )}
+
         {/* Gallery Button (if multiple images) */}
         {sortedImageUrls.length > 1 && (
           <button
             onClick={() => setIsImageGalleryOpen(true)}
-            className="absolute top-3 right-3 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors backdrop-blur-sm"
+            className="absolute top-3 left-3 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors backdrop-blur-sm"
             title={`View all ${sortedImageUrls.length} images`}
           >
             <Images className="w-5 h-5" />
@@ -276,6 +333,14 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
             currentIndex={currentImageIndex}
             setCurrentIndex={setCurrentImageIndex}
             onClose={() => setIsImageGalleryOpen(false)}
+          />
+        )}
+
+        {/* Workout Details Modal */}
+        {isWorkoutDetailsOpen && (
+          <WorkoutDetailsModal
+            imageUrl={workoutDetailsImageUrl}
+            onClose={() => setIsWorkoutDetailsOpen(false)}
           />
         )}
       </div>

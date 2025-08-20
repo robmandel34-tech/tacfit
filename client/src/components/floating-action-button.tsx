@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Target } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { useQuery } from "@tanstack/react-query";
 import ActivitySubmissionModal from "@/components/activity-submission-modal";
 
 export default function FloatingActionButton() {
@@ -11,11 +12,46 @@ export default function FloatingActionButton() {
   // Don't show the button if user is not authenticated
   if (!user) return null;
 
+  // Get user's current team membership to check competition status
+  const { data: userTeamMembership } = useQuery({
+    queryKey: [`/api/team-members/${user.id}`],
+    enabled: !!user.id,
+  });
+
+  // Get the competition ID from the first team membership
+  const competitionId = Array.isArray(userTeamMembership) && userTeamMembership.length > 0 
+    ? (userTeamMembership[0] as any)?.team?.competitionId 
+    : null;
+
+  const { data: currentCompetition } = useQuery({
+    queryKey: [`/api/competitions/${competitionId}`],
+    enabled: !!competitionId,
+  });
+
+  // Check if the competition is active
+  const isCompetitionActive = () => {
+    if (!currentCompetition || typeof currentCompetition !== 'object') return false;
+    
+    const competition = currentCompetition as any;
+    const now = new Date();
+    const startDate = new Date(competition.startDate);
+    const endDate = new Date(competition.endDate);
+    
+    return now >= startDate && now <= endDate;
+  };
+
+  const canSubmitActivity = isCompetitionActive();
+
   return (
     <>
       <Button
-        onClick={() => setIsModalOpen(true)}
-        className="fixed bottom-28 right-6 w-14 h-14 rounded-full bg-military-green/90 hover:bg-military-green-light/90 shadow-2xl z-50 border-2 border-white/50 transition-all duration-300 hover:scale-110 backdrop-blur-sm"
+        onClick={() => canSubmitActivity && setIsModalOpen(true)}
+        disabled={!canSubmitActivity}
+        className={`fixed bottom-28 right-6 w-14 h-14 rounded-full shadow-2xl z-50 border-2 border-white/50 transition-all duration-300 ${
+          canSubmitActivity 
+            ? 'bg-military-green/90 hover:bg-military-green-light/90 hover:scale-110 backdrop-blur-sm cursor-pointer' 
+            : 'bg-gray-500/60 cursor-not-allowed opacity-50'
+        }`}
         size="icon"
       >
         <svg
@@ -35,10 +71,12 @@ export default function FloatingActionButton() {
         </svg>
       </Button>
 
-      <ActivitySubmissionModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      />
+      {canSubmitActivity && (
+        <ActivitySubmissionModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        />
+      )}
     </>
   );
 }

@@ -3941,6 +3941,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Add simplified workout conversion endpoint for frontend compatibility
+  app.post("/api/apple-health/convert-workout", async (req, res) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.sendStatus(401);
+      }
+
+      const { workoutId, activityType } = req.body;
+
+      // Get user's current team for competition context
+      const userTeamMembers = await storage.getTeamMembersByUser(req.session.user.id);
+      const currentTeamMember = userTeamMembers.find((tm: any) => tm.role);
+      if (!currentTeamMember) {
+        return res.status(400).json({ message: "User not in a team" });
+      }
+
+      const team = await storage.getTeam(currentTeamMember.teamId);
+      if (!team) {
+        return res.status(400).json({ message: "Team not found" });
+      }
+
+      const workout = await storage.getAppleHealthWorkout(workoutId);
+      if (!workout || workout.userId !== req.session.user.id) {
+        return res.status(404).json({ message: "Workout not found" });
+      }
+
+      if (workout.isConverted) {
+        return res.status(400).json({ message: "Workout has already been converted" });
+      }
+
+      // Create TacFit activity from workout
+      const activity = await storage.createActivity({
+        userId: req.session.user.id,
+        competitionId: team.competitionId,
+        teamId: team.id,
+        type: activityType,
+        description: `${workout.workoutType} workout synced from Apple HealthKit`,
+        quantity: workout.duration?.toString() || "0",
+        evidenceType: "apple_health",
+        textInput: `Workout imported from Apple HealthKit:\n- Type: ${workout.workoutType}\n- Duration: ${workout.duration} minutes\n- Calories burned: ${workout.totalEnergyBurned || 0}\n- Distance: ${workout.totalDistance || 'N/A'}`,
+        points: 30 // Full points for Apple Health verified data
+      });
+
+      // Mark workout as converted
+      await storage.updateAppleHealthWorkout(workoutId, {
+        activityId: activity.id,
+        isConverted: true
+      });
+
+      // Award points to team
+      await storage.updateTeam(team.id, {
+        points: (team.points || 0) + 30
+      });
+
+      res.json({ activity, workout, message: "Workout converted successfully" });
+    } catch (error: any) {
+      console.error('Convert workout error:', error);
+      res.status(500).json({ message: error.message || "Error converting workout" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

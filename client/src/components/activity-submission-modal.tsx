@@ -42,6 +42,19 @@ interface Team {
   competitionId: number;
 }
 
+interface HealthKitWorkout {
+  id: number;
+  workoutType: string;
+  duration: number;
+  totalEnergyBurned?: number;
+  totalDistance?: string;
+  startDate: string;
+  endDate: string;
+  sourceApp?: string;
+  deviceModel?: string;
+  isConverted: boolean;
+}
+
 export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySubmissionModalProps) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -52,6 +65,8 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   const [textInput, setTextInput] = useState("");
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [selectedHealthKitWorkout, setSelectedHealthKitWorkout] = useState<HealthKitWorkout | null>(null);
+  const [showHealthKitWorkouts, setShowHealthKitWorkouts] = useState(false);
 
 
   // Get user's current team membership
@@ -76,6 +91,16 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   const { data: activityTypes = [] } = useQuery<ActivityType[]>({
     queryKey: ["/api/activity-types"],
     select: (data: ActivityType[]) => data.filter(at => at.isActive).sort((a, b) => a.name.localeCompare(b.name))
+  });
+
+  // Fetch user's HealthKit workouts
+  const { data: healthKitWorkouts = [] } = useQuery<HealthKitWorkout[]>({
+    queryKey: [`/api/apple-health/workouts/${user?.id}`],
+    enabled: !!user?.id && isOpen,
+    select: (data: HealthKitWorkout[]) => {
+      // Filter out already converted workouts and sort by most recent
+      return data.filter(w => !w.isConverted).sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+    }
   });
 
   // Get required activities for current competition or fallback to all active types
@@ -156,6 +181,44 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     },
   });
 
+  const convertHealthKitWorkout = useMutation({
+    mutationFn: async (workoutData: { workoutId: number; activityType: string }) => {
+      const response = await fetch("/api/apple-health/convert-workout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(workoutData),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to convert workout");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "HealthKit workout converted!",
+        description: "Your workout has been added to the competition.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
+      queryClient.invalidateQueries({ predicate: (query) => 
+        query.queryKey[0]?.toString()?.includes("/api/activities") ?? false
+      });
+      queryClient.invalidateQueries({ queryKey: [`/api/apple-health/workouts/${user?.id}`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/users", user?.id] });
+      onClose();
+      resetForm();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to convert workout",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
   const resetForm = () => {
     setType("");
     setDescription("");
@@ -163,6 +226,38 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     setTextInput("");
     setImageFiles([]);
     setVideoFile(null);
+    setSelectedHealthKitWorkout(null);
+    setShowHealthKitWorkouts(false);
+  };
+
+  // Helper function to format workout duration
+  const formatWorkoutDuration = (minutes: number): string => {
+    if (minutes < 60) return `${minutes}m`;
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
+  };
+
+  // Helper function to format workout type for display
+  const formatWorkoutType = (workoutType: string): string => {
+    return workoutType.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
+  };
+
+  // Handle HealthKit workout selection and conversion
+  const handleHealthKitWorkoutSelect = (workout: HealthKitWorkout) => {
+    if (!type) {
+      toast({
+        title: "Select activity type first",
+        description: "Please select an activity type before choosing a HealthKit workout.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    convertHealthKitWorkout.mutate({
+      workoutId: workout.id,
+      activityType: type
+    });
   };
 
 
@@ -361,6 +456,79 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                         </p>
                       </div>
                     </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* HealthKit Workouts Section */}
+            {type && healthKitWorkouts.length > 0 && competitionHasStarted && (
+              <div className="mt-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-gray-300 font-medium">Apple HealthKit Workouts</Label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowHealthKitWorkouts(!showHealthKitWorkouts)}
+                    className="text-military-green hover:text-military-green-light"
+                  >
+                    {showHealthKitWorkouts ? 'Hide' : 'Show'} Workouts ({healthKitWorkouts.length})
+                  </Button>
+                </div>
+                
+                {showHealthKitWorkouts && (
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    <p className="text-xs text-gray-400 mb-3">
+                      💡 Select a HealthKit workout to automatically convert it to a TacFit activity (30 points)
+                    </p>
+                    
+                    {healthKitWorkouts.slice(0, 10).map((workout) => (
+                      <div
+                        key={workout.id}
+                        className="flex items-center justify-between p-3 bg-tactical-gray-lighter border border-tactical-gray rounded-lg hover:border-military-green transition-colors cursor-pointer"
+                        onClick={() => handleHealthKitWorkoutSelect(workout)}
+                      >
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-white font-medium text-sm">
+                              {formatWorkoutType(workout.workoutType)}
+                            </span>
+                            <span className="text-xs text-gray-400">
+                              {formatWorkoutDuration(workout.duration)}
+                            </span>
+                          </div>
+                          
+                          <div className="flex items-center gap-3 text-xs text-gray-500">
+                            <span>{new Date(workout.startDate).toLocaleDateString()}</span>
+                            {workout.totalEnergyBurned && (
+                              <span>{workout.totalEnergyBurned} cal</span>
+                            )}
+                            {workout.totalDistance && (
+                              <span>{workout.totalDistance}</span>
+                            )}
+                            {workout.deviceModel && (
+                              <span>{workout.deviceModel}</span>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="bg-military-green hover:bg-military-green-light text-black text-xs px-3 py-1"
+                          disabled={convertHealthKitWorkout.isPending}
+                        >
+                          {convertHealthKitWorkout.isPending ? "Converting..." : "Convert"}
+                        </Button>
+                      </div>
+                    ))}
+                    
+                    {healthKitWorkouts.length > 10 && (
+                      <p className="text-xs text-gray-500 text-center mt-2">
+                        Showing 10 most recent workouts
+                      </p>
+                    )}
                   </div>
                 )}
               </div>

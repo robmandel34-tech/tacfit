@@ -90,7 +90,7 @@ interface Advertisement {
   title: string;
   content: string;
   imageUrl?: string;
-  targetUrl?: string;
+  linkUrl?: string;
   isActive: boolean;
   startDate?: string;
   endDate?: string;
@@ -240,7 +240,7 @@ export default function AdminPage() {
   const [advertisementForm, setAdvertisementForm] = useState({
     title: '',
     content: '',
-    targetUrl: '',
+    linkUrl: '',
     isActive: true,
     startDate: '',
     endDate: '',
@@ -602,7 +602,10 @@ export default function AdminPage() {
 
   // Advertisement management mutations
   const createAdvertisement = useMutation({
-    mutationFn: async (data: typeof advertisementForm & { imageUrl?: string }) => {
+    mutationFn: async (data: Omit<typeof advertisementForm, 'maxImpressions'> & { 
+      maxImpressions?: number; 
+      imageUrl?: string;
+    }) => {
       return apiRequest("POST", "/api/advertisements", data);
     },
     onSuccess: () => {
@@ -669,7 +672,7 @@ export default function AdminPage() {
     setAdvertisementForm({
       title: '',
       content: '',
-      targetUrl: '',
+      linkUrl: '',
       isActive: true,
       startDate: '',
       endDate: '',
@@ -734,7 +737,7 @@ export default function AdminPage() {
     setAdvertisementForm({
       title: ad.title,
       content: ad.content,
-      targetUrl: ad.targetUrl || '',
+      linkUrl: ad.linkUrl || '',
       isActive: ad.isActive,
       startDate: ad.startDate ? format(new Date(ad.startDate), 'yyyy-MM-dd') : '',
       endDate: ad.endDate ? format(new Date(ad.endDate), 'yyyy-MM-dd') : '',
@@ -2287,12 +2290,12 @@ export default function AdminPage() {
                     </div>
 
                     <div>
-                      <Label htmlFor="ad-target-url" className="text-gray-300">Target URL (Optional)</Label>
+                      <Label htmlFor="ad-link-url" className="text-gray-300">Link URL (Optional)</Label>
                       <Input
-                        id="ad-target-url"
+                        id="ad-link-url"
                         type="url"
-                        value={advertisementForm.targetUrl}
-                        onChange={(e) => setAdvertisementForm(prev => ({ ...prev, targetUrl: e.target.value }))}
+                        value={advertisementForm.linkUrl}
+                        onChange={(e) => setAdvertisementForm(prev => ({ ...prev, linkUrl: e.target.value }))}
                         className="bg-tactical-gray-lighter border-tactical-gray text-white"
                         placeholder="https://example.com"
                       />

@@ -10,7 +10,7 @@ interface AdvertisementCardProps {
     title: string;
     content: string;
     imageUrl?: string;
-    targetUrl?: string;
+    linkUrl?: string;
     isActive: boolean;
     startDate?: string;
     endDate?: string;
@@ -42,8 +42,8 @@ export default function AdvertisementCard({ advertisement }: AdvertisementCardPr
   }, [advertisement.id]);
 
   const handleClick = () => {
-    if (advertisement.targetUrl) {
-      window.open(advertisement.targetUrl, '_blank', 'noopener,noreferrer');
+    if (advertisement.linkUrl) {
+      window.open(advertisement.linkUrl, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -70,10 +70,10 @@ export default function AdvertisementCard({ advertisement }: AdvertisementCardPr
           {advertisement.imageUrl && (
             <div 
               className={`rounded-lg overflow-hidden bg-tactical-gray-lighter ${
-                advertisement.targetUrl ? 'cursor-pointer hover:opacity-80 transition-opacity duration-200' : ''
+                advertisement.linkUrl ? 'cursor-pointer hover:opacity-80 transition-opacity duration-200' : ''
               }`}
-              onClick={advertisement.targetUrl ? handleClick : undefined}
-              title={advertisement.targetUrl ? 'Click to open link' : undefined}
+              onClick={advertisement.linkUrl ? handleClick : undefined}
+              title={advertisement.linkUrl ? 'Click to open link' : undefined}
             >
               <img
                 src={advertisement.imageUrl}
@@ -90,7 +90,7 @@ export default function AdvertisementCard({ advertisement }: AdvertisementCardPr
             </div>
           )}
 
-          {advertisement.targetUrl && (
+          {advertisement.linkUrl && (
             <Button
               onClick={handleClick}
               className="w-full bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white font-medium"

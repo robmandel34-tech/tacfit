@@ -32,11 +32,8 @@ export const sendVerificationEmail = async (
   username: string,
   token: string
 ): Promise<void> => {
-  // For Replit deployments, use HTTP instead of HTTPS to avoid SSL issues
   const baseUrl = process.env.APP_URL || 'http://localhost:5000';
-  const correctedUrl = baseUrl.replace('https://', 'http://');
-  const verificationUrl = `${correctedUrl}/verify-email?token=${token}`;
-  
+  const verificationUrl = `${baseUrl}/verify-email?token=${token}`;
   console.log('Generated verification URL:', verificationUrl);
   
   const emailHtml = `

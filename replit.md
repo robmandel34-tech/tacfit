@@ -143,17 +143,16 @@ The platform follows a military/tactical theme across its UI/UX, language, and i
 - **IMPROVED**: Better user experience with immediate team selection for free competitions
 - **STATUS**: Free competition joining flow works correctly without payment prompts
 
-### Complete Apple Health Integration Implementation (August 2025)
-- **IMPLEMENTED**: Comprehensive Apple Health integration for automated fitness tracking
-- **DATABASE**: Added appleHealthConnections, appleHealthData, and appleHealthWorkouts tables with full schema
-- **BACKEND**: Complete API routes for setup, status, data sync, workout conversion, and connection management
-- **FRONTEND**: Full-featured React component with setup guide, connection status, and workout management
-- **INTEGRATION**: Added Apple Health section to user profile page (visible only on own profile)
-- **FEATURES**: API key generation, iPhone Shortcuts setup guide, workout-to-activity conversion (30 points)
-- **AUTHENTICATION**: Proper session-based authentication for all Apple Health endpoints
-- **DATA TYPES**: Support for steps, heart rate, calories, sleep data, and workout tracking
-- **CONVERSION**: Apple Health workouts convert to TacFit activities with verified evidence (full points)
-- **PRIVACY**: Uses Apple's privacy-first Shortcuts approach (no direct web API access required)
-- **USER EXPERIENCE**: Clear setup instructions, real-time sync status, and intuitive workout management
-- **TROUBLESHOOTING**: Enhanced error handling with authentication guidance for session issues
-- **STATUS**: Apple Health integration fully operational, requires user session refresh if authentication issues occur
+### Complete Apple HealthKit Web Integration Implementation (August 2025)
+- **UPGRADED**: Transitioned from manual Shortcuts setup to automatic Apple HealthKit web integration
+- **DATABASE**: Enhanced schema with HealthKit-specific fields (healthKitAuthToken, refreshToken, tokenExpiresAt, permissionsGranted, deviceInfo)
+- **BACKEND**: Full HealthKit API routes including authorization endpoint, automatic sync, workout conversion, and connection management
+- **FRONTEND**: New Apple HealthKit component with iOS Safari/WebView detection and web-based authorization flow
+- **AUTHENTICATION**: Automatic HealthKit authorization flow with token management and device detection
+- **FEATURES**: Automatic workout syncing, real-time sync status, workout-to-activity conversion (30 points)
+- **USER EXPERIENCE**: iOS-optimized interface with proper device detection, responsive button layout, automatic authorization
+- **INTEGRATION**: Seamless HealthKit connection with proper error handling and user feedback
+- **DATA TYPES**: Support for workouts, heart rate, calories, distance tracking with HealthKit metadata
+- **CONVERSION**: HealthKit workouts automatically convert to TacFit activities with verified evidence (full points)
+- **RESPONSIVE DESIGN**: Fixed button layout issues with mobile-first responsive design
+- **STATUS**: Apple HealthKit web integration fully operational with automatic sync and conversion capabilities

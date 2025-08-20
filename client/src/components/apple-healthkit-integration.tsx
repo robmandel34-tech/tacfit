@@ -68,10 +68,15 @@ export function AppleHealthKitIntegration({ userId, competitionId, teamId }: { u
   const [showWorkoutsDialog, setShowWorkoutsDialog] = useState(false);
   const [isAuthorizing, setIsAuthorizing] = useState(false);
 
-  // Check if running in iOS Safari/WebView
+  // Check if running in iOS (all browsers on iOS use WebKit due to Apple requirements)
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
   const isWebKit = typeof window.webkit !== 'undefined';
-  const supportsHealthKit = isIOS && (isWebKit || window.navigator.userAgent.includes('Safari'));
+  const isIOSChrome = isIOS && /CriOS/.test(navigator.userAgent);
+  const isIOSSafari = isIOS && /Safari/.test(navigator.userAgent) && !/CriOS/.test(navigator.userAgent);
+  const isIOSFirefox = isIOS && /FxiOS/.test(navigator.userAgent);
+  
+  // All iOS browsers support HealthKit since they all use WebKit
+  const supportsHealthKit = isIOS;
 
   // Get Apple HealthKit connection status
   const { data: connection, isLoading } = useQuery<AppleHealthConnection>({
@@ -97,7 +102,7 @@ export function AppleHealthKitIntegration({ userId, competitionId, teamId }: { u
     if (!supportsHealthKit) {
       toast({
         title: "Not Supported",
-        description: "Apple HealthKit is only available on iOS devices with Safari.",
+        description: "Apple HealthKit is only available on iOS devices (iPhone or iPad).",
         variant: "destructive",
       });
       return;
@@ -133,8 +138,13 @@ export function AppleHealthKitIntegration({ userId, competitionId, teamId }: { u
           permissions: permissions
         });
       } else {
-        // Safari - redirect to HealthKit authorization
+        // iOS browsers (Safari, Chrome, Firefox) - redirect to HealthKit authorization
         const authUrl = `/api/apple-healthkit/authorize?permissions=${permissions.join(',')}&userId=${userId}`;
+        
+        // Add browser info for better debugging
+        const browserInfo = isIOSChrome ? 'Chrome' : isIOSSafari ? 'Safari' : isIOSFirefox ? 'Firefox' : 'Unknown';
+        console.log(`HealthKit authorization starting on iOS ${browserInfo}...`);
+        
         window.location.href = authUrl;
       }
 
@@ -314,6 +324,11 @@ export function AppleHealthKitIntegration({ userId, competitionId, teamId }: { u
                 <p className="text-sm text-gray-300 mb-4">
                   Automatically sync your workouts, steps, heart rate, and calories from Apple Health. 
                   Get full points (30) for verified health data from your iPhone and Apple Watch.
+                  {isIOSChrome && (
+                    <span className="block mt-2 text-xs text-blue-300">
+                      Works with Chrome on iOS! All iOS browsers support HealthKit.
+                    </span>
+                  )}
                 </p>
                 <div className="grid grid-cols-2 gap-3 mb-4">
                   <div className="flex items-center space-x-2 text-xs text-gray-400">
@@ -340,8 +355,8 @@ export function AppleHealthKitIntegration({ userId, competitionId, teamId }: { u
                       <AlertCircle className="h-4 w-4" />
                       <span>
                         {isIOS 
-                          ? "Please use Safari on iOS for HealthKit integration" 
-                          : "HealthKit integration requires an iOS device"
+                          ? "Please refresh the page or try again - HealthKit should work on all iOS browsers" 
+                          : "HealthKit integration requires an iOS device (iPhone or iPad)"
                         }
                       </span>
                     </div>

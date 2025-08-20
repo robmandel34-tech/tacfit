@@ -350,36 +350,38 @@ export function AppleHealthKitIntegration({ userId, competitionId, teamId }: { u
                 </div>
               </div>
 
-              <div className="flex space-x-2">
-                <Button 
-                  variant="outline"
-                  onClick={() => syncMutation.mutate()}
-                  disabled={syncMutation.isPending}
-                  className="border-gray-600 hover:bg-gray-700"
-                >
-                  {syncMutation.isPending ? (
-                    <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin mr-2" />
-                  ) : (
-                    <Download className="h-4 w-4 mr-2" />
-                  )}
-                  Sync Now
-                </Button>
-                
-                {hasWorkouts && (
+              <div className="space-y-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Button 
                     variant="outline"
-                    onClick={() => setShowWorkoutsDialog(true)}
-                    className="flex-1 border-gray-600 hover:bg-gray-700"
+                    onClick={() => syncMutation.mutate()}
+                    disabled={syncMutation.isPending}
+                    className="border-gray-600 hover:bg-gray-700 w-full sm:w-auto"
                   >
-                    <Calendar className="h-4 w-4 mr-2" />
-                    View Workouts ({unconvertedWorkouts.length} new)
+                    {syncMutation.isPending ? (
+                      <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin mr-2" />
+                    ) : (
+                      <Download className="h-4 w-4 mr-2" />
+                    )}
+                    Sync Now
                   </Button>
-                )}
+                  
+                  {hasWorkouts && (
+                    <Button 
+                      variant="outline"
+                      onClick={() => setShowWorkoutsDialog(true)}
+                      className="flex-1 border-gray-600 hover:bg-gray-700 w-full sm:flex-1"
+                    >
+                      <Calendar className="h-4 w-4 mr-2" />
+                      <span className="truncate">View Workouts ({unconvertedWorkouts.length} new)</span>
+                    </Button>
+                  )}
+                </div>
                 
                 <Button
                   variant="outline"
                   onClick={() => disableMutation.mutate()}
-                  className="border-red-600/50 text-red-400 hover:bg-red-900/20"
+                  className="border-red-600/50 text-red-400 hover:bg-red-900/20 w-full sm:w-auto"
                   disabled={disableMutation.isPending}
                 >
                   Disconnect

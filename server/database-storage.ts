@@ -853,17 +853,35 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createAdvertisement(ad: InsertAdvertisement & { createdBy: number }): Promise<Advertisement> {
+    // Handle empty date strings by converting them to null
+    const processedAd = { ...ad } as any;
+    if (processedAd.startDate === '') {
+      processedAd.startDate = null;
+    }
+    if (processedAd.endDate === '') {
+      processedAd.endDate = null;
+    }
+    
     const [newAd] = await db
       .insert(advertisements)
-      .values(ad)
+      .values(processedAd)
       .returning();
     return newAd;
   }
 
   async updateAdvertisement(id: number, updates: Partial<Advertisement>): Promise<Advertisement | undefined> {
+    // Handle empty date strings by converting them to null
+    const processedUpdates = { ...updates } as any;
+    if (processedUpdates.startDate === '') {
+      processedUpdates.startDate = null;
+    }
+    if (processedUpdates.endDate === '') {
+      processedUpdates.endDate = null;
+    }
+    
     const [ad] = await db
       .update(advertisements)
-      .set({ ...updates, updatedAt: new Date() })
+      .set({ ...processedUpdates, updatedAt: new Date() })
       .where(eq(advertisements.id, id))
       .returning();
     return ad || undefined;

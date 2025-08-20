@@ -16,7 +16,7 @@ import {
   appleHealthConnections, appleHealthData, appleHealthWorkouts
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, or, desc, isNull, gt, inArray, sql } from "drizzle-orm";
+import { eq, and, or, desc, isNull, gt, lte, inArray, sql } from "drizzle-orm";
 import { IStorage } from "./storage";
 
 export class DatabaseStorage implements IStorage {
@@ -841,7 +841,7 @@ export class DatabaseStorage implements IStorage {
           eq(advertisements.isActive, true),
           or(
             isNull(advertisements.startDate),
-            gt(advertisements.startDate, now)
+            lte(advertisements.startDate, now)
           ),
           or(
             isNull(advertisements.endDate),

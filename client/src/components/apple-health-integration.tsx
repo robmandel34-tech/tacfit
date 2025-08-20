@@ -88,11 +88,20 @@ export function AppleHealthIntegration({ userId, competitionId, teamId }: { user
       });
     },
     onError: (error: any) => {
-      toast({
-        title: "Setup Failed",
-        description: error.message || "Failed to setup Apple Health integration",
-        variant: "destructive",
-      });
+      console.error('Apple Health setup error:', error);
+      if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log out and log back in to refresh your session, then try again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Setup Failed",
+          description: error.message || "Failed to setup Apple Health integration",
+          variant: "destructive",
+        });
+      }
     }
   });
 

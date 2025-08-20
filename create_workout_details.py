@@ -5,7 +5,7 @@ import os
 def create_workout_details_page(workout_data):
     """Create a comprehensive workout details page similar to Apple Fitness"""
     # Create a much taller dark-themed image to show everything
-    width, height = 400, 1600
+    width, height = 400, 2000
     img = Image.new('RGB', (width, height), '#1c1c1e')
     draw = ImageDraw.Draw(img)
     
@@ -180,10 +180,33 @@ def create_workout_details_page(workout_data):
         draw.text((20, y_pos + 15), value, fill=color, font=font_small)
         y_pos += 40
     
-    # Footer
-    y_pos += 20
+    # Footer section with more spacing
+    y_pos += 40
+    draw.text((20, y_pos), "Additional Notes", fill='#ffffff', font=font_title)
+    y_pos += 30
+    draw.text((20, y_pos), "• Excellent workout performance", fill='#34c759', font=font_small)
+    y_pos += 25
+    draw.text((20, y_pos), "• Target heart rate zones achieved", fill='#34c759', font=font_small)
+    y_pos += 25
+    draw.text((20, y_pos), "• Recommended rest: 24-48 hours", fill='#f39c12', font=font_small)
+    y_pos += 40
+    
+    # Recovery recommendations
+    draw.text((20, y_pos), "Recovery Recommendations", fill='#ffffff', font=font_title)
+    y_pos += 30
+    draw.text((20, y_pos), "Hydration: 16-20 oz within 30 minutes", fill='#3498db', font=font_small)
+    y_pos += 25
+    draw.text((20, y_pos), "Nutrition: Protein within 2 hours", fill='#3498db', font=font_small)
+    y_pos += 25
+    draw.text((20, y_pos), "Sleep: 7-9 hours for optimal recovery", fill='#3498db', font=font_small)
+    y_pos += 50
+    
+    # Final footer
     draw.text((20, y_pos), "Synced from Apple Health", fill='#8e8e93', font=font_tiny)
-    draw.text((20, y_pos + 15), "TacFit Fitness Platform", fill='#34c759', font=font_tiny)
+    y_pos += 20
+    draw.text((20, y_pos), "TacFit Fitness Platform", fill='#34c759', font=font_tiny)
+    y_pos += 30
+    draw.text((20, y_pos), "Complete workout analysis available", fill='#8e8e93', font=font_tiny)
     
     return img
 

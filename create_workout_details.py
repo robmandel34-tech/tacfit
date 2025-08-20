@@ -5,7 +5,7 @@ import os
 def create_workout_details_page(workout_data):
     """Create a comprehensive workout details page similar to Apple Fitness"""
     # Create a much taller dark-themed image to show everything
-    width, height = 400, 1200
+    width, height = 400, 1600
     img = Image.new('RGB', (width, height), '#1c1c1e')
     draw = ImageDraw.Draw(img)
     

@@ -20,12 +20,17 @@ export function MoodTracker({ children }: MoodTrackerProps) {
       const response = await fetch(`/api/mood-logs/user/${user.id}/today`, {
         credentials: "include"
       });
-      if (!response.ok) throw new Error("Failed to check mood status");
+      if (!response.ok) {
+        // Don't throw error for auth failures, just return null
+        if (response.status === 401) return null;
+        throw new Error("Failed to check mood status");
+      }
       return response.json();
     },
     enabled: !!user?.id,
     refetchOnWindowFocus: false,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 30 * 60 * 1000, // 30 minutes to reduce API calls
+    retry: 1, // Only retry once
   });
 
   useEffect(() => {

@@ -4351,19 +4351,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           };
       }
 
-      // Send notification to the specified user
-      const response = await fetch(`${req.protocol}://${req.get('host')}/api/notifications/send`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: parseInt(userId),
-          notification
-        })
-      });
-
-      const result = await response.json();
+      // Send notification to the specified user directly via the service
+      const result = await sendNotification(parseInt(userId), notification);
       res.json(result);
     } catch (error) {
       console.error('Test notification error:', error);

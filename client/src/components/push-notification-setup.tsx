@@ -35,9 +35,17 @@ export function PushNotificationSetup() {
     // Check if push notifications are supported
     const supported = 'serviceWorker' in navigator && 
                      'PushManager' in window && 
-                     'Notification' in window &&
-                     location.protocol === 'https:';
+                     'Notification' in window;
     setIsSupported(supported);
+    
+    // Log current environment for debugging
+    console.log('Push notification environment check:', {
+      serviceWorker: 'serviceWorker' in navigator,
+      pushManager: 'PushManager' in window,
+      notification: 'Notification' in window,
+      protocol: location.protocol,
+      supported
+    });
     
     if (supported) {
       setPermission(Notification.permission);

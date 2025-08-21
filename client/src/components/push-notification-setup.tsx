@@ -152,12 +152,20 @@ export function PushNotificationSetup() {
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(publicKey)
       });
-      console.log('Push subscription created:', subscription.endpoint);
+      
+      const subscriptionJSON = subscription.toJSON();
+      console.log('Push subscription created:', {
+        endpoint: subscription.endpoint,
+        p256dh: subscriptionJSON.keys?.p256dh,
+        p256dh_length: subscriptionJSON.keys?.p256dh?.length,
+        auth: subscriptionJSON.keys?.auth,
+        auth_length: subscriptionJSON.keys?.auth?.length
+      });
 
       // Send subscription to server
       console.log('Sending subscription to server...');
       await apiRequest('/api/notifications/subscribe', 'POST', {
-        subscription: subscription.toJSON(),
+        subscription: subscriptionJSON,
         userId: user.id,
       });
       console.log('Subscription saved to server');

@@ -1,6 +1,5 @@
 import { PushNotificationSetup } from '@/components/push-notification-setup';
 import { NotificationTest } from '@/components/notification-test';
-import { NotificationDebug } from '@/components/notification-debug';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Settings } from 'lucide-react';
 
@@ -19,8 +18,6 @@ export default function SettingsPage() {
         </div>
 
         <div className="space-y-6">
-          <NotificationDebug />
-          
           <PushNotificationSetup />
           
           <NotificationTest />

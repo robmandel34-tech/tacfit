@@ -75,7 +75,7 @@ export function NotificationTest() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium text-heading">Notification Type</label>
+          <label className="text-sm font-medium text-white">Notification Type</label>
           <Select value={selectedType} onValueChange={setSelectedType}>
             <SelectTrigger className="bg-surface-elevated border-border-subtle">
               <SelectValue placeholder="Choose a notification type to test" />
@@ -102,8 +102,8 @@ export function NotificationTest() {
           {isLoading ? 'Sending...' : 'Send Test Notification'}
         </Button>
 
-        <div className="text-sm text-text-secondary">
-          <p className="font-medium mb-2">To test notifications:</p>
+        <div className="text-sm text-gray-300">
+          <p className="font-medium mb-2 text-white">To test notifications:</p>
           <ol className="list-decimal list-inside space-y-1">
             <li>First enable notifications in the settings above</li>
             <li>Select a notification type from the dropdown</li>

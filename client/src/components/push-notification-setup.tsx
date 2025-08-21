@@ -224,7 +224,7 @@ export function PushNotificationSetup() {
             Push Notifications Not Supported
           </CardTitle>
           <CardDescription className="text-text-secondary">
-            Your browser doesn't support push notifications.
+            Your browser doesn't support push notifications. This feature requires a deployed version of the app.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -246,8 +246,8 @@ export function PushNotificationSetup() {
         {/* Permission Status */}
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-medium text-heading">Notification Permission</h3>
-            <p className="text-sm text-text-secondary">
+            <h3 className="font-medium text-white">Notification Permission</h3>
+            <p className="text-sm text-gray-300">
               {permission === 'granted' && 'Notifications are enabled'}
               {permission === 'denied' && 'Notifications are blocked'}
               {permission === 'default' && 'Click to enable notifications'}
@@ -281,8 +281,8 @@ export function PushNotificationSetup() {
         {permission === 'granted' && (
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-medium text-heading">Push Subscription</h3>
-              <p className="text-sm text-text-secondary">
+              <h3 className="font-medium text-white">Push Subscription</h3>
+              <p className="text-sm text-gray-300">
                 {isSubscribed ? 'Receiving push notifications' : 'Not subscribed to push notifications'}
               </p>
             </div>
@@ -300,12 +300,12 @@ export function PushNotificationSetup() {
         {/* Notification Preferences */}
         {permission === 'granted' && isSubscribed && (
           <div className="space-y-4">
-            <h3 className="font-medium text-heading">Notification Types</h3>
+            <h3 className="font-medium text-white">Notification Types</h3>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label htmlFor="activity-updates" className="font-medium text-heading">Activity Updates</Label>
-                  <p className="text-sm text-text-secondary">Team member activity submissions and achievements</p>
+                  <Label htmlFor="activity-updates" className="font-medium text-white">Activity Updates</Label>
+                  <p className="text-sm text-gray-300">Team member activity submissions and achievements</p>
                 </div>
                 <Switch
                   id="activity-updates"
@@ -316,8 +316,8 @@ export function PushNotificationSetup() {
 
               <div className="flex items-center justify-between">
                 <div>
-                  <Label htmlFor="competition-events" className="font-medium text-heading">Competition Events</Label>
-                  <p className="text-sm text-text-secondary">Competition start/end times and join windows</p>
+                  <Label htmlFor="competition-events" className="font-medium text-white">Competition Events</Label>
+                  <p className="text-sm text-gray-300">Competition start/end times and join windows</p>
                 </div>
                 <Switch
                   id="competition-events"
@@ -328,8 +328,8 @@ export function PushNotificationSetup() {
 
               <div className="flex items-center justify-between">
                 <div>
-                  <Label htmlFor="team-messages" className="font-medium text-heading">Team Messages</Label>
-                  <p className="text-sm text-text-secondary">New messages in team chat</p>
+                  <Label htmlFor="team-messages" className="font-medium text-white">Team Messages</Label>
+                  <p className="text-sm text-gray-300">New messages in team chat</p>
                 </div>
                 <Switch
                   id="team-messages"
@@ -340,8 +340,8 @@ export function PushNotificationSetup() {
 
               <div className="flex items-center justify-between">
                 <div>
-                  <Label htmlFor="mission-tasks" className="font-medium text-heading">Mission Tasks</Label>
-                  <p className="text-sm text-text-secondary">Task assignments and reminders</p>
+                  <Label htmlFor="mission-tasks" className="font-medium text-white">Mission Tasks</Label>
+                  <p className="text-sm text-gray-300">Task assignments and reminders</p>
                 </div>
                 <Switch
                   id="mission-tasks"
@@ -352,8 +352,8 @@ export function PushNotificationSetup() {
 
               <div className="flex items-center justify-between">
                 <div>
-                  <Label htmlFor="admin-announcements" className="font-medium text-heading">Admin Announcements</Label>
-                  <p className="text-sm text-text-secondary">Intel Feed posts and important updates</p>
+                  <Label htmlFor="admin-announcements" className="font-medium text-white">Admin Announcements</Label>
+                  <p className="text-sm text-gray-300">Intel Feed posts and important updates</p>
                 </div>
                 <Switch
                   id="admin-announcements"

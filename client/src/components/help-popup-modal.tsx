@@ -70,7 +70,10 @@ export function HelpPopupModal({ isOpen, onClose }: HelpPopupModalProps) {
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-2xl max-h-[90vh] bg-gray-900 border-gray-700 overflow-hidden flex flex-col">
+        <DialogContent 
+          className="max-w-2xl max-h-[90vh] bg-gray-900 border-gray-700 overflow-hidden flex flex-col"
+          aria-describedby="help-modal-description"
+        >
           <DialogHeader className="flex-shrink-0">
             <DialogTitle className="text-white flex items-center justify-between">
               {currentView ? (
@@ -102,7 +105,7 @@ export function HelpPopupModal({ isOpen, onClose }: HelpPopupModalProps) {
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-6 overflow-y-auto flex-1 pr-2 py-4">
+          <div id="help-modal-description" className="space-y-6 overflow-y-auto flex-1 pr-2 py-4">
             {currentView ? (
               <div className="text-gray-300">
                 <iframe 

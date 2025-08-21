@@ -18,7 +18,11 @@ import {
   X,
   ExternalLink,
   Mountain,
-  Shield
+  Shield,
+  Download,
+  Smartphone,
+  Share,
+  Monitor
 } from 'lucide-react';
 import { Link } from 'wouter';
 
@@ -298,6 +302,80 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
                 Learn More About Navigation
               </Button>
             </Link>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'install-app',
+      title: 'Install TacFit App',
+      description: 'Get the best tactical experience',
+      icon: <Download className="h-6 w-6" />,
+      content: (
+        <div className="space-y-4">
+          <div className="text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-military-green/20">
+              <Smartphone className="h-8 w-8 text-military-green" />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">Install for Best Experience</h3>
+            <p className="text-gray-300">
+              Install TacFit as an app on your device for faster access and better performance.
+            </p>
+          </div>
+          
+          <div className="bg-gray-800/50 p-4 rounded-lg">
+            <h4 className="font-semibold text-white mb-3">Installation Benefits</h4>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 rounded-full bg-military-green"></div>
+                <span className="text-sm text-gray-300">Quick access from your home screen</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 rounded-full bg-military-green"></div>
+                <span className="text-sm text-gray-300">Works offline for viewing activities</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 rounded-full bg-military-green"></div>
+                <span className="text-sm text-gray-300">Full-screen experience</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 rounded-full bg-military-green"></div>
+                <span className="text-sm text-gray-300">Faster loading and performance</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-military-green/20 border border-military-green/30 p-4 rounded-lg">
+            <h4 className="font-semibold text-military-green mb-3">How to Install</h4>
+            <div className="space-y-3">
+              <div className="flex items-start space-x-3">
+                <Monitor className="h-5 w-5 text-military-green mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-white">Desktop/Laptop</p>
+                  <p className="text-xs text-gray-300">Look for the install button in the navigation bar</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <Smartphone className="h-5 w-5 text-military-green mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-white">Mobile (iOS/Android)</p>
+                  <p className="text-xs text-gray-300">Tap the install button or use browser's "Add to Home Screen" option</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <Share className="h-5 w-5 text-military-green mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-white">iOS Safari</p>
+                  <p className="text-xs text-gray-300">Tap Share button → "Add to Home Screen"</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-blue-900/20 border border-blue-600/30 p-3 rounded-lg">
+            <p className="text-sm text-blue-200">
+              <strong>Pro Tip:</strong> Installing the app gives you native app-like experience with offline access to your activities and team updates.
+            </p>
           </div>
         </div>
       )

@@ -37,16 +37,13 @@ export async function notifyActivitySubmission(activityId: number) {
       .select({ userId: users.id })
       .from(users)
       .innerJoin(teams, eq(users.id, teams.captainId)) // Get team captain
-      .where(and(
-        eq(teams.id, activityData.team.id),
-        // Don't notify the person who submitted
-      ));
+      .where(eq(teams.id, activityData.team.id));
 
     // Also get regular team members (if we had team_members table)
     // For now, just notify team captain if they're not the submitter
 
     const targetUserIds = teamMembers
-      .filter(member => member.userId !== activityData.user.id)
+      .filter(member => member.userId !== activityData.user!.id)
       .map(member => member.userId);
 
     if (targetUserIds.length === 0) return;
@@ -125,7 +122,8 @@ export async function notifyTeamMessage(senderId: number, teamId: number, messag
 
     const targetUserIds = teamMembers
       .filter(member => member.userId !== null && member.userId !== senderId)
-      .map(member => member.userId as number);
+      .map(member => member.userId!)
+      .filter((id): id is number => id !== null);
 
     if (targetUserIds.length === 0) return;
 

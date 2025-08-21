@@ -1,4 +1,5 @@
 import { PushNotificationSetup } from '@/components/push-notification-setup';
+import { NotificationTest } from '@/components/notification-test';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Settings } from 'lucide-react';
 
@@ -18,6 +19,8 @@ export default function SettingsPage() {
 
         <div className="space-y-6">
           <PushNotificationSetup />
+          
+          <NotificationTest />
           
           {/* Future settings sections can be added here */}
           <Card className="bg-surface-elevated border-border-subtle">

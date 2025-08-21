@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from "./hooks/use-auth";
 import { MoodTracker } from "@/components/mood-tracker";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { AppLoader } from "@/components/app-loader";
+import { MinimalApp } from "@/components/minimal-app";
 import { InstallPrompt } from "@/components/install-prompt";
 import Dashboard from "@/pages/dashboard";
 import Login from "@/pages/login";
@@ -68,7 +69,16 @@ function Router() {
 }
 
 function AppContent() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+
+  // Don't render anything until auth is resolved
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-military-green"></div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -82,6 +92,17 @@ function AppContent() {
 }
 
 function App() {
+  // Temporary minimal mode for debugging native Replit app blanking
+  const isMinimalMode = import.meta.env.DEV;
+  
+  if (isMinimalMode) {
+    return (
+      <ErrorBoundary>
+        <MinimalApp />
+      </ErrorBoundary>
+    );
+  }
+
   return (
     <ErrorBoundary>
       <AppLoader>

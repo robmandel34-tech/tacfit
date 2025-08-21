@@ -35,7 +35,8 @@ export function PushNotificationSetup() {
     // Check if push notifications are supported
     const supported = 'serviceWorker' in navigator && 
                      'PushManager' in window && 
-                     'Notification' in window;
+                     'Notification' in window &&
+                     location.protocol === 'https:';
     setIsSupported(supported);
     
     if (supported) {
@@ -224,7 +225,12 @@ export function PushNotificationSetup() {
             Push Notifications Not Supported
           </CardTitle>
           <CardDescription className="text-gray-300">
-            Your browser doesn't support push notifications. This feature requires a deployed version of the app.
+            Push notifications require HTTPS and are only available when the app is deployed. 
+            {location.protocol !== 'https:' && (
+              <div className="mt-2 text-sm">
+                Current environment: {location.protocol} (HTTPS required)
+              </div>
+            )}
           </CardDescription>
         </CardHeader>
       </Card>

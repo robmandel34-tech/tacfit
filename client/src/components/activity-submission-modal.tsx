@@ -94,13 +94,18 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   });
 
   // Fetch user's HealthKit workouts
-  const { data: healthKitWorkouts = [] } = useQuery<HealthKitWorkout[]>({
+  const { data: healthKitWorkouts = [], error: healthKitError, isLoading: healthKitLoading } = useQuery<HealthKitWorkout[]>({
     queryKey: [`/api/apple-healthkit/workouts`],
     enabled: !!user?.id && isOpen,
     select: (data: HealthKitWorkout[]) => {
+      console.log('Raw HealthKit workouts:', data);
       // Filter out already converted workouts and sort by most recent
-      return data.filter(w => !w.isConverted).sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
-    }
+      const filtered = data.filter(w => !w.isConverted).sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+      console.log('Filtered HealthKit workouts:', filtered);
+      return filtered;
+    },
+    retry: 3,
+    staleTime: 30000, // 30 seconds
   });
 
   // Get required activities for current competition or fallback to all active types
@@ -471,7 +476,15 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
             {/* HealthKit Workout Selection Dropdown */}
             {type && competitionHasStarted && (
               <div className="mt-4 space-y-3">
-                {healthKitWorkouts.length > 0 ? (
+                {healthKitLoading && (
+                  <div className="text-gray-400 text-sm">Loading Apple HealthKit workouts...</div>
+                )}
+                {healthKitError && (
+                  <div className="text-red-400 text-sm">
+                    Error loading HealthKit workouts: {(healthKitError as any)?.message || 'Unknown error'}
+                  </div>
+                )}
+                {!healthKitLoading && !healthKitError && healthKitWorkouts.length > 0 ? (
                   <>
                     <Label className="text-gray-300 font-medium">Select from Apple HealthKit Workouts</Label>
                     <Select onValueChange={(value) => {

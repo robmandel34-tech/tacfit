@@ -29,8 +29,9 @@ export function MoodTracker({ children }: MoodTrackerProps) {
     },
     enabled: !!user?.id,
     refetchOnWindowFocus: false,
-    staleTime: 30 * 60 * 1000, // 30 minutes to reduce API calls
-    retry: 1, // Only retry once
+    refetchInterval: false, // Disable automatic refetching
+    staleTime: 60 * 60 * 1000, // 1 hour to minimize API calls
+    retry: false // Disable retries to prevent error loops
   });
 
   useEffect(() => {

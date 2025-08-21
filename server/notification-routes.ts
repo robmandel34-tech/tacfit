@@ -39,6 +39,17 @@ export function registerNotificationRoutes(app: Express) {
         ))
         .limit(1);
 
+      // Validate subscription keys
+      if (!subscription.keys?.p256dh || !subscription.keys?.auth) {
+        return res.status(400).json({ error: 'Invalid subscription keys' });
+      }
+
+      console.log('Subscription keys:', {
+        p256dh_length: subscription.keys.p256dh.length,
+        auth_length: subscription.keys.auth.length,
+        endpoint: subscription.endpoint.substring(0, 50) + '...'
+      });
+
       if (existing.length > 0) {
         // Update existing subscription
         await db

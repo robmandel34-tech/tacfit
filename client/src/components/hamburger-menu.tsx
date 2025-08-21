@@ -17,11 +17,13 @@ import {
   ChevronRight 
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import { HelpPopupModal } from '@/components/help-popup-modal';
 
 export function HamburgerMenu() {
   const { user, logout } = useAuth();
   const [location] = useLocation();
   const [open, setOpen] = useState(false);
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -32,7 +34,13 @@ export function HamburgerMenu() {
     setOpen(false);
   };
 
+  const handleHelpClick = () => {
+    setOpen(false); // Close hamburger menu
+    setIsHelpModalOpen(true); // Open help modal
+  };
+
   return (
+    <>
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button 
@@ -85,68 +93,15 @@ export function HamburgerMenu() {
 
         {/* Help Portal */}
         <DropdownMenuItem asChild>
-          <div className="relative">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <div className="flex items-center justify-between w-full cursor-pointer text-white hover:bg-white/10 px-2 py-1.5 rounded-sm">
-                  <div className="flex items-center gap-2">
-                    <HelpCircle className="h-4 w-4" />
-                    <span>Help Portal</span>
-                  </div>
-                  <ChevronRight className="h-4 w-4" />
-                </div>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent 
-                side="left" 
-                className="w-48 bg-surface-elevated border-border-subtle"
-              >
-                <DropdownMenuItem asChild>
-                  <Link 
-                    href="/help/competition-system" 
-                    onClick={handleNavigation}
-                    className="text-white hover:bg-white/10 cursor-pointer"
-                  >
-                    Competition System
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link 
-                    href="/help/team-formation" 
-                    onClick={handleNavigation}
-                    className="text-white hover:bg-white/10 cursor-pointer"
-                  >
-                    Team Formation
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link 
-                    href="/help/activity-tracking" 
-                    onClick={handleNavigation}
-                    className="text-white hover:bg-white/10 cursor-pointer"
-                  >
-                    Activity Tracking
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link 
-                    href="/help/point-system" 
-                    onClick={handleNavigation}
-                    className="text-white hover:bg-white/10 cursor-pointer"
-                  >
-                    Point System
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link 
-                    href="/help/navigation" 
-                    onClick={handleNavigation}
-                    className="text-white hover:bg-white/10 cursor-pointer"
-                  >
-                    Navigation
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          <div 
+            onClick={handleHelpClick}
+            className="flex items-center justify-between w-full cursor-pointer text-white hover:bg-white/10 px-2 py-1.5 rounded-sm"
+          >
+            <div className="flex items-center gap-2">
+              <HelpCircle className="h-4 w-4" />
+              <span>Help Portal</span>
+            </div>
+            <ChevronRight className="h-4 w-4" />
           </div>
         </DropdownMenuItem>
 
@@ -164,5 +119,12 @@ export function HamburgerMenu() {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+
+    {/* Help Modal */}
+    <HelpPopupModal 
+      isOpen={isHelpModalOpen}
+      onClose={() => setIsHelpModalOpen(false)}
+    />
+    </>
   );
 }

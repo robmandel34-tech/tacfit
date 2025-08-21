@@ -1826,14 +1826,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Competition not found" });
       }
       
-      // Check if competition has started
+      // Check if competition has started and not ended
       const now = new Date();
       const startDate = new Date(competition.startDate);
+      const endDate = new Date(competition.endDate);
+      
       if (now < startDate) {
         const daysUntilStart = Math.ceil((startDate.getTime() - now.getTime()) / (1000 * 3600 * 24));
         return res.status(400).json({ 
           message: `Competition has not started yet. Activities can be submitted starting ${startDate.toLocaleDateString()}`,
           daysUntilStart 
+        });
+      }
+      
+      if (now > endDate) {
+        return res.status(400).json({ 
+          message: `Competition has ended. Activities can no longer be submitted. Competition ended on ${endDate.toLocaleDateString()}`,
+          competitionEnded: true
         });
       }
       

@@ -36,15 +36,26 @@ function WorkoutDetailsModal({ imageUrl, onClose }: WorkoutDetailsModalProps) {
         </div>
         
         {/* Scrollable content area */}
-        <div className="flex-1 overflow-y-auto bg-black rounded-b-lg">
+        <div className="flex-1 overflow-y-auto bg-black rounded-b-lg p-4">
           <img
             src={imageUrl}
             alt="Complete workout details"
-            className="w-full h-auto block"
-            style={{ maxWidth: 'none' }}
+            className="w-full h-auto block mx-auto"
+            style={{ 
+              maxWidth: 'none',
+              minHeight: 'auto',
+              objectFit: 'contain'
+            }}
             onError={(e) => {
               console.error("Workout details image failed to load:", imageUrl);
-              e.currentTarget.style.display = 'none';
+              // Try object storage fallback for workout details images
+              const objectStorageUrl = imageUrl.replace('/uploads/', '/public-objects/');
+              if (e.currentTarget.src !== objectStorageUrl) {
+                console.log("Trying object storage fallback for workout details:", objectStorageUrl);
+                e.currentTarget.src = objectStorageUrl;
+              } else {
+                e.currentTarget.style.display = 'none';
+              }
             }}
           />
         </div>
@@ -86,7 +97,14 @@ function ImageGalleryModal({ images, currentIndex, setCurrentIndex, onClose }: I
             className="w-full h-auto max-h-[80vh] object-contain"
             onError={(e) => {
               console.error("Gallery image failed to load:", images[currentIndex]);
-              e.currentTarget.style.display = 'none';
+              // Try object storage fallback
+              const objectStorageUrl = images[currentIndex].replace('/uploads/', '/public-objects/');
+              if (e.currentTarget.src !== objectStorageUrl) {
+                console.log("Trying object storage fallback for gallery image:", objectStorageUrl);
+                e.currentTarget.src = objectStorageUrl;
+              } else {
+                e.currentTarget.style.display = 'none';
+              }
             }}
           />
 
@@ -131,6 +149,17 @@ function ImageGalleryModal({ images, currentIndex, setCurrentIndex, onClose }: I
                   src={image}
                   alt={`Thumbnail ${index + 1}`}
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    console.error("Thumbnail failed to load:", image);
+                    // Try object storage fallback
+                    const objectStorageUrl = image.replace('/uploads/', '/public-objects/');
+                    if (e.currentTarget.src !== objectStorageUrl) {
+                      console.log("Trying object storage fallback for thumbnail:", objectStorageUrl);
+                      e.currentTarget.src = objectStorageUrl;
+                    } else {
+                      e.currentTarget.style.display = 'none';
+                    }
+                  }}
                 />
               </button>
             ))}
@@ -185,8 +214,15 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
               className="w-full h-full object-cover"
               onError={(e) => {
                 console.error("Thumbnail failed to load:", thumbnailUrl);
-                // Fall back to video element
-                setShowVideo(true);
+                // Try object storage fallback
+                const objectStorageUrl = thumbnailUrl.replace('/uploads/', '/public-objects/');
+                if (e.currentTarget.src !== objectStorageUrl) {
+                  console.log("Trying object storage fallback for thumbnail:", objectStorageUrl);
+                  e.currentTarget.src = objectStorageUrl;
+                } else {
+                  // Fall back to video element
+                  setShowVideo(true);
+                }
               }}
             />
             {/* Play button overlay */}
@@ -217,10 +253,17 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
               console.error("Video playback failed for:", videoUrl);
               const videoElement = e.currentTarget as HTMLVideoElement;
               console.error("Video error code:", videoElement.error?.code);
-              // Hide video and show fallback
-              videoElement.style.display = 'none';
-              const fallback = videoElement.nextElementSibling as HTMLElement;
-              if (fallback) fallback.style.display = 'flex';
+              // Try object storage fallback for video
+              const objectStorageUrl = videoUrl.replace('/uploads/', '/public-objects/');
+              if (videoElement.src !== objectStorageUrl) {
+                console.log("Trying object storage fallback for video:", objectStorageUrl);
+                videoElement.src = objectStorageUrl;
+              } else {
+                // Hide video and show fallback
+                videoElement.style.display = 'none';
+                const fallback = videoElement.nextElementSibling as HTMLElement;
+                if (fallback) fallback.style.display = 'flex';
+              }
             }}
             onLoadStart={() => console.log("✓ Video load started:", videoUrl)}
             onCanPlay={() => console.log("✓ Video can play:", videoUrl)}
@@ -297,11 +340,11 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
           className="w-full h-full object-cover"
           onError={(e) => {
             console.error("Evidence image failed to load:", sortedImageUrls[0]);
-            // Try object storage URL if original fails
-            const originalSrc = e.currentTarget.src;
-            if (originalSrc.startsWith('/uploads/')) {
-              const fileName = originalSrc.replace('/uploads/', '');
-              e.currentTarget.src = `/public-objects/${fileName}`;
+            // Try object storage fallback
+            const objectStorageUrl = sortedImageUrls[0].replace('/uploads/', '/public-objects/');
+            if (e.currentTarget.src !== objectStorageUrl) {
+              console.log("Trying object storage fallback for evidence image:", objectStorageUrl);
+              e.currentTarget.src = objectStorageUrl;
             } else {
               e.currentTarget.style.display = 'none';
             }

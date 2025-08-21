@@ -81,7 +81,7 @@ export function InstallPrompt() {
 
   return (
     <div className="fixed bottom-4 left-4 right-4 z-50 md:left-auto md:right-4 md:w-96">
-      <Card className="bg-military-green/95 border-military-green text-white shadow-lg">
+      <Card className="bg-military-green border-military-green text-white shadow-lg">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">

@@ -4,7 +4,7 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthProvider } from "./hooks/use-auth";
+import { AuthProvider, useAuth } from "./hooks/use-auth";
 import { MoodTracker } from "@/components/mood-tracker";
 import { InstallPrompt } from "@/components/install-prompt";
 import Dashboard from "@/pages/dashboard";
@@ -65,6 +65,20 @@ function Router() {
   );
 }
 
+function AppContent() {
+  const { user } = useAuth();
+
+  return (
+    <MoodTracker>
+      <Toaster />
+      <Router />
+      <BottomNavigation />
+      <FloatingActionButton />
+      {user && <InstallPrompt />}
+    </MoodTracker>
+  );
+}
+
 function App() {
   // Register service worker
   useEffect(() => {
@@ -83,12 +97,12 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <AuthProvider>
-          <MoodTracker>
-            <Toaster />
-            <Router />
-            <BottomNavigation />
-            <FloatingActionButton />
-            <InstallPrompt />
+          <AppContent />
+        </AuthProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
 
           </MoodTracker>
         </AuthProvider>

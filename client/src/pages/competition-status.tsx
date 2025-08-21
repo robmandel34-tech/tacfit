@@ -22,32 +22,24 @@ export default function CompetitionStatus() {
   const { data: userTeamMember } = useQuery({
     queryKey: [`/api/team-members/${user?.id}`],
     enabled: !!user,
-    staleTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
   });
 
   // Get competition details
   const { data: competition } = useQuery({
     queryKey: [`/api/competitions/${userTeamMember?.[0]?.team?.competitionId}`],
     enabled: !!userTeamMember?.[0]?.team?.competitionId,
-    staleTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
   });
 
   // Get all teams in the competition
   const { data: teams = [] } = useQuery({
     queryKey: [`/api/teams/competition/${userTeamMember?.[0]?.team?.competitionId}`],
     enabled: !!userTeamMember?.[0]?.team?.competitionId,
-    staleTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
   });
 
   // Get all activities for the competition
   const { data: activities = [] } = useQuery({
     queryKey: [`/api/activities/competition/${userTeamMember?.[0]?.team?.competitionId}`],
     enabled: !!userTeamMember?.[0]?.team?.competitionId,
-    staleTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
   });
 
   // Leave competition mutation

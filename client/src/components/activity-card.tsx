@@ -270,16 +270,9 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
                     className="w-12 h-12 rounded-full object-cover"
                     onError={(e) => {
                       console.error("Activity user avatar failed to load:", activity.user.avatar);
-                      // Try object storage fallback
-                      const objectStorageUrl = `/public-objects/${activity.user.avatar}`;
-                      if (e.currentTarget.src !== objectStorageUrl) {
-                        console.log("Trying object storage fallback for avatar:", objectStorageUrl);
-                        e.currentTarget.src = objectStorageUrl;
-                      } else {
-                        e.currentTarget.style.display = 'none';
-                        const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                        if (fallback) fallback.style.display = 'flex';
-                      }
+                      e.currentTarget.style.display = 'none';
+                      const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                      if (fallback) fallback.style.display = 'flex';
                     }}
                     onLoad={() => {
                       console.log("Activity user avatar loaded successfully:", activity.user.avatar);

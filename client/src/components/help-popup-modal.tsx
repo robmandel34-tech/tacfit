@@ -67,19 +67,10 @@ export function HelpPopupModal({ isOpen, onClose }: HelpPopupModalProps) {
     onClose();
   };
 
-  // Reset current view when modal closes
-  const handleModalClose = () => {
-    setCurrentView(null);
-    onClose();
-  };
-
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={handleModalClose}>
-        <DialogContent 
-          className="max-w-2xl max-h-[90vh] bg-gray-900 border-gray-700 overflow-hidden flex flex-col"
-          aria-describedby="help-modal-description"
-        >
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-2xl max-h-[90vh] bg-gray-900 border-gray-700 overflow-hidden flex flex-col">
           <DialogHeader className="flex-shrink-0">
             <DialogTitle className="text-white flex items-center justify-between">
               {currentView ? (
@@ -103,7 +94,7 @@ export function HelpPopupModal({ isOpen, onClose }: HelpPopupModalProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleModalClose}
+                onClick={onClose}
                 className="text-gray-400 hover:text-white p-1"
               >
                 <X className="h-4 w-4" />
@@ -111,7 +102,7 @@ export function HelpPopupModal({ isOpen, onClose }: HelpPopupModalProps) {
             </DialogTitle>
           </DialogHeader>
 
-          <div id="help-modal-description" className="space-y-6 overflow-y-auto flex-1 pr-2 py-4">
+          <div className="space-y-6 overflow-y-auto flex-1 pr-2 py-4">
             {currentView ? (
               <div className="text-gray-300">
                 <iframe 
@@ -172,7 +163,7 @@ export function HelpPopupModal({ isOpen, onClose }: HelpPopupModalProps) {
                     <Button 
                       onClick={() => {
                         setShowOnboarding(true);
-                        handleModalClose();
+                        onClose();
                       }}
                       className="w-full bg-military-green hover:bg-military-green-light text-white"
                     >

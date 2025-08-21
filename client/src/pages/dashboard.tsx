@@ -20,8 +20,6 @@ export default function Dashboard() {
   const { data: activities = [] } = useQuery({
     queryKey: ["/api/activities"],
     enabled: !!user,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchOnWindowFocus: false,
     select: (data: any[]) => {
       // Sort activities by creation date (newest first)
       return data.sort((a: any, b: any) => {
@@ -33,8 +31,6 @@ export default function Dashboard() {
   const { data: adminPosts = [] } = useQuery({
     queryKey: ["/api/admin-posts/active"],
     enabled: !!user,
-    staleTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
     select: (data: any[]) => {
       // Filter active posts and sort by creation date (newest first)
       return data
@@ -48,8 +44,6 @@ export default function Dashboard() {
   const { data: advertisements = [] } = useQuery({
     queryKey: ["/api/advertisements/active"],
     enabled: !!user,
-    staleTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
     select: (data: any[]) => {
       // Sort advertisements by creation date (newest first)
       return data.sort((a: any, b: any) => {

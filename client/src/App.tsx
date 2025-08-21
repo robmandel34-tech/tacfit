@@ -6,15 +6,13 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "./hooks/use-auth";
 import { MoodTracker } from "@/components/mood-tracker";
-import { ErrorBoundary } from "@/components/error-boundary";
-import { AppLoader } from "@/components/app-loader";
-import { MinimalApp } from "@/components/minimal-app";
+import { InstallPrompt } from "@/components/install-prompt";
 import Dashboard from "@/pages/dashboard";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
 import EmailVerification from "@/pages/email-verification";
 import Competitions from "@/pages/competitions";
-import CompetitionStatusSimple from "@/pages/competition-status-simple";
+import CompetitionStatus from "@/pages/competition-status";
 import Team from "@/pages/team";
 import TeamPublic from "@/pages/team-public";
 import ActivityFeed from "@/pages/activity-feed";
@@ -44,7 +42,7 @@ function Router() {
         <Route path="/register" component={Register} />
         <Route path="/verify-email" component={EmailVerification} />
         <Route path="/competitions" component={Competitions} />
-        <Route path="/competition-status" component={CompetitionStatusSimple} />
+        <Route path="/competition-status" component={CompetitionStatus} />
         <Route path="/team" component={Team} />
         <Route path="/team/:teamId" component={TeamPublic} />
         <Route path="/activity-feed" component={ActivityFeed} />
@@ -68,38 +66,41 @@ function Router() {
 }
 
 function AppContent() {
-  const { user, isLoading } = useAuth();
-
-  // Don't render anything until auth is resolved
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-military-green"></div>
-      </div>
-    );
-  }
+  const { user } = useAuth();
 
   return (
-    <>
+    <MoodTracker>
       <Toaster />
       <Router />
       <BottomNavigation />
       <FloatingActionButton />
-    </>
+      {user && <InstallPrompt />}
+    </MoodTracker>
   );
 }
 
 function App() {
+  // Register service worker
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then((registration) => {
+          console.log('Service Worker registered successfully:', registration);
+        })
+        .catch((error) => {
+          console.log('Service Worker registration failed:', error);
+        });
+    }
+  }, []);
+
   return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <AuthProvider>
-            <AppContent />
-          </AuthProvider>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 }
 

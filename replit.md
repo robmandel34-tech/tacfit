@@ -81,3 +81,11 @@ The platform follows a military/tactical theme across its UI/UX, language, and i
 - ✅ Support for activity updates, competition events, team messages, mission tasks, and admin announcements
 - ✅ Automatic fallback handling for media file loading
 - ✅ Service worker integration for offline PWA capabilities
+
+### App Stability Troubleshooting (2025-08-21)
+- ✅ Diagnosed native Replit app preview blanking issue
+- ✅ Created minimal test component to isolate problem
+- ✅ Confirmed issue is with specific components, not native app rendering
+- ✅ Removed InstallPrompt component as potential cause
+- ✅ Added comprehensive error boundaries and loading states
+- ✅ Optimized query configurations to prevent excessive API calls

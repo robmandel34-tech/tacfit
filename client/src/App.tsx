@@ -86,34 +86,20 @@ function AppContent() {
       <Router />
       <BottomNavigation />
       <FloatingActionButton />
-      {user && <InstallPrompt />}
     </>
   );
 }
 
 function App() {
-  // Temporary minimal mode for debugging native Replit app blanking
-  const isMinimalMode = import.meta.env.DEV;
-  
-  if (isMinimalMode) {
-    return (
-      <ErrorBoundary>
-        <MinimalApp />
-      </ErrorBoundary>
-    );
-  }
-
   return (
     <ErrorBoundary>
-      <AppLoader>
-        <QueryClientProvider client={queryClient}>
-          <TooltipProvider>
-            <AuthProvider>
-              <AppContent />
-            </AuthProvider>
-          </TooltipProvider>
-        </QueryClientProvider>
-      </AppLoader>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <AuthProvider>
+            <AppContent />
+          </AuthProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
     </ErrorBoundary>
   );
 }

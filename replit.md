@@ -59,3 +59,16 @@ The platform follows a military/tactical theme across its UI/UX, language, and i
 - **TypeScript**: Strict type checking.
 - **Linting**: ESLint.
 - **Database**: Drizzle Kit.
+## Recent Optimizations (2025-08-21)
+
+### Deployment Optimization
+- ✅ Set up object storage for media files
+- ✅ Removed 88 large media files from deployment bundle
+- ✅ Reduced deployment size by 116.50 MB
+- ✅ Removed 62 unused dependencies
+- ✅ Optimized build process for faster deployments
+
+### Object Storage Integration
+- Media files now served from cloud storage
+- Faster deployments and better performance
+- Automatic CDN caching for media assets

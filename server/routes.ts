@@ -12,6 +12,7 @@ import {
   insertAppleHealthConnectionSchema, insertAppleHealthDataSchema, insertAppleHealthWorkoutSchema
 } from "@shared/schema";
 import { registerNotificationRoutes } from './notification-routes';
+import { ObjectStorageService, ObjectNotFoundError } from './objectStorage.js';
 import { db } from "./db";
 import { and, eq } from "drizzle-orm";
 import multer from "multer";
@@ -4248,6 +4249,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('Convert workout error:', error);
       res.status(500).json({ message: error.message || "Error converting workout" });
+    }
+  });
+
+  // Object Storage routes for public assets
+  app.get("/public-objects/:filePath(*)", async (req, res) => {
+    const filePath = req.params.filePath;
+    const objectStorageService = new ObjectStorageService();
+    try {
+      const file = await objectStorageService.searchPublicObject(filePath);
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      objectStorageService.downloadObject(file, res);
+    } catch (error) {
+      console.error("Error searching for public object:", error);
+      return res.status(500).json({ error: "Internal server error" });
     }
   });
 

@@ -65,11 +65,11 @@ export function NotificationTest() {
   return (
     <Card className="bg-surface-elevated border-border-subtle">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-heading">
+        <CardTitle className="flex items-center gap-2 text-white">
           <Bell className="h-5 w-5 text-military-green" />
           Test Push Notifications
         </CardTitle>
-        <CardDescription className="text-text-secondary">
+        <CardDescription className="text-gray-300">
           Send test notifications to verify your push notification setup is working properly.
         </CardDescription>
       </CardHeader>

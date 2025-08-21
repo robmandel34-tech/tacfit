@@ -219,11 +219,11 @@ export function PushNotificationSetup() {
     return (
       <Card className="bg-surface-elevated border-border-subtle">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-heading">
-            <BellOff className="h-5 w-5 text-text-secondary" />
+          <CardTitle className="flex items-center gap-2 text-white">
+            <BellOff className="h-5 w-5 text-gray-300" />
             Push Notifications Not Supported
           </CardTitle>
-          <CardDescription className="text-text-secondary">
+          <CardDescription className="text-gray-300">
             Your browser doesn't support push notifications. This feature requires a deployed version of the app.
           </CardDescription>
         </CardHeader>
@@ -234,11 +234,11 @@ export function PushNotificationSetup() {
   return (
     <Card className="bg-surface-elevated border-border-subtle">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-heading">
+        <CardTitle className="flex items-center gap-2 text-white">
           <Bell className="h-5 w-5 text-military-green" />
           Push Notifications
         </CardTitle>
-        <CardDescription className="text-text-secondary">
+        <CardDescription className="text-gray-300">
           Get notified about team activities, competitions, and important updates.
         </CardDescription>
       </CardHeader>

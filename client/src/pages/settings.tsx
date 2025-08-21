@@ -10,9 +10,9 @@ export default function SettingsPage() {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
             <Settings className="h-8 w-8 text-military-green" />
-            <h1 className="text-3xl font-bold text-heading">Settings</h1>
+            <h1 className="text-3xl font-bold text-black">Settings</h1>
           </div>
-          <p className="text-text-secondary">
+          <p className="text-black">
             Manage your app preferences and notification settings
           </p>
         </div>
@@ -25,8 +25,8 @@ export default function SettingsPage() {
           {/* Future settings sections can be added here */}
           <Card className="bg-surface-elevated border-border-subtle">
             <CardHeader>
-              <CardTitle className="text-heading">More Settings Coming Soon</CardTitle>
-              <CardDescription className="text-text-secondary">
+              <CardTitle className="text-white">More Settings Coming Soon</CardTitle>
+              <CardDescription className="text-gray-300">
                 Additional customization options will be available in future updates.
               </CardDescription>
             </CardHeader>

@@ -22,7 +22,7 @@ import fs from "fs";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { generateVerificationToken, sendVerificationEmail, sendWelcomeEmail } from "./email-service";
-import { generateWorkoutDetailImage, generateRouteMapImage } from './apple-health-image-generator';
+import { generateWorkoutDetailImage, generateRouteMapImage, captureAppleHealthKitWorkoutScreenshot } from './apple-health-image-generator';
 import Stripe from "stripe";
 
 const execAsync = promisify(exec);
@@ -1993,26 +1993,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const workout = await storage.getAppleHealthWorkout(workoutId);
           
           // Add workout images to the activity's image URLs
-          if (workout && workout.routeMapUrl) {
-            // Create comprehensive image list: user images first, then workout detail image, then route map
-            const workoutDetailUrl = generateWorkoutDetailImage({
-              workoutType: workout.workoutType,
-              duration: workout.duration,
-              totalEnergyBurned: workout.totalEnergyBurned,
-              totalDistance: workout.totalDistance,
-              averageHeartRate: workout.averageHeartRate,
-              maxHeartRate: workout.maxHeartRate,
-              startDate: workout.startDate,
-              endDate: workout.endDate,
-              sourceApp: workout.sourceApp,
-              deviceModel: workout.deviceModel
-            }, workout.id);
+          if (workout) {
+            const allImageUrls = [...imageUrls];
             
-            const allImageUrls = [...imageUrls, workoutDetailUrl, workout.routeMapUrl];
-            await storage.updateActivity(activity.id, {
-              imageUrls: allImageUrls
-            });
-            console.log(`Added Apple Fitness images to activity ${activity.id}: workout detail + route map`);
+            // First, try to capture real Apple HealthKit screenshot
+            const realScreenshot = await captureAppleHealthKitWorkoutScreenshot(workout.healthKitWorkoutId || workout.id.toString());
+            
+            if (realScreenshot) {
+              console.log(`Using real Apple HealthKit screenshot for activity ${activity.id}`);
+              allImageUrls.push(realScreenshot);
+            } else {
+              console.log(`Real Apple HealthKit screenshot not available, providing note for activity ${activity.id}`);
+              // Add a note that explains the limitation
+              const noteText = `Note: This activity was tracked by Apple HealthKit but the detailed workout screenshot is not available through the current integration. The activity data (duration: ${workout.duration}m, calories: ${workout.totalEnergyBurned}, distance: ${workout.totalDistance}) has been verified and submitted.`;
+              
+              // Update the activity description to include the note
+              await storage.updateActivity(activity.id, {
+                description: `${req.body.description}\n\n${noteText}`
+              });
+            }
+            
+            // Add route map if available
+            if (workout.routeMapUrl) {
+              allImageUrls.push(workout.routeMapUrl);
+            }
+            
+            // Update with available images
+            if (allImageUrls.length > imageUrls.length) {
+              await storage.updateActivity(activity.id, {
+                imageUrls: allImageUrls
+              });
+              console.log(`Added available workout images to activity ${activity.id}`);
+            }
           }
           
           await storage.updateAppleHealthWorkout(workoutId, {

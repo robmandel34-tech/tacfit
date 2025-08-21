@@ -530,9 +530,14 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <span className="text-military-green font-medium">HealthKit Workout Selected</span>
-                            <span className="text-xs text-green-400 bg-green-400/20 px-2 py-1 rounded">Auto-filled</span>
+                            <span className="text-xs text-green-400 bg-green-400/20 px-2 py-1 rounded">Verified data</span>
                           </div>
-                          <span className="text-xs text-military-green">Verified data</span>
+                          <span className="text-xs text-military-green">Add Apple Fitness screenshots</span>
+                        </div>
+                        <div className="bg-blue-400/10 border border-blue-400/30 rounded-lg p-2 mb-2">
+                          <p className="text-xs text-blue-300">
+                            📱 <strong>For authentic workout details:</strong> Take screenshots from your Apple Fitness app showing workout details, GPS route, and heart rate data, then upload them below for the most accurate activity post.
+                          </p>
                         </div>
                         <div className="text-xs text-gray-300 space-y-1">
                           <div><strong>Type:</strong> {selectedHealthKitWorkout.workoutType}</div>

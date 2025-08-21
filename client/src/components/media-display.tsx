@@ -297,7 +297,14 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
           className="w-full h-full object-cover"
           onError={(e) => {
             console.error("Evidence image failed to load:", sortedImageUrls[0]);
-            e.currentTarget.style.display = 'none';
+            // Try object storage URL if original fails
+            const originalSrc = e.currentTarget.src;
+            if (originalSrc.startsWith('/uploads/')) {
+              const fileName = originalSrc.replace('/uploads/', '');
+              e.currentTarget.src = `/public-objects/${fileName}`;
+            } else {
+              e.currentTarget.style.display = 'none';
+            }
           }}
         />
 

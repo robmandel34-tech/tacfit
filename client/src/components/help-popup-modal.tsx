@@ -67,9 +67,15 @@ export function HelpPopupModal({ isOpen, onClose }: HelpPopupModalProps) {
     onClose();
   };
 
+  // Reset current view when modal closes
+  const handleModalClose = () => {
+    setCurrentView(null);
+    onClose();
+  };
+
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
+      <Dialog open={isOpen} onOpenChange={handleModalClose}>
         <DialogContent 
           className="max-w-2xl max-h-[90vh] bg-gray-900 border-gray-700 overflow-hidden flex flex-col"
           aria-describedby="help-modal-description"
@@ -97,7 +103,7 @@ export function HelpPopupModal({ isOpen, onClose }: HelpPopupModalProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={onClose}
+                onClick={handleModalClose}
                 className="text-gray-400 hover:text-white p-1"
               >
                 <X className="h-4 w-4" />
@@ -166,7 +172,7 @@ export function HelpPopupModal({ isOpen, onClose }: HelpPopupModalProps) {
                     <Button 
                       onClick={() => {
                         setShowOnboarding(true);
-                        onClose();
+                        handleModalClose();
                       }}
                       className="w-full bg-military-green hover:bg-military-green-light text-white"
                     >

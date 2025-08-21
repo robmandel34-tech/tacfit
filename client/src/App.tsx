@@ -14,7 +14,7 @@ import Login from "@/pages/login";
 import Register from "@/pages/register";
 import EmailVerification from "@/pages/email-verification";
 import Competitions from "@/pages/competitions";
-import CompetitionStatus from "@/pages/competition-status";
+import CompetitionStatusSimple from "@/pages/competition-status-simple";
 import Team from "@/pages/team";
 import TeamPublic from "@/pages/team-public";
 import ActivityFeed from "@/pages/activity-feed";
@@ -39,12 +39,12 @@ function Router() {
   return (
     <div className="pb-16 md:pb-0">
       <Switch>
-        <Route path="/" component={MinimalApp} />
+        <Route path="/" component={Dashboard} />
         <Route path="/login" component={Login} />
         <Route path="/register" component={Register} />
         <Route path="/verify-email" component={EmailVerification} />
         <Route path="/competitions" component={Competitions} />
-        <Route path="/competition-status" component={CompetitionStatus} />
+        <Route path="/competition-status" component={CompetitionStatusSimple} />
         <Route path="/team" component={Team} />
         <Route path="/team/:teamId" component={TeamPublic} />
         <Route path="/activity-feed" component={ActivityFeed} />

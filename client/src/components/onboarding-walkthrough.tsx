@@ -465,26 +465,16 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl max-h-[90vh] bg-gray-900 border-gray-700 flex flex-col">
         <DialogHeader className="pb-4 flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-military-green/20">
-                {currentStepData.icon}
-              </div>
-              <div>
-                <DialogTitle className="text-white">{currentStepData.title}</DialogTitle>
-                <DialogDescription className="text-gray-400">
-                  {currentStepData.description}
-                </DialogDescription>
-              </div>
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-military-green/20">
+              {currentStepData.icon}
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="text-gray-400 hover:text-white hover:bg-gray-800"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+            <div>
+              <DialogTitle className="text-white">{currentStepData.title}</DialogTitle>
+              <DialogDescription className="text-gray-400">
+                {currentStepData.description}
+              </DialogDescription>
+            </div>
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">

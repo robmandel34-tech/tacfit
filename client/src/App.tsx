@@ -9,7 +9,6 @@ import { MoodTracker } from "@/components/mood-tracker";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { AppLoader } from "@/components/app-loader";
 import { MinimalApp } from "@/components/minimal-app";
-import { InstallPrompt } from "@/components/install-prompt";
 import Dashboard from "@/pages/dashboard";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
@@ -40,7 +39,7 @@ function Router() {
   return (
     <div className="pb-16 md:pb-0">
       <Switch>
-        <Route path="/" component={Dashboard} />
+        <Route path="/" component={MinimalApp} />
         <Route path="/login" component={Login} />
         <Route path="/register" component={Register} />
         <Route path="/verify-email" component={EmailVerification} />

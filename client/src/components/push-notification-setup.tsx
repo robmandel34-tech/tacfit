@@ -33,13 +33,18 @@ export function PushNotificationSetup() {
 
   useEffect(() => {
     // Check if push notifications are supported
-    const supported = 'serviceWorker' in navigator && 'PushManager' in window;
+    const supported = 'serviceWorker' in navigator && 
+                     'PushManager' in window && 
+                     'Notification' in window;
     setIsSupported(supported);
     
     if (supported) {
       setPermission(Notification.permission);
-      checkSubscriptionStatus();
-      loadPreferences();
+      // Wait for service worker to be ready
+      setTimeout(() => {
+        checkSubscriptionStatus();
+        loadPreferences();
+      }, 1000);
     }
   }, []);
 
@@ -68,7 +73,14 @@ export function PushNotificationSetup() {
   };
 
   const requestPermission = async () => {
-    if (!isSupported) return;
+    if (!isSupported) {
+      toast({
+        title: "Not Supported",
+        description: "Push notifications are not supported in this browser or context.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsLoading(true);
     try {

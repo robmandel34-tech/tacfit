@@ -79,6 +79,16 @@ export const sendVerificationEmail = async (
         from: process.env.FROM_EMAIL || 'noreply@tacfit.app',
         subject: 'TacFit - Verify Your Email Address',
         html: emailHtml,
+        // Disable click tracking to prevent link redirects
+        trackingSettings: {
+          clickTracking: {
+            enable: false,
+            enableText: false
+          },
+          openTracking: {
+            enable: false
+          }
+        }
       };
 
       await sgMail.send(msg);
@@ -166,6 +176,16 @@ export const sendWelcomeEmail = async (
         from: process.env.FROM_EMAIL || 'noreply@tacfit.app',
         subject: 'Welcome to TacFit - Let\'s Get Started!',
         html: emailHtml,
+        // Disable click tracking to prevent link redirects
+        trackingSettings: {
+          clickTracking: {
+            enable: false,
+            enableText: false
+          },
+          openTracking: {
+            enable: false
+          }
+        }
       };
 
       await sgMail.send(msg);

@@ -12,6 +12,7 @@ import {
   insertAppleHealthConnectionSchema, insertAppleHealthDataSchema, insertAppleHealthWorkoutSchema
 } from "@shared/schema";
 import { registerNotificationRoutes } from './notification-routes';
+import { PushNotificationService } from './push-notification-service';
 import { ObjectStorageService, ObjectNotFoundError } from './objectStorage.js';
 import { db } from "./db";
 import { and, eq } from "drizzle-orm";
@@ -4352,7 +4353,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Send notification to the specified user directly via the service
-      const result = await sendNotification(parseInt(userId), notification);
+      const pushService = new PushNotificationService();
+      const result = await pushService.sendNotification(parseInt(userId), notification);
       res.json(result);
     } catch (error) {
       console.error('Test notification error:', error);

@@ -44,16 +44,21 @@ export function PushNotificationSetup() {
       pushManager: 'PushManager' in window,
       notification: 'Notification' in window,
       protocol: location.protocol,
+      hostname: location.hostname,
+      isSecure: location.protocol === 'https:' || location.hostname === 'localhost',
       supported
     });
     
     if (supported) {
       setPermission(Notification.permission);
-      // Wait for service worker to be ready
+      // Check subscription status immediately and after service worker is ready
+      checkSubscriptionStatus();
+      loadPreferences();
+      
+      // Also check after service worker is fully ready
       setTimeout(() => {
         checkSubscriptionStatus();
-        loadPreferences();
-      }, 1000);
+      }, 2000);
     }
   }, []);
 
@@ -234,11 +239,16 @@ export function PushNotificationSetup() {
           </CardTitle>
           <CardDescription className="text-gray-300">
             Push notifications require HTTPS and are only available when the app is deployed. 
-            {location.protocol !== 'https:' && (
+            {location.protocol !== 'https:' && location.hostname !== 'localhost' && (
               <div className="mt-2 text-sm">
-                Current environment: {location.protocol} (HTTPS required)
+                Current environment: {location.protocol} (HTTPS required for deployment)
               </div>
             )}
+            <div className="mt-2 text-xs text-gray-400">
+              ServiceWorker: {'serviceWorker' in navigator ? '✓' : '✗'} | 
+              PushManager: {'PushManager' in window ? '✓' : '✗'} | 
+              Notifications: {'Notification' in window ? '✓' : '✗'}
+            </div>
           </CardDescription>
         </CardHeader>
       </Card>

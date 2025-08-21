@@ -29,7 +29,7 @@ export function InstallAppButton() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2 bg-transparent border-gray-600 text-gray-300 hover:bg-surface-overlay hover:text-white">
+        <Button variant="ghost" size="sm" className="gap-2 text-gray-300 hover:bg-surface-overlay hover:text-white">
           <Download className="h-4 w-4" />
           Install App
         </Button>

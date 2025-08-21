@@ -503,38 +503,49 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                       }
                     }}>
                       <SelectTrigger className="bg-tactical-gray-lighter border-2 border-tactical-gray text-white focus:border-white focus:ring-0 focus:ring-offset-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
-                        <SelectValue placeholder="Choose workout or enter manually" />
+                        <SelectValue placeholder={`Choose from ${healthKitWorkouts.length} workouts or enter manually`} />
                       </SelectTrigger>
-                      <SelectContent className="bg-tactical-gray-light border-tactical-gray text-white max-h-[300px] overflow-y-auto">
-                        <SelectItem 
-                          value="manual" 
-                          className="text-white hover:bg-military-green focus:bg-military-green data-[highlighted]:bg-military-green data-[highlighted]:text-white"
-                        >
-                          📝 Enter activity manually
-                        </SelectItem>
-                        {healthKitWorkouts.map((workout) => (
+                      <SelectContent 
+                        className="bg-tactical-gray-light border-tactical-gray text-white z-50" 
+                        position="popper"
+                        sideOffset={5}
+                        style={{
+                          maxHeight: healthKitWorkouts.length > 4 ? '320px' : 'auto',
+                          overflowY: healthKitWorkouts.length > 4 ? 'auto' : 'visible'
+                        }}
+                      >
+                        <div className={healthKitWorkouts.length > 4 ? "max-h-[280px] overflow-y-auto" : ""}>
                           <SelectItem 
-                            key={workout.id} 
-                            value={workout.id.toString()}
-                            className="text-white hover:bg-military-green focus:bg-military-green data-[highlighted]:bg-military-green data-[highlighted]:text-white"
+                            value="manual" 
+                            className="text-white hover:bg-military-green focus:bg-military-green data-[highlighted]:bg-military-green data-[highlighted]:text-white cursor-pointer"
                           >
-                            <div className="flex items-center justify-between w-full">
-                              <div className="flex flex-col items-start">
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium">{formatWorkoutType(workout.workoutType)}</span>
-                                  <span className="text-xs text-gray-400">{formatWorkoutDuration(workout.duration)}</span>
-                                </div>
-                                <div className="text-xs text-gray-500 flex items-center gap-2">
-                                  <span>{new Date(workout.startDate).toLocaleDateString()}</span>
-                                  {workout.totalEnergyBurned && <span>• {workout.totalEnergyBurned} cal</span>}
-                                  {workout.totalDistance && <span>• {workout.totalDistance}</span>}
-                                  {(workout as any).hasRoute && <span className="text-green-400">• GPS route</span>}
-                                </div>
-                              </div>
-                              <span className="text-xs text-green-400 bg-green-400/20 px-2 py-1 rounded ml-2">Auto-fill</span>
-                            </div>
+                            📝 Enter activity manually
                           </SelectItem>
-                        ))}
+                          {healthKitWorkouts.map((workout, index) => (
+                            <SelectItem 
+                              key={workout.id} 
+                              value={workout.id.toString()}
+                              className="text-white hover:bg-military-green focus:bg-military-green data-[highlighted]:bg-military-green data-[highlighted]:text-white cursor-pointer"
+                            >
+                              <div className="flex items-center justify-between w-full py-1">
+                                <div className="flex flex-col items-start">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium">{formatWorkoutType(workout.workoutType)}</span>
+                                    <span className="text-xs text-green-400">#{index + 1}</span>
+                                    <span className="text-xs text-gray-400">{formatWorkoutDuration(workout.duration)}</span>
+                                  </div>
+                                  <div className="text-xs text-gray-500 flex items-center gap-2">
+                                    <span>{new Date(workout.startDate).toLocaleDateString()}</span>
+                                    {workout.totalEnergyBurned && <span>• {workout.totalEnergyBurned} cal</span>}
+                                    {workout.totalDistance && <span>• {workout.totalDistance}</span>}
+                                    {(workout as any).hasRoute && <span className="text-green-400">• GPS route</span>}
+                                  </div>
+                                </div>
+                                <span className="text-xs text-green-400 bg-green-400/20 px-2 py-1 rounded ml-2">Auto-fill</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </div>
                       </SelectContent>
                     </Select>
                     

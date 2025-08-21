@@ -81,9 +81,7 @@ export default function Navigation() {
               />
               <span className="text-xs font-semibold text-white">{user.points || 0} PTS</span>
             </div>
-            <div className="hidden md:block">
-              <InstallAppButton />
-            </div>
+            <InstallAppButton />
             <HelpModal />
             {user.isAdmin && (
               <Link 

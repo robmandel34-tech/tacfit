@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "./hooks/use-auth";
 import { MoodTracker } from "@/components/mood-tracker";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { AppLoader } from "@/components/app-loader";
 import { InstallPrompt } from "@/components/install-prompt";
 import Dashboard from "@/pages/dashboard";
 import Login from "@/pages/login";
@@ -70,26 +71,28 @@ function AppContent() {
   const { user } = useAuth();
 
   return (
-    <MoodTracker>
+    <>
       <Toaster />
       <Router />
       <BottomNavigation />
       <FloatingActionButton />
       {user && <InstallPrompt />}
-    </MoodTracker>
+    </>
   );
 }
 
 function App() {
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <AuthProvider>
-            <AppContent />
-          </AuthProvider>
-        </TooltipProvider>
-      </QueryClientProvider>
+      <AppLoader>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <AuthProvider>
+              <AppContent />
+            </AuthProvider>
+          </TooltipProvider>
+        </QueryClientProvider>
+      </AppLoader>
     </ErrorBoundary>
   );
 }

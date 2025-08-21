@@ -27,11 +27,11 @@ export function MoodTracker({ children }: MoodTrackerProps) {
       }
       return response.json();
     },
-    enabled: !!user?.id,
+    enabled: false, // Completely disable for now to prevent any API interference
     refetchOnWindowFocus: false,
-    refetchInterval: false, // Disable automatic refetching
-    staleTime: 60 * 60 * 1000, // 1 hour to minimize API calls
-    retry: false // Disable retries to prevent error loops
+    refetchInterval: false,
+    staleTime: Infinity,
+    retry: false
   });
 
   useEffect(() => {

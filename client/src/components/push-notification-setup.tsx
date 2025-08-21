@@ -127,28 +127,56 @@ export function PushNotificationSetup() {
   };
 
   const subscribeToPush = async () => {
+    setIsLoading(true);
     try {
+      console.log('Starting push subscription process...');
+      
+      if (!user?.id) {
+        throw new Error('User not authenticated');
+      }
+      
       const registration = await navigator.serviceWorker.ready;
+      console.log('Service worker ready:', registration);
       
       // Get VAPID public key from server
+      console.log('Fetching VAPID key...');
       const response = await fetch('/api/notifications/vapid-key');
+      if (!response.ok) {
+        throw new Error(`Failed to get VAPID key: ${response.status}`);
+      }
       const { publicKey } = await response.json();
+      console.log('VAPID key received');
       
+      console.log('Creating push subscription...');
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(publicKey)
       });
+      console.log('Push subscription created:', subscription.endpoint);
 
       // Send subscription to server
+      console.log('Sending subscription to server...');
       await apiRequest('/api/notifications/subscribe', 'POST', {
         subscription: subscription.toJSON(),
-        userId: user?.id,
+        userId: user.id,
       });
+      console.log('Subscription saved to server');
 
       setIsSubscribed(true);
+      toast({
+        title: "Subscribed Successfully",
+        description: "You'll now receive push notifications.",
+      });
     } catch (error) {
       console.error('Error subscribing to push notifications:', error);
+      toast({
+        title: "Subscription Failed",
+        description: error instanceof Error ? error.message : "Please try again.",
+        variant: "destructive",
+      });
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 

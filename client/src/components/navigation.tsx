@@ -2,6 +2,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Link, useLocation, useRouter } from "wouter";
 import { Button } from "@/components/ui/button";
 import { HelpModal } from "@/components/help-modal";
+import { InstallAppButton } from "@/components/install-app-button";
 import { ShieldPlus, Trophy, MessageCircle, Users, Activity, Bell } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -80,6 +81,7 @@ export default function Navigation() {
               />
               <span className="text-sm font-semibold text-white">{user.points || 0} PTS</span>
             </div>
+            <InstallAppButton />
             <HelpModal />
             {user.isAdmin && (
               <Link 

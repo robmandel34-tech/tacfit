@@ -9,6 +9,14 @@
     <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png?v=5" />
     <link rel="shortcut icon" href="/favicon-32x32.png?v=5" />
     
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#7cb342" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="TacFit" />
+    <link rel="apple-touch-icon" href="/generated-icon.png" />
+    
     <!-- Open Graph / Social Media Meta Tags -->
     <meta property="og:title" content="TacFit - Tactical Fitness Platform" />
     <meta property="og:description" content="Team-based fitness competitions with tactical training focus" />
@@ -22,6 +30,20 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <!-- Register Service Worker for PWA -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js')
+            .then(function(registration) {
+              console.log('SW registered: ', registration);
+            })
+            .catch(function(registrationError) {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+    </script>
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
     <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
   </body>

@@ -22,6 +22,7 @@ import fs from "fs";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { generateVerificationToken, sendVerificationEmail, sendWelcomeEmail } from "./email-service";
+import { generateWorkoutDetailImage, generateRouteMapImage } from './apple-health-image-generator';
 import Stripe from "stripe";
 
 const execAsync = promisify(exec);
@@ -1985,19 +1986,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const activity = await storage.createActivity(validatedData);
       
-      // If this is a HealthKit activity, mark the workout as converted and include route map
+      // If this is a HealthKit activity, mark the workout as converted and include workout images
       if (isHealthKitActivity) {
         try {
           const workoutId = parseInt(req.body.healthKitWorkoutId);
           const workout = await storage.getAppleHealthWorkout(workoutId);
           
-          // Add workout details image to the activity's image URLs
+          // Add workout images to the activity's image URLs
           if (workout && workout.routeMapUrl) {
-            const updatedImageUrls = [...imageUrls, workout.routeMapUrl];
+            // Create comprehensive image list: user images first, then workout detail image, then route map
+            const workoutDetailUrl = generateWorkoutDetailImage({
+              workoutType: workout.workoutType,
+              duration: workout.duration,
+              totalEnergyBurned: workout.totalEnergyBurned,
+              totalDistance: workout.totalDistance,
+              averageHeartRate: workout.averageHeartRate,
+              maxHeartRate: workout.maxHeartRate,
+              startDate: workout.startDate,
+              endDate: workout.endDate,
+              sourceApp: workout.sourceApp,
+              deviceModel: workout.deviceModel
+            }, workout.id);
+            
+            const allImageUrls = [...imageUrls, workoutDetailUrl, workout.routeMapUrl];
             await storage.updateActivity(activity.id, {
-              imageUrls: updatedImageUrls
+              imageUrls: allImageUrls
             });
-            console.log(`Added workout details to activity ${activity.id}: ${workout.routeMapUrl}`);
+            console.log(`Added Apple Fitness images to activity ${activity.id}: workout detail + route map`);
           }
           
           await storage.updateAppleHealthWorkout(workoutId, {
@@ -3616,8 +3631,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         );
         
         if (!existingWorkout) {
+          // Create the workout first to get the ID
           const workout = await storage.createAppleHealthWorkout(workoutData);
-          syncedWorkouts.push(workout);
+          
+          // Generate workout detail image and route map
+          try {
+            console.log(`Generating images for workout ${workout.id}...`);
+            
+            // Generate workout detail image (the main Apple Fitness screenshot)
+            const workoutDetailUrl = generateWorkoutDetailImage(workoutData, workout.id);
+            
+            // Generate route map image
+            const routeMapUrl = generateRouteMapImage(workoutData, workout.id);
+            
+            // Update the workout with the generated image URLs
+            await storage.updateAppleHealthWorkout(workout.id, {
+              routeMapUrl: routeMapUrl
+            });
+            
+            console.log(`Generated workout images: detail=${workoutDetailUrl}, route=${routeMapUrl}`);
+            
+            // Return the updated workout data
+            const updatedWorkout = await storage.getAppleHealthWorkout(workout.id);
+            syncedWorkouts.push(updatedWorkout);
+          } catch (imageError) {
+            console.error(`Failed to generate images for workout ${workout.id}:`, imageError);
+            syncedWorkouts.push(workout);
+          }
         }
       }
 

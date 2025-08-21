@@ -1,9 +1,8 @@
 import { useAuth } from "@/hooks/use-auth";
-import { Link, useLocation, useRouter } from "wouter";
-import { Button } from "@/components/ui/button";
-import { HelpModal } from "@/components/help-modal";
+import { Link, useLocation } from "wouter";
 import { InstallAppButton } from "@/components/install-app-button";
-import { ShieldPlus, Trophy, MessageCircle, Users, Activity, Bell, LogOut, Settings } from "lucide-react";
+import { HamburgerMenu } from "@/components/hamburger-menu";
+import { ShieldPlus, Trophy } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 export default function Navigation() {
@@ -63,14 +62,7 @@ export default function Navigation() {
               >
                 Intel Feed
               </Link>
-              {user.isAdmin && (
-                <Link 
-                  href="/admin"
-                  className={`${location === '/admin' ? 'text-primary font-semibold' : 'text-gray-300'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay text-sm font-medium`}
-                >
-                  Admin Portal
-                </Link>
-              )}
+
             </nav>
           </div>
           <div className="flex items-center space-x-1 md:space-x-3 flex-shrink-0">
@@ -82,22 +74,7 @@ export default function Navigation() {
               <span className="text-sm font-semibold text-white">{user.points || 0} PTS</span>
             </div>
             <InstallAppButton />
-            <HelpModal />
-            <Link 
-              href="/settings"
-              className="text-gray-300 hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay"
-              title="Settings"
-            >
-              <Settings className="h-5 w-5" />
-            </Link>
-            {user.isAdmin && (
-              <Link 
-                href="/admin"
-                className="md:hidden text-gray-300 hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay"
-              >
-                Admin
-              </Link>
-            )}
+            <HamburgerMenu />
             <div className="relative">
               <button 
                 className="flex items-center space-x-3 hover:opacity-80 transition-opacity duration-200"
@@ -133,16 +110,7 @@ export default function Navigation() {
                 <span className="hidden md:block text-white font-medium text-sm">{user.username}</span>
               </button>
             </div>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={logout}
-              className="text-gray-300 hover:text-white hover:bg-surface-overlay focus:bg-transparent focus:text-gray-300 active:bg-transparent active:text-gray-300 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none p-2"
-              style={{ outline: 'none !important', boxShadow: 'none !important' }}
-              title="Logout"
-            >
-              <LogOut className="h-5 w-5" />
-            </Button>
+
           </div>
         </div>
       </div>

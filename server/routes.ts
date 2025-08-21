@@ -4353,8 +4353,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Send notification to the specified user directly via the service
-      const pushService = new PushNotificationService();
-      const result = await pushService.sendNotification(parseInt(userId), notification);
+      const result = await PushNotificationService.sendToUser(parseInt(userId), notification);
       res.json(result);
     } catch (error) {
       console.error('Test notification error:', error);

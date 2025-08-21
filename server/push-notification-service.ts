@@ -240,6 +240,61 @@ export class PushNotificationService {
     };
   }
 
+  // Send notification to a specific user by userId
+  static async sendToUser(
+    userId: number,
+    payload: NotificationPayload
+  ): Promise<{ success: boolean; message: string }> {
+    try {
+      // Import here to avoid circular dependency
+      const { db } = await import('./db');
+      const { pushSubscriptions } = await import('../shared/schema');
+      const { eq, and } = await import('drizzle-orm');
+      
+      // Get user's active push subscriptions
+      const subscriptions = await db
+        .select()
+        .from(pushSubscriptions)
+        .where(and(
+          eq(pushSubscriptions.userId, userId),
+          eq(pushSubscriptions.isActive, true)
+        ));
+
+      if (subscriptions.length === 0) {
+        return { success: false, message: 'No active subscriptions found for user' };
+      }
+
+      let successCount = 0;
+      let failCount = 0;
+
+      // Send to all user's subscriptions
+      for (const sub of subscriptions) {
+        const subscription = {
+          endpoint: sub.endpoint,
+          keys: {
+            p256dh: sub.p256dhKey,
+            auth: sub.authKey
+          }
+        };
+
+        const success = await this.sendNotification(subscription, payload);
+        if (success) {
+          successCount++;
+        } else {
+          failCount++;
+        }
+      }
+
+      return {
+        success: successCount > 0,
+        message: `Sent to ${successCount}/${subscriptions.length} subscriptions`
+      };
+    } catch (error) {
+      console.error('Error sending notification to user:', error);
+      return { success: false, message: 'Failed to send notification' };
+    }
+  }
+
   static createAdminAnnouncementNotification(
     announcementData: {
       title: string;

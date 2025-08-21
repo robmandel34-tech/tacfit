@@ -72,3 +72,12 @@ The platform follows a military/tactical theme across its UI/UX, language, and i
 - Media files now served from cloud storage
 - Faster deployments and better performance
 - Automatic CDN caching for media assets
+
+### Push Notification System (2025-08-21)
+- ✅ Implemented comprehensive PWA push notification system
+- ✅ VAPID authentication for secure push messaging
+- ✅ Granular notification preferences for users
+- ✅ Test notification functionality working
+- ✅ Support for activity updates, competition events, team messages, mission tasks, and admin announcements
+- ✅ Automatic fallback handling for media file loading
+- ✅ Service worker integration for offline PWA capabilities

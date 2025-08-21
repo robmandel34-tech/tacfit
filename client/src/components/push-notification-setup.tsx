@@ -241,6 +241,32 @@ export function PushNotificationSetup() {
     updatePreferences(newPreferences);
   };
 
+  const sendTestNotification = async () => {
+    if (!user?.id) return;
+    
+    setIsLoading(true);
+    try {
+      await apiRequest('/api/test-notification', 'POST', {
+        userId: user.id,
+        type: 'test',
+      });
+      
+      toast({
+        title: "Test Notification Sent",
+        description: "Check your device for the notification.",
+      });
+    } catch (error) {
+      console.error('Error sending test notification:', error);
+      toast({
+        title: "Test Failed",
+        description: "Failed to send test notification.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Helper function to convert VAPID key
   const urlBase64ToUint8Array = (base64String: string) => {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);

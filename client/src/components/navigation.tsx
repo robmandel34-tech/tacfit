@@ -36,37 +36,37 @@ export default function Navigation() {
                 onLoad={() => console.log("ShieldPlus icon loaded")}
                 onError={() => console.log("ShieldPlus icon error")}
               />
-              <span className="text-xl md:text-2xl font-bold text-heading tracking-tight">TacFit</span>
+              <span className="text-2xl font-bold text-heading tracking-tight">TacFit</span>
             </div>
             <nav className="hidden md:flex space-x-4 lg:space-x-8 flex-shrink">
               <Link 
                 href="/"
-                className={`${location === '/' ? 'text-primary font-semibold' : 'text-gray-300'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay`}
+                className={`${location === '/' ? 'text-primary font-semibold' : 'text-gray-300'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay text-sm font-medium`}
               >
                 Command Center
               </Link>
               <Link 
                 href="/competitions"
-                className={`${location === '/competitions' ? 'text-primary font-semibold' : 'text-gray-300'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay`}
+                className={`${location === '/competitions' ? 'text-primary font-semibold' : 'text-gray-300'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay text-sm font-medium`}
               >
                 Competitions
               </Link>
               <Link 
                 href="/team"
-                className={`${location === '/team' ? 'text-primary font-semibold' : 'text-gray-300'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay`}
+                className={`${location === '/team' ? 'text-primary font-semibold' : 'text-gray-300'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay text-sm font-medium`}
               >
                 Team
               </Link>
               <Link 
                 href="/activity-feed"
-                className={`${location === '/activity-feed' ? 'text-primary font-semibold' : 'text-gray-300'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay`}
+                className={`${location === '/activity-feed' ? 'text-primary font-semibold' : 'text-gray-300'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay text-sm font-medium`}
               >
                 Intel Feed
               </Link>
               {user.isAdmin && (
                 <Link 
                   href="/admin"
-                  className={`${location === '/admin' ? 'text-primary font-semibold' : 'text-gray-300'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay`}
+                  className={`${location === '/admin' ? 'text-primary font-semibold' : 'text-gray-300'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay text-sm font-medium`}
                 >
                   Admin Portal
                 </Link>
@@ -79,7 +79,7 @@ export default function Navigation() {
                 className="h-4 w-4 text-combat-orange" 
                 style={{ display: 'inline-block' }}
               />
-              <span className="text-xs font-semibold text-white">{user.points || 0} PTS</span>
+              <span className="text-sm font-semibold text-white">{user.points || 0} PTS</span>
             </div>
             <InstallAppButton />
             <HelpModal />
@@ -123,7 +123,7 @@ export default function Navigation() {
                     </div>
                   )}
                 </div>
-                <span className="hidden md:block text-white font-semibold">{user.username}</span>
+                <span className="hidden md:block text-white font-medium text-sm">{user.username}</span>
               </button>
             </div>
             <Button 

@@ -25,20 +25,20 @@ export default function Navigation() {
   };
 
   return (
-    <header className="bg-surface-elevated border-b border-border-subtle sticky top-0 z-50 shadow-medium">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-6">
-            <div className="flex items-center space-x-3">
+    <header className="bg-surface-elevated border-b border-border-subtle sticky top-0 z-50 shadow-medium w-full overflow-hidden">
+      <div className="container mx-auto px-4 py-4 max-w-full">
+        <div className="flex items-center justify-between min-w-0">
+          <div className="flex items-center space-x-3 md:space-x-6 min-w-0 flex-shrink">
+            <div className="flex items-center space-x-3 flex-shrink-0">
               <ShieldPlus 
                 className="h-6 w-6 text-military-green" 
                 style={{ display: 'inline-block', strokeWidth: 1.5 }}
                 onLoad={() => console.log("ShieldPlus icon loaded")}
                 onError={() => console.log("ShieldPlus icon error")}
               />
-              <span className="text-2xl font-bold text-heading tracking-tight">TacFit</span>
+              <span className="text-xl md:text-2xl font-bold text-heading tracking-tight">TacFit</span>
             </div>
-            <nav className="hidden md:flex space-x-8">
+            <nav className="hidden md:flex space-x-4 lg:space-x-8 flex-shrink">
               <Link 
                 href="/"
                 className={`${location === '/' ? 'text-primary font-semibold' : 'text-gray-300'} hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay`}
@@ -73,15 +73,17 @@ export default function Navigation() {
               )}
             </nav>
           </div>
-          <div className="flex items-center space-x-4">
-            <div className="hidden md:flex items-center space-x-2 bg-surface-overlay px-4 py-2 rounded-full border border-border-subtle">
+          <div className="flex items-center space-x-1 md:space-x-3 flex-shrink-0">
+            <div className="hidden lg:flex items-center space-x-2 bg-surface-overlay px-3 py-2 rounded-full border border-border-subtle">
               <Trophy 
-                className="h-5 w-5 text-combat-orange" 
+                className="h-4 w-4 text-combat-orange" 
                 style={{ display: 'inline-block' }}
               />
-              <span className="text-sm font-semibold text-white">{user.points || 0} PTS</span>
+              <span className="text-xs font-semibold text-white">{user.points || 0} PTS</span>
             </div>
-            <InstallAppButton />
+            <div className="hidden lg:block">
+              <InstallAppButton />
+            </div>
             <HelpModal />
             {user.isAdmin && (
               <Link 

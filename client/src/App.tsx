@@ -104,11 +104,4 @@ function App() {
   );
 }
 
-          </MoodTracker>
-        </AuthProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
-  );
-}
-
 export default App;

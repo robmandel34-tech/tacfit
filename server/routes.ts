@@ -11,6 +11,7 @@ import {
   insertAdminPostSchema, insertMoodLogSchema, friendships, type User,
   insertAppleHealthConnectionSchema, insertAppleHealthDataSchema, insertAppleHealthWorkoutSchema
 } from "@shared/schema";
+import { registerNotificationRoutes } from './notification-routes';
 import { db } from "./db";
 import { and, eq } from "drizzle-orm";
 import multer from "multer";
@@ -4249,6 +4250,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: error.message || "Error converting workout" });
     }
   });
+
+  // Register notification routes
+  registerNotificationRoutes(app);
 
   const httpServer = createServer(app);
   return httpServer;

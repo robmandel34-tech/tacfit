@@ -30,6 +30,44 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Push notification tables
+export const pushSubscriptions = pgTable("push_subscriptions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  endpoint: text("endpoint").notNull(),
+  p256dhKey: text("p256dh_key").notNull(),
+  authKey: text("auth_key").notNull(),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const notificationPreferences = pgTable("notification_preferences", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull().unique(),
+  activityUpdates: boolean("activity_updates").default(true),
+  competitionEvents: boolean("competition_events").default(true),
+  teamMessages: boolean("team_messages").default(true),
+  missionTasks: boolean("mission_tasks").default(true),
+  adminAnnouncements: boolean("admin_announcements").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const notificationLogs = pgTable("notification_logs", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  type: text("type").notNull(), // activity, competition, message, task, announcement
+  title: text("title").notNull(),
+  body: text("body").notNull(),
+  data: text("data"), // JSON string
+  sent: boolean("sent").default(false),
+  sentAt: timestamp("sent_at"),
+  clicked: boolean("clicked").default(false),
+  clickedAt: timestamp("clicked_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const competitions = pgTable("competitions", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -482,3 +520,27 @@ export type AppleHealthData = typeof appleHealthData.$inferSelect;
 export type InsertAppleHealthData = z.infer<typeof insertAppleHealthDataSchema>;
 export type AppleHealthWorkout = typeof appleHealthWorkouts.$inferSelect;
 export type InsertAppleHealthWorkout = z.infer<typeof insertAppleHealthWorkoutSchema>;
+
+// Push notification schema types
+export const insertPushSubscriptionSchema = createInsertSchema(pushSubscriptions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertPushSubscription = z.infer<typeof insertPushSubscriptionSchema>;
+export type PushSubscription = typeof pushSubscriptions.$inferSelect;
+
+export const insertNotificationPreferencesSchema = createInsertSchema(notificationPreferences).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertNotificationPreferences = z.infer<typeof insertNotificationPreferencesSchema>;
+export type NotificationPreferences = typeof notificationPreferences.$inferSelect;
+
+export const insertNotificationLogSchema = createInsertSchema(notificationLogs).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertNotificationLog = z.infer<typeof insertNotificationLogSchema>;
+export type NotificationLog = typeof notificationLogs.$inferSelect;

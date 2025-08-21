@@ -27,6 +27,7 @@ import TeamFormationHelp from "@/pages/help/team-formation";
 import ActivityTrackingHelp from "@/pages/help/activity-tracking";
 import PointSystemHelp from "@/pages/help/point-system";
 import NavigationHelp from "@/pages/help/navigation";
+import Settings from "@/pages/settings";
 import BottomNavigation from "@/components/bottom-navigation";
 import FloatingActionButton from "@/components/floating-action-button";
 
@@ -56,6 +57,7 @@ function Router() {
         <Route path="/help/activity-tracking" component={ActivityTrackingHelp} />
         <Route path="/help/point-system" component={PointSystemHelp} />
         <Route path="/help/navigation" component={NavigationHelp} />
+        <Route path="/settings" component={Settings} />
         <Route component={NotFound} />
       </Switch>
     </div>

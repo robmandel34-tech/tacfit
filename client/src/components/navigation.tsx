@@ -3,7 +3,7 @@ import { Link, useLocation, useRouter } from "wouter";
 import { Button } from "@/components/ui/button";
 import { HelpModal } from "@/components/help-modal";
 import { InstallAppButton } from "@/components/install-app-button";
-import { ShieldPlus, Trophy, MessageCircle, Users, Activity, Bell, LogOut } from "lucide-react";
+import { ShieldPlus, Trophy, MessageCircle, Users, Activity, Bell, LogOut, Settings } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 export default function Navigation() {
@@ -83,6 +83,13 @@ export default function Navigation() {
             </div>
             <InstallAppButton />
             <HelpModal />
+            <Link 
+              href="/settings"
+              className="text-gray-300 hover:text-military-green transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-surface-overlay"
+              title="Settings"
+            >
+              <Settings className="h-5 w-5" />
+            </Link>
             {user.isAdmin && (
               <Link 
                 href="/admin"

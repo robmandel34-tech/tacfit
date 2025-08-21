@@ -3,7 +3,7 @@ import { Link, useLocation, useRouter } from "wouter";
 import { Button } from "@/components/ui/button";
 import { HelpModal } from "@/components/help-modal";
 import { InstallAppButton } from "@/components/install-app-button";
-import { ShieldPlus, Trophy, MessageCircle, Users, Activity, Bell } from "lucide-react";
+import { ShieldPlus, Trophy, MessageCircle, Users, Activity, Bell, LogOut } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 export default function Navigation() {
@@ -81,7 +81,7 @@ export default function Navigation() {
               />
               <span className="text-xs font-semibold text-white">{user.points || 0} PTS</span>
             </div>
-            <div className="hidden lg:block">
+            <div className="hidden md:block">
               <InstallAppButton />
             </div>
             <HelpModal />
@@ -130,11 +130,13 @@ export default function Navigation() {
             </div>
             <Button 
               variant="ghost" 
+              size="sm"
               onClick={logout}
-              className="text-gray-300 hover:text-white hover:bg-surface-overlay focus:bg-transparent focus:text-gray-300 active:bg-transparent active:text-gray-300 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
+              className="text-gray-300 hover:text-white hover:bg-surface-overlay focus:bg-transparent focus:text-gray-300 active:bg-transparent active:text-gray-300 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none p-2"
               style={{ outline: 'none !important', boxShadow: 'none !important' }}
+              title="Logout"
             >
-              Logout
+              <LogOut className="h-5 w-5" />
             </Button>
           </div>
         </div>

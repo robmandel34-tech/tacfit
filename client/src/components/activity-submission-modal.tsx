@@ -492,14 +492,14 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                       <SelectTrigger className="bg-tactical-gray-lighter border-2 border-tactical-gray text-white focus:border-white focus:ring-0 focus:ring-offset-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
                         <SelectValue placeholder="Choose workout or enter manually" />
                       </SelectTrigger>
-                      <SelectContent className="bg-tactical-gray-light border-tactical-gray text-white">
+                      <SelectContent className="bg-tactical-gray-light border-tactical-gray text-white max-h-[300px] overflow-y-auto">
                         <SelectItem 
                           value="manual" 
                           className="text-white hover:bg-military-green focus:bg-military-green data-[highlighted]:bg-military-green data-[highlighted]:text-white"
                         >
                           📝 Enter activity manually
                         </SelectItem>
-                        {healthKitWorkouts.slice(0, 10).map((workout) => (
+                        {healthKitWorkouts.map((workout) => (
                           <SelectItem 
                             key={workout.id} 
                             value={workout.id.toString()}

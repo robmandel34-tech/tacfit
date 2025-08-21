@@ -80,7 +80,7 @@ export function InstallAppButton() {
               <div className="space-y-2 text-sm text-text-primary">
                 <div className="flex items-start gap-3">
                   <div className="bg-military-green text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">1</div>
-                  <p>Tap the Share button <span className="text-lg">📤</span> at the bottom of Safari</p>
+                  <p>Tap the Share button <span className="text-lg">📤</span> at the bottom of your browser</p>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="bg-military-green text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">2</div>

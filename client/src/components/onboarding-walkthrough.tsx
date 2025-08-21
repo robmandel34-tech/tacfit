@@ -377,6 +377,12 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
               <strong>Pro Tip:</strong> Installing the app gives you native app-like experience with offline access to your activities and team updates.
             </p>
           </div>
+          
+          <div className="bg-yellow-900/20 border border-yellow-600/30 p-3 rounded-lg">
+            <p className="text-sm text-yellow-200">
+              <strong>Coming Soon:</strong> We're working on deploying a native iPhone application to the App Store for an even better mobile experience.
+            </p>
+          </div>
         </div>
       )
     },

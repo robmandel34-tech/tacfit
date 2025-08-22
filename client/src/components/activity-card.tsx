@@ -183,7 +183,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
     let description = activity.description || '';
     
     // Remove the "Note: This activity was tracked by Apple HealthKit..." part
-    description = description.replace(/\n\nNote: This activity was tracked by Apple HealthKit.*$/s, '');
+    description = description.replace(/\n\nNote: This activity was tracked by Apple HealthKit[\s\S]*$/, '');
     
     // Remove just the workout type and duration from the beginning if it's redundant
     description = description.replace(/^.+?workout - \d+m\s*/, '');

@@ -152,7 +152,8 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
 
   // Helper function to detect workout details images
   const isWorkoutDetailsImage = (url: string) => {
-    return url.includes('workout_details_') || url.includes('route_map') || url.includes('demo_route_map');
+    // HealthKit workout images are no longer generated
+    return false;
   };
 
   // Function to open workout details modal

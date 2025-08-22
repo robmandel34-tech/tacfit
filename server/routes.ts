@@ -22,7 +22,7 @@ import fs from "fs";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { generateVerificationToken, sendVerificationEmail, sendWelcomeEmail } from "./email-service";
-import { generateWorkoutDetailImage, generateRouteMapImage, captureAppleHealthKitWorkoutScreenshot } from './apple-health-image-generator';
+import { captureAppleHealthKitWorkoutScreenshot } from './apple-health-image-generator';
 import Stripe from "stripe";
 
 const execAsync = promisify(exec);
@@ -2005,35 +2005,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (workout) {
             const allImageUrls = [...imageUrls];
             
-            // First, try to capture real Apple HealthKit screenshot
-            const realScreenshot = await captureAppleHealthKitWorkoutScreenshot(workout.healthKitWorkoutId || workout.id.toString());
+            // Add note about HealthKit data being included in text stats
+            console.log(`HealthKit activity ${activity.id} created with text stats only`);
             
-            if (realScreenshot) {
-              console.log(`Using real Apple HealthKit screenshot for activity ${activity.id}`);
-              allImageUrls.push(realScreenshot);
-            } else {
-              console.log(`Real Apple HealthKit screenshot not available, providing note for activity ${activity.id}`);
-              // Add a note that explains the limitation
-              const noteText = `Note: This activity was tracked by Apple HealthKit but the detailed workout screenshot is not available through the current integration. The activity data (duration: ${workout.duration}m, calories: ${workout.totalEnergyBurned}, distance: ${workout.totalDistance}) has been verified and submitted.`;
-              
-              // Update the activity description to include the note
-              await storage.updateActivity(activity.id, {
-                description: `${req.body.description}\n\n${noteText}`
-              });
-            }
+            const noteText = `Note: This activity was tracked by Apple HealthKit. All workout data (duration: ${workout.duration}m, calories: ${workout.totalEnergyBurned}, distance: ${workout.totalDistance}) is included in the activity details above.`;
             
-            // Add route map if available
-            if (workout.routeMapUrl) {
-              allImageUrls.push(workout.routeMapUrl);
-            }
-            
-            // Update with available images
-            if (allImageUrls.length > imageUrls.length) {
-              await storage.updateActivity(activity.id, {
-                imageUrls: allImageUrls
-              });
-              console.log(`Added available workout images to activity ${activity.id}`);
-            }
+            // Update the activity description to include the note
+            await storage.updateActivity(activity.id, {
+              description: `${req.body.description}\n\n${noteText}`
+            });
           }
           
           await storage.updateAppleHealthWorkout(workoutId, {
@@ -3655,30 +3635,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Create the workout first to get the ID
           const workout = await storage.createAppleHealthWorkout(workoutData);
           
-          // Generate workout detail image and route map
-          try {
-            console.log(`Generating images for workout ${workout.id}...`);
-            
-            // Generate workout detail image (the main Apple Fitness screenshot)
-            const workoutDetailUrl = generateWorkoutDetailImage(workoutData, workout.id);
-            
-            // Generate route map image
-            const routeMapUrl = generateRouteMapImage(workoutData, workout.id);
-            
-            // Update the workout with the generated image URLs
-            await storage.updateAppleHealthWorkout(workout.id, {
-              routeMapUrl: routeMapUrl
-            });
-            
-            console.log(`Generated workout images: detail=${workoutDetailUrl}, route=${routeMapUrl}`);
-            
-            // Return the updated workout data
-            const updatedWorkout = await storage.getAppleHealthWorkout(workout.id);
-            syncedWorkouts.push(updatedWorkout);
-          } catch (imageError) {
-            console.error(`Failed to generate images for workout ${workout.id}:`, imageError);
-            syncedWorkouts.push(workout);
-          }
+          // Skip image generation - just store the workout data with text stats
+          console.log(`Stored workout ${workout.id} with text stats only`);
+          syncedWorkouts.push(workout);
         }
       }
 

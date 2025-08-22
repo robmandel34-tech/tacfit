@@ -10,8 +10,6 @@ import {
   insertCompetitionEntrySchema, insertMissionTaskSchema, insertActivityTypeSchema,
   insertAdminPostSchema, insertMoodLogSchema, friendships, type User,
 } from "@shared/schema";
-import { registerNotificationRoutes } from './notification-routes';
-import { PushNotificationService } from './push-notification-service';
 import { ObjectStorageService, ObjectNotFoundError } from './objectStorage.js';
 import { db } from "./db";
 import { and, eq } from "drizzle-orm";
@@ -3726,98 +3724,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Register notification routes
-  registerNotificationRoutes(app);
-
-  // Test endpoint to demonstrate push notifications
-  app.post("/api/test-notification", async (req, res) => {
-    try {
-      const { type, userId } = req.body;
-      
-      if (!userId) {
-        return res.status(400).json({ error: "User ID required" });
-      }
-
-      let notification;
-      
-      switch (type) {
-        case 'activity':
-          notification = {
-            title: 'Team Activity Update',
-            body: 'Alpha submitted Running activity in Papa Unit',
-            icon: '/generated-icon.png',
-            badge: '/generated-icon.png',
-            tag: 'activity-update',
-            data: { type: 'activity', url: '/activity-feed' },
-            actions: [
-              { action: 'view', title: 'View Activity' },
-              { action: 'dismiss', title: 'Dismiss' }
-            ]
-          };
-          break;
-        case 'competition':
-          notification = {
-            title: 'Competition Starting',
-            body: 'Alpha Competition is starting now!',
-            icon: '/generated-icon.png',
-            badge: '/generated-icon.png',
-            tag: 'competition-update',
-            data: { type: 'competition', url: '/competitions' },
-            actions: [
-              { action: 'view', title: 'View Competition' },
-              { action: 'dismiss', title: 'Dismiss' }
-            ]
-          };
-          break;
-        case 'message':
-          notification = {
-            title: 'Message in Papa Unit',
-            body: 'Alpha: Hey team, great work on today\'s activities!',
-            icon: '/generated-icon.png',
-            badge: '/generated-icon.png',
-            tag: 'team-message',
-            data: { type: 'message', url: '/team' },
-            actions: [
-              { action: 'view', title: 'View Message' },
-              { action: 'dismiss', title: 'Dismiss' }
-            ]
-          };
-          break;
-        case 'announcement':
-          notification = {
-            title: 'Command Update',
-            body: 'New tactical briefing available in Intel Feed',
-            icon: '/generated-icon.png',
-            badge: '/generated-icon.png',
-            tag: 'admin-announcement',
-            data: { type: 'announcement', url: '/activity-feed' },
-            actions: [
-              { action: 'view', title: 'View Update' },
-              { action: 'dismiss', title: 'Dismiss' }
-            ],
-            requireInteraction: true
-          };
-          break;
-        default:
-          notification = {
-            title: 'TacFit Notification',
-            body: 'This is a test notification',
-            icon: '/generated-icon.png',
-            badge: '/generated-icon.png',
-            tag: 'test-notification',
-            data: { type: 'test', url: '/' }
-          };
-      }
-
-      // Send notification to the specified user directly via the service
-      const result = await PushNotificationService.sendToUser(parseInt(userId), notification);
-      res.json(result);
-    } catch (error) {
-      console.error('Test notification error:', error);
-      res.status(500).json({ error: 'Failed to send test notification' });
-    }
-  });
-
   const httpServer = createServer(app);
   return httpServer;
 }
+

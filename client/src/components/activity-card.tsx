@@ -146,6 +146,51 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
     return videoExtensions.some(ext => url.toLowerCase().includes(ext));
   };
 
+  // Detect if this is a HealthKit activity
+  const isHealthKitActivity = () => {
+    return activity.description?.includes('Apple HealthKit') || 
+           activity.textInput?.includes('Apple HealthKit') ||
+           activity.description?.includes('Note: This activity was tracked by Apple HealthKit');
+  };
+
+  // Parse HealthKit stats from description
+  const parseHealthKitStats = () => {
+    if (!isHealthKitActivity()) return null;
+    
+    const text = activity.description || '';
+    const stats: { [key: string]: string } = {};
+    
+    // Extract duration
+    const durationMatch = text.match(/duration: (\d+)m/);
+    if (durationMatch) stats.duration = `${durationMatch[1]} minutes`;
+    
+    // Extract calories
+    const caloriesMatch = text.match(/calories: (\d+)/);
+    if (caloriesMatch) stats.calories = `${caloriesMatch[1]} cal`;
+    
+    // Extract distance
+    const distanceMatch = text.match(/distance: ([\d.]+\s*\w+)/);
+    if (distanceMatch) stats.distance = distanceMatch[1];
+    
+    return Object.keys(stats).length > 0 ? stats : null;
+  };
+
+  // Get clean description without HealthKit stats
+  const getCleanDescription = () => {
+    if (!isHealthKitActivity()) return activity.description;
+    
+    // Remove the HealthKit note and stats, keep just the main description
+    let description = activity.description || '';
+    
+    // Remove the "Note: This activity was tracked by Apple HealthKit..." part
+    description = description.replace(/\n\nNote: This activity was tracked by Apple HealthKit.*$/s, '');
+    
+    // Remove just the workout type and duration from the beginning if it's redundant
+    description = description.replace(/^.+?workout - \d+m\s*/, '');
+    
+    return description.trim() || `${getActivityTypeDisplayName(activity.type)} workout`;
+  };
+
 
 
 
@@ -299,15 +344,61 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
                 </Badge>
 
               </div>
-              <p className="text-gray-300 text-sm">
-                {activity.quantity && (
-                  <span className="font-medium text-white">
-                    {activity.quantity} {getActivityMeasurement(activity.type)}
-                  </span>
-                )}
-                {activity.quantity && activity.description && ' - '}
-                {activity.description}
-              </p>
+              {isHealthKitActivity() ? (
+                <div className="space-y-3">
+                  {/* HealthKit Label */}
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-green-600 hover:bg-green-700 text-white text-xs px-2 py-1">
+                      🍎 Apple HealthKit
+                    </Badge>
+                  </div>
+                  
+                  {/* Clean Description */}
+                  <p className="text-gray-300 text-sm">
+                    {getCleanDescription()}
+                  </p>
+                  
+                  {/* HealthKit Stats Grid */}
+                  {(() => {
+                    const stats = parseHealthKitStats();
+                    return stats ? (
+                      <div className="bg-tactical-gray-lighter rounded-lg p-3 border border-gray-600">
+                        <div className="grid grid-cols-3 gap-4 text-center">
+                          {stats.duration && (
+                            <div>
+                              <p className="text-gray-400 text-xs uppercase tracking-wide">Duration</p>
+                              <p className="text-green-400 font-semibold text-sm">{stats.duration}</p>
+                            </div>
+                          )}
+                          {stats.calories && (
+                            <div>
+                              <p className="text-gray-400 text-xs uppercase tracking-wide">Calories</p>
+                              <p className="text-orange-400 font-semibold text-sm">{stats.calories}</p>
+                            </div>
+                          )}
+                          {stats.distance && (
+                            <div>
+                              <p className="text-gray-400 text-xs uppercase tracking-wide">Distance</p>
+                              <p className="text-blue-400 font-semibold text-sm">{stats.distance}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ) : null;
+                  })()
+                  }
+                </div>
+              ) : (
+                <p className="text-gray-300 text-sm">
+                  {activity.quantity && (
+                    <span className="font-medium text-white">
+                      {activity.quantity} {getActivityMeasurement(activity.type)}
+                    </span>
+                  )}
+                  {activity.quantity && activity.description && ' - '}
+                  {activity.description}
+                </p>
+              )}
               {activity.competition && (
                 <p className="text-xs text-military-green mt-1 flex items-center gap-1">
                   <Mountain className="h-3 w-3" />
@@ -338,8 +429,8 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
           </div>
         )}
         
-        {/* Full-width text input section */}
-        {activity.textInput && (
+        {/* Full-width text input section - hide for HealthKit activities since stats are shown above */}
+        {activity.textInput && !isHealthKitActivity() && (
           <div className="px-6 py-4 border-t border-gray-600">
             <div className="p-3 bg-tactical-gray-lighter rounded-lg border border-gray-600">
               <p className="text-gray-300 text-sm leading-relaxed">

@@ -22,7 +22,9 @@ import {
   Download,
   Smartphone,
   Share,
-  Monitor
+  Monitor,
+  AlertTriangle,
+  UserCheck
 } from 'lucide-react';
 import { Link } from 'wouter';
 
@@ -381,6 +383,103 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
           <div className="bg-yellow-900/20 border border-yellow-600/30 p-3 rounded-lg">
             <p className="text-sm text-yellow-200">
               <strong>Coming Soon:</strong> We're working on deploying a native iPhone application to the App Store for an even better mobile experience.
+            </p>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'community-guidelines',
+      title: 'Rules of Engagement',
+      description: 'Community standards and tactical etiquette',
+      icon: <Shield className="h-6 w-6" />,
+      content: (
+        <div className="space-y-4">
+          <div className="text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-military-green/20">
+              <UserCheck className="h-8 w-8 text-military-green" />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">Community Standards</h3>
+            <p className="text-gray-300">
+              TacFit supports free speech and encourages light-hearted banter between teams. 
+              Some friendly poking and competitive spirit makes competitions fun!
+            </p>
+          </div>
+
+          <div className="bg-military-green/20 border border-military-green/30 p-4 rounded-lg">
+            <h4 className="font-semibold text-military-green mb-3">What's Encouraged</h4>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 rounded-full bg-military-green"></div>
+                <span className="text-sm text-gray-300">Friendly competitive banter</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 rounded-full bg-military-green"></div>
+                <span className="text-sm text-gray-300">Team motivation and support</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 rounded-full bg-military-green"></div>
+                <span className="text-sm text-gray-300">Sharing fitness tips and advice</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 rounded-full bg-military-green"></div>
+                <span className="text-sm text-gray-300">Celebrating team victories</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-red-900/20 border border-red-600/30 p-4 rounded-lg">
+            <h4 className="font-semibold text-red-400 mb-3 flex items-center">
+              <AlertTriangle className="h-5 w-5 mr-2" />
+              Prohibited Conduct
+            </h4>
+            <div className="space-y-3">
+              <div>
+                <p className="text-sm font-medium text-white mb-1">Harassment & Abuse</p>
+                <p className="text-xs text-gray-300">Personal attacks, discriminatory language, or targeted harassment will result in immediate suspension.</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-white mb-1">Cheating & False Evidence</p>
+                <p className="text-xs text-gray-300">Submitting fake activities, manipulated photos, or false data.</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-white mb-1">Spam & Disruption</p>
+                <p className="text-xs text-gray-300">Excessive posting, off-topic content, or disrupting team communications.</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-orange-900/20 border border-orange-600/30 p-4 rounded-lg">
+            <h4 className="font-semibold text-orange-400 mb-2">⚠️ Team Disqualification</h4>
+            <p className="text-sm text-orange-200">
+              <strong>Important:</strong> If any team member is caught cheating with false activity submissions, 
+              <strong className="text-orange-100"> your entire team can be disqualified</strong> from the competition. 
+              Team captains are responsible for ensuring all submissions are legitimate.
+            </p>
+          </div>
+
+          <div className="bg-gray-800/50 p-4 rounded-lg">
+            <h4 className="font-semibold text-white mb-3">Consequences</h4>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center justify-between p-2 bg-gray-700/30 rounded">
+                <span className="text-gray-300">First Warning</span>
+                <span className="text-yellow-400 text-xs">Official notice</span>
+              </div>
+              <div className="flex items-center justify-between p-2 bg-gray-700/30 rounded">
+                <span className="text-gray-300">Repeated Violations</span>
+                <span className="text-orange-400 text-xs">Account suspension</span>
+              </div>
+              <div className="flex items-center justify-between p-2 bg-gray-700/30 rounded">
+                <span className="text-gray-300">Severe Misconduct</span>
+                <span className="text-red-400 text-xs">Permanent ban</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-blue-900/20 border border-blue-600/30 p-3 rounded-lg">
+            <p className="text-sm text-blue-200">
+              <strong>Remember:</strong> TacFit is about building a supportive fitness community. 
+              Respect your fellow operators and play fair!
             </p>
           </div>
         </div>

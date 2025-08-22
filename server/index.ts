@@ -56,7 +56,7 @@ app.use('/uploads', (req, res, next) => {
   }
   
   // Handle image files
-  if (['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext)) {
+  if (['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'].includes(ext)) {
     res.setHeader('Cache-Control', 'public, max-age=86400'); // 1 day cache for images
     res.setHeader('X-Content-Type-Options', 'nosniff');
     
@@ -74,6 +74,9 @@ app.use('/uploads', (req, res, next) => {
         break;
       case '.webp':
         res.setHeader('Content-Type', 'image/webp');
+        break;
+      case '.svg':
+        res.setHeader('Content-Type', 'image/svg+xml');
         break;
     }
   }

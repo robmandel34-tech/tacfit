@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { GlassCard } from "@/components/glass-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -36,19 +35,13 @@ interface CompetitionCardProps {
 
 export default function CompetitionCard({ competition, userResult, onInvite, onJoin, onDismiss }: CompetitionCardProps) {
   return (
-    <GlassCard 
-      blur="md" 
-      opacity={0.25} 
-      hover={true} 
-      glow={competition.isActive}
-      className={`fade-in group ${competition.isActive ? 'ring-2 ring-military-green/40 border-military-green/60' : ''}`}
-    >
-      <div className="p-6 pb-4">
+    <Card className={`card-modern hover-lift fade-in group ${competition.isActive ? 'ring-2 ring-military-green/30 border-military-green/50' : ''}`}>
+      <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <h3 className="text-white text-xl font-bold mb-2 group-hover:text-military-green transition-colors">
+            <CardTitle className="text-heading text-xl mb-2 group-hover:text-military-green transition-colors">
               {competition.name}
-            </h3>
+            </CardTitle>
             {competition.isCompleted && userResult ? (
               <div className="flex items-center gap-2 mb-2">
                 {userResult.finalRank === 1 && (
@@ -113,8 +106,8 @@ export default function CompetitionCard({ competition, userResult, onInvite, onJ
              competition.isActive ? "Active" : "Upcoming"}
           </Badge>
         </div>
-      </div>
-      <div className="px-6 pt-0">
+      </CardHeader>
+      <CardContent className="pt-0">
         <p className="text-body mb-6 leading-relaxed">{competition.description}</p>
         
         <div className="space-y-4">
@@ -264,7 +257,7 @@ export default function CompetitionCard({ competition, userResult, onInvite, onJ
             )}
           </div>
         </div>
-      </div>
-    </GlassCard>
+      </CardContent>
+    </Card>
   );
 }

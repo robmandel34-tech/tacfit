@@ -35,11 +35,11 @@ export function GlassCard({
         
         // Background with opacity
         `bg-white/${Math.round(opacity * 100)}`,
-        "dark:bg-white/5",
+        "dark:bg-gray-900/60",
         
         // Hover effects
         hover && "transition-all duration-300 hover:scale-[1.02] hover:shadow-3xl",
-        hover && "hover:bg-white/15 dark:hover:bg-white/10",
+        hover && "hover:bg-white/20 dark:hover:bg-gray-900/75",
         
         // Glow effect
         glow && "before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-br before:from-white/10 before:to-transparent before:pointer-events-none",

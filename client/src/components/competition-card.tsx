@@ -37,8 +37,8 @@ interface CompetitionCardProps {
 export default function CompetitionCard({ competition, userResult, onInvite, onJoin, onDismiss }: CompetitionCardProps) {
   return (
     <GlassCard 
-      blur="lg" 
-      opacity={0.12} 
+      blur="md" 
+      opacity={0.25} 
       hover={true} 
       glow={competition.isActive}
       className={`fade-in group ${competition.isActive ? 'ring-2 ring-military-green/40 border-military-green/60' : ''}`}

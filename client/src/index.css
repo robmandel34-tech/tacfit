@@ -73,6 +73,41 @@
   * {
     @apply border-border;
   }
+
+  /* PWA Safe Area and Navigation Fixes */
+  html, body {
+    position: relative;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: none;
+  }
+
+  /* PWA Safe Area Adjustments */
+  @media screen and (display-mode: standalone) {
+    .safe-area-nav {
+      padding-top: env(safe-area-inset-top);
+    }
+    
+    .safe-area-bottom {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    /* Prevent content from bouncing above navigation */
+    body {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    
+    #root {
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+  }
   
   body {
     @apply font-sans antialiased;

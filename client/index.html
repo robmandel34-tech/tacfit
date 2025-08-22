@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover" />
     <title>TacFit - Tactical Fitness Platform</title>
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=6" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=6" />
@@ -13,7 +13,7 @@
     <link rel="manifest" href="/manifest.json?v=7" />
     <meta name="theme-color" content="#7cb342" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta name="apple-mobile-web-app-title" content="TacFit" />
     <link rel="apple-touch-icon" href="/tacfit-app-icon.jpeg" />
     <link rel="apple-touch-icon" sizes="180x180" href="/tacfit-app-icon.jpeg" />
@@ -29,6 +29,35 @@
     <meta name="twitter:title" content="TacFit - Tactical Fitness Platform" />
     <meta name="twitter:description" content="Team-based fitness competitions with tactical training focus" />
     <meta name="twitter:image" content="/tacfit-app-icon.jpeg" />
+    <!-- PWA Safe Area CSS -->
+    <style>
+      /* Prevent over-scroll and handle PWA safe areas */
+      html, body {
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: none;
+        margin: 0;
+        padding: 0;
+      }
+      
+      /* PWA standalone mode adjustments */
+      @media screen and (display-mode: standalone) {
+        body {
+          /* Add safe area padding for PWA mode */
+          padding-top: env(safe-area-inset-top);
+          padding-left: env(safe-area-inset-left);
+          padding-right: env(safe-area-inset-right);
+          padding-bottom: env(safe-area-inset-bottom);
+        }
+      }
+      
+      /* Prevent content from appearing above nav */
+      #root {
+        position: relative;
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

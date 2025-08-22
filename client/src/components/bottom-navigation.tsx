@@ -31,7 +31,7 @@ export default function BottomNavigation() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-surface-elevated border-t border-border-subtle z-50 md:hidden shadow-strong">
+    <nav className="fixed bottom-0 left-0 right-0 bg-surface-elevated border-t border-border-subtle z-50 md:hidden shadow-strong safe-area-bottom">
       <div className="grid grid-cols-3">
         {navItems.map((item) => {
           const isActive = location === item.path;

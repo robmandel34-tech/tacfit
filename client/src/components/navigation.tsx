@@ -24,7 +24,7 @@ export default function Navigation() {
   };
 
   return (
-    <header className="bg-surface-elevated border-b border-border-subtle sticky top-0 z-50 shadow-medium w-full overflow-hidden">
+    <header className="bg-surface-elevated border-b border-border-subtle sticky top-0 z-50 shadow-medium w-full overflow-hidden safe-area-nav">
       <div className="container mx-auto px-4 py-4 max-w-full">
         <div className="flex items-center justify-between min-w-0">
           <div className="flex items-center space-x-3 md:space-x-6 min-w-0 flex-shrink">

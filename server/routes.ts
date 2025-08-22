@@ -9,7 +9,6 @@ import {
   insertChatMessageSchema, insertFriendshipSchema, insertCompetitionInvitationSchema,
   insertCompetitionEntrySchema, insertMissionTaskSchema, insertActivityTypeSchema,
   insertAdminPostSchema, insertMoodLogSchema, friendships, type User,
-  insertAppleHealthConnectionSchema, insertAppleHealthDataSchema, insertAppleHealthWorkoutSchema
 } from "@shared/schema";
 import { registerNotificationRoutes } from './notification-routes';
 import { PushNotificationService } from './push-notification-service';
@@ -22,7 +21,6 @@ import fs from "fs";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { generateVerificationToken, sendVerificationEmail, sendWelcomeEmail } from "./email-service";
-import { captureAppleHealthKitWorkoutScreenshot } from './apple-health-image-generator';
 import Stripe from "stripe";
 
 const execAsync = promisify(exec);
@@ -1867,15 +1865,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const hasImageEvidence = files['images'] && files['images'].length > 0;
       const hasBothEvidenceTypes = hasVideoEvidence && hasImageEvidence;
       
-      // Set evidence type based on file uploads or HealthKit data
+      // Set evidence type based on file uploads
       let description = req.body.description;
       let evidenceType = req.body.evidenceType || null;
       
-      // Check for HealthKit workout data
-      const isHealthKitActivity = req.body.healthKitWorkoutId;
-      
-      // Apply points logic: HealthKit gets 30 points, otherwise full 30 points only if both evidence types are provided
-      const finalPoints = isHealthKitActivity ? 30 : (hasBothEvidenceTypes ? 30 : basePoints);
+      // Apply points logic: full 30 points only if both evidence types are provided
+      const finalPoints = hasBothEvidenceTypes ? 30 : basePoints;
 
       // Handle video file (primary evidence) first
       let evidenceUrl = '';
@@ -1977,7 +1972,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         type: req.body.type,
         description: description,
         quantity: req.body.quantity,
-        textInput: req.body.healthKitTextInput || req.body.textInput || null,
+        textInput: req.body.textInput || null,
         points: finalPoints,
         evidenceType: evidenceType,
         evidenceUrl: evidenceUrl,
@@ -1995,36 +1990,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const activity = await storage.createActivity(validatedData);
       
-      // If this is a HealthKit activity, mark the workout as converted and include workout images
-      if (isHealthKitActivity) {
-        try {
-          const workoutId = parseInt(req.body.healthKitWorkoutId);
-          const workout = await storage.getAppleHealthWorkout(workoutId);
-          
-          // Add workout images to the activity's image URLs
-          if (workout) {
-            const allImageUrls = [...imageUrls];
-            
-            // Add note about HealthKit data being included in text stats
-            console.log(`HealthKit activity ${activity.id} created with text stats only`);
-            
-            const noteText = `Note: This activity was tracked by Apple HealthKit. All workout data (duration: ${workout.duration}m, calories: ${workout.totalEnergyBurned}, distance: ${workout.totalDistance}) is included in the activity details above.`;
-            
-            // Update the activity description to include the note
-            await storage.updateActivity(activity.id, {
-              description: `${req.body.description}\n\n${noteText}`
-            });
-          }
-          
-          await storage.updateAppleHealthWorkout(workoutId, {
-            activityId: activity.id,
-            isConverted: true
-          });
-          console.log(`HealthKit workout ${req.body.healthKitWorkoutId} marked as converted to activity ${activity.id}`);
-        } catch (error) {
-          console.error('Failed to update HealthKit workout status:', error);
-        }
-      }
       
       // Update user and team points
       if (activity.userId && activity.points) {
@@ -3489,511 +3454,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Apple HealthKit Integration routes
 
-  // Get Apple HealthKit connection status
-  app.get("/api/apple-healthkit/status", async (req, res) => {
-    try {
-      if (!req.session?.user?.id) {
-        return res.sendStatus(401);
-      }
 
-      const connection = await storage.getAppleHealthConnection(req.session.user.id);
-      
-      if (!connection) {
-        // Return default connection state for users without setup
-        return res.json({
-          id: 0,
-          userId: req.session.user.id,
-          isEnabled: false,
-          setupCompleted: false
-        });
-      }
 
-      res.json(connection);
-    } catch (error: any) {
-      console.error('Get Apple HealthKit status error:', error);
-      res.status(500).json({ message: error.message || "Error getting Apple HealthKit status" });
-    }
-  });
 
-  // Apple HealthKit authorization endpoint
-  app.get("/api/apple-healthkit/authorize", async (req, res) => {
-    try {
-      if (!req.session?.user?.id) {
-        return res.sendStatus(401);
-      }
 
-      const { permissions, userId } = req.query;
-      
-      if (parseInt(userId as string) !== req.session.user.id) {
-        return res.status(403).json({ message: "Invalid user ID" });
-      }
 
-      // In a real implementation, this would redirect to Apple's HealthKit authorization
-      // For now, we'll simulate the authorization flow
-      const authToken = `hk_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
-      const refreshToken = `ref_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
-      const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
 
-      // Create or update HealthKit connection
-      const connection = await storage.createOrUpdateAppleHealthConnection(req.session.user.id, {
-        isEnabled: true,
-        setupCompleted: true,
-        healthKitAuthToken: authToken,
-        refreshToken: refreshToken,
-        tokenExpiresAt: expiresAt,
-        permissionsGranted: JSON.stringify(permissions?.toString().split(',') || []),
-        deviceInfo: JSON.stringify({
-          model: req.headers['user-agent']?.includes('iPhone') ? 'iPhone' : 'iPad',
-          osVersion: 'iOS 17.0'
-        })
-      });
 
-      // Redirect back to the app with success
-      const redirectUrl = `${req.protocol}://${req.get('host')}/profile?healthkit=success`;
-      res.redirect(redirectUrl);
-    } catch (error: any) {
-      console.error('Apple HealthKit authorization error:', error);
-      const redirectUrl = `${req.protocol}://${req.get('host')}/profile?healthkit=error`;
-      res.redirect(redirectUrl);
-    }
-  });
 
-  // Get Apple HealthKit workouts  
-  app.get("/api/apple-healthkit/workouts", async (req, res) => {
-    try {
-      if (!req.session?.user?.id) {
-        return res.sendStatus(401);
-      }
 
-      const { startDate, endDate, limit = 50 } = req.query;
-      
-      const workouts = await storage.getAppleHealthWorkouts(
-        req.session.user.id,
-        startDate as string,
-        endDate as string,
-        parseInt(limit as string)
-      );
 
-      res.json(workouts);
-    } catch (error: any) {
-      console.error('Get Apple HealthKit workouts error:', error);
-      res.status(500).json({ message: error.message || "Error fetching Apple HealthKit workouts" });
-    }
-  });
 
-  // Sync Apple HealthKit data
-  app.post("/api/apple-healthkit/sync", async (req, res) => {
-    try {
-      if (!req.session?.user?.id) {
-        return res.sendStatus(401);
-      }
 
-      const connection = await storage.getAppleHealthConnection(req.session.user.id);
-      
-      if (!connection || !connection.isEnabled || !connection.healthKitAuthToken) {
-        return res.status(400).json({ message: "HealthKit not connected or authorized" });
-      }
 
-      // In a real implementation, this would fetch data from Apple HealthKit using the auth token
-      // For demonstration, we'll create some sample workout data
-      const now = new Date();
-      const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-      
-      const sampleWorkouts = [
-        {
-          userId: req.session.user.id,
-          workoutType: 'Running',
-          duration: 35,
-          totalEnergyBurned: 420,
-          totalDistance: '3.2 miles',
-          averageHeartRate: 145,
-          maxHeartRate: 165,
-          startDate: yesterday,
-          endDate: new Date(yesterday.getTime() + 35 * 60 * 1000),
-          sourceApp: 'Apple Watch Workout',
-          deviceModel: 'Apple Watch Series 9',
-          metadata: JSON.stringify({
-            weatherCondition: 'Clear',
-            temperature: '72°F'
-          }),
-          healthKitWorkoutId: `hk_workout_running_sample_${req.session.user.id}`
-        }
-      ];
 
-      // Save workouts to database (check for duplicates first)
-      const syncedWorkouts = [];
-      for (const workoutData of sampleWorkouts) {
-        // Check if workout already exists by healthKitWorkoutId
-        const existingWorkout = await storage.getAppleHealthWorkoutByHealthKitId(
-          req.session.user.id, 
-          workoutData.healthKitWorkoutId
-        );
-        
-        if (!existingWorkout) {
-          // Create the workout first to get the ID
-          const workout = await storage.createAppleHealthWorkout(workoutData);
-          
-          // Skip image generation - just store the workout data with text stats
-          console.log(`Stored workout ${workout.id} with text stats only`);
-          syncedWorkouts.push(workout);
-        }
-      }
 
-      // Update last sync time
-      await storage.updateAppleHealthConnection(req.session.user.id, {
-        lastSyncAt: new Date()
-      });
 
-      res.json({ 
-        message: "HealthKit data synced successfully",
-        workoutsSynced: syncedWorkouts.length,
-        workouts: syncedWorkouts
-      });
-    } catch (error: any) {
-      console.error('Apple HealthKit sync error:', error);
-      res.status(500).json({ message: error.message || "Error syncing HealthKit data" });
-    }
-  });
-
-  // Disable Apple HealthKit integration
-  app.post("/api/apple-healthkit/disable", async (req, res) => {
-    try {
-      if (!req.session?.user?.id) {
-        return res.sendStatus(401);
-      }
-
-      await storage.updateAppleHealthConnection(req.session.user.id, {
-        isEnabled: false,
-        setupCompleted: false,
-        healthKitAuthToken: null,
-        refreshToken: null,
-        tokenExpiresAt: null
-      });
-
-      res.json({ message: "Apple HealthKit integration disabled successfully" });
-    } catch (error: any) {
-      console.error('Disable Apple HealthKit error:', error);
-      res.status(500).json({ message: error.message || "Error disabling Apple HealthKit integration" });
-    }
-  });
-
-  // Generate API key for user's Apple Shortcuts integration
-  app.post("/api/apple-health/setup", async (req, res) => {
-    try {
-      if (!req.session?.user?.id) {
-        return res.sendStatus(401);
-      }
-
-      const userId = req.session.user.id;
-      const apiKey = `th_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
-      
-      // Create or update Apple Health connection (legacy route)
-      const connection = await storage.createOrUpdateAppleHealthConnection(userId, {
-        isEnabled: true,
-        setupCompleted: false
-      });
-
-      res.json({ 
-        apiKey,
-        setupUrl: `${req.protocol}://${req.get('host')}/api/apple-health/sync?key=${apiKey}&user=${userId}`,
-        connection
-      });
-    } catch (error: any) {
-      console.error('Apple Health setup error:', error);
-      res.status(500).json({ message: error.message || "Error setting up Apple Health integration" });
-    }
-  });
-
-  // Get user's Apple Health connection status
-  app.get("/api/apple-health/status", async (req, res) => {
-    try {
-      if (!req.session?.user?.id) {
-        return res.sendStatus(401);
-      }
-
-      const connection = await storage.getAppleHealthConnection(req.session.user.id);
-      res.json(connection || { isEnabled: false, setupCompleted: false });
-    } catch (error: any) {
-      console.error('Apple Health status error:', error);
-      res.status(500).json({ message: error.message || "Error fetching Apple Health status" });
-    }
-  });
-
-  // Receive health data from Apple Shortcuts
-  app.post("/api/apple-health/sync", async (req, res) => {
-    try {
-      const { key, user } = req.query;
-      const { steps, heartRate, activeEnergy, workouts, date } = req.body;
-
-      if (!key || !user) {
-        return res.status(400).json({ message: "API key and user ID required" });
-      }
-
-      const userId = parseInt(user as string);
-      const connection = await storage.getAppleHealthConnection(userId);
-
-      if (!connection || !connection.isEnabled) {
-        return res.status(401).json({ message: "Integration not enabled" });
-      }
-
-      // Parse and store different types of health data
-      const syncDate = date ? new Date(date) : new Date();
-      const syncedData: any[] = [];
-
-      // Process steps data
-      if (steps && steps.values) {
-        for (const stepEntry of steps.values) {
-          const healthData = await storage.createAppleHealthData({
-            userId,
-            dataType: 'steps',
-            value: stepEntry.quantity.toString(),
-            unit: 'count',
-            sourceApp: stepEntry.sourceName || 'Health',
-            startDate: new Date(stepEntry.startDate),
-            endDate: new Date(stepEntry.endDate),
-            metadata: JSON.stringify(stepEntry)
-          });
-          syncedData.push({ type: 'steps', data: healthData });
-        }
-      }
-
-      // Process heart rate data
-      if (heartRate && heartRate.values) {
-        for (const hrEntry of heartRate.values) {
-          const healthData = await storage.createAppleHealthData({
-            userId,
-            dataType: 'heart_rate',
-            value: hrEntry.quantity.toString(),
-            unit: 'bpm',
-            sourceApp: hrEntry.sourceName || 'Health',
-            startDate: new Date(hrEntry.startDate),
-            endDate: new Date(hrEntry.endDate),
-            metadata: JSON.stringify(hrEntry)
-          });
-          syncedData.push({ type: 'heart_rate', data: healthData });
-        }
-      }
-
-      // Process active energy data
-      if (activeEnergy && activeEnergy.values) {
-        for (const energyEntry of activeEnergy.values) {
-          const healthData = await storage.createAppleHealthData({
-            userId,
-            dataType: 'active_energy',
-            value: energyEntry.quantity.toString(),
-            unit: 'cal',
-            sourceApp: energyEntry.sourceName || 'Health',
-            startDate: new Date(energyEntry.startDate),
-            endDate: new Date(energyEntry.endDate),
-            metadata: JSON.stringify(energyEntry)
-          });
-          syncedData.push({ type: 'active_energy', data: healthData });
-        }
-      }
-
-      // Process workout data - only process real workouts from iOS
-      if (workouts && workouts.length > 0) {
-        for (const workout of workouts) {
-          // Store route data but skip map generation
-          let routeData = null;
-          let hasRoute = false;
-          let elevationGain = 0;
-
-          if (workout.route && Array.isArray(workout.route) && workout.route.length > 0) {
-            const { routeMapService } = await import('./route-map-service');
-            const coordinates = routeMapService.parseHealthKitRoute(workout.route);
-            
-            if (coordinates.length > 1) {
-              hasRoute = true;
-              routeData = JSON.stringify(coordinates);
-              elevationGain = 0; // Skip elevation calculation since we're not generating maps
-              console.log(`Stored route data for workout without generating map image`);
-            }
-          }
-
-          const workoutData = await storage.createAppleHealthWorkout({
-            userId,
-            workoutType: workout.workoutActivityType || 'Other',
-            duration: Math.round(workout.duration / 60) || 0, // Convert to minutes
-            totalEnergyBurned: workout.totalEnergyBurned || 0,
-            totalDistance: workout.totalDistance?.toString() || '0',
-            startDate: new Date(workout.startDate),
-            endDate: new Date(workout.endDate),
-            sourceApp: workout.sourceName || 'Fitness',
-            metadata: JSON.stringify(workout),
-            isConverted: false,
-            routeData,
-            routeMapUrl: null,
-            hasRoute,
-            elevationGain
-          });
-          syncedData.push({ type: 'workout', data: workoutData });
-
-          // Auto-convert workout to activity so it appears in activity feed with new UI
-          const activityData = {
-            userId,
-            type: 'cardio', // Default to cardio for most workouts
-            description: `${workout.workoutActivityType} workout - ${Math.round(workout.duration / 60) || 0}m
-
-Note: This activity was tracked by Apple HealthKit automatically. Stats: duration: ${Math.round(workout.duration / 60) || 0}m, calories: ${workout.totalEnergyBurned || 0}, distance: ${workout.totalDistance || '0'}`,
-            textInput: '', // HealthKit activities don't need text input
-            mediaFiles: [],
-            points: 50, // Standard points for HealthKit activities
-            isFromHealthKit: true,
-            healthKitWorkoutId: workoutData.id.toString()
-          };
-
-          const activity = await storage.createActivity(activityData);
-          
-          // Mark workout as converted
-          await storage.updateAppleHealthWorkout(workoutData.id, { 
-            isConverted: true, 
-            activityId: activity.id 
-          });
-
-          syncedData.push({ type: 'activity', data: activity });
-        }
-      }
-
-      // Update connection with last sync time and mark as completed
-      await storage.updateAppleHealthConnection(userId, {
-        lastSyncAt: new Date(),
-        setupCompleted: true
-      });
-
-      res.json({ 
-        success: true, 
-        message: `Synced ${syncedData.length} health data entries`,
-        syncedData: syncedData.length,
-        timestamp: new Date().toISOString()
-      });
-    } catch (error: any) {
-      console.error('Apple Health sync error:', error);
-      res.status(500).json({ message: error.message || "Error syncing Apple Health data" });
-    }
-  });
-
-  // Get user's Apple Health data
-  app.get("/api/apple-health/data", async (req, res) => {
-    try {
-      if (!req.session?.user?.id) {
-        return res.sendStatus(401);
-      }
-
-      const { type, startDate, endDate, limit = 100 } = req.query;
-      
-      const healthData = await storage.getAppleHealthData(
-        req.session.user.id,
-        type as string,
-        startDate as string,
-        endDate as string,
-        parseInt(limit as string)
-      );
-
-      res.json(healthData);
-    } catch (error: any) {
-      console.error('Get Apple Health data error:', error);
-      res.status(500).json({ message: error.message || "Error fetching Apple Health data" });
-    }
-  });
-
-  // Get user's Apple Health workouts
-  app.get("/api/apple-health/workouts", async (req, res) => {
-    try {
-      if (!req.session?.user?.id) {
-        return res.sendStatus(401);
-      }
-
-      const { startDate, endDate, limit = 50 } = req.query;
-      
-      const workouts = await storage.getAppleHealthWorkouts(
-        req.session.user.id,
-        startDate as string,
-        endDate as string,
-        parseInt(limit as string)
-      );
-
-      res.json(workouts);
-    } catch (error: any) {
-      console.error('Get Apple Health workouts error:', error);
-      res.status(500).json({ message: error.message || "Error fetching Apple Health workouts" });
-    }
-  });
-
-  // Convert Apple HealthKit workout to TacFit activity
-  app.post("/api/apple-healthkit/workouts/:id/convert", async (req, res) => {
-    try {
-      if (!req.session?.user?.id) {
-        return res.sendStatus(401);
-      }
-
-      const workoutId = parseInt(req.params.id);
-      const { activityType, competitionId, teamId } = req.body;
-
-      const workout = await storage.getAppleHealthWorkout(workoutId);
-      if (!workout || workout.userId !== req.session.user.id) {
-        return res.status(404).json({ message: "Workout not found" });
-      }
-
-      if (workout.isConverted) {
-        return res.status(400).json({ message: "Workout has already been converted" });
-      }
-
-      // Create TacFit activity from workout
-      const activity = await storage.createActivity({
-        userId: req.session.user.id,
-        competitionId,
-        teamId,
-        type: activityType,
-        description: `${workout.workoutType} workout synced from Apple Health`,
-        quantity: workout.duration?.toString() || "0",
-        evidenceType: "apple_health",
-        textInput: `Workout imported from Apple Health:\n- Type: ${workout.workoutType}\n- Duration: ${workout.duration} minutes\n- Calories burned: ${workout.totalEnergyBurned || 0}\n- Distance: ${workout.totalDistance || 'N/A'}`,
-        points: 30 // Full points for Apple Health verified data
-      });
-
-      // Mark workout as converted
-      await storage.updateAppleHealthWorkout(workoutId, {
-        activityId: activity.id,
-        isConverted: true
-      });
-
-      // Award points to team
-      if (teamId) {
-        const team = await storage.getTeam(teamId);
-        if (team) {
-          await storage.updateTeam(teamId, {
-            points: (team.points || 0) + 30
-          });
-        }
-      }
-
-      res.json({ activity, workout, message: "Workout converted to TacFit activity successfully" });
-    } catch (error: any) {
-      console.error('Convert workout error:', error);
-      res.status(500).json({ message: error.message || "Error converting workout" });
-    }
-  });
-
-  // Disable Apple HealthKit integration
-  app.post("/api/apple-healthkit/disable", async (req, res) => {
-    try {
-      if (!req.session?.user?.id) {
-        return res.sendStatus(401);
-      }
-
-      await storage.updateAppleHealthConnection(req.session.user.id, {
-        isEnabled: false
-      });
-
-      res.json({ message: "Apple Health integration disabled" });
-    } catch (error: any) {
-      console.error('Disable Apple Health error:', error);
-      res.status(500).json({ message: error.message || "Error disabling Apple Health integration" });
-    }
-  });
 
   // Stripe payment intent for competition entry
   app.post("/api/create-payment-intent", async (req, res) => {
@@ -4230,67 +3707,6 @@ Note: This activity was tracked by Apple HealthKit automatically. Stats: duratio
     } catch (error) {
       console.error('Error dismissing competition:', error);
       res.status(500).json({ message: "Error dismissing competition" });
-    }
-  });
-
-  // Add simplified workout conversion endpoint for frontend compatibility
-  app.post("/api/apple-health/convert-workout", async (req, res) => {
-    try {
-      if (!req.session?.user?.id) {
-        return res.sendStatus(401);
-      }
-
-      const { workoutId, activityType } = req.body;
-
-      // Get user's current team for competition context
-      const userTeamMembers = await storage.getTeamMembersByUser(req.session.user.id);
-      const currentTeamMember = userTeamMembers.find((tm: any) => tm.role);
-      if (!currentTeamMember) {
-        return res.status(400).json({ message: "User not in a team" });
-      }
-
-      const team = await storage.getTeam(currentTeamMember.teamId!);
-      if (!team) {
-        return res.status(400).json({ message: "Team not found" });
-      }
-
-      const workout = await storage.getAppleHealthWorkout(workoutId);
-      if (!workout || workout.userId !== req.session.user.id) {
-        return res.status(404).json({ message: "Workout not found" });
-      }
-
-      if (workout.isConverted) {
-        return res.status(400).json({ message: "Workout has already been converted" });
-      }
-
-      // Create TacFit activity from workout
-      const activity = await storage.createActivity({
-        userId: req.session.user.id,
-        competitionId: team.competitionId,
-        teamId: team.id,
-        type: activityType,
-        description: `${workout.workoutType} workout synced from Apple HealthKit`,
-        quantity: workout.duration?.toString() || "0",
-        evidenceType: "apple_health",
-        textInput: `Workout imported from Apple HealthKit:\n- Type: ${workout.workoutType}\n- Duration: ${workout.duration} minutes\n- Calories burned: ${workout.totalEnergyBurned || 0}\n- Distance: ${workout.totalDistance || 'N/A'}`,
-        points: 30 // Full points for Apple Health verified data
-      });
-
-      // Mark workout as converted
-      await storage.updateAppleHealthWorkout(workoutId, {
-        activityId: activity.id,
-        isConverted: true
-      });
-
-      // Award points to team
-      await storage.updateTeam(team.id, {
-        points: (team.points || 0) + 30
-      });
-
-      res.json({ activity, workout, message: "Workout converted successfully" });
-    } catch (error: any) {
-      console.error('Convert workout error:', error);
-      res.status(500).json({ message: error.message || "Error converting workout" });
     }
   });
 

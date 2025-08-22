@@ -122,8 +122,6 @@ export const activityTypes = pgTable("activity_types", {
   requiresTextInput: boolean("requires_text_input").default(false),
   textInputDescription: text("text_input_description"), // What should be entered in the text box
   textInputMinWords: integer("text_input_min_words").default(50), // Minimum word count required
-  // HealthKit integration requirement
-  requiresHealthKit: boolean("requires_health_kit").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -306,61 +304,6 @@ export const moodLogs = pgTable("mood_logs", {
   loggedAt: timestamp("logged_at").defaultNow(),
 });
 
-// Apple HealthKit Integration Tables
-export const appleHealthConnections = pgTable("apple_health_connections", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id).notNull(),
-  isEnabled: boolean("is_enabled").default(false),
-  setupCompleted: boolean("setup_completed").default(false),
-  healthKitAuthToken: text("healthkit_auth_token"), // Apple HealthKit authorization token
-  refreshToken: text("refresh_token"),
-  tokenExpiresAt: timestamp("token_expires_at"),
-  permissionsGranted: text("permissions_granted"), // JSON array of granted permission types
-  deviceInfo: text("device_info"), // JSON with iPhone/Apple Watch model info
-  lastSyncAt: timestamp("last_sync_at"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-export const appleHealthData = pgTable("apple_health_data", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id).notNull(),
-  dataType: text("data_type").notNull(), // steps, heart_rate, active_energy, sleep_analysis, etc.
-  value: text("value").notNull(), // Stored as text to handle different data types
-  unit: text("unit"), // steps, bpm, calories, miles, minutes
-  sourceApp: text("source_app"), // Which app provided the data (Health, Fitness, etc.)
-  deviceModel: text("device_model"), // iPhone 15, Apple Watch Series 9, etc.
-  startDate: timestamp("start_date").notNull(),
-  endDate: timestamp("end_date").notNull(),
-  metadata: text("metadata"), // JSON string for additional data
-  healthKitSampleId: text("healthkit_sample_id"), // Unique HealthKit sample identifier
-  syncedAt: timestamp("synced_at").defaultNow(),
-});
-
-export const appleHealthWorkouts = pgTable("apple_health_workouts", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id).notNull(),
-  activityId: integer("activity_id").references(() => activities.id), // Link to TacFit activity if created
-  workoutType: text("workout_type").notNull(), // HKWorkoutActivityType values
-  duration: integer("duration"), // Duration in minutes
-  totalEnergyBurned: integer("total_energy_burned"), // Calories
-  totalDistance: text("total_distance"), // Distance with unit
-  averageHeartRate: integer("average_heart_rate"), // BPM
-  maxHeartRate: integer("max_heart_rate"), // BPM
-  startDate: timestamp("start_date").notNull(),
-  endDate: timestamp("end_date").notNull(),
-  sourceApp: text("source_app"),
-  deviceModel: text("device_model"), // Apple Watch Series 9, iPhone 15, etc.
-  metadata: text("metadata"), // JSON for additional workout data
-  healthKitWorkoutId: text("healthkit_workout_id"), // Unique HealthKit workout identifier
-  isConverted: boolean("is_converted").default(false), // Whether converted to TacFit activity
-  // Route data fields
-  routeData: text("route_data"), // JSON array of GPS coordinates
-  routeMapUrl: text("route_map_url"), // Generated static map URL
-  hasRoute: boolean("has_route").default(false), // Whether workout includes route data
-  elevationGain: integer("elevation_gain"), // Total elevation gain in meters
-  syncedAt: timestamp("synced_at").defaultNow(),
-});
 
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
@@ -459,21 +402,6 @@ export const insertMoodLogSchema = createInsertSchema(moodLogs).omit({
   loggedAt: true,
 });
 
-export const insertAppleHealthConnectionSchema = createInsertSchema(appleHealthConnections).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertAppleHealthDataSchema = createInsertSchema(appleHealthData).omit({
-  id: true,
-  syncedAt: true,
-});
-
-export const insertAppleHealthWorkoutSchema = createInsertSchema(appleHealthWorkouts).omit({
-  id: true,
-  syncedAt: true,
-});
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -514,12 +442,6 @@ export type Advertisement = typeof advertisements.$inferSelect;
 export type InsertAdvertisement = z.infer<typeof insertAdvertisementSchema>;
 export type MoodLog = typeof moodLogs.$inferSelect;
 export type InsertMoodLog = z.infer<typeof insertMoodLogSchema>;
-export type AppleHealthConnection = typeof appleHealthConnections.$inferSelect;
-export type InsertAppleHealthConnection = z.infer<typeof insertAppleHealthConnectionSchema>;
-export type AppleHealthData = typeof appleHealthData.$inferSelect;
-export type InsertAppleHealthData = z.infer<typeof insertAppleHealthDataSchema>;
-export type AppleHealthWorkout = typeof appleHealthWorkouts.$inferSelect;
-export type InsertAppleHealthWorkout = z.infer<typeof insertAppleHealthWorkoutSchema>;
 
 // Push notification schema types
 export const insertPushSubscriptionSchema = createInsertSchema(pushSubscriptions).omit({

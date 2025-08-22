@@ -8,9 +8,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Send, Smile, ImageIcon, Search, ChevronDown, ChevronUp, Radio } from "lucide-react";
+import { Send, ImageIcon, Search, ChevronDown, ChevronUp, Radio } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import EmojiPicker from 'emoji-picker-react';
 // @ts-ignore
 import GiphyApi from 'giphy-api';
 
@@ -25,7 +24,6 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [message, setMessage] = useState("");
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showGifPicker, setShowGifPicker] = useState(false);
   const [gifSearch, setGifSearch] = useState("");
   const [gifs, setGifs] = useState<any[]>([]);
@@ -85,11 +83,6 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
     }
   };
 
-  const handleEmojiClick = (emojiObject: any) => {
-    setMessage(prev => prev + emojiObject.emoji);
-    setShowEmojiPicker(false);
-    inputRef.current?.focus();
-  };
 
   const handleGifClick = (gifUrl: string) => {
     sendMessage.mutate(`[GIF] ${gifUrl}`);
@@ -245,27 +238,6 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
               
               <form onSubmit={handleSubmit} className="flex space-x-2">
                 <div className="flex space-x-2">
-                  {/* Emoji Picker */}
-                  <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="bg-tactical-gray-lighter border-tactical-gray text-white hover:bg-tactical-gray"
-                      >
-                        <Smile className="w-4 h-4" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-80 p-0 bg-tactical-gray-light border-tactical-gray">
-                      <EmojiPicker
-                        onEmojiClick={handleEmojiClick}
-                        theme={"dark" as any}
-                        skinTonePickerLocation={"PREVIEW" as any}
-                      />
-                    </PopoverContent>
-                  </Popover>
-
                   {/* GIF Picker */}
                   <Popover open={showGifPicker} onOpenChange={setShowGifPicker}>
                     <PopoverTrigger asChild>

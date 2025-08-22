@@ -7,9 +7,8 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Send, Smile, ImageIcon, Search } from "lucide-react";
+import { Send, ImageIcon, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import EmojiPicker from 'emoji-picker-react';
 import { apiRequest } from "@/lib/queryClient";
 
 interface DirectMessageModalProps {
@@ -27,7 +26,6 @@ export default function DirectMessageModal({ isOpen, onClose, friend }: DirectMe
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [message, setMessage] = useState("");
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showGifPicker, setShowGifPicker] = useState(false);
   const [gifSearch, setGifSearch] = useState("");
   const [gifs, setGifs] = useState<any[]>([]);
@@ -81,13 +79,6 @@ export default function DirectMessageModal({ isOpen, onClose, friend }: DirectMe
     }
   };
 
-  // Handle emoji selection
-  const handleEmojiClick = (emojiData: any) => {
-    const emoji = emojiData.emoji;
-    setMessage(prev => prev + emoji);
-    setShowEmojiPicker(false);
-    inputRef.current?.focus();
-  };
 
   // Search GIFs using Giphy API
   const searchGifs = async (query: string) => {
@@ -208,23 +199,6 @@ export default function DirectMessageModal({ isOpen, onClose, friend }: DirectMe
 
           <form onSubmit={handleSendMessage} className="flex gap-2 mt-4">
             <div className="flex gap-2">
-              {/* Emoji Picker */}
-              <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
-                <PopoverTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="bg-tactical-gray-lighter border-tactical-gray text-white hover:bg-tactical-gray"
-                  >
-                    <Smile className="h-4 w-4" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-white border-tactical-gray">
-                  <EmojiPicker onEmojiClick={handleEmojiClick} />
-                </PopoverContent>
-              </Popover>
-
               {/* GIF Picker */}
               <Popover open={showGifPicker} onOpenChange={setShowGifPicker}>
                 <PopoverTrigger asChild>

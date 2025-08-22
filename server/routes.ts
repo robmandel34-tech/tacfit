@@ -3796,9 +3796,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Process workout data
       if (workouts && workouts.length > 0) {
         for (const workout of workouts) {
-          // Process route data if available
+          // Store route data but skip map generation
           let routeData = null;
-          let routeMapUrl = null;
           let hasRoute = false;
           let elevationGain = 0;
 
@@ -3809,19 +3808,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             if (coordinates.length > 1) {
               hasRoute = true;
               routeData = JSON.stringify(coordinates);
-              
-              // Generate route map
-              const routeResult = await routeMapService.processWorkoutRoute(
-                workout.id || Date.now(),
-                coordinates
-              );
-              
-              routeMapUrl = routeResult.localImageUrl;
-              elevationGain = routeResult.elevationGain;
-              
-              if (routeMapUrl) {
-                console.log(`Generated route map for workout: ${routeMapUrl}`);
-              }
+              elevationGain = 0; // Skip elevation calculation since we're not generating maps
+              console.log(`Stored route data for workout without generating map image`);
             }
           }
 
@@ -3837,7 +3825,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             metadata: JSON.stringify(workout),
             isConverted: false,
             routeData,
-            routeMapUrl,
+            routeMapUrl: null,
             hasRoute,
             elevationGain
           });

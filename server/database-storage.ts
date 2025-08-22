@@ -162,10 +162,38 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteCompetition(id: number): Promise<boolean> {
-    const result = await db
-      .delete(competitions)
-      .where(eq(competitions.id, id));
-    return (result.rowCount ?? 0) > 0;
+    try {
+      // Use a transaction to ensure all related data is deleted consistently
+      await db.transaction(async (tx) => {
+        // 1. Delete all activities associated with this competition
+        await tx.delete(activities).where(eq(activities.competitionId, id));
+        
+        // 2. Get all teams for this competition
+        const competitionTeams = await tx.select().from(teams).where(eq(teams.competitionId, id));
+        
+        // 3. Delete all team members for teams in this competition
+        for (const team of competitionTeams) {
+          await tx.delete(teamMembers).where(eq(teamMembers.teamId, team.id));
+        }
+        
+        // 4. Delete all teams associated with this competition
+        await tx.delete(teams).where(eq(teams.competitionId, id));
+        
+        // 5. Delete any competition entries
+        await tx.delete(competitionEntries).where(eq(competitionEntries.competitionId, id));
+        
+        // 6. Delete any competition history entries
+        await tx.delete(competitionHistory).where(eq(competitionHistory.competitionId, id));
+        
+        // 7. Finally, delete the competition itself
+        await tx.delete(competitions).where(eq(competitions.id, id));
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error deleting competition:', error);
+      return false;
+    }
   }
 
   // Team operations

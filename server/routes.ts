@@ -908,15 +908,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/competitions/:id", async (req, res) => {
     try {
       const competitionId = parseInt(req.params.id);
-      const success = await storage.deleteCompetition(competitionId);
-      if (!success) {
+      
+      // Check if competition exists first
+      const competition = await storage.getCompetition(competitionId);
+      if (!competition) {
         return res.status(404).json({ message: "Competition not found" });
       }
       
-      res.json({ message: "Competition deleted successfully" });
+      const success = await storage.deleteCompetition(competitionId);
+      if (!success) {
+        return res.status(500).json({ message: "Failed to delete competition and its related data" });
+      }
+      
+      res.json({ message: "Competition and all related data deleted successfully" });
     } catch (error) {
       console.error("Competition deletion error:", error);
-      res.status(500).json({ message: "Error deleting competition" });
+      res.status(500).json({ 
+        message: "Error deleting competition. This may be due to data dependencies or database constraints." 
+      });
     }
   });
 

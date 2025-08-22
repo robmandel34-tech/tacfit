@@ -976,11 +976,11 @@ export default function AdminPage() {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex space-x-4 mb-8">
+        <div className="flex space-x-4 mb-8 overflow-x-auto pb-2" style={{ scrollbarWidth: 'thin' }}>
           <Button
             variant={activeTab === 'competitions' ? 'default' : 'ghost'}
             onClick={() => setActiveTab('competitions')}
-            className="flex items-center space-x-2"
+            className="flex items-center space-x-2 flex-shrink-0"
           >
             <Trophy className="h-4 w-4" />
             <span>Competitions</span>
@@ -988,7 +988,7 @@ export default function AdminPage() {
           <Button
             variant={activeTab === 'users' ? 'default' : 'ghost'}
             onClick={() => setActiveTab('users')}
-            className="flex items-center space-x-2"
+            className="flex items-center space-x-2 flex-shrink-0"
           >
             <Users className="h-4 w-4" />
             <span>Users</span>
@@ -996,7 +996,7 @@ export default function AdminPage() {
           <Button
             variant={activeTab === 'activity-types' ? 'default' : 'ghost'}
             onClick={() => setActiveTab('activity-types')}
-            className="flex items-center space-x-2"
+            className="flex items-center space-x-2 flex-shrink-0"
           >
             <Activity className="h-4 w-4" />
             <span>Activity Types</span>
@@ -1005,7 +1005,7 @@ export default function AdminPage() {
           <Button
             variant={activeTab === 'posts' ? 'default' : 'ghost'}
             onClick={() => setActiveTab('posts')}
-            className="flex items-center space-x-2"
+            className="flex items-center space-x-2 flex-shrink-0"
           >
             <MessageSquare className="h-4 w-4" />
             <span>Intel Posts</span>
@@ -1013,7 +1013,7 @@ export default function AdminPage() {
           <Button
             variant={activeTab === 'advertisements' ? 'default' : 'ghost'}
             onClick={() => setActiveTab('advertisements')}
-            className="flex items-center space-x-2"
+            className="flex items-center space-x-2 flex-shrink-0"
           >
             <Target className="h-4 w-4" />
             <span>Advertisements</span>
@@ -1021,7 +1021,7 @@ export default function AdminPage() {
           <Button
             variant={activeTab === 'settings' ? 'default' : 'ghost'}
             onClick={() => setActiveTab('settings')}
-            className="flex items-center space-x-2"
+            className="flex items-center space-x-2 flex-shrink-0"
           >
             <Settings className="h-4 w-4" />
             <span>Settings</span>

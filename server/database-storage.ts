@@ -340,6 +340,14 @@ export class DatabaseStorage implements IStorage {
         }
       }
 
+      // Reset Apple HealthKit workout conversion status if this activity was from HealthKit
+      await db.update(appleHealthWorkouts)
+        .set({ 
+          isConverted: false,
+          activityId: null 
+        })
+        .where(eq(appleHealthWorkouts.activityId, id));
+
       // Delete all associated data first (comments, likes, flags)
       await db.delete(activityComments).where(eq(activityComments.activityId, id));
       await db.delete(activityLikes).where(eq(activityLikes.activityId, id));

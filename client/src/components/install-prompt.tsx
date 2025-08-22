@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { X, Download, Smartphone, Monitor } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -13,6 +14,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export function InstallPrompt() {
+  const { user } = useAuth();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
@@ -29,28 +31,46 @@ export function InstallPrompt() {
     const ios = /iPad|iPhone|iPod/.test(navigator.userAgent);
     setIsIOS(ios);
 
-    // Check if user has already dismissed the prompt
-    const dismissed = localStorage.getItem('pwa-prompt-dismissed');
-    if (dismissed) return;
+    // Check if user has permanently dismissed the prompt
+    const permanentlyDismissed = localStorage.getItem('pwa-prompt-never-show');
+    if (permanentlyDismissed) return;
+    
+    // Check if shown today already
+    const lastShown = localStorage.getItem('pwa-prompt-last-shown');
+    const today = new Date().toDateString();
+    if (lastShown === today) return;
+    
+    // Don't show on registration day - wait until user has been active
+    if (user) {
+      const userCreatedAt = new Date(user.createdAt);
+      const now = new Date();
+      const registrationDay = new Date(userCreatedAt);
+      registrationDay.setHours(23, 59, 59, 999);
+      
+      // Don't show on registration day
+      if (now <= registrationDay) return;
+    }
 
     // Handle PWA install prompt
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
       
-      // Show prompt after a delay to not be too intrusive
+      // Show prompt after 30 seconds to not be intrusive, and mark as shown today
       setTimeout(() => {
         setShowPrompt(true);
-      }, 5000);
+        localStorage.setItem('pwa-prompt-last-shown', today);
+      }, 30000);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
     // For iOS, show manual installation instructions
-    if (ios && !dismissed) {
+    if (ios) {
       setTimeout(() => {
         setShowPrompt(true);
-      }, 5000);
+        localStorage.setItem('pwa-prompt-last-shown', today);
+      }, 30000);
     }
 
     return () => {
@@ -74,7 +94,12 @@ export function InstallPrompt() {
 
   const handleDismiss = () => {
     setShowPrompt(false);
-    localStorage.setItem('pwa-prompt-dismissed', 'true');
+    // Just dismiss for today (already marked when shown)
+  };
+  
+  const handleNeverShow = () => {
+    setShowPrompt(false);
+    localStorage.setItem('pwa-prompt-never-show', 'true');
   };
 
   if (isInstalled || !showPrompt) return null;
@@ -110,14 +135,24 @@ export function InstallPrompt() {
                 <li>2. Scroll down and tap "Add to Home Screen"</li>
                 <li>3. Tap "Add" to confirm</li>
               </ol>
-              <Button
-                onClick={handleDismiss}
-                variant="secondary"
-                size="sm"
-                className="w-full mt-3"
-              >
-                Got it!
-              </Button>
+              <div className="space-y-2 mt-3">
+                <Button
+                  onClick={handleDismiss}
+                  variant="secondary"
+                  size="sm"
+                  className="w-full"
+                >
+                  Got it!
+                </Button>
+                <Button
+                  onClick={handleNeverShow}
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-xs text-gray-300 hover:bg-white/10"
+                >
+                  Don't show again
+                </Button>
+              </div>
             </div>
           ) : deferredPrompt ? (
             <div className="space-y-3">
@@ -142,20 +177,38 @@ export function InstallPrompt() {
                   Not now
                 </Button>
               </div>
+              <Button
+                onClick={handleNeverShow}
+                variant="ghost"
+                size="sm"
+                className="w-full text-xs text-gray-300 hover:bg-white/10"
+              >
+                Don't show again
+              </Button>
             </div>
           ) : (
             <div className="space-y-3">
               <p className="text-sm text-gray-200">
                 Add TacFit to your home screen for quick access. Look for the install option in your browser menu.
               </p>
-              <Button
-                onClick={handleDismiss}
-                variant="secondary"
-                size="sm"
-                className="w-full"
-              >
-                Got it!
-              </Button>
+              <div className="space-y-2">
+                <Button
+                  onClick={handleDismiss}
+                  variant="secondary"
+                  size="sm"
+                  className="w-full"
+                >
+                  Got it!
+                </Button>
+                <Button
+                  onClick={handleNeverShow}
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-xs text-gray-300 hover:bg-white/10"
+                >
+                  Don't show again
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>

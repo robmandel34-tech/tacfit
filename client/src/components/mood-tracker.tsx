@@ -12,7 +12,7 @@ export function MoodTracker({ children }: MoodTrackerProps) {
   const [showMoodModal, setShowMoodModal] = useState(false);
   const [hasCheckedToday, setHasCheckedToday] = useState(false);
 
-  // Check if user has logged mood today
+  // Check if user should log mood (every 2 days, not on registration day)
   const { data: moodStatus } = useQuery({
     queryKey: ["/api/mood-logs/today", user?.id],
     queryFn: async () => {
@@ -29,7 +29,7 @@ export function MoodTracker({ children }: MoodTrackerProps) {
   });
 
   useEffect(() => {
-    // Only show mood modal if user is logged in, hasn't logged mood today, and we haven't checked yet
+    // Only show mood modal if user is logged in, should log mood (every 2 days, not on registration day), and we haven't checked yet
     if (user && moodStatus && !moodStatus.hasLoggedToday && !hasCheckedToday) {
       // Add a small delay to let the user settle in after login
       const timer = setTimeout(() => {

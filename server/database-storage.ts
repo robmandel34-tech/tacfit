@@ -963,20 +963,30 @@ export class DatabaseStorage implements IStorage {
   }
 
   async hasLoggedMoodToday(userId: number): Promise<boolean> {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Check if user should log mood (every 2 days, not on registration day)
+    const user = await this.getUser(userId);
+    if (!user) return true; // Don't show if user not found
     
-    const [log] = await db
-      .select()
-      .from(moodLogs)
-      .where(
-        and(
-          eq(moodLogs.userId, userId),
-          gt(moodLogs.loggedAt, today)
-        )
-      )
-      .limit(1);
-    return !!log;
+    const userCreatedAt = user.createdAt ? new Date(user.createdAt) : new Date();
+    const now = new Date();
+    
+    // Don't show on registration day
+    const registrationDay = new Date(userCreatedAt);
+    registrationDay.setHours(23, 59, 59, 999);
+    if (now <= registrationDay) {
+      return true; // Pretend they already logged to prevent showing
+    }
+    
+    // Get latest mood log
+    const latestLog = await this.getLatestMoodLog(userId);
+    if (!latestLog) return false; // Never logged, should show
+    
+    // Check if it's been at least 2 days since last log
+    const twoDaysAgo = new Date();
+    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+    twoDaysAgo.setHours(0, 0, 0, 0);
+    
+    return new Date(latestLog.loggedAt || new Date()) > twoDaysAgo; // True if logged within 2 days
   }
 
 

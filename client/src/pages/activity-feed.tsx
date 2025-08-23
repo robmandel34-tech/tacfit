@@ -7,6 +7,7 @@ import { Camera, ThumbsUp, MessageCircle, Flag, Trash2 } from "lucide-react";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import ActivitySubmissionModal from "@/components/activity-submission-modal";
 import { useToast } from "@/hooks/use-toast";
+import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
 
 export default function ActivityFeed() {
   const { user } = useAuth();
@@ -14,6 +15,17 @@ export default function ActivityFeed() {
   const [location] = useLocation();
   const [forceRefresh, setForceRefresh] = useState(0);
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
+
+  // Pull to refresh functionality
+  const { containerRef, RefreshIndicator } = usePullToRefresh({
+    queryKeys: [
+      ['/api/activities', forceRefresh.toString()],
+      ['/api/activity-types']
+    ],
+    onRefresh: () => {
+      setForceRefresh(prev => prev + 1);
+    }
+  });
   
   // Force refresh when navigating to this page
   useEffect(() => {
@@ -150,8 +162,9 @@ export default function ActivityFeed() {
   return (
     <div className="min-h-screen bg-tactical-gray">
       <Navigation />
+      <RefreshIndicator />
       
-      <main className="container mx-auto px-4 py-6">
+      <main ref={containerRef} className="container mx-auto px-4 py-6 overflow-y-auto" style={{ minHeight: 'calc(100vh - 64px)' }}>
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Activity Feed</h1>
           <p className="text-gray-300">See what your team and competitors are up to</p>

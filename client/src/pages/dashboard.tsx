@@ -10,12 +10,23 @@ import { Activity, Users } from "lucide-react";
 import { useState, useEffect } from "react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
 
 export default function Dashboard() {
   const { user, isLoading } = useAuthRequired();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Pull to refresh functionality
+  const { containerRef, RefreshIndicator } = usePullToRefresh({
+    queryKeys: [
+      ["/api/activities"],
+      ["/api/admin-posts/active"],
+      ["/api/advertisements/active"],
+      [`/api/team-members/${user?.id}`]
+    ]
+  });
 
   const { data: activities = [] } = useQuery({
     queryKey: ["/api/activities"],
@@ -158,8 +169,9 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-tactical-gray">
       <Navigation />
+      <RefreshIndicator />
       
-      <main className="container mx-auto px-4 py-6">
+      <main ref={containerRef} className="container mx-auto px-4 py-6 overflow-y-auto" style={{ minHeight: 'calc(100vh - 64px)' }}>
         {/* Header Card */}
         <Card className="bg-gradient-to-r from-military-green-dark to-military-green border-military-green/30 mb-8">
           <CardHeader>

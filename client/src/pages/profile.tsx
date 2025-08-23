@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import DirectMessageModal from "@/components/direct-message-modal";
 import FindFriendsModal from "@/components/find-friends-modal";
+import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
 
 import type { User, CompetitionHistory, Activity, TeamMember, Team, Competition, Friendship, MissionTask } from "@shared/schema";
 
@@ -47,6 +48,17 @@ export default function Profile() {
 
   const isOwnProfile = !userId || userId === user?.id?.toString();
   const targetUserId = isOwnProfile ? user?.id : parseInt(userId!);
+
+  // Pull to refresh functionality
+  const { containerRef, RefreshIndicator } = usePullToRefresh({
+    queryKeys: [
+      ["/api/users", targetUserId?.toString()],
+      ["/api/history", targetUserId?.toString()],
+      ["/api/activities", "user", targetUserId?.toString()],
+      ["/api/team-members", targetUserId?.toString()],
+      ["/api/friends", user?.id?.toString()]
+    ].filter(key => key.every(k => k !== undefined))
+  });
 
 
 
@@ -448,8 +460,9 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-tactical-gray">
       <Navigation />
+      <RefreshIndicator />
       
-      <main className="container mx-auto px-4 py-4">
+      <main ref={containerRef} className="container mx-auto px-4 py-4 overflow-y-auto" style={{ minHeight: 'calc(100vh - 64px)' }}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Profile Info */}
           <div className="lg:col-span-1">

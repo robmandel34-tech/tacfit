@@ -91,13 +91,13 @@ export function usePullToRefresh({
   }, [pullDistance, threshold, resistance, isRefreshing]);
 
   const refreshIndicatorStyle = {
-    transform: `translateY(${pullDistance - threshold}px)`,
-    opacity: Math.min(pullDistance / threshold, 1),
+    transform: `translateY(${Math.max(pullDistance - threshold, -threshold)}px)`,
+    opacity: pullDistance > 0 ? Math.min(pullDistance / threshold, 1) : 0,
   };
 
   const RefreshIndicator = () => (
     <div
-      className="absolute top-0 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-200"
+      className="fixed top-16 left-1/2 transform -translate-x-1/2 z-[9999] transition-all duration-200 pointer-events-none"
       style={refreshIndicatorStyle}
     >
       <div className="bg-steel-blue text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2">

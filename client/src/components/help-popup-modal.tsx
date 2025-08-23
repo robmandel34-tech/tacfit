@@ -13,7 +13,8 @@ import {
   Target,
   ExternalLink,
   ArrowLeft,
-  X
+  X,
+  Shield
 } from 'lucide-react';
 import { Link } from 'wouter';
 
@@ -50,6 +51,12 @@ export function HelpPopupModal({ isOpen, onClose }: HelpPopupModalProps) {
       icon: <Target className="h-5 w-5" />,
       description: "Base points (15), bonus for evidence (30 total), team rewards",
       href: "/help/point-system"
+    },
+    {
+      title: "Community Guidelines",
+      icon: <Shield className="h-5 w-5" />,
+      description: "Rules of engagement, conduct standards, and reporting guidelines",
+      href: "/help/community-guidelines"
     },
     {
       title: "Navigation Help",

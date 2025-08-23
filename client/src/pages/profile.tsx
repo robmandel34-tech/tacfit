@@ -1048,22 +1048,43 @@ export default function Profile() {
                       {totalCompetitions === 0 ? (
                         <p className="text-gray-400 text-center py-8">No competitions yet</p>
                       ) : (
-                        history.map((record: any) => (
-                          <div key={record.id} className="p-3 bg-tactical-gray rounded-lg">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <h4 className="text-white font-medium">{record.competition?.name}</h4>
-                                <p className="text-gray-300 text-sm">Team: {record.team?.name}</p>
-                              </div>
-                              <div className="text-right">
-                                <Badge variant="outline" className="mb-1 text-white border-gray-500">
-                                  {record.finalRank ? `#${record.finalRank}` : "Completed"}
-                                </Badge>
-                                <p className="text-combat-orange text-sm font-bold">{record.pointsEarned} pts</p>
+                        <>
+                          {/* Show current active competition if exists */}
+                          {currentCompetition && currentTeam && (
+                            <div className="p-3 bg-tactical-gray rounded-lg border border-steel-blue">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <h4 className="text-white font-medium">{currentCompetition.name}</h4>
+                                  <p className="text-gray-300 text-sm">Team: {currentTeam.name}</p>
+                                </div>
+                                <div className="text-right">
+                                  <Badge className="bg-steel-blue text-white mb-1 border-steel-blue">
+                                    Active
+                                  </Badge>
+                                  <p className="text-gray-400 text-sm">In Progress</p>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))
+                          )}
+                          
+                          {/* Show completed competitions from history */}
+                          {history.map((record: any) => (
+                            <div key={record.id} className="p-3 bg-tactical-gray rounded-lg">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <h4 className="text-white font-medium">{record.competition?.name}</h4>
+                                  <p className="text-gray-300 text-sm">Team: {record.team?.name}</p>
+                                </div>
+                                <div className="text-right">
+                                  <Badge variant="outline" className="mb-1 text-white border-gray-500">
+                                    {record.finalRank ? `#${record.finalRank}` : "Completed"}
+                                  </Badge>
+                                  <p className="text-combat-orange text-sm font-bold">{record.pointsEarned} pts</p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </>
                       )}
                     </div>
                   </ScrollArea>

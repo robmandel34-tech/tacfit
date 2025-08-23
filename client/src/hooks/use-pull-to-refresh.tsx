@@ -52,6 +52,9 @@ export function usePullToRefresh({
     const container = containerRef.current;
     if (!container) return;
 
+    let isMouseDown = false;
+    let mouseStartY = 0;
+
     const handleTouchStart = (e: TouchEvent) => {
       if (container.scrollTop === 0) {
         touchStartY.current = e.touches[0].clientY;
@@ -79,14 +82,56 @@ export function usePullToRefresh({
       }
     };
 
+    // Mouse events for desktop testing
+    const handleMouseDown = (e: MouseEvent) => {
+      if (container.scrollTop === 0) {
+        isMouseDown = true;
+        mouseStartY = e.clientY;
+      }
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isMouseDown || container.scrollTop > 0 || isRefreshing) return;
+      
+      const deltaY = e.clientY - mouseStartY;
+      
+      if (deltaY > 0) {
+        e.preventDefault();
+        const distance = Math.min(deltaY / resistance, threshold * 1.5);
+        setPullDistance(distance);
+      }
+    };
+
+    const handleMouseUp = () => {
+      if (isMouseDown) {
+        isMouseDown = false;
+        if (pullDistance >= threshold && !isRefreshing) {
+          refresh();
+        } else {
+          setPullDistance(0);
+        }
+      }
+    };
+
+    // Touch events
     container.addEventListener('touchstart', handleTouchStart, { passive: true });
     container.addEventListener('touchmove', handleTouchMove, { passive: false });
     container.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+    // Mouse events for desktop testing
+    container.addEventListener('mousedown', handleMouseDown, { passive: true });
+    container.addEventListener('mousemove', handleMouseMove, { passive: false });
+    container.addEventListener('mouseup', handleMouseUp, { passive: true });
+    document.addEventListener('mouseup', handleMouseUp, { passive: true });
 
     return () => {
       container.removeEventListener('touchstart', handleTouchStart);
       container.removeEventListener('touchmove', handleTouchMove);
       container.removeEventListener('touchend', handleTouchEnd);
+      container.removeEventListener('mousedown', handleMouseDown);
+      container.removeEventListener('mousemove', handleMouseMove);
+      container.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('mouseup', handleMouseUp);
     };
   }, [pullDistance, threshold, resistance, isRefreshing]);
 
@@ -96,17 +141,30 @@ export function usePullToRefresh({
   };
 
   const RefreshIndicator = () => (
-    <div
-      className="fixed top-16 left-1/2 transform -translate-x-1/2 z-[9999] transition-all duration-200 pointer-events-none"
-      style={refreshIndicatorStyle}
-    >
-      <div className="bg-steel-blue text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
-        <div className={`w-4 h-4 border-2 border-white border-t-transparent rounded-full ${isRefreshing ? 'animate-spin' : ''}`}></div>
-        <span className="text-sm font-medium">
-          {isRefreshing ? 'Refreshing...' : pullDistance >= threshold ? 'Release to refresh' : 'Pull to refresh'}
-        </span>
+    <>
+      <div
+        className="fixed top-16 left-1/2 transform -translate-x-1/2 z-[9999] transition-all duration-200 pointer-events-none"
+        style={refreshIndicatorStyle}
+      >
+        <div className="bg-steel-blue text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
+          <div className={`w-4 h-4 border-2 border-white border-t-transparent rounded-full ${isRefreshing ? 'animate-spin' : ''}`}></div>
+          <span className="text-sm font-medium">
+            {isRefreshing ? 'Refreshing...' : pullDistance >= threshold ? 'Release to refresh' : 'Pull/drag down to refresh'}
+          </span>
+        </div>
       </div>
-    </div>
+      
+      {/* Test button for desktop */}
+      <div className="fixed top-4 right-4 z-[9999]">
+        <button
+          onClick={refresh}
+          disabled={isRefreshing}
+          className="bg-military-green hover:bg-military-green-light text-white px-3 py-1 rounded text-xs font-medium shadow-lg disabled:opacity-50"
+        >
+          {isRefreshing ? 'Refreshing...' : 'Test Refresh'}
+        </button>
+      </div>
+    </>
   );
 
   return {

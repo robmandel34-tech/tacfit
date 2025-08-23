@@ -11,12 +11,18 @@ import {
   Activity, 
   MessageSquare,
   Target,
-  ExternalLink,
   ArrowLeft,
   X,
   Shield
 } from 'lucide-react';
-import { Link } from 'wouter';
+
+// Import help page components directly
+import CompetitionSystemHelp from '@/pages/help/competition-system';
+import TeamFormationHelp from '@/pages/help/team-formation';
+import ActivityTrackingHelp from '@/pages/help/activity-tracking';
+import PointSystemHelp from '@/pages/help/point-system';
+import CommunityGuidelinesHelp from '@/pages/help/community-guidelines';
+import NavigationHelp from '@/pages/help/navigation';
 
 interface HelpPopupModalProps {
   isOpen: boolean;
@@ -32,52 +38,67 @@ export function HelpPopupModal({ isOpen, onClose }: HelpPopupModalProps) {
       title: "Competition System",
       icon: <Trophy className="h-5 w-5" />,
       description: "Understand join windows, team formation, and victory conditions",
-      href: "/help/competition-system"
+      component: "competition-system"
     },
     {
       title: "Team Formation",
       icon: <Users className="h-5 w-5" />,
       description: "Team formation, roles, and collaboration strategies",
-      href: "/help/team-formation"
+      component: "team-formation"
     },
     {
       title: "Activity Tracking",
       icon: <Activity className="h-5 w-5" />,
       description: "Submit training activities and earn points for your team",
-      href: "/help/activity-tracking"
+      component: "activity-tracking"
     },
     {
       title: "Point System",
       icon: <Target className="h-5 w-5" />,
       description: "Base points (15), bonus for evidence (30 total), team rewards",
-      href: "/help/point-system"
+      component: "point-system"
     },
     {
       title: "Community Guidelines",
       icon: <Shield className="h-5 w-5" />,
       description: "Rules of engagement, conduct standards, and reporting guidelines",
-      href: "/help/community-guidelines"
+      component: "community-guidelines"
     },
     {
       title: "Navigation Help",
       icon: <MessageSquare className="h-5 w-5" />,
       description: "Learn how to navigate the TacFit platform effectively",
-      href: "/help/navigation"
+      component: "navigation"
     }
   ];
 
-  const handleSectionClick = (href: string) => {
-    setCurrentView(href);
+  const handleSectionClick = (component: string) => {
+    setCurrentView(component);
   };
 
-  const handleLinkClick = () => {
-    onClose();
+  const renderHelpContent = () => {
+    switch (currentView) {
+      case 'competition-system':
+        return <CompetitionSystemHelp />;
+      case 'team-formation':
+        return <TeamFormationHelp />;
+      case 'activity-tracking':
+        return <ActivityTrackingHelp />;
+      case 'point-system':
+        return <PointSystemHelp />;
+      case 'community-guidelines':
+        return <CommunityGuidelinesHelp />;
+      case 'navigation':
+        return <NavigationHelp />;
+      default:
+        return null;
+    }
   };
 
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-2xl max-h-[90vh] bg-gray-900 border-gray-700 overflow-hidden flex flex-col">
+        <DialogContent className="max-w-4xl max-h-[90vh] bg-gray-900 border-gray-700 overflow-hidden flex flex-col">
           <DialogHeader className="flex-shrink-0">
             <DialogTitle className="text-white flex items-center justify-between">
               {currentView ? (
@@ -109,35 +130,20 @@ export function HelpPopupModal({ isOpen, onClose }: HelpPopupModalProps) {
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-6 overflow-y-auto flex-1 pr-2 py-4">
+          <div className="overflow-y-auto flex-1">
             {currentView ? (
-              <div className="text-gray-300">
-                <iframe 
-                  src={currentView} 
-                  className="w-full h-96 rounded-lg border border-gray-600"
-                  title="Help Content"
-                />
-                <div className="mt-4 flex justify-center">
-                  <Link href={currentView} onClick={handleLinkClick}>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="text-military-green border-military-green hover:bg-military-green hover:text-white"
-                    >
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      Open in Full Page
-                    </Button>
-                  </Link>
-                </div>
+              <div className="p-0">
+                {renderHelpContent()}
               </div>
             ) : (
               <>
+              <div className="space-y-6 p-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {helpSections.map((section, index) => (
                     <Card 
                       key={index} 
                       className="bg-gray-800 border-gray-700 hover:border-military-green/50 transition-colors cursor-pointer"
-                      onClick={() => handleSectionClick(section.href)}
+                      onClick={() => handleSectionClick(section.component)}
                     >
                       <CardHeader className="pb-3">
                         <CardTitle className="text-white flex items-center space-x-2 text-lg">
@@ -178,6 +184,7 @@ export function HelpPopupModal({ isOpen, onClose }: HelpPopupModalProps) {
                     </Button>
                   </CardContent>
                 </Card>
+              </div>
               </>
             )}
           </div>

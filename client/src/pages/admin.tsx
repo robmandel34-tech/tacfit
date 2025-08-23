@@ -427,7 +427,8 @@ export default function AdminPage() {
         title: "User deleted",
         description: "The user and all associated data have been permanently removed.",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      // Use refetch instead of invalidate to avoid race conditions
+      queryClient.refetchQueries({ queryKey: ["/api/users"] });
       setDeleteUser(null);
     },
     onError: (error: any) => {
@@ -941,7 +942,15 @@ export default function AdminPage() {
   };
 
   // Check if user is admin - after all hooks are defined
-  if (!user?.isAdmin) {
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-tactical-dark flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user.isAdmin) {
     return (
       <div className="min-h-screen bg-tactical-dark flex items-center justify-center">
         <Card className="w-96">

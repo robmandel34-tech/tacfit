@@ -420,9 +420,7 @@ export default function AdminPage() {
   // Delete user mutation
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: number) => {
-      return apiRequest("DELETE", `/api/users/${userId}`, {
-        adminUserId: user?.id
-      });
+      return apiRequest("DELETE", `/api/users/${userId}`);
     },
     onSuccess: () => {
       toast({
@@ -433,11 +431,13 @@ export default function AdminPage() {
       setDeleteUser(null);
     },
     onError: (error: any) => {
+      console.error("Delete user error:", error);
       toast({
         title: "Failed to delete user",
-        description: error.message,
+        description: error.message || "An error occurred while deleting the user",
         variant: "destructive"
       });
+      setDeleteUser(null); // Close dialog even on error
     }
   });
 

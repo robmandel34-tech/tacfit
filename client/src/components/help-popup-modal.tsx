@@ -100,7 +100,7 @@ export function HelpPopupModal({ isOpen, onClose }: HelpPopupModalProps) {
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-4xl max-h-[90vh] bg-gray-900 border-gray-700 overflow-hidden flex flex-col">
           <DialogHeader className="flex-shrink-0">
-            <DialogTitle className="text-white flex items-center justify-between">
+            <DialogTitle className="text-white flex items-center">
               {currentView ? (
                 <div className="flex items-center">
                   <Button 
@@ -119,14 +119,6 @@ export function HelpPopupModal({ isOpen, onClose }: HelpPopupModalProps) {
                   <span>TacFit Help Center</span>
                 </div>
               )}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onClose}
-                className="text-gray-400 hover:text-white p-1"
-              >
-                <X className="h-4 w-4" />
-              </Button>
             </DialogTitle>
           </DialogHeader>
 

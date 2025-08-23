@@ -43,14 +43,16 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
             const currentUser = await response.json();
             setUser(currentUser);
           } else {
-            // User no longer exists, clear localStorage
+            // User no longer exists, clear localStorage and redirect to login
             localStorage.removeItem("user");
             setUser(null);
+            setLocation("/login");
           }
         } catch (error) {
-          // Invalid user data, clear localStorage
+          // Invalid user data, clear localStorage and redirect to login
           localStorage.removeItem("user");
           setUser(null);
+          setLocation("/login");
         }
       }
       setIsLoading(false);

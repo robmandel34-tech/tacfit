@@ -869,6 +869,13 @@ export default function Profile() {
             </Card>
           </div>
 
+          {/* Message Inbox - Only show on own profile */}
+          {isOwnProfile && displayUser && (
+            <div className="lg:col-span-3 mb-6">
+              <MessageInbox userId={displayUser.id} />
+            </div>
+          )}
+
           {/* Stats and History */}
           <div className="lg:col-span-2 space-y-6">
             {/* Current Competition Participation */}
@@ -1134,13 +1141,6 @@ export default function Profile() {
                 </DialogContent>
               </Dialog>
             </div>
-
-            {/* Message Inbox - Only show on own profile */}
-            {isOwnProfile && displayUser && (
-              <div className="mt-6">
-                <MessageInbox userId={displayUser.id} />
-              </div>
-            )}
 
           </div>
         </div>

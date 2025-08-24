@@ -516,14 +516,13 @@ export class DatabaseStorage implements IStorage {
     lastMessage: ChatMessage | null;
     unreadCount: number;
   }>> {
-    // Get all direct message conversations for the user
+    // Get all direct message conversations for the user with a subquery approach
     const conversations = await db
-      .select({
+      .selectDistinct({
         friendId: sql<number>`CASE 
           WHEN ${chatMessages.senderId} = ${userId} THEN ${chatMessages.receiverId}
           ELSE ${chatMessages.senderId}
         END`,
-        lastMessageId: sql<number>`MAX(${chatMessages.id})`,
       })
       .from(chatMessages)
       .where(
@@ -534,19 +533,28 @@ export class DatabaseStorage implements IStorage {
             eq(chatMessages.receiverId, userId)
           )
         )
-      )
-      .groupBy(sql`CASE 
-        WHEN ${chatMessages.senderId} = ${userId} THEN ${chatMessages.receiverId}
-        ELSE ${chatMessages.senderId}
-      END`);
+      );
 
     // Get friend details and last message for each conversation
     const result = await Promise.all(
       conversations.map(async (conv) => {
         const friend = await this.getUser(conv.friendId);
-        const lastMessage = conv.lastMessageId 
-          ? await db.select().from(chatMessages).where(eq(chatMessages.id, conv.lastMessageId)).limit(1)
-          : [];
+        
+        // Get the last message for this conversation
+        const lastMessage = await db
+          .select()
+          .from(chatMessages)
+          .where(
+            and(
+              eq(chatMessages.type, "direct"),
+              or(
+                and(eq(chatMessages.senderId, userId), eq(chatMessages.receiverId, conv.friendId)),
+                and(eq(chatMessages.senderId, conv.friendId), eq(chatMessages.receiverId, userId))
+              )
+            )
+          )
+          .orderBy(desc(chatMessages.createdAt))
+          .limit(1);
         
         // Count unread messages (messages sent by friend that haven't been read)
         const unreadMessages = await db

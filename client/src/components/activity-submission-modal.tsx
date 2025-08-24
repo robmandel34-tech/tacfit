@@ -391,7 +391,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
 
               {/* Photo Evidence */}
               <div className="space-y-3">
-                <Label className="text-gray-300 font-medium">Photo Evidence (Required) <span className="text-red-400">*</span></Label>
+                <Label className="text-gray-300 font-medium">Photo Evidence <span className="text-red-400">(at least 1 image required)</span></Label>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <input

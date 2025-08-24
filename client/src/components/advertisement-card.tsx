@@ -90,7 +90,7 @@ export default function AdvertisementCard({ advertisement }: AdvertisementCardPr
               <img
                 src={advertisement.imageUrl}
                 alt={advertisement.title}
-                className="w-full h-32 object-cover"
+                className="w-full h-48 object-cover"
                 onLoad={() => {
                   setImageLoaded(true);
                   console.log("Advertisement image loaded successfully:", advertisement.imageUrl);
@@ -105,9 +105,10 @@ export default function AdvertisementCard({ advertisement }: AdvertisementCardPr
           {advertisement.linkUrl && (
             <Button
               onClick={handleClick}
-              className="w-full bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white font-medium"
+              size="sm"
+              className="w-full bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white text-xs font-normal"
             >
-              <ExternalLink className="h-4 w-4 mr-2" />
+              <ExternalLink className="h-3 w-3 mr-1" />
               Learn More
             </Button>
           )}

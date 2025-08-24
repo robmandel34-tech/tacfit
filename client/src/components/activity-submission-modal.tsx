@@ -328,7 +328,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
               {type && (
                 <div className="space-y-2">
                   <Label className="text-gray-300 font-medium">
-                    Quantity ({selectedActivityType?.measurementUnit || "minutes"})
+                    Quantity ({selectedActivityType?.measurementUnit || "minutes"}) <span className="text-red-400">*</span>
                   </Label>
                   <Input
                     type="number"
@@ -344,7 +344,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
               {/* Description Input */}
               {type && (
                 <div className="space-y-2">
-                  <Label className="text-gray-300 font-medium">Description</Label>
+                  <Label className="text-gray-300 font-medium">Description <span className="text-red-400">*</span></Label>
                   <Textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
@@ -391,7 +391,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
 
               {/* Photo Evidence */}
               <div className="space-y-3">
-                <Label className="text-gray-300 font-medium">Photo Evidence <span className="text-red-400">(at least 1 image required)</span></Label>
+                <Label className="text-gray-300 font-medium">Photo Evidence <span className="text-red-400">*</span> <span className="text-gray-400">(at least 1 image required)</span></Label>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <input

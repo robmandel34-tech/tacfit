@@ -340,10 +340,7 @@ export default function ProgressMap({ teams, competitionName, competition, activ
                 {teamsWithProgress.map((team) => (
                   <div 
                     key={team.id} 
-                    className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-4 cursor-pointer hover:bg-white/15 transition-all duration-300 hover:shadow-lg hover:scale-[1.02]"
-                    style={{
-                      boxShadow: '0 4px 16px rgba(0,0,0,0.1), inset 0 1px 2px rgba(255,255,255,0.2)'
-                    }}
+                    className="inner-tile p-4 cursor-pointer"
                     onClick={() => navigate(`/team/${team.id}`)}
                   >
                     <div className="flex items-center justify-between mb-2">

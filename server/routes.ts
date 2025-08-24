@@ -1858,6 +1858,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("Activity submission request body:", req.body);
       console.log("Activity submission files:", req.files);
+      console.log("DEBUG: About to process files...");
       console.log("Files structure type:", Array.isArray(req.files) ? 'array' : typeof req.files);
       console.log("Files length:", req.files?.length);
       
@@ -1919,13 +1920,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Handle file uploads - upload.any() returns an array
-      const files = req.files as Express.Multer.File[];
+      const files = req.files as Express.Multer.File[] || [];
+      console.log("DEBUG: Starting file processing with files:", files.length);
       
       // Separate files by type
       const videoFiles = files.filter(file => file.fieldname === 'video');
       const imageFiles = files.filter(file => file.fieldname === 'images');
       
-      console.log(`Found ${videoFiles.length} video files and ${imageFiles.length} image files`);
+      console.log("DEBUG: File filtering results:");
+      console.log(`- Video files: ${videoFiles.length}`);
+      console.log(`- Image files: ${imageFiles.length}`);
+      console.log("Video files:", videoFiles.map(f => f.fieldname));
+      console.log("Image files:", imageFiles.map(f => f.fieldname));
       
       // Calculate base points
       let basePoints = 15;

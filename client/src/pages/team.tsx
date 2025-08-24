@@ -335,7 +335,7 @@ export default function Team() {
   }
 
   return (
-    <div className="min-h-screen bg-tactical-gray pb-20">
+    <div className="min-h-screen backdrop-blur-md bg-white/5 pb-20">
       <Navigation />
       
       <main className="container mx-auto px-4 py-6">

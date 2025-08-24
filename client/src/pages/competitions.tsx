@@ -178,7 +178,7 @@ export default function Competitions() {
   };
 
   if (isLoading) {
-    return <div className="min-h-screen bg-tactical-gray flex items-center justify-center">
+    return <div className="min-h-screen backdrop-blur-md bg-white/5 flex items-center justify-center">
       <div className="text-white">Loading...</div>
     </div>;
   }
@@ -186,7 +186,7 @@ export default function Competitions() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-tactical-gray">
+    <div className="min-h-screen backdrop-blur-md bg-white/5">
       <Navigation />
       
       <main className="container mx-auto px-4 py-8">

@@ -192,7 +192,7 @@ export default function Dashboard() {
 
 
   if (isLoading) {
-    return <div className="min-h-screen bg-tactical-gray flex items-center justify-center">
+    return <div className="min-h-screen backdrop-blur-md bg-white/5 flex items-center justify-center">
       <div className="text-white">Loading...</div>
     </div>;
   }
@@ -202,7 +202,7 @@ export default function Dashboard() {
   const hasJoinedCompetition = Array.isArray(userTeamMembership) && userTeamMembership.length > 0;
 
   return (
-    <div className="min-h-screen bg-tactical-gray">
+    <div className="min-h-screen backdrop-blur-md bg-white/5">
       <Navigation />
       
       <main className="container mx-auto px-4 py-6">

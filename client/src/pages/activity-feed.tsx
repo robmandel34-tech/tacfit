@@ -137,7 +137,7 @@ export default function ActivityFeed() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-tactical-gray">
+      <div className="min-h-screen backdrop-blur-md bg-white/5">
         <Navigation />
         <main className="container mx-auto px-4 py-6">
           <div className="text-center py-16">
@@ -149,7 +149,7 @@ export default function ActivityFeed() {
   }
 
   return (
-    <div className="min-h-screen bg-tactical-gray">
+    <div className="min-h-screen backdrop-blur-md bg-white/5">
       <Navigation />
       
       <main className="container mx-auto px-4 py-6">

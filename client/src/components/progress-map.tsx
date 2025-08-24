@@ -126,21 +126,23 @@ export default function ProgressMap({ teams, competitionName, competition, activ
       {/* Tab-like header for Team Progress Map */}
       <div className="relative">
         <div className="flex justify-center mb-0">
-          <div className="bg-tactical-gray-light border-tactical-gray border-t-2 border-l-2 border-r-2 rounded-t-xl px-6 py-2 tile-card" style={{ 
+          <div className="backdrop-blur-md bg-white/15 border-white/30 border-t border-l border-r rounded-t-2xl px-6 py-3 shadow-lg" style={{ 
             borderBottomLeftRadius: 0, 
             borderBottomRightRadius: 0,
-            boxShadow: '0 8px 16px rgba(0, 0, 0, 0.3), 0 4px 8px rgba(0, 0, 0, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.1)'
+            boxShadow: '0 -4px 12px rgba(255, 255, 255, 0.1), 0 2px 8px rgba(0, 0, 0, 0.1)'
           }}>
-            <h3 className="text-base font-semibold text-white">Team Progress Map</h3>
+            <h3 className="text-base font-semibold text-white/95 tracking-wide">Team Progress Map</h3>
           </div>
         </div>
         
-        {/* Map Container */}
-        <Card className="w-full tile-card-elevated">
-          <CardContent className="p-6">
+        {/* Map Container with Apple Glass Design */}
+        <div className="w-full backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl shadow-2xl">
+          <div className="p-6">
             {/* Competition Not Started Warning */}
             {!competitionHasStarted && competition && (
-              <div className="mb-4 bg-orange-500/10 border border-orange-500/20 rounded-lg p-4">
+              <div className="mb-4 backdrop-blur-md bg-orange-500/15 border border-orange-400/30 rounded-2xl p-4" style={{
+                boxShadow: '0 4px 16px rgba(251, 146, 60, 0.1), inset 0 1px 2px rgba(255, 255, 255, 0.2)'
+              }}>
                 <div className="flex items-center gap-2 mb-2">
                   <Flag className="h-5 w-5 text-orange-500" />
                   <h3 className="font-semibold text-orange-100">Competition Awaiting Start</h3>
@@ -153,8 +155,8 @@ export default function ProgressMap({ teams, competitionName, competition, activ
             
             <div className="relative">
               {/* Map Background */}
-              <div className="relative h-96 rounded-xl overflow-visible shadow-lg" style={{
-                boxShadow: '0 8px 16px rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.1)'
+              <div className="relative h-96 rounded-2xl overflow-visible backdrop-blur-sm bg-gradient-to-br from-white/20 to-white/5 border border-white/30" style={{
+                boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.08), inset 0 1px 2px rgba(255,255,255,0.4), inset 0 -1px 2px rgba(0,0,0,0.05)'
               }}>
                 <div className="absolute inset-0 rounded-xl overflow-hidden">
                   {/* High-Quality Wilderness Terrain Background */}
@@ -318,11 +320,13 @@ export default function ProgressMap({ teams, competitionName, competition, activ
                       </div>
                       
                       {/* Team info tooltip */}
-                      <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-black/90 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 shadow-xl border border-white/20">
-                        <div className="font-semibold text-sm">{team.name}</div>
-                        <div className="text-military-green font-bold">{team.points} points</div>
-                        {team.motto && <div className="text-gray-300 italic text-xs mt-1">"{team.motto}"</div>}
-                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-black/90" />
+                      <div className="absolute bottom-full mb-3 left-1/2 transform -translate-x-1/2 backdrop-blur-xl bg-white/20 text-white px-4 py-3 rounded-2xl text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-300 z-20 border border-white/30" style={{
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.3)'
+                      }}>
+                        <div className="font-semibold text-sm text-white/95">{team.name}</div>
+                        <div className="text-green-300 font-bold">{team.points} points</div>
+                        {team.motto && <div className="text-white/70 italic text-xs mt-1">"{team.motto}"</div>}
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent border-t-white/20" />
                         </div>
                       </div>
                     </div>
@@ -336,7 +340,10 @@ export default function ProgressMap({ teams, competitionName, competition, activ
                 {teamsWithProgress.map((team) => (
                   <div 
                     key={team.id} 
-                    className="inner-tile p-4 cursor-pointer"
+                    className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-4 cursor-pointer hover:bg-white/15 transition-all duration-300 hover:shadow-lg hover:scale-[1.02]"
+                    style={{
+                      boxShadow: '0 4px 16px rgba(0,0,0,0.1), inset 0 1px 2px rgba(255,255,255,0.2)'
+                    }}
                     onClick={() => navigate(`/team/${team.id}`)}
                   >
                     <div className="flex items-center justify-between mb-2">
@@ -372,8 +379,8 @@ export default function ProgressMap({ teams, competitionName, competition, activ
                 ))}
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

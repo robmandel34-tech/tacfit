@@ -9,6 +9,7 @@ import CompetitionCard from "@/components/competition-card";
 import InviteBuddiesModal from "@/components/invite-friends-modal";
 import TeamSelectionModal from "@/components/team-selection-modal";
 import CompetitionPaymentModal from "@/components/competition-payment-modal";
+import FindFriendsModal from "@/components/find-friends-modal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy, Users } from "lucide-react";
@@ -19,6 +20,7 @@ export default function Competitions() {
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [teamSelectionModalOpen, setTeamSelectionModalOpen] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [findFriendsModalOpen, setFindFriendsModalOpen] = useState(false);
   const [selectedCompetition, setSelectedCompetition] = useState<{ id: number; name: string; description?: string } | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -185,7 +187,7 @@ export default function Competitions() {
               </div>
               <Button 
                 size="sm"
-                onClick={() => setInviteModalOpen(true)}
+                onClick={() => setFindFriendsModalOpen(true)}
                 className="bg-white text-black hover:bg-gray-100 font-semibold"
               >
                 <Users className="h-4 w-4 mr-2" />
@@ -273,6 +275,12 @@ export default function Competitions() {
           competitionName={selectedCompetition.name}
         />
       )}
+
+      {/* Find Friends Modal */}
+      <FindFriendsModal
+        isOpen={findFriendsModalOpen}
+        onClose={() => setFindFriendsModalOpen(false)}
+      />
     </div>
   );
 }

@@ -878,6 +878,40 @@ export default function Profile() {
 
           {/* Stats and History */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Pending Tasks - Only show on own profile */}
+            {isOwnProfile && pendingTasks.length > 0 && (
+              <Card className="bg-tactical-gray-light border-tactical-gray">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Target className="h-5 w-5 text-combat-orange" />
+                    Pending Mission Tasks ({pendingTasks.length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {pendingTasks.map((task) => (
+                      <div key={task.id} className="p-3 bg-tactical-gray rounded-lg border border-combat-orange/30">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h4 className="text-white font-medium text-sm">{task.title}</h4>
+                            <p className="text-gray-400 text-xs mt-1">{task.description}</p>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs">
+                            <Badge className="bg-combat-orange/20 text-combat-orange border border-combat-orange/30 px-2 py-0.5">
+                              {task.type}
+                            </Badge>
+                            <span className="text-gray-500">
+                              {new Date(task.dueDate).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Current Competition Participation */}
             <Card className="bg-tactical-gray-light border-tactical-gray">
               <CardHeader className="pb-4">

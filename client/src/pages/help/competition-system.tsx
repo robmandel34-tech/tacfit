@@ -7,7 +7,7 @@ export default function CompetitionSystemHelp() {
   const [, setLocation] = useLocation();
   
   return (
-    <div className="min-h-screen bg-tactical-gray">
+    <div className="min-h-screen backdrop-blur-md bg-white/5">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-white mb-2">Competition System</h1>
@@ -208,6 +208,108 @@ export default function CompetitionSystemHelp() {
                     </div>
                   </div>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Free vs Paid Competitions */}
+          <Card className="bg-gray-800/50 border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center">
+                <Activity className="h-6 w-6 mr-2 text-military-green" />
+                Free vs Paid Competitions
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-gray-300 space-y-4">
+              <p>
+                TacFit offers both free and paid competition options, each with distinct features and rewards 
+                to accommodate different levels of engagement and commitment.
+              </p>
+              
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-semibold text-white mb-3 flex items-center">
+                    <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
+                    Free Competitions
+                  </h4>
+                  <div className="bg-blue-900/20 border border-blue-600/30 p-4 rounded-lg space-y-3">
+                    <div className="flex items-start">
+                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-3 flex-shrink-0"></div>
+                      <div>
+                        <span className="font-medium text-white">Individual Activity Rewards</span>
+                        <p className="text-sm text-gray-400 mt-1">
+                          Earn <span className="text-military-green font-semibold">15 points</span> for basic submissions or 
+                          <span className="text-military-green font-semibold"> 30 points</span> with photo + video evidence
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start">
+                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-3 flex-shrink-0"></div>
+                      <div>
+                        <span className="font-medium text-white">No Team Completion Bonuses</span>
+                        <p className="text-sm text-gray-400 mt-1">
+                          No additional points for team placement, but individual contributions still count
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start">
+                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-3 flex-shrink-0"></div>
+                      <div>
+                        <span className="font-medium text-white">Advertisements Visible</span>
+                        <p className="text-sm text-gray-400 mt-1">
+                          Support the platform with occasional sponsored content and promotions
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold text-white mb-3 flex items-center">
+                    <div className="w-3 h-3 rounded-full bg-yellow-500 mr-2"></div>
+                    Paid Competitions
+                  </h4>
+                  <div className="bg-yellow-900/20 border border-yellow-600/30 p-4 rounded-lg space-y-3">
+                    <div className="flex items-start">
+                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-3 flex-shrink-0"></div>
+                      <div>
+                        <span className="font-medium text-white">Individual + Team Rewards</span>
+                        <p className="text-sm text-gray-400 mt-1">
+                          Same individual points (15/30 per activity) <span className="text-military-green font-semibold">PLUS</span> 
+                          massive team completion bonuses
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start">
+                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-3 flex-shrink-0"></div>
+                      <div>
+                        <span className="font-medium text-white">Large Team Placement Bonuses</span>
+                        <div className="text-sm text-gray-400 mt-1 space-y-1">
+                          <p><span className="text-yellow-400 font-semibold">1st Place:</span> Captain gets 1000pts, Members get 500pts</p>
+                          <p><span className="text-gray-300 font-semibold">2nd Place:</span> Captain gets 500pts, Members get 250pts</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-start">
+                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-3 flex-shrink-0"></div>
+                      <div>
+                        <span className="font-medium text-white">Ad-Free Experience</span>
+                        <p className="text-sm text-gray-400 mt-1">
+                          Hide advertisements for a clean, focused fitness experience
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-military-green/10 border border-military-green/30 p-4 rounded-lg">
+                <h4 className="font-semibold text-military-green mb-2">💡 Pro Tip:</h4>
+                <p className="text-sm">
+                  Free competitions are perfect for trying out TacFit and building fitness habits. 
+                  Paid competitions offer serious rewards for teams that perform well, making them ideal 
+                  for motivated groups looking to maximize their point earnings and enjoy an ad-free experience.
+                </p>
               </div>
             </CardContent>
           </Card>

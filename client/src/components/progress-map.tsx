@@ -126,7 +126,7 @@ export default function ProgressMap({ teams, competitionName, competition, activ
       {/* Tab-like header for Team Progress Map */}
       <div className="relative">
         <div className="flex justify-center mb-0">
-          <div className="backdrop-blur-md bg-white/15 border-white/30 border-t border-l border-r rounded-t-2xl px-6 py-3 shadow-lg" style={{ 
+          <div className="sharp-card bg-tactical-gray-light border-tactical-gray border-t border-l border-r rounded-t-2xl px-6 py-3 shadow-lg" style={{ 
             borderBottomLeftRadius: 0, 
             borderBottomRightRadius: 0,
             boxShadow: '0 -4px 12px rgba(255, 255, 255, 0.1), 0 2px 8px rgba(0, 0, 0, 0.1)'
@@ -136,7 +136,7 @@ export default function ProgressMap({ teams, competitionName, competition, activ
         </div>
         
         {/* Map Container with Apple Glass Design */}
-        <div className="w-full backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl shadow-2xl">
+        <div className="w-full sharp-card bg-tactical-gray-light border-tactical-gray rounded-2xl shadow-2xl">
           <div className="p-6">
             {/* Competition Not Started Warning */}
             {!competitionHasStarted && competition && (

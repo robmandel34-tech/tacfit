@@ -206,7 +206,7 @@ export default function CompetitionStatus() {
 
 
         {/* Activity Feed */}
-        <Card className="backdrop-blur-md bg-white/5 border border-white/10 shadow-2xl">
+        <Card className="sharp-card bg-tactical-gray-light border-tactical-gray">
           <CardHeader>
             <CardTitle className="text-white">All Competition Activities</CardTitle>
           </CardHeader>

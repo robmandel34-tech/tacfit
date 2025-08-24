@@ -1863,8 +1863,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Activity submission files:", req.files);
 
       
-      // Get user's current team for activity submission
-      const userId = parseInt(req.body.userId);
+      // Get user from session
+      if (!req.session?.userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      const userId = req.session.userId;
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });

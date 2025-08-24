@@ -88,7 +88,7 @@ export default function AdminPostCard({ post }: AdminPostCardProps) {
   };
 
   return (
-    <Card className={`border-2 ${getTypeColor(post.type)} bg-opacity-10 mb-6`}>
+    <Card className={`border-2 ${getTypeColor(post.type)} bg-opacity-10 mb-6 ${post.type === 'news' ? 'rounded-none' : ''}`}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">

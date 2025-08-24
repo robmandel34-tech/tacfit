@@ -1861,15 +1861,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("Activity submission request body:", req.body);
       console.log("Activity submission files:", req.files);
-      console.log("Session data:", req.session);
       
-      // Get user from session
-      if (!req.session?.userId) {
-        return res.status(401).json({ message: "Not authenticated" });
+      // Get user ID from request and validate against session
+      const requestUserId = parseInt(req.body.userId);
+      console.log("User ID from request:", requestUserId, typeof requestUserId);
+      console.log("User ID from session:", req.session?.userId, typeof req.session?.userId);
+      
+      if (!req.session?.userId || req.session.userId !== requestUserId) {
+        return res.status(401).json({ message: "Not authenticated or user ID mismatch" });
       }
       
-      const userId = req.session.userId;
-      console.log("User ID from session:", userId, typeof userId);
+      const userId = requestUserId;
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });

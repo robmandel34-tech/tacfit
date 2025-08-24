@@ -195,6 +195,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     formData.append("description", description);
     formData.append("quantity", quantity);
     formData.append("teamId", userTeamMember?.[0]?.teamId?.toString() || "");
+    formData.append("userId", user.id.toString()); // Add user ID for validation
     
     // Add text input if required
     if (requiresTextInput && textInput.trim()) {

@@ -110,7 +110,7 @@ export default function Navigation() {
                   </div>
                   {/* Notification indicator for tasks and messages */}
                   {hasNotifications && (
-                    <div className="absolute -bottom-1 -right-1 bg-combat-orange rounded-full w-3 h-3"></div>
+                    <div className="absolute top-0 left-0 bg-combat-orange rounded-full w-3 h-3"></div>
                   )}
                 </div>
                 <span className="hidden md:block text-white font-medium text-sm">{user.username}</span>

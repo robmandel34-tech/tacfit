@@ -144,6 +144,86 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
       )
     },
     {
+      id: 'competition-types',
+      title: 'Mission Types',
+      description: 'Understanding free vs paid competitions',
+      icon: <Star className="h-6 w-6" />,
+      content: (
+        <div className="space-y-4">
+          <div className="text-center mb-4">
+            <h4 className="font-semibold text-white mb-2">Choose Your Mission Level</h4>
+            <p className="text-sm text-gray-300">
+              TacFit offers both free and paid competitions to match your commitment level
+            </p>
+          </div>
+          
+          <div className="grid gap-4">
+            <div className="bg-blue-900/20 border border-blue-600/30 p-4 rounded-lg">
+              <div className="flex items-center mb-2">
+                <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
+                <h5 className="font-semibold text-white">Free Competitions</h5>
+              </div>
+              <div className="space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300">Individual activity points</span>
+                  <span className="text-military-green font-medium">15-30 pts</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300">Team completion bonus</span>
+                  <span className="text-gray-400">None</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300">Advertisement experience</span>
+                  <span className="text-gray-400">Visible</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-yellow-900/20 border border-yellow-600/30 p-4 rounded-lg">
+              <div className="flex items-center mb-2">
+                <div className="w-3 h-3 rounded-full bg-yellow-500 mr-2"></div>
+                <h5 className="font-semibold text-white">Paid Competitions</h5>
+              </div>
+              <div className="space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300">Individual activity points</span>
+                  <span className="text-military-green font-medium">15-30 pts</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300">Team completion bonus</span>
+                  <span className="text-yellow-400 font-medium">Up to 1000 pts</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300">Advertisement experience</span>
+                  <span className="text-military-green font-medium">Ad-free</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-military-green/10 border border-military-green/30 p-3 rounded-lg">
+            <p className="text-sm text-military-green">
+              <strong>💡 Tactical Advice:</strong> Start with free competitions to learn the ropes, 
+              then upgrade to paid for serious team rewards and an ad-free experience.
+            </p>
+          </div>
+          
+          <div className="flex justify-center mt-4">
+            <Link href="/help/competition-system">
+              <Button 
+                variant="default" 
+                size="sm"
+                className="bg-military-green hover:bg-military-green/80 text-black font-medium"
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Learn More About Mission Types
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )
+    },
+    {
       id: 'teams',
       title: 'Team Formation',
       description: 'Building your tactical team',

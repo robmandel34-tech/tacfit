@@ -28,7 +28,7 @@ interface MessageInboxProps {
 export default function MessageInbox({ userId }: MessageInboxProps) {
   const [selectedFriend, setSelectedFriend] = useState<any>(null);
   const [isDMModalOpen, setIsDMModalOpen] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: conversations = [], isLoading } = useQuery<Conversation[]>({

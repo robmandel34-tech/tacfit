@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -38,6 +39,7 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
 
@@ -180,6 +182,10 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
     rejectFriendRequestMutation.mutate(friendshipId);
   };
 
+  const navigateToProfile = (userId: number) => {
+    onClose(); // Close the modal
+    setLocation(`/profile/${userId}`); // Navigate to user profile
+  };
 
 
   const renderFriendshipButton = (otherUser: User) => {
@@ -319,7 +325,8 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
                             <img
                               src={`/uploads/${requester.avatar}`}
                               alt="Profile picture"
-                              className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                              className="w-10 h-10 rounded-full object-cover flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-military-green transition-all"
+                              onClick={() => navigateToProfile(requester.id)}
                               onError={(e) => {
                                 console.error("Friend request avatar failed to load:", requester.avatar);
                                 e.currentTarget.style.display = 'none';
@@ -331,7 +338,11 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
                               }}
                             />
                           ) : null}
-                          <div className="w-10 h-10 bg-military-green rounded-full flex items-center justify-center flex-shrink-0" style={{ display: requester.avatar ? 'none' : 'flex' }}>
+                          <div 
+                            className="w-10 h-10 bg-military-green rounded-full flex items-center justify-center flex-shrink-0 cursor-pointer hover:bg-military-green-light transition-colors" 
+                            style={{ display: requester.avatar ? 'none' : 'flex' }}
+                            onClick={() => navigateToProfile(requester.id)}
+                          >
                             <span className="text-white font-bold text-sm">
                               {getInitials(requester.username)}
                             </span>
@@ -394,10 +405,14 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
                             <img
                               src={`/uploads/${otherUser.avatar}`}
                               alt="Profile picture"
-                              className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover flex-shrink-0"
+                              className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-military-green transition-all"
+                              onClick={() => navigateToProfile(otherUser.id)}
                             />
                           ) : (
-                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-military-green rounded-full flex items-center justify-center flex-shrink-0">
+                            <div 
+                              className="w-10 h-10 sm:w-12 sm:h-12 bg-military-green rounded-full flex items-center justify-center flex-shrink-0 cursor-pointer hover:bg-military-green-light transition-colors"
+                              onClick={() => navigateToProfile(otherUser.id)}
+                            >
                               <span className="text-white font-bold text-xs sm:text-sm">
                                 {getInitials(otherUser.username)}
                               </span>

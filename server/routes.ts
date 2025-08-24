@@ -1859,6 +1859,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Activity submission request body:", req.body);
       console.log("Activity submission files:", req.files);
       console.log("Files structure type:", Array.isArray(req.files) ? 'array' : typeof req.files);
+      console.log("Files length:", req.files?.length);
       
       // Get user ID from request and validate against session
       const requestUserId = parseInt(req.body.userId);

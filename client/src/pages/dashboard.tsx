@@ -16,7 +16,7 @@ export default function Dashboard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showOnboarding, setShowOnboarding] = useState(false);
-
+  const [onboardingDismissedThisSession, setOnboardingDismissedThisSession] = useState(false);
 
   const { data: activities = [] } = useQuery({
     queryKey: ["/api/activities"],
@@ -80,9 +80,9 @@ export default function Dashboard() {
     },
   });
 
-  // Show onboarding to new users who haven't completed it
+  // Show onboarding to new users who haven't completed it (only once per session)
   useEffect(() => {
-    if (user && (user as any).onboardingCompleted === false) {
+    if (user && (user as any).onboardingCompleted === false && !onboardingDismissedThisSession) {
       setShowOnboarding(true);
     }
     
@@ -142,7 +142,7 @@ export default function Dashboard() {
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname);
     }
-  }, [user, toast, queryClient]);
+  }, [user, onboardingDismissedThisSession, toast, queryClient]);
 
 
 
@@ -275,8 +275,14 @@ export default function Dashboard() {
       {/* Onboarding Walkthrough */}
       <OnboardingWalkthrough
         isOpen={showOnboarding}
-        onClose={() => setShowOnboarding(false)}
-        onComplete={() => completeOnboardingMutation.mutate()}
+        onClose={() => {
+          setShowOnboarding(false);
+          setOnboardingDismissedThisSession(true);
+        }}
+        onComplete={() => {
+          setOnboardingDismissedThisSession(true);
+          completeOnboardingMutation.mutate();
+        }}
       />
     </div>
   );

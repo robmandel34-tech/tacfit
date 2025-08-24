@@ -56,8 +56,10 @@ export default function Dashboard() {
   });
 
   const { data: paidCompetitionStatus } = useQuery<{ hasPaidCompetitions: boolean }>({
-    queryKey: [`/api/users/${user?.id}/paid-competitions`],
+    queryKey: [`/api/users/${user?.id}/paid-competitions`, Date.now()], // Force fresh call
     enabled: !!user?.id,
+    staleTime: 0, // Don't cache
+    cacheTime: 0, // Don't cache
   });
 
   const { data: currentUser } = useQuery<{ hideAdvertisements: boolean }>({

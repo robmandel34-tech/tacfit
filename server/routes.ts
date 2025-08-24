@@ -1858,6 +1858,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("Activity submission request body:", req.body);
       console.log("Activity submission files:", req.files);
+      console.log("Files structure type:", Array.isArray(req.files) ? 'array' : typeof req.files);
       
       // Get user ID from request and validate against session
       const requestUserId = parseInt(req.body.userId);
@@ -1916,15 +1917,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Handle file uploads
-      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      // Handle file uploads - upload.any() returns an array
+      const files = req.files as Express.Multer.File[];
+      
+      // Separate files by type
+      const videoFiles = files.filter(file => file.fieldname === 'video');
+      const imageFiles = files.filter(file => file.fieldname === 'images');
+      
+      console.log(`Found ${videoFiles.length} video files and ${imageFiles.length} image files`);
       
       // Calculate base points
       let basePoints = 15;
       
       // Check if both video and image evidence are provided for bonus (30 total)
-      const hasVideoEvidence = files['evidence'] && files['evidence'][0];
-      const hasImageEvidence = files['images'] && files['images'].length > 0;
+      const hasVideoEvidence = videoFiles.length > 0;
+      const hasImageEvidence = imageFiles.length > 0;
       const hasBothEvidenceTypes = hasVideoEvidence && hasImageEvidence;
       
       // Set evidence type based on file uploads
@@ -1937,8 +1944,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Handle video file (primary evidence) first
       let evidenceUrl = '';
       let thumbnailUrl = '';
-      if (files['evidence'] && files['evidence'][0]) {
-        const videoFile = files['evidence'][0];
+      if (videoFiles.length > 0) {
+        const videoFile = videoFiles[0];
         const originalExtension = path.extname(videoFile.originalname);
         const timestamp = Date.now();
         
@@ -2013,9 +2020,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Handle multiple image files
       const imageUrls: string[] = [];
-      if (files['images'] && files['images'].length > 0) {
-        for (let i = 0; i < files['images'].length; i++) {
-          const imageFile = files['images'][i];
+      if (imageFiles.length > 0) {
+        for (let i = 0; i < imageFiles.length; i++) {
+          const imageFile = imageFiles[i];
           const fileExtension = path.extname(imageFile.originalname);
           const fileName = `${Date.now()}_img${i}${fileExtension}`;
           const filePath = path.join('uploads', fileName);

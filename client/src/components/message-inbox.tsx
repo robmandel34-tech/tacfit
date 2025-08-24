@@ -93,14 +93,20 @@ export default function MessageInbox({ userId }: MessageInboxProps) {
               <MessageCircle className="h-5 w-5 text-military-green" />
               <span>Messages</span>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
+            <div
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-gray-400 hover:text-white focus:outline-none focus:ring-0 focus:bg-transparent"
+              className="p-2 text-gray-400 hover:text-white cursor-pointer transition-colors rounded-md hover:bg-gray-700/50"
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setIsExpanded(!isExpanded);
+                }
+              }}
             >
               {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </Button>
+            </div>
           </CardTitle>
         </CardHeader>
         {isExpanded && (
@@ -121,14 +127,20 @@ export default function MessageInbox({ userId }: MessageInboxProps) {
               <MessageCircle className="h-5 w-5 text-military-green" />
               <span>Messages</span>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
+            <div
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-gray-400 hover:text-white focus:outline-none focus:ring-0 focus:bg-transparent"
+              className="p-2 text-gray-400 hover:text-white cursor-pointer transition-colors rounded-md hover:bg-gray-700/50"
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setIsExpanded(!isExpanded);
+                }
+              }}
             >
               {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </Button>
+            </div>
           </CardTitle>
         </CardHeader>
         {isExpanded && (
@@ -158,14 +170,20 @@ export default function MessageInbox({ userId }: MessageInboxProps) {
                 </Badge>
               )}
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
+            <div
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-gray-400 hover:text-white focus:outline-none focus:ring-0 focus:bg-transparent"
+              className="p-2 text-gray-400 hover:text-white cursor-pointer transition-colors rounded-md hover:bg-gray-700/50"
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setIsExpanded(!isExpanded);
+                }
+              }}
             >
               {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </Button>
+            </div>
           </CardTitle>
         </CardHeader>
         {isExpanded && (

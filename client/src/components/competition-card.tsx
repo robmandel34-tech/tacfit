@@ -35,7 +35,7 @@ interface CompetitionCardProps {
 
 export default function CompetitionCard({ competition, userResult, onInvite, onJoin, onDismiss }: CompetitionCardProps) {
   return (
-    <Card className={`card-modern hover-lift fade-in group ${competition.isActive ? 'ring-2 ring-military-green/30 border-military-green/50' : ''}`}>
+    <Card className={`card-modern hover-lift fade-in group ${competition.isActive ? 'ring-2 ring-military-green/30 border-military-green/50 rounded-none' : ''}`}>
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">

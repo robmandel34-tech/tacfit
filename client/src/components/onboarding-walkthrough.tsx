@@ -24,7 +24,8 @@ import {
   Share,
   Monitor,
   AlertTriangle,
-  UserCheck
+  UserCheck,
+  Star
 } from 'lucide-react';
 import { Link } from 'wouter';
 

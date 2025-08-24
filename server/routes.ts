@@ -1,6 +1,7 @@
 import type { Express, Request } from "express";
 import express from "express";
 import session from "express-session";
+import ConnectPgSimple from "connect-pg-simple";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { 
@@ -12,6 +13,7 @@ import {
 } from "@shared/schema";
 import { ObjectStorageService, ObjectNotFoundError } from './objectStorage.js';
 import { db } from "./db";
+import { pool } from "./db";
 import { and, eq } from "drizzle-orm";
 import multer from "multer";
 import path from "path";
@@ -192,15 +194,23 @@ async function completeCompetition(competitionId: number) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Configure session middleware
+  // Create PostgreSQL session store
+  const PgSession = ConnectPgSimple(session);
+  
+  // Configure session middleware with PostgreSQL session store
   app.use(session({
+    store: new PgSession({
+      pool: pool, // Connection pool from db.ts
+      tableName: 'user_sessions', // Optional table name (defaults to 'session')
+      createTableIfMissing: true // Auto-create session table if missing
+    }),
     secret: process.env.SESSION_SECRET || 'tacfit-session-key-2025',
     resave: false,
     saveUninitialized: false,
     name: 'tacfit-session',
     rolling: true, // Reset expiration on activity
     cookie: { 
-      secure: false, // Allow non-HTTPS for development and Replit deployment
+      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
       httpOnly: true,
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
       sameSite: 'lax', // Help with CSRF protection while allowing normal navigation

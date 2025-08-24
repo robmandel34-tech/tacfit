@@ -90,7 +90,7 @@ export default function AdvertisementCard({ advertisement }: AdvertisementCardPr
               <img
                 src={advertisement.imageUrl}
                 alt={advertisement.title}
-                className="w-full h-48 object-cover"
+                className="w-full h-64 object-cover"
                 onLoad={() => {
                   setImageLoaded(true);
                   console.log("Advertisement image loaded successfully:", advertisement.imageUrl);

@@ -55,12 +55,19 @@ export default function Dashboard() {
     }
   });
 
-  const { data: paidCompetitionStatus } = useQuery<{ hasPaidCompetitions: boolean }>({
-    queryKey: [`/api/users/${user?.id}/paid-competitions`, Date.now()], // Force fresh call
+  const { data: paidCompetitionStatus, refetch: refetchPaidStatus } = useQuery<{ hasPaidCompetitions: boolean }>({
+    queryKey: [`/api/users/${user?.id}/paid-competitions`],
     enabled: !!user?.id,
     staleTime: 0, // Don't cache
-    cacheTime: 0, // Don't cache
+    gcTime: 0, // Don't cache (TanStack Query v5 uses gcTime instead of cacheTime)
   });
+
+  // Force refresh on component mount
+  useEffect(() => {
+    if (user?.id) {
+      refetchPaidStatus();
+    }
+  }, [user?.id, refetchPaidStatus]);
 
   const { data: currentUser } = useQuery<{ hideAdvertisements: boolean }>({
     queryKey: [`/api/users/${user?.id}`],

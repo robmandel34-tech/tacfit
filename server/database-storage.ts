@@ -573,7 +573,7 @@ export class DatabaseStorage implements IStorage {
           friendId: conv.friendId,
           friend: friend ? { id: friend.id, username: friend.username, avatar: friend.avatar } : { id: conv.friendId, username: "Unknown", avatar: null },
           lastMessage: lastMessage[0] || null,
-          unreadCount: unreadMessages[0]?.count || 0
+          unreadCount: parseInt(unreadMessages[0]?.count?.toString() || "0", 10)
         };
       })
     );

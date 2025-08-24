@@ -60,6 +60,16 @@ export default function Competitions() {
           const joinEndLocal = new Date(joinEnd);
           joinEndLocal.setHours(23, 59, 59, 999);
           
+          console.log('DEBUG: Join window calculation for', comp.name, {
+            now: now.toISOString(),
+            joinStartLocal: joinStartLocal.toISOString(),
+            joinEndLocal: joinEndLocal.toISOString(),
+            nowLessThanStart: now < joinStartLocal,
+            nowGreaterThanEnd: now > joinEndLocal,
+            rawJoinStart: comp.joinStartDate,
+            rawJoinEnd: comp.joinEndDate
+          });
+          
           if (now < joinStartLocal) {
             joinWindowStatus = 'not-opened';
             canJoin = false;

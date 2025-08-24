@@ -46,6 +46,24 @@ export default function DirectMessageModal({ isOpen, onClose, friend }: DirectMe
     enabled: isOpen && !!user,
   });
 
+  // Mark conversation as read when modal opens
+  useEffect(() => {
+    if (isOpen && user?.id && friend.id) {
+      markAsRead.mutate();
+    }
+  }, [isOpen, user?.id, friend.id]);
+
+  const markAsRead = useMutation({
+    mutationFn: async () => {
+      if (!user?.id || !friend.id) return;
+      return apiRequest("POST", `/api/conversations/${user.id}/${friend.id}/read`);
+    },
+    onSuccess: () => {
+      // Invalidate conversations query to update unread counts
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
+    },
+  });
+
   const sendMessage = useMutation({
     mutationFn: async (content: string) => {
       return apiRequest("POST", "/api/chat", {

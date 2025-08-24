@@ -2235,6 +2235,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get user conversations with unread counts
+  app.get("/api/conversations/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const conversations = await storage.getUserConversations(userId);
+      res.json(conversations);
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+      res.status(500).json({ message: "Error fetching conversations" });
+    }
+  });
+
+  // Mark conversation as read
+  app.post("/api/conversations/:userId/:friendId/read", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const friendId = parseInt(req.params.friendId);
+      await storage.markConversationAsRead(userId, friendId);
+      res.json({ message: "Conversation marked as read" });
+    } catch (error) {
+      console.error("Error marking conversation as read:", error);
+      res.status(500).json({ message: "Error marking conversation as read" });
+    }
+  });
+
   // Friend routes
   app.get("/api/friends/:userId", async (req, res) => {
     try {

@@ -81,6 +81,14 @@ export interface IStorage {
   getChatMessages(teamId?: number, competitionId?: number): Promise<ChatMessage[]>;
   getDirectMessages(userId1: number, userId2: number): Promise<ChatMessage[]>;
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
+  getUserConversations(userId: number): Promise<Array<{
+    friendId: number;
+    friend: { id: number; username: string; avatar?: string | null };
+    lastMessage: ChatMessage | null;
+    unreadCount: number;
+  }>>;
+  markMessageAsRead(messageId: number): Promise<void>;
+  markConversationAsRead(userId: number, friendId: number): Promise<void>;
   
   // Friend operations
   getFriendships(userId: number): Promise<Friendship[]>;

@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import DirectMessageModal from "@/components/direct-message-modal";
 import FindFriendsModal from "@/components/find-friends-modal";
+import MessageInbox from "@/components/message-inbox";
 
 import type { User, CompetitionHistory, Activity, TeamMember, Team, Competition, Friendship, MissionTask } from "@shared/schema";
 
@@ -1133,6 +1134,13 @@ export default function Profile() {
                 </DialogContent>
               </Dialog>
             </div>
+
+            {/* Message Inbox - Only show on own profile */}
+            {isOwnProfile && displayUser && (
+              <div className="mt-6">
+                <MessageInbox userId={displayUser.id} />
+              </div>
+            )}
 
           </div>
         </div>

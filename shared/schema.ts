@@ -136,6 +136,7 @@ export const chatMessages = pgTable("chat_messages", {
   competitionId: integer("competition_id").references(() => competitions.id),
   content: text("content").notNull(),
   type: text("type").default("team"), // team, competition, direct
+  readAt: timestamp("read_at"), // When the message was read by the receiver
   createdAt: timestamp("created_at").defaultNow(),
 });
 

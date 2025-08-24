@@ -510,6 +510,96 @@ export class DatabaseStorage implements IStorage {
     return message;
   }
 
+  async getUserConversations(userId: number): Promise<Array<{
+    friendId: number;
+    friend: { id: number; username: string; avatar?: string | null };
+    lastMessage: ChatMessage | null;
+    unreadCount: number;
+  }>> {
+    // Get all direct message conversations for the user
+    const conversations = await db
+      .select({
+        friendId: sql<number>`CASE 
+          WHEN ${chatMessages.senderId} = ${userId} THEN ${chatMessages.receiverId}
+          ELSE ${chatMessages.senderId}
+        END`,
+        lastMessageId: sql<number>`MAX(${chatMessages.id})`,
+      })
+      .from(chatMessages)
+      .where(
+        and(
+          eq(chatMessages.type, "direct"),
+          or(
+            eq(chatMessages.senderId, userId),
+            eq(chatMessages.receiverId, userId)
+          )
+        )
+      )
+      .groupBy(sql`CASE 
+        WHEN ${chatMessages.senderId} = ${userId} THEN ${chatMessages.receiverId}
+        ELSE ${chatMessages.senderId}
+      END`);
+
+    // Get friend details and last message for each conversation
+    const result = await Promise.all(
+      conversations.map(async (conv) => {
+        const friend = await this.getUser(conv.friendId);
+        const lastMessage = conv.lastMessageId 
+          ? await db.select().from(chatMessages).where(eq(chatMessages.id, conv.lastMessageId)).limit(1)
+          : [];
+        
+        // Count unread messages (messages sent by friend that haven't been read)
+        const unreadMessages = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(chatMessages)
+          .where(
+            and(
+              eq(chatMessages.type, "direct"),
+              eq(chatMessages.senderId, conv.friendId),
+              eq(chatMessages.receiverId, userId),
+              isNull(chatMessages.readAt)
+            )
+          );
+
+        return {
+          friendId: conv.friendId,
+          friend: friend ? { id: friend.id, username: friend.username, avatar: friend.avatar } : { id: conv.friendId, username: "Unknown", avatar: null },
+          lastMessage: lastMessage[0] || null,
+          unreadCount: unreadMessages[0]?.count || 0
+        };
+      })
+    );
+
+    // Sort by last message timestamp (most recent first)
+    return result.sort((a, b) => {
+      if (!a.lastMessage && !b.lastMessage) return 0;
+      if (!a.lastMessage) return 1;
+      if (!b.lastMessage) return -1;
+      return new Date(b.lastMessage.createdAt!).getTime() - new Date(a.lastMessage.createdAt!).getTime();
+    });
+  }
+
+  async markMessageAsRead(messageId: number): Promise<void> {
+    await db
+      .update(chatMessages)
+      .set({ readAt: new Date() })
+      .where(eq(chatMessages.id, messageId));
+  }
+
+  async markConversationAsRead(userId: number, friendId: number): Promise<void> {
+    await db
+      .update(chatMessages)
+      .set({ readAt: new Date() })
+      .where(
+        and(
+          eq(chatMessages.type, "direct"),
+          eq(chatMessages.senderId, friendId),
+          eq(chatMessages.receiverId, userId),
+          isNull(chatMessages.readAt)
+        )
+      );
+  }
+
   // Friend operations
   async getFriendships(userId: number): Promise<Friendship[]> {
     // Get friendships where user is either the requester or the recipient

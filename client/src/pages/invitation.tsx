@@ -143,7 +143,7 @@ export default function Invitation() {
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="bg-gradient-to-r from-military-green-dark to-military-green rounded-xl p-6 text-white mb-6">
+            <div className="bg-gradient-to-r from-military-green-dark to-military-green rounded-none p-6 text-white mb-6">
               <Crosshair className="h-16 w-16 mx-auto mb-4 text-military-green-light" />
               <h1 className="text-3xl font-bold mb-2">Mission Invitation</h1>
               <p className="text-gray-200">You've been invited to join a tactical fitness challenge</p>

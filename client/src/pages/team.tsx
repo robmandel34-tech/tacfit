@@ -549,7 +549,7 @@ export default function Team() {
               {/* Competition Results Display */}
               {(competition as any)?.isCompleted && (userResults as any)?.history?.find((h: any) => h.competitionId === (competition as any)?.id) && (
                 <div className="mt-4">
-                  <div className="p-4 bg-gradient-to-r from-military-green-dark to-military-green border border-military-green/30 rounded-lg">
+                  <div className="p-4 bg-gradient-to-r from-military-green-dark to-military-green border border-military-green/30 rounded-none">
                     <div className="flex items-center gap-2 mb-2">
                       <Trophy className="h-5 w-5 text-yellow-400" />
                       <h3 className="font-semibold text-white">Competition Results</h3>

@@ -190,6 +190,16 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
       return;
     }
 
+    // Require at least one image
+    if (imageFiles.length === 0) {
+      toast({
+        title: "Image required",
+        description: "Please add at least one photo to document your activity.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const formData = new FormData();
     formData.append("type", type);
     formData.append("description", description);

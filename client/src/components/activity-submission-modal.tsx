@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Camera, X, Clock } from "lucide-react";
+import { Camera, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 
@@ -27,7 +27,6 @@ interface ActivityType {
   requiresTextInput?: boolean;
   textInputDescription?: string;
   textInputMinWords?: number;
-  requiresHealthKit?: boolean;
 }
 
 interface Competition {
@@ -42,19 +41,6 @@ interface Team {
   competitionId: number;
 }
 
-interface HealthKitWorkout {
-  id: number;
-  workoutType: string;
-  duration: number;
-  totalEnergyBurned?: number;
-  totalDistance?: string;
-  startDate: string;
-  endDate: string;
-  sourceApp?: string;
-  deviceModel?: string;
-  isConverted: boolean;
-}
-
 export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySubmissionModalProps) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -65,9 +51,6 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   const [textInput, setTextInput] = useState("");
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [selectedHealthKitWorkout, setSelectedHealthKitWorkout] = useState<HealthKitWorkout | null>(null);
-  const [showHealthKitWorkouts, setShowHealthKitWorkouts] = useState(false);
-
 
   // Get user's current team membership
   const { data: userTeamMember } = useQuery<any[]>({
@@ -93,21 +76,6 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     select: (data: ActivityType[]) => data.filter(at => at.isActive).sort((a, b) => a.name.localeCompare(b.name))
   });
 
-  // Fetch user's HealthKit workouts
-  const { data: healthKitWorkouts = [], error: healthKitError, isLoading: healthKitLoading } = useQuery<HealthKitWorkout[]>({
-    queryKey: [`/api/apple-healthkit/workouts`],
-    enabled: !!user?.id && isOpen,
-    select: (data: HealthKitWorkout[]) => {
-      console.log('Raw HealthKit workouts:', data);
-      // Filter out already converted workouts and sort by most recent
-      const filtered = data.filter(w => !w.isConverted).sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
-      console.log('Filtered HealthKit workouts:', filtered);
-      return filtered;
-    },
-    retry: 3,
-    staleTime: 30000, // 30 seconds
-  });
-
   // Get required activities for current competition or fallback to all active types
   const availableActivityTypes = competition?.requiredActivities || activityTypes.map(at => at.name);
   
@@ -127,14 +95,11 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
 
   const selectedActivityType = competitionActivityTypes.find(at => at.name === type);
   const requiresTextInput = selectedActivityType?.requiresTextInput || false;
-  const requiresHealthKit = selectedActivityType?.requiresHealthKit || false;
   const textInputDescription = selectedActivityType?.textInputDescription || "";
   const minWords = selectedActivityType?.textInputMinWords || 50;
   const maxWords = 100;
   const currentWordCount = countWords(textInput);
   const isTextInputValid = !requiresTextInput || (currentWordCount >= minWords && currentWordCount <= maxWords);
-
-
 
   const submitActivity = useMutation({
     mutationFn: async (data: FormData) => {
@@ -186,44 +151,6 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     },
   });
 
-  const convertHealthKitWorkout = useMutation({
-    mutationFn: async (workoutData: { workoutId: number; activityType: string }) => {
-      const response = await fetch("/api/apple-health/convert-workout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(workoutData),
-      });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to convert workout");
-      }
-      
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "HealthKit workout converted!",
-        description: "Your workout has been added to the competition.",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
-      queryClient.invalidateQueries({ predicate: (query) => 
-        query.queryKey[0]?.toString()?.includes("/api/activities") ?? false
-      });
-      queryClient.invalidateQueries({ queryKey: [`/api/apple-health/workouts/${user?.id}`] });
-      queryClient.invalidateQueries({ queryKey: ["/api/users", user?.id] });
-      onClose();
-      resetForm();
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Failed to convert workout",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  });
-
   const resetForm = () => {
     setType("");
     setDescription("");
@@ -231,621 +158,329 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     setTextInput("");
     setImageFiles([]);
     setVideoFile(null);
-    setSelectedHealthKitWorkout(null);
-    setShowHealthKitWorkouts(false);
   };
 
-  // Helper function to format workout duration
-  const formatWorkoutDuration = (minutes: number): string => {
-    if (minutes < 60) return `${minutes}m`;
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-    return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
-  };
-
-  // Helper function to format workout type for display
-  const formatWorkoutType = (workoutType: string): string => {
-    return workoutType.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
-  };
-
-  // Handle HealthKit workout selection and conversion
-  const handleHealthKitWorkoutSelect = (workout: HealthKitWorkout) => {
-    if (!type) {
-      toast({
-        title: "Select activity type first",
-        description: "Please select an activity type before choosing a HealthKit workout.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    convertHealthKitWorkout.mutate({
-      workoutId: workout.id,
-      activityType: type
-    });
-  };
-
-
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!user) return;
-    
-    // Validate required fields
-    if (!type || !description || !quantity) {
+
+    if (!user) {
       toast({
-        title: "Missing fields",
-        description: "Please fill in all required fields.",
+        title: "Authentication required",
+        description: "Please log in to submit activities.",
         variant: "destructive",
       });
       return;
     }
 
-    // Validate text input if required
-    if (!isTextInputValid) {
+    if (!competitionHasStarted) {
+      toast({
+        title: "Competition hasn't started",
+        description: `Competition starts in ${daysUntilStart} day${daysUntilStart !== 1 ? 's' : ''}. Please wait until then to submit activities.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!isTextInputValid && requiresTextInput) {
       toast({
         title: "Text input required",
-        description: `Please write at least ${minWords} words in the required text input.`,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (requiresHealthKit && !selectedHealthKitWorkout) {
-      toast({
-        title: "HealthKit Workout Required",
-        description: "This activity type requires selecting a HealthKit workout from the dropdown above.",
+        description: `Please provide a response with ${minWords}-${maxWords} words.`,
         variant: "destructive",
       });
       return;
     }
 
     const formData = new FormData();
-    formData.append("userId", user.id.toString());
     formData.append("type", type);
     formData.append("description", description);
     formData.append("quantity", quantity);
+    formData.append("teamId", userTeamMember?.[0]?.teamId?.toString() || "");
     
-    // Add text input if provided
-    if (textInput.trim()) {
+    // Add text input if required
+    if (requiresTextInput && textInput.trim()) {
       formData.append("textInput", textInput.trim());
     }
-    
-    // Add HealthKit workout information if selected
-    if (selectedHealthKitWorkout) {
-      formData.append("healthKitWorkoutId", selectedHealthKitWorkout.id.toString());
-      formData.append("evidenceType", "apple_health");
-      // Enhanced text input with HealthKit data
-      const healthKitDetails = `HealthKit Workout Data:\n- Type: ${selectedHealthKitWorkout.workoutType}\n- Duration: ${formatWorkoutDuration(selectedHealthKitWorkout.duration)}\n- Date: ${new Date(selectedHealthKitWorkout.startDate).toLocaleDateString()}${selectedHealthKitWorkout.totalEnergyBurned ? `\n- Calories: ${selectedHealthKitWorkout.totalEnergyBurned}` : ''}${selectedHealthKitWorkout.totalDistance ? `\n- Distance: ${selectedHealthKitWorkout.totalDistance}` : ''}${textInput.trim() ? `\n\nAdditional Notes:\n${textInput.trim()}` : ''}`;
-      formData.append("healthKitTextInput", healthKitDetails);
-    }
-    
+
+    // Add image files
+    imageFiles.forEach((file, index) => {
+      formData.append(`images`, file);
+    });
+
+    // Add video file
     if (videoFile) {
-      formData.append("evidence", videoFile);
-    }
-    
-    if (imageFiles.length > 0) {
-      imageFiles.forEach((file, index) => {
-        formData.append("images", file);
-      });
+      formData.append("video", videoFile);
     }
 
     submitActivity.mutate(formData);
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = Array.from(e.target.files || []);
-    if (selectedFiles.length > 0) {
-      // Limit to 5 images maximum
-      const limitedFiles = selectedFiles.slice(0, 5);
-      setImageFiles(limitedFiles);
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const validFiles = files.filter(file => {
+      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+        toast({
+          title: "File too large",
+          description: `${file.name} is larger than 10MB. Please choose a smaller file.`,
+          variant: "destructive",
+        });
+        return false;
+      }
+      return true;
+    });
+    
+    setImageFiles(prev => [...prev, ...validFiles].slice(0, 5)); // Max 5 images
+  };
+
+  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 100 * 1024 * 1024) { // 100MB limit
+        toast({
+          title: "Video too large",
+          description: "Video files must be smaller than 100MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+      setVideoFile(file);
     }
   };
 
-  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      // Check if it's a video file
-      if (selectedFile.type.startsWith('video/')) {
-        // Create video element to check duration
-        const video = document.createElement('video');
-        video.preload = 'metadata';
-        
-        video.onloadedmetadata = () => {
-          window.URL.revokeObjectURL(video.src);
-          
-          if (video.duration > 15) {
-            toast({
-              title: "Video too long",
-              description: "Videos must be 15 seconds or shorter",
-              variant: "destructive",
-            });
-            // Clear the file input
-            e.target.value = '';
-            return;
-          }
-          
-          setVideoFile(selectedFile);
-        };
-        
-        video.onerror = () => {
-          window.URL.revokeObjectURL(video.src);
-          toast({
-            title: "Invalid video file",
-            description: "Please select a valid video file",
-            variant: "destructive",
-          });
-          e.target.value = '';
-        };
-        
-        video.src = URL.createObjectURL(selectedFile);
-      } else {
-        setVideoFile(selectedFile);
-      }
-    }
+  const removeImage = (index: number) => {
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
   };
+
+  const removeVideo = () => {
+    setVideoFile(null);
+  };
+
+  if (!isOpen) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-tactical-gray-light border-tactical-gray text-white max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-tactical-gray-dark border border-tactical-gray text-white">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-white">Submit Activity</DialogTitle>
+          <DialogTitle className="text-white text-xl font-bold">Submit Activity</DialogTitle>
         </DialogHeader>
-        
-        {/* Competition Not Started Warning */}
-        {!competitionHasStarted && competition && (
-          <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-4 mb-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Clock className="h-5 w-5 text-orange-500" />
-              <h3 className="font-semibold text-orange-100">Competition Not Started</h3>
-            </div>
-            <p className="text-sm text-orange-200">
-              The competition "{competition.name}" starts on {new Date(competition.startDate).toLocaleDateString()}.
-              {daysUntilStart > 0 && ` That's ${daysUntilStart} day${daysUntilStart === 1 ? '' : 's'} from now.`}
-            </p>
-            <p className="text-xs text-orange-300 mt-2">
-              Activity submissions will be available once the competition begins.
-            </p>
-          </div>
-        )}
-        
-        <div className="max-h-[70vh] overflow-y-auto pr-2">
-          <form id="activity-form" onSubmit={handleSubmit} className="space-y-4">
-            
 
-            
-            <div>
-            <Label className="text-gray-300 font-medium mb-2">Activity Type</Label>
-            <Select value={type} onValueChange={setType} disabled={!competitionHasStarted}>
-              <SelectTrigger className="bg-tactical-gray-lighter border-2 border-tactical-gray text-white focus:border-white focus:ring-0 focus:ring-offset-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed">
-                <SelectValue placeholder={!competitionHasStarted ? "Competition not started" : "Select activity type"} />
-              </SelectTrigger>
-              <SelectContent className="bg-tactical-gray-light border-tactical-gray text-white">
-                {competitionActivityTypes.map((activityType) => (
-                  <SelectItem 
-                    key={activityType.name} 
-                    value={activityType.name} 
-                    className="text-white hover:bg-military-green focus:bg-military-green data-[highlighted]:bg-military-green data-[highlighted]:text-white"
-                  >
-                    <div className="flex items-center justify-between w-full">
-                      <span>{activityType.displayName}</span>
-                      {activityType.requiresHealthKit && (
-                        <span className="text-xs text-green-400 bg-green-400/20 px-2 py-1 rounded ml-2">
-                          HealthKit Required
-                        </span>
-                      )}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            
-            {/* Activity Description */}
-            {type && (
-              <div className="mt-3 space-y-2">
-                <div className="p-3 bg-tactical-gray-lighter rounded-lg border border-tactical-gray">
-                  <p className="text-sm text-gray-300">
-                    <strong className="text-white">About {competitionActivityTypes.find(at => at.name === type)?.displayName}:</strong>
-                  </p>
-                  <p className="text-sm text-gray-400 mt-1">
-                    {competitionActivityTypes.find(at => at.name === type)?.description || "No description available"}
-                  </p>
-                </div>
-                
-                {/* HealthKit Requirement Warning */}
-                {requiresHealthKit && (
-                  <div className="p-3 bg-yellow-400/10 border border-yellow-400/30 rounded-lg">
-                    <div className="flex items-start space-x-2">
-                      <div className="text-yellow-400 text-sm">⚠️</div>
-                      <div>
-                        <p className="text-sm text-yellow-400 font-medium">
-                          Apple HealthKit Required
-                        </p>
-                        <p className="text-xs text-yellow-300 mt-1">
-                          This activity type can only be submitted through Apple HealthKit automatic sync. 
-                          Manual submissions are not allowed. Connect your HealthKit in your profile to track this activity.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {!competitionHasStarted ? (
+            <div className="p-4 bg-yellow-500/20 border border-yellow-500/30 rounded-lg">
+              <div className="flex items-center gap-2 text-yellow-400 mb-2">
+                ⏰ Competition Not Started
               </div>
-            )}
-
-            {/* HealthKit Workout Selection Dropdown */}
-            {type && competitionHasStarted && (
-              <div className="mt-4 space-y-3">
-                {healthKitLoading && (
-                  <div className="text-gray-400 text-sm">Loading Apple HealthKit workouts...</div>
-                )}
-                {healthKitError && (
-                  <div className="text-red-400 text-sm">
-                    Error loading HealthKit workouts: {(healthKitError as any)?.message || 'Unknown error'}
-                  </div>
-                )}
-                {!healthKitLoading && !healthKitError && healthKitWorkouts.length > 0 ? (
-                  <>
-                    <Label className="text-gray-300 font-medium">Select from Apple HealthKit Workouts</Label>
-                    <Select onValueChange={(value) => {
-                      if (value === "manual") {
-                        setSelectedHealthKitWorkout(null);
-                        setDescription("");
-                        setQuantity("");
-                      } else {
-                        const workout = healthKitWorkouts.find(w => w.id.toString() === value);
-                        if (workout) {
-                          setSelectedHealthKitWorkout(workout);
-                          // Auto-fill form but allow customization
-                          setDescription(`${workout.workoutType} workout - ${formatWorkoutDuration(workout.duration)}`);
-                          setQuantity(workout.duration?.toString() || "30");
-                        }
-                      }
-                    }}>
-                      <SelectTrigger className="bg-tactical-gray-lighter border-2 border-tactical-gray text-white focus:border-white focus:ring-0 focus:ring-offset-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
-                        <SelectValue placeholder={`Choose from ${healthKitWorkouts.length} workouts or enter manually`} />
-                      </SelectTrigger>
-                      <SelectContent 
-                        className="bg-tactical-gray-light border-tactical-gray text-white z-50" 
-                        position="popper"
-                        sideOffset={5}
-                        style={{
-                          maxHeight: healthKitWorkouts.length > 4 ? '320px' : 'auto',
-                          overflowY: healthKitWorkouts.length > 4 ? 'auto' : 'visible'
-                        }}
+              <p className="text-sm text-gray-300">
+                The competition starts in {daysUntilStart} day{daysUntilStart !== 1 ? 's' : ''}. 
+                Come back then to start logging activities!
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Activity Type Selection */}
+              <div className="space-y-2">
+                <Label className="text-gray-300 font-medium">Activity Type</Label>
+                <Select value={type} onValueChange={setType}>
+                  <SelectTrigger className="bg-tactical-gray-lighter border-2 border-tactical-gray text-white focus:border-white focus:ring-0 focus:ring-offset-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
+                    <SelectValue placeholder="Choose an activity type" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-tactical-gray-light border-tactical-gray text-white z-50" position="popper" sideOffset={5}>
+                    {competitionActivityTypes.map((activityType) => (
+                      <SelectItem 
+                        key={activityType.name} 
+                        value={activityType.name}
+                        className="text-white hover:bg-military-green focus:bg-military-green data-[highlighted]:bg-military-green data-[highlighted]:text-white cursor-pointer"
                       >
-                        <div className={healthKitWorkouts.length > 4 ? "max-h-[280px] overflow-y-auto" : ""}>
-                          <SelectItem 
-                            value="manual" 
-                            className="text-white hover:bg-military-green focus:bg-military-green data-[highlighted]:bg-military-green data-[highlighted]:text-white cursor-pointer"
-                          >
-                            📝 Enter activity manually
-                          </SelectItem>
-                          {healthKitWorkouts.map((workout, index) => (
-                            <SelectItem 
-                              key={workout.id} 
-                              value={workout.id.toString()}
-                              className="text-white hover:bg-military-green focus:bg-military-green data-[highlighted]:bg-military-green data-[highlighted]:text-white cursor-pointer"
-                            >
-                              <div className="flex items-center justify-between w-full py-1">
-                                <div className="flex flex-col items-start">
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-medium">{formatWorkoutType(workout.workoutType)}</span>
-                                    <span className="text-xs text-green-400">#{index + 1}</span>
-                                    <span className="text-xs text-gray-400">{formatWorkoutDuration(workout.duration)}</span>
-                                  </div>
-                                  <div className="text-xs text-gray-500 flex items-center gap-2">
-                                    <span>{new Date(workout.startDate).toLocaleDateString()}</span>
-                                    {workout.totalEnergyBurned && <span>• {workout.totalEnergyBurned} cal</span>}
-                                    {workout.totalDistance && <span>• {workout.totalDistance}</span>}
-                                    {(workout as any).hasRoute && <span className="text-green-400">• GPS route</span>}
-                                  </div>
-                                </div>
-                                <span className="text-xs text-green-400 bg-green-400/20 px-2 py-1 rounded ml-2">Auto-fill</span>
-                              </div>
-                            </SelectItem>
-                          ))}
+                        <div className="flex items-center justify-between w-full">
+                          <span>{activityType.displayName}</span>
                         </div>
-                      </SelectContent>
-                    </Select>
-                    
-                    {selectedHealthKitWorkout && (
-                      <div className="bg-military-green/10 border border-military-green/30 rounded-lg p-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-military-green font-medium">HealthKit Workout Selected</span>
-                            <span className="text-xs text-green-400 bg-green-400/20 px-2 py-1 rounded">Verified data</span>
-                          </div>
-                          <span className="text-xs text-military-green">Add Apple Fitness screenshots</span>
-                        </div>
-                        <div className="bg-blue-400/10 border border-blue-400/30 rounded-lg p-2 mb-2">
-                          <p className="text-xs text-blue-300">
-                            📱 <strong>For authentic workout details:</strong> Take screenshots from your Apple Fitness app showing workout details, GPS route, and heart rate data, then upload them below for the most accurate activity post.
-                          </p>
-                        </div>
-                        <div className="text-xs text-gray-300 space-y-1">
-                          <div><strong>Type:</strong> {selectedHealthKitWorkout.workoutType}</div>
-                          <div><strong>Duration:</strong> {formatWorkoutDuration(selectedHealthKitWorkout.duration)}</div>
-                          <div><strong>Date:</strong> {new Date(selectedHealthKitWorkout.startDate).toLocaleDateString()}</div>
-                          {selectedHealthKitWorkout.totalEnergyBurned && (
-                            <div><strong>Calories:</strong> {selectedHealthKitWorkout.totalEnergyBurned}</div>
-                          )}
-                          {selectedHealthKitWorkout.totalDistance && (
-                            <div><strong>Distance:</strong> {selectedHealthKitWorkout.totalDistance}</div>
-                          )}
-                          {(selectedHealthKitWorkout as any).hasRoute && (
-                            <div className="flex items-center gap-1">
-                              <strong>Route:</strong> 
-                              <span className="text-green-400">GPS tracked</span>
-                              <span className="text-xs bg-green-400/20 px-1 rounded">Map included</span>
-                            </div>
-                          )}
-                          {(selectedHealthKitWorkout as any).elevationGain > 0 && (
-                            <div><strong>Elevation:</strong> {(selectedHealthKitWorkout as any).elevationGain}m gain</div>
-                          )}
-                        </div>
-                        <p className="text-xs text-gray-400 mt-2">
-                          💡 Form auto-filled with HealthKit data. Customize description and add photos/videos below, then submit normally.
-                        </p>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
-                    <div className="flex items-start space-x-2">
-                      <div className="text-blue-400 text-sm">💡</div>
-                      <div>
-                        <p className="text-sm text-blue-400 font-medium">No HealthKit Workouts Found</p>
-                        <p className="text-xs text-blue-300 mt-1">
-                          Sync your Apple HealthKit to see your workouts here and earn automatic activity points.
-                        </p>
-                      </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                
+                {/* Activity Description */}
+                {type && (
+                  <div className="mt-3 space-y-2">
+                    <div className="p-3 bg-tactical-gray-lighter rounded-lg border border-tactical-gray">
+                      <p className="text-sm text-gray-300">
+                        <strong className="text-white">About {competitionActivityTypes.find(at => at.name === type)?.displayName}:</strong>
+                      </p>
+                      <p className="text-sm text-gray-400 mt-1">
+                        {competitionActivityTypes.find(at => at.name === type)?.description || "No description available"}
+                      </p>
                     </div>
                   </div>
                 )}
               </div>
-            )}
-          </div>
-          
-          <div>
-            <Label className="text-gray-300 font-medium mb-2">Description</Label>
-            <Textarea 
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="bg-tactical-gray-lighter border-2 border-tactical-gray text-white h-24 focus:border-white focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
-              placeholder={!competitionHasStarted ? "Competition not started" : "Describe your activity..."}
-              disabled={!competitionHasStarted}
-              required
-            />
-          </div>
-          
-          <div>
-            <Label className="text-gray-300 font-medium mb-2">Quantity</Label>
-            {type && (
-              <div className="text-sm text-military-green font-medium mb-2">
-                Enter amount in {competitionActivityTypes.find(at => at.name === type)?.measurementUnit || 'units'}
-              </div>
-            )}
-            <Input
-              type="number"
-              min="1"
-              step="1"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              className="bg-tactical-gray-lighter border-2 border-tactical-gray text-white focus:border-white focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
-              placeholder={
-                !competitionHasStarted 
-                  ? "Competition not started"
-                  : type 
-                    ? `e.g., ${competitionActivityTypes.find(at => at.name === type)?.defaultQuantity || 30}`
-                    : "Select activity type first"
-              }
-              disabled={!type || !competitionHasStarted}
-              required
-            />
-          </div>
 
-          {/* Text Input Field (conditionally rendered) */}
-          {requiresTextInput && (
-            <div>
-              <Label className="text-gray-300 font-medium mb-2">
-                Additional Details Required
-                <span className="text-red-400 ml-1">*</span>
-              </Label>
-              {textInputDescription && (
-                <div className="text-sm text-military-green font-medium mb-2">
-                  {textInputDescription}
-                </div>
-              )}
-              <Textarea 
-                value={textInput}
-                onChange={(e) => setTextInput(e.target.value)}
-                className={`bg-tactical-gray-lighter border-2 ${
-                  isTextInputValid ? 'border-tactical-gray' : 'border-red-500'
-                } text-white h-32 focus:border-white focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed`}
-                placeholder={!competitionHasStarted ? "Competition not started" : `Write ${minWords}-${maxWords} words...`}
-                disabled={!competitionHasStarted}
-                required
-              />
-              <div className="flex justify-between items-center mt-2">
-                <div className={`text-sm ${
-                  currentWordCount >= minWords && currentWordCount <= maxWords 
-                    ? 'text-green-400' 
-                    : 'text-gray-400'
-                }`}>
-                  Word count: {currentWordCount} / {minWords}-{maxWords} words
-                </div>
-                {currentWordCount > 0 && !isTextInputValid && (
-                  <div className="text-xs text-red-400">
-                    {currentWordCount < minWords 
-                      ? `${minWords - currentWordCount} more words needed`
-                      : `${currentWordCount - maxWords} words over limit`
-                    }
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-          
-          {/* Points Display */}
-          <div className="p-3 bg-tactical-gray-lighter rounded-lg border border-tactical-gray">
-            <div className="flex items-center justify-between">
-              <span className="text-gray-300">Base Points:</span>
-              <span className="text-white font-bold">15 points</span>
-            </div>
-            {imageFiles.length > 0 && videoFile && (
-              <div className="flex items-center justify-between mt-1 text-military-green">
-                <span className="text-sm">Bonus (Photos + Video):</span>
-                <span className="font-bold">+15 points</span>
-              </div>
-            )}
-            <div className="border-t border-tactical-gray mt-2 pt-2">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-300 font-medium">Total:</span>
-                <span className="text-military-green font-bold text-lg">
-                  {imageFiles.length > 0 && videoFile ? '30' : '15'} points
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label className="text-gray-300 font-medium mb-2">Evidence (Photos + Video)</Label>
-              {imageFiles.length > 0 && videoFile && (
-                <div className="text-xs text-military-green font-medium bg-military-green/10 px-2 py-1 rounded">
-                  Double Points!
-                </div>
-              )}
-            </div>
-            
-            {(imageFiles.length === 0 || !videoFile) ? (
-              <div className="text-xs text-gray-400 mb-2">
-                💡 Submit both images and video evidence to earn double points (30 total)
-              </div>
-            ) : null}
-            
-            {/* Multiple Images Upload */}
-            <div className="border-2 border-dashed border-tactical-gray rounded-lg p-4 text-center hover:border-white/50 transition-colors">
-              <div className="mb-2">
-                <Camera className="mx-auto h-6 w-6 text-gray-400 mb-1" />
-                <p className="text-gray-400 text-sm">Image Evidence (up to 5 images)</p>
-              </div>
-              {imageFiles.length > 0 ? (
+              {/* Quantity Input */}
+              {type && (
                 <div className="space-y-2">
-                  <p className="text-green-400">✓ {imageFiles.length} image{imageFiles.length > 1 ? 's' : ''} selected</p>
-                  <div className="text-gray-400 text-xs space-y-1">
+                  <Label className="text-gray-300 font-medium">
+                    Quantity ({selectedActivityType?.measurementUnit || "minutes"})
+                  </Label>
+                  <Input
+                    type="number"
+                    value={quantity}
+                    onChange={(e) => setQuantity(e.target.value)}
+                    placeholder={selectedActivityType?.defaultQuantity?.toString() || "30"}
+                    className="bg-tactical-gray-lighter border-2 border-tactical-gray text-white placeholder-gray-400 focus:border-white focus:ring-0 focus:ring-offset-0 focus:outline-none"
+                    required
+                  />
+                </div>
+              )}
+
+              {/* Description Input */}
+              {type && (
+                <div className="space-y-2">
+                  <Label className="text-gray-300 font-medium">Description</Label>
+                  <Textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Describe your activity..."
+                    className="bg-tactical-gray-lighter border-2 border-tactical-gray text-white placeholder-gray-400 focus:border-white resize-none focus:ring-0 focus:ring-offset-0 focus:outline-none"
+                    rows={3}
+                    required
+                  />
+                </div>
+              )}
+
+              {/* Text Input for specific activity types */}
+              {type && requiresTextInput && (
+                <div className="space-y-2">
+                  <Label className="text-gray-300 font-medium">
+                    Additional Response {minWords && `(${minWords}-${maxWords} words)`}
+                  </Label>
+                  {textInputDescription && (
+                    <p className="text-sm text-gray-400 mb-2">
+                      {textInputDescription}
+                    </p>
+                  )}
+                  <Textarea
+                    value={textInput}
+                    onChange={(e) => setTextInput(e.target.value)}
+                    placeholder="Please provide your response here..."
+                    className={`bg-tactical-gray-lighter border-2 text-white placeholder-gray-400 resize-none focus:ring-0 focus:ring-offset-0 focus:outline-none ${
+                      !isTextInputValid ? 'border-red-500 focus:border-red-500' : 'border-tactical-gray focus:border-white'
+                    }`}
+                    rows={4}
+                  />
+                  <div className="flex justify-between text-sm">
+                    <span className={currentWordCount < minWords || currentWordCount > maxWords ? 'text-red-400' : 'text-gray-400'}>
+                      {currentWordCount} / {minWords}-{maxWords} words
+                    </span>
+                    {!isTextInputValid && (
+                      <span className="text-red-400">
+                        {currentWordCount < minWords ? `Need ${minWords - currentWordCount} more words` : `${currentWordCount - maxWords} words over limit`}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Photo Evidence */}
+              <div className="space-y-3">
+                <Label className="text-gray-300 font-medium">Photo Evidence (Optional)</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <input
+                      type="file"
+                      id="image-upload"
+                      multiple
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => document.getElementById('image-upload')?.click()}
+                      className="w-full bg-tactical-gray-lighter border-2 border-tactical-gray text-white hover:bg-tactical-gray hover:text-white flex items-center gap-2 h-20"
+                      disabled={imageFiles.length >= 5}
+                    >
+                      <Camera className="w-5 h-5" />
+                      Add Photos ({imageFiles.length}/5)
+                    </Button>
+                  </div>
+                  <div>
+                    <input
+                      type="file"
+                      id="video-upload"
+                      accept="video/*"
+                      onChange={handleVideoUpload}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => document.getElementById('video-upload')?.click()}
+                      className="w-full bg-tactical-gray-lighter border-2 border-tactical-gray text-white hover:bg-tactical-gray hover:text-white flex items-center gap-2 h-20"
+                      disabled={!!videoFile}
+                    >
+                      <Camera className="w-5 h-5" />
+                      {videoFile ? "Video Added" : "Add Video"}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Image Previews */}
+                {imageFiles.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2">
                     {imageFiles.map((file, index) => (
-                      <div key={index} className="flex items-center justify-center space-x-2">
-                        <span>{file.name}</span>
-                        <span>• {Math.round(file.size / 1024)}KB</span>
+                      <div key={index} className="relative">
+                        <img
+                          src={URL.createObjectURL(file)}
+                          alt={`Preview ${index + 1}`}
+                          className="w-full h-20 object-cover rounded-lg border border-tactical-gray"
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => removeImage(index)}
+                          className="absolute top-1 right-1 w-6 h-6 p-0 rounded-full"
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
                       </div>
                     ))}
                   </div>
-                  <Button 
-                    type="button" 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => setImageFiles([])}
-                    className="text-red-400 hover:text-red-300"
-                  >
-                    <X className="h-4 w-4 mr-1" />
-                    Remove All
-                  </Button>
-                </div>
-              ) : (
-                <div>
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleImageChange}
-                    className="hidden"
-                    id="image-upload"
-                    disabled={!competitionHasStarted}
-                  />
-                  <Label 
-                    htmlFor="image-upload"
-                    className={`cursor-pointer ${!competitionHasStarted ? 'opacity-50 cursor-not-allowed text-gray-500' : 'text-military-green hover:text-military-green-light'}`}
-                  >
-                    {!competitionHasStarted ? "Not Available" : "Choose Images"}
-                  </Label>
-                </div>
-              )}
-            </div>
+                )}
 
-            {/* Video Upload */}
-            <div className="border-2 border-dashed border-tactical-gray rounded-lg p-4 text-center hover:border-white/50 transition-colors">
-              <div className="mb-2">
-                <div className="mx-auto h-6 w-6 text-gray-400 mb-1 flex items-center justify-center">🎥</div>
-                <p className="text-gray-400 text-sm">Video Evidence</p>
-                <p className="text-xs text-gray-500 mt-1">Recommended: MP4 format for best compatibility</p>
+                {/* Video Preview */}
+                {videoFile && (
+                  <div className="relative">
+                    <video
+                      src={URL.createObjectURL(videoFile)}
+                      className="w-full h-32 object-cover rounded-lg border border-tactical-gray"
+                      controls
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="destructive"
+                      onClick={removeVideo}
+                      className="absolute top-2 right-2 w-6 h-6 p-0 rounded-full"
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                  </div>
+                )}
               </div>
-              {videoFile ? (
-                <div className="space-y-2">
-                  <p className="text-green-400">✓ {videoFile.name}</p>
-                  <p className="text-gray-400 text-xs">
-                    Video • {Math.round(videoFile.size / 1024)}KB
-                  </p>
-                  <Button 
-                    type="button" 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => setVideoFile(null)}
-                    className="text-red-400 hover:text-red-300"
-                  >
-                    <X className="h-4 w-4 mr-1" />
-                    Remove
-                  </Button>
-                </div>
-              ) : (
-                <div>
-                  <Input
-                    type="file"
-                    accept="video/*"
-                    onChange={handleVideoChange}
-                    className="hidden"
-                    id="video-upload"
-                    disabled={!competitionHasStarted}
-                  />
-                  <Label 
-                    htmlFor="video-upload"
-                    className={`cursor-pointer ${!competitionHasStarted ? 'opacity-50 cursor-not-allowed text-gray-500' : 'text-military-green hover:text-military-green-light'}`}
-                  >
-                    {!competitionHasStarted ? "Not Available" : "Choose Video"}
-                  </Label>
-                </div>
-              )}
-            </div>
-          </div>
-          </form>
-        </div>
-        
-        <div className="flex space-x-3 pt-4 border-t border-tactical-gray">
-          <Button 
-            type="button" 
-            variant="ghost"
-            onClick={onClose}
-            className="flex-1 bg-tactical-gray-lighter hover:bg-tactical-gray-lightest text-white"
+            </>
+          )}
+
+          {/* Submit Button */}
+          <Button
+            type="submit"
+            className="w-full bg-military-green hover:bg-military-green-dark text-white font-medium py-3"
+            disabled={submitActivity.isPending || !type || !description || !competitionHasStarted}
           >
-            Cancel
+            {submitActivity.isPending
+              ? "Submitting..."
+              : "Submit Activity"}
           </Button>
-          <Button 
-            type="submit" 
-            form="activity-form"
-            disabled={submitActivity.isPending || !type || !description || !competitionHasStarted || (requiresHealthKit && !selectedHealthKitWorkout)}
-            className="flex-1 bg-military-green hover:bg-military-green-light text-white disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {(requiresHealthKit && !selectedHealthKitWorkout)
-              ? "Select HealthKit Workout to Continue"
-              : submitActivity.isPending 
-                ? "Submitting..." 
-                : !competitionHasStarted 
-                  ? "Competition Not Started" 
-                  : "Submit"
-            }
-          </Button>
-        </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

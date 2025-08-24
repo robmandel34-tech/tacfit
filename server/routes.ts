@@ -810,7 +810,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get user's competition entries
       const entries = await storage.getUserCompetitionEntries(userId);
       const hasPaidEntry = entries.some(entry => 
-        entry.paymentType === 'one_time' && entry.paymentStatus === 'succeeded'
+        (entry.paymentType === 'one_time' && entry.paymentStatus === 'succeeded') ||
+        (entry.paymentType === 'points' && entry.paymentStatus === 'completed')
       );
       
       res.json({ hasPaidCompetitions: hasPaidEntry });

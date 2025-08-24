@@ -35,6 +35,7 @@ export default function Competitions() {
     queryKey: ["/api/competitions"],
     enabled: !!user,
     select: (data: any[]) => {
+      // Get current date in user's local timezone for comparison
       const now = new Date();
       
       // Add computed join window status to each competition
@@ -47,15 +48,22 @@ export default function Competitions() {
           joinWindowStatus = 'closed';
           canJoin = false;
         } else if (comp.joinStartDate && comp.joinEndDate) {
+          // Parse the dates and ensure proper timezone handling
           const joinStart = new Date(comp.joinStartDate);
-          // Set join end to end of day (23:59:59.999) instead of beginning of day
           const joinEnd = new Date(comp.joinEndDate);
-          joinEnd.setHours(23, 59, 59, 999);
           
-          if (now < joinStart) {
+          // Set join start to beginning of day in user's timezone
+          const joinStartLocal = new Date(joinStart);
+          joinStartLocal.setHours(0, 0, 0, 0);
+          
+          // Set join end to end of day in user's timezone  
+          const joinEndLocal = new Date(joinEnd);
+          joinEndLocal.setHours(23, 59, 59, 999);
+          
+          if (now < joinStartLocal) {
             joinWindowStatus = 'not-opened';
             canJoin = false;
-          } else if (now > joinEnd) {
+          } else if (now > joinEndLocal) {
             joinWindowStatus = 'closed';
             canJoin = false;
           } else {

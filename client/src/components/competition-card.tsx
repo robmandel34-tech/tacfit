@@ -117,7 +117,7 @@ export default function CompetitionCard({ competition, userResult, onInvite, onJ
               <div className="flex flex-col">
                 <span className="font-medium text-military-green text-xs">Join Window:</span>
                 <span className="font-medium">
-                  {new Date(competition.joinStartDate).toLocaleDateString()} - {new Date(competition.joinEndDate).toLocaleDateString()}
+                  {new Date(competition.joinStartDate).toLocaleDateString('en-US', { timeZone: 'UTC' })} - {new Date(competition.joinEndDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}
                 </span>
               </div>
             </div>
@@ -128,7 +128,7 @@ export default function CompetitionCard({ competition, userResult, onInvite, onJ
             <div className="flex flex-col">
               <span className="font-medium text-steel-blue text-xs">Competition:</span>
               <span className="font-medium">
-                {new Date(competition.startDate).toLocaleDateString()} - {new Date(competition.endDate).toLocaleDateString()}
+                {new Date(competition.startDate).toLocaleDateString('en-US', { timeZone: 'UTC' })} - {new Date(competition.endDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}
               </span>
             </div>
           </div>

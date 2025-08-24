@@ -1854,11 +1854,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/activities", upload.fields([
-    { name: 'evidence', maxCount: 1 },
-    { name: 'images', maxCount: 5 },
-    { name: 'video', maxCount: 1 }
-  ]), async (req, res) => {
+  app.post("/api/activities", upload.any(), async (req, res) => {
     try {
       console.log("Activity submission request body:", req.body);
       console.log("Activity submission files:", req.files);

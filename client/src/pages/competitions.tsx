@@ -118,8 +118,13 @@ export default function Competitions() {
     if (competition) {
       // Check if competition requires payment
       if (competition.paymentType === 'one_time' && competition.entryFee && competition.entryFee > 0) {
-        // Redirect to checkout page for paid competitions
-        setLocation(`/checkout/${competitionId}`);
+        // Show payment modal for paid competitions (with both points and Stripe options)
+        setSelectedCompetition({ 
+          id: competition.id, 
+          name: competition.name, 
+          description: competition.description 
+        });
+        setPaymentModalOpen(true);
       } else {
         // For free competitions, skip payment and go directly to team selection
         setSelectedCompetition({ 

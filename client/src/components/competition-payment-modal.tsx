@@ -47,7 +47,7 @@ export default function CompetitionPaymentModal({
     mutationFn: () => apiRequest("POST", `/api/competitions/${competition.id}/enter-with-points`, {
       userId: user?.id
     }),
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       toast({
         title: "Entry Payment Successful!",
         description: `You've paid ${ENTRY_COST_POINTS} points to enter the competition. Remaining points: ${data.remainingPoints}`,

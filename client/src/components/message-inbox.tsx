@@ -97,7 +97,7 @@ export default function MessageInbox({ userId }: MessageInboxProps) {
               variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-gray-400 hover:text-white"
+              className="text-gray-400 hover:text-white focus:outline-none focus:ring-0 focus:bg-transparent"
             >
               {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </Button>
@@ -125,7 +125,7 @@ export default function MessageInbox({ userId }: MessageInboxProps) {
               variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-gray-400 hover:text-white"
+              className="text-gray-400 hover:text-white focus:outline-none focus:ring-0 focus:bg-transparent"
             >
               {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </Button>
@@ -162,7 +162,7 @@ export default function MessageInbox({ userId }: MessageInboxProps) {
               variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-gray-400 hover:text-white"
+              className="text-gray-400 hover:text-white focus:outline-none focus:ring-0 focus:bg-transparent"
             >
               {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </Button>

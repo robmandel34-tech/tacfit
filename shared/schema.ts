@@ -27,6 +27,9 @@ export const users = pgTable("users", {
   emailVerificationToken: text("email_verification_token"),
   emailVerificationTokenExpiresAt: timestamp("email_verification_token_expires_at"),
 
+  // Advertisement preferences
+  hideAdvertisements: boolean("hide_advertisements").default(false),
+
   createdAt: timestamp("created_at").defaultNow(),
 });
 

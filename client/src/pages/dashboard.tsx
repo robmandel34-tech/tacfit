@@ -5,8 +5,10 @@ import ActivityCard from "@/components/activity-card";
 import AdminPostCard from "@/components/admin-post-card";
 import AdvertisementCard from "@/components/advertisement-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { OnboardingWalkthrough } from "@/components/onboarding-walkthrough";
-import { Activity, Users } from "lucide-react";
+import { Activity, Users, Shield } from "lucide-react";
 import { useState, useEffect } from "react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -53,6 +55,16 @@ export default function Dashboard() {
     }
   });
 
+  const { data: paidCompetitionStatus } = useQuery({
+    queryKey: [`/api/users/${user?.id}/paid-competitions`],
+    enabled: !!user?.id,
+  });
+
+  const { data: currentUser } = useQuery({
+    queryKey: [`/api/users/${user?.id}`],
+    enabled: !!user?.id,
+  });
+
   const { data: userTeamMembership } = useQuery({
     queryKey: [`/api/team-members/${user?.id}`],
     enabled: !!user?.id,
@@ -75,6 +87,30 @@ export default function Dashboard() {
       toast({
         title: "Error",
         description: "Failed to complete onboarding. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateAdvertisementPreferenceMutation = useMutation({
+    mutationFn: async (hideAdvertisements: boolean) => {
+      if (!user?.id) throw new Error("User not found");
+      return apiRequest("PATCH", `/api/users/${user.id}/advertisement-preference`, {
+        hideAdvertisements,
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Preference Updated",
+        description: "Your advertisement preference has been saved.",
+      });
+      // Refresh user data
+      queryClient.invalidateQueries({ queryKey: [`/api/users/${user?.id}`] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: "Failed to update advertisement preference.",
         variant: "destructive",
       });
     },
@@ -162,7 +198,7 @@ export default function Dashboard() {
       
       <main className="container mx-auto px-4 py-6">
         {/* Header Card */}
-        <Card className="bg-gradient-to-r from-military-green-dark to-military-green border-military-green/30 mb-8 rounded-none">
+        <Card className="bg-gradient-to-r from-military-green-dark to-military-green border-military-green/30 mb-6 rounded-none">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -176,10 +212,42 @@ export default function Dashboard() {
           </CardHeader>
         </Card>
 
+        {/* Advertisement Controls for Paid Competition Users */}
+        {paidCompetitionStatus?.hasPaidCompetitions && (
+          <Card className="tile-card mb-6">
+            <CardContent className="py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <Shield className="h-5 w-5 text-military-green" />
+                  <div>
+                    <Label htmlFor="advertisement-toggle" className="text-white font-medium">
+                      Premium Features
+                    </Label>
+                    <p className="text-gray-400 text-sm">Hide advertisements in your Intel Feed</p>
+                  </div>
+                </div>
+                <Switch
+                  id="advertisement-toggle"
+                  checked={currentUser?.hideAdvertisements || false}
+                  onCheckedChange={(checked) => {
+                    updateAdvertisementPreferenceMutation.mutate(checked);
+                  }}
+                  disabled={updateAdvertisementPreferenceMutation.isPending}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Activity Feed */}
         <div className="max-w-2xl mx-auto">
           {(() => {
             // Combine all content types into a unified timeline
+            // Filter advertisements based on user preference
+            const filteredAdvertisements = currentUser?.hideAdvertisements 
+              ? [] 
+              : advertisements;
+
             const timelineItems: Array<{ 
               type: 'admin-post' | 'advertisement' | 'activity';
               data: any;
@@ -190,7 +258,7 @@ export default function Dashboard() {
                 data: post,
                 createdAt: post.createdAt
               })),
-              ...advertisements.map((ad: any) => ({
+              ...filteredAdvertisements.map((ad: any) => ({
                 type: 'advertisement' as const,
                 data: ad,
                 createdAt: ad.createdAt

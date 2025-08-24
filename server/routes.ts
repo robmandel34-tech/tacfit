@@ -771,6 +771,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update advertisement preferences
+  app.patch("/api/users/:id/advertisement-preference", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { hideAdvertisements } = req.body;
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Update advertisement preference
+      const updatedUser = await storage.updateUser(userId, { hideAdvertisements });
+      
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Failed to update advertisement preference" });
+      }
+      
+      const { password, ...userWithoutPassword } = updatedUser;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error("Advertisement preference update error:", error);
+      res.status(500).json({ message: "Error updating advertisement preference" });
+    }
+  });
+
+  // Check if user has entered paid competitions
+  app.get("/api/users/:id/paid-competitions", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Get user's competition entries
+      const entries = await storage.getUserCompetitionEntries(userId);
+      const hasPaidEntry = entries.some(entry => 
+        entry.paymentType === 'one_time' && entry.paymentStatus === 'succeeded'
+      );
+      
+      res.json({ hasPaidCompetitions: hasPaidEntry });
+    } catch (error) {
+      console.error("Paid competitions check error:", error);
+      res.status(500).json({ message: "Error checking paid competitions" });
+    }
+  });
+
   // Delete user (admin only)
   app.delete("/api/users/:id", async (req, res) => {
     try {

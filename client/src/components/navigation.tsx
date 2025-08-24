@@ -17,7 +17,15 @@ export default function Navigation() {
     enabled: !!user.id,
   });
 
+  // Get unread message count
+  const { data: conversations = [] } = useQuery({
+    queryKey: ["/api/conversations", user.id],
+    enabled: !!user.id,
+  });
+
   const pendingTasksCount = Array.isArray(pendingTasks) ? pendingTasks.length : 0;
+  const unreadMessagesCount = conversations.reduce((total: number, conv: any) => total + Number(conv.unreadCount || 0), 0);
+  const hasNotifications = pendingTasksCount > 0 || unreadMessagesCount > 0;
 
   const getInitials = (username: string) => {
     return username.split(' ').map(word => word[0]).join('').toUpperCase() || username.slice(0, 2).toUpperCase();
@@ -100,11 +108,9 @@ export default function Navigation() {
                   <div className="w-10 h-10 bg-military-green rounded-full flex items-center justify-center fallback-avatar" style={{ display: user.avatar ? 'none' : 'flex' }}>
                     <span className="text-white font-bold text-sm">{getInitials(user.username)}</span>
                   </div>
-                  {/* Task notification indicator */}
-                  {pendingTasksCount > 0 && (
-                    <div className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                      {pendingTasksCount > 9 ? '9+' : pendingTasksCount}
-                    </div>
+                  {/* Notification indicator for tasks and messages */}
+                  {hasNotifications && (
+                    <div className="absolute -top-1 -left-1 bg-combat-orange rounded-full w-3 h-3"></div>
                   )}
                 </div>
                 <span className="hidden md:block text-white font-medium text-sm">{user.username}</span>

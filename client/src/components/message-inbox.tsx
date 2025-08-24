@@ -153,7 +153,7 @@ export default function MessageInbox({ userId }: MessageInboxProps) {
               <MessageCircle className="h-5 w-5 text-military-green" />
               <span>Messages</span>
               {getTotalUnreadCount() > 0 && (
-                <Badge variant="destructive" className="bg-red-600">
+                <Badge variant="destructive" className="bg-combat-orange">
                   {getTotalUnreadCount()}
                 </Badge>
               )}
@@ -188,7 +188,7 @@ export default function MessageInbox({ userId }: MessageInboxProps) {
                 </Avatar>
                 {Number(conversation.unreadCount || 0) > 0 && (
                   <Badge 
-                    className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-red-600 text-white text-xs"
+                    className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-combat-orange text-white text-xs"
                   >
                     {Number(conversation.unreadCount || 0)}
                   </Badge>

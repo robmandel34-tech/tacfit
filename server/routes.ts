@@ -809,11 +809,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get user's competition entries
       const entries = await storage.getUserCompetitionEntries(userId);
+      console.log('DEBUG: User entries for paid competition check:', entries.map(e => ({
+        id: e.id,
+        paymentType: e.paymentType,
+        paymentStatus: e.paymentStatus,
+        paymentMethod: e.paymentMethod,
+        pointsUsed: e.pointsUsed
+      })));
+      
       const hasPaidEntry = entries.some(entry => 
         (entry.paymentType === 'one_time' && entry.paymentStatus === 'succeeded') ||
         (entry.paymentType === 'points' && entry.paymentStatus === 'completed')
       );
       
+      console.log('DEBUG: Has paid entry result:', hasPaidEntry);
       res.json({ hasPaidCompetitions: hasPaidEntry });
     } catch (error) {
       console.error("Paid competitions check error:", error);

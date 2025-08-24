@@ -391,7 +391,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
 
               {/* Photo Evidence */}
               <div className="space-y-3">
-                <Label className="text-gray-300 font-medium">Photo Evidence (Optional)</Label>
+                <Label className="text-gray-300 font-medium">Photo Evidence (Required) <span className="text-red-400">*</span></Label>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <input
@@ -485,7 +485,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
           <Button
             type="submit"
             className="w-full bg-military-green hover:bg-military-green-dark text-white font-medium py-3"
-            disabled={submitActivity.isPending || !type || !description || !competitionHasStarted}
+            disabled={submitActivity.isPending || !type || !description || !quantity || imageFiles.length === 0 || !competitionHasStarted}
           >
             {submitActivity.isPending
               ? "Submitting..."

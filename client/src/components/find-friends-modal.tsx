@@ -190,11 +190,12 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
         <Button
           onClick={() => handleSendFriendRequest(otherUser.id)}
           disabled={sendFriendRequestMutation.isPending}
-          className="bg-military-green hover:bg-military-green-light text-white"
+          className="bg-military-green hover:bg-military-green-light text-white w-full sm:w-auto"
           size="sm"
         >
-          <UserPlus className="w-4 h-4 mr-2" />
-          Add Buddy
+          <UserPlus className="w-4 h-4 mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Add Buddy</span>
+          <span className="sm:hidden">Add</span>
         </Button>
       );
     }
@@ -203,28 +204,30 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
       case "pending":
         if (friendship.userId === user?.id) {
           return (
-            <Badge variant="secondary" className="text-gray-600">
+            <Badge variant="secondary" className="text-gray-600 w-full sm:w-auto justify-center text-xs px-2 py-1">
               Request Sent
             </Badge>
           );
         } else {
           return (
-            <div className="flex space-x-2">
+            <div className="flex space-x-2 w-full">
               <Button
                 onClick={() => handleAcceptRequest(friendship.id)}
                 disabled={acceptFriendRequestMutation.isPending}
-                className="bg-green-600 hover:bg-green-700 text-white"
+                className="bg-green-600 hover:bg-green-700 text-white flex-1 sm:flex-none"
                 size="sm"
               >
-                <Check className="w-4 h-4" />
+                <Check className="w-4 h-4 sm:mr-1" />
+                <span className="hidden sm:inline">Accept</span>
               </Button>
               <Button
                 onClick={() => handleRejectRequest(friendship.id)}
                 disabled={rejectFriendRequestMutation.isPending}
-                className="bg-red-600 hover:bg-red-700 text-white"
+                className="bg-red-600 hover:bg-red-700 text-white flex-1 sm:flex-none"
                 size="sm"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4 sm:mr-1" />
+                <span className="hidden sm:inline">Reject</span>
               </Button>
             </div>
           );
@@ -233,11 +236,12 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
         return (
           <Button
             variant="outline"
-            className="border-green-600 text-green-600 hover:bg-green-50"
+            className="border-green-600 text-green-600 hover:bg-green-50 w-full sm:w-auto"
             size="sm"
           >
-            <MessageCircle className="w-4 h-4 mr-2" />
-            Message
+            <MessageCircle className="w-4 h-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Message</span>
+            <span className="sm:hidden">Msg</span>
           </Button>
         );
       case "rejected":
@@ -245,11 +249,12 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
           <Button
             onClick={() => handleSendFriendRequest(otherUser.id)}
             disabled={sendFriendRequestMutation.isPending}
-            className="bg-military-green hover:bg-military-green-light text-white"
+            className="bg-military-green hover:bg-military-green-light text-white w-full sm:w-auto"
             size="sm"
           >
-            <UserPlus className="w-4 h-4 mr-2" />
-            Add Buddy
+            <UserPlus className="w-4 h-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Add Buddy</span>
+            <span className="sm:hidden">Add</span>
           </Button>
         );
       default:
@@ -260,9 +265,12 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
   if (usersLoading || friendshipsLoading) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-tactical-gray-light border-tactical-gray">
+        <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto bg-tactical-gray-light border-tactical-gray mx-2">
           <DialogHeader>
-            <DialogTitle className="text-white">Find Buddies</DialogTitle>
+            <DialogTitle className="text-white flex items-center text-lg">
+              <Users className="w-5 h-5 mr-2" />
+              Find Buddies
+            </DialogTitle>
           </DialogHeader>
           <div className="flex items-center justify-center p-8">
             <div className="text-white">Loading users...</div>
@@ -274,9 +282,9 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-tactical-gray-light border-tactical-gray">
+      <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto bg-tactical-gray-light border-tactical-gray mx-2">
         <DialogHeader>
-          <DialogTitle className="text-white flex items-center">
+          <DialogTitle className="text-white flex items-center text-lg">
             <Users className="w-5 h-5 mr-2" />
             Find Buddies
           </DialogTitle>
@@ -304,14 +312,14 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
                 
                 return (
                   <Card key={request.id} className="bg-tactical-gray border-tactical-gray">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
+                    <CardContent className="p-3 sm:p-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div className="flex items-center space-x-3 min-w-0 flex-1">
                           {requester.avatar ? (
                             <img
                               src={`/uploads/${requester.avatar}`}
                               alt="Profile picture"
-                              className="w-10 h-10 rounded-full object-cover"
+                              className="w-10 h-10 rounded-full object-cover flex-shrink-0"
                               onError={(e) => {
                                 console.error("Friend request avatar failed to load:", requester.avatar);
                                 e.currentTarget.style.display = 'none';
@@ -323,35 +331,37 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
                               }}
                             />
                           ) : null}
-                          <div className="w-10 h-10 bg-military-green rounded-full flex items-center justify-center" style={{ display: requester.avatar ? 'none' : 'flex' }}>
-                            <span className="text-white font-bold">
+                          <div className="w-10 h-10 bg-military-green rounded-full flex items-center justify-center flex-shrink-0" style={{ display: requester.avatar ? 'none' : 'flex' }}>
+                            <span className="text-white font-bold text-sm">
                               {getInitials(requester.username)}
                             </span>
                           </div>
-                          <div>
-                            <h4 className="text-white font-medium">{requester.username}</h4>
+                          <div className="min-w-0 flex-1">
+                            <h4 className="text-white font-medium truncate">{requester.username}</h4>
                             <p className="text-gray-400 text-sm">{requester.points} points</p>
                           </div>
                         </div>
-                        <div className="flex space-x-2">
+                        <div className="flex space-x-2 w-full sm:w-auto">
                           <Button
                             onClick={() => handleAcceptRequest(request.id)}
                             disabled={acceptFriendRequestMutation.isPending}
-                            className="bg-green-600 hover:bg-green-700 text-white"
+                            className="bg-green-600 hover:bg-green-700 text-white flex-1 sm:flex-none"
                             size="sm"
                           >
-                            <Check className="w-4 h-4 mr-2" />
-                            Accept
+                            <Check className="w-4 h-4 mr-1 sm:mr-2" />
+                            <span className="hidden sm:inline">Accept</span>
+                            <span className="sm:hidden">✓</span>
                           </Button>
                           <Button
                             onClick={() => handleRejectRequest(request.id)}
                             disabled={rejectFriendRequestMutation.isPending}
                             variant="outline"
-                            className="border-red-600 text-red-600 hover:bg-red-50"
+                            className="border-red-600 text-red-600 hover:bg-red-50 flex-1 sm:flex-none"
                             size="sm"
                           >
-                            <X className="w-4 h-4 mr-2" />
-                            Reject
+                            <X className="w-4 h-4 mr-1 sm:mr-2" />
+                            <span className="hidden sm:inline">Reject</span>
+                            <span className="sm:hidden">✗</span>
                           </Button>
                         </div>
                       </div>
@@ -374,39 +384,39 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
                 <p className="text-gray-400">No users found matching your search.</p>
               </div>
             ) : (
-              <div className="grid gap-3">
+              <div className="space-y-3">
                 {filteredUsers.map((otherUser: User) => (
                   <Card key={otherUser.id} className="bg-tactical-gray border-tactical-gray hover:border-military-green transition-colors">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between gap-4">
+                    <CardContent className="p-3 sm:p-4">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
                         <div className="flex items-start space-x-3 flex-1 min-w-0">
                           {otherUser.avatar ? (
                             <img
                               src={`/uploads/${otherUser.avatar}`}
                               alt="Profile picture"
-                              className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                              className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover flex-shrink-0"
                             />
                           ) : (
-                            <div className="w-12 h-12 bg-military-green rounded-full flex items-center justify-center flex-shrink-0">
-                              <span className="text-white font-bold text-sm">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-military-green rounded-full flex items-center justify-center flex-shrink-0">
+                              <span className="text-white font-bold text-xs sm:text-sm">
                                 {getInitials(otherUser.username)}
                               </span>
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <h4 className="text-white font-medium text-lg truncate">{otherUser.username}</h4>
-                            <p className="text-gray-400 text-sm truncate mb-2">{otherUser.email}</p>
-                            <div className="flex flex-wrap gap-2">
-                              <Badge variant="outline" className="text-combat-orange border-combat-orange bg-combat-orange/10">
+                            <h4 className="text-white font-medium text-base sm:text-lg truncate">{otherUser.username}</h4>
+                            <p className="text-gray-400 text-xs sm:text-sm truncate mb-2">{otherUser.email}</p>
+                            <div className="flex flex-wrap gap-1 sm:gap-2">
+                              <Badge variant="outline" className="text-combat-orange border-combat-orange bg-combat-orange/10 text-xs px-2 py-0.5">
                                 {otherUser.points} PTS
                               </Badge>
-                              <Badge variant="outline" className="text-steel-blue border-steel-blue bg-steel-blue/10">
-                                {otherUser.competitionsEntered || 0} Competitions
+                              <Badge variant="outline" className="text-steel-blue border-steel-blue bg-steel-blue/10 text-xs px-2 py-0.5">
+                                {otherUser.competitionsEntered || 0} Comps
                               </Badge>
                             </div>
                           </div>
                         </div>
-                        <div className="flex-shrink-0">
+                        <div className="flex-shrink-0 w-full sm:w-auto">
                           {renderFriendshipButton(otherUser)}
                         </div>
                       </div>

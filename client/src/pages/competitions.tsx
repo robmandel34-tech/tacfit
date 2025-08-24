@@ -48,32 +48,22 @@ export default function Competitions() {
           joinWindowStatus = 'closed';
           canJoin = false;
         } else if (comp.joinStartDate && comp.joinEndDate) {
-          // Parse the dates and ensure proper timezone handling
+          // Parse the dates and work entirely in UTC to avoid timezone shifts
           const joinStart = new Date(comp.joinStartDate);
           const joinEnd = new Date(comp.joinEndDate);
           
-          // Set join start to beginning of day in user's timezone
-          const joinStartLocal = new Date(joinStart);
-          joinStartLocal.setHours(0, 0, 0, 0);
+          // Set join start to beginning of day UTC
+          const joinStartUTC = new Date(joinStart);
+          joinStartUTC.setUTCHours(0, 0, 0, 0);
           
-          // Set join end to end of day in user's timezone  
-          const joinEndLocal = new Date(joinEnd);
-          joinEndLocal.setHours(23, 59, 59, 999);
+          // Set join end to end of day UTC
+          const joinEndUTC = new Date(joinEnd);
+          joinEndUTC.setUTCHours(23, 59, 59, 999);
           
-          console.log('DEBUG: Join window calculation for', comp.name, {
-            now: now.toISOString(),
-            joinStartLocal: joinStartLocal.toISOString(),
-            joinEndLocal: joinEndLocal.toISOString(),
-            nowLessThanStart: now < joinStartLocal,
-            nowGreaterThanEnd: now > joinEndLocal,
-            rawJoinStart: comp.joinStartDate,
-            rawJoinEnd: comp.joinEndDate
-          });
-          
-          if (now < joinStartLocal) {
+          if (now < joinStartUTC) {
             joinWindowStatus = 'not-opened';
             canJoin = false;
-          } else if (now > joinEndLocal) {
+          } else if (now > joinEndUTC) {
             joinWindowStatus = 'closed';
             canJoin = false;
           } else {

@@ -28,7 +28,7 @@ export default function FloatingActionButton() {
   // Don't show the button if user is not authenticated - moved after all hooks
   if (!user) return null;
 
-  // Check if the competition is active
+  // Check if the competition is active (for display purposes only)
   const isCompetitionActive = () => {
     if (!currentCompetition || typeof currentCompetition !== 'object') return false;
     
@@ -40,7 +40,8 @@ export default function FloatingActionButton() {
     return now >= startDate && now <= endDate;
   };
 
-  const canSubmitActivity = isCompetitionActive();
+  // Users can always submit activities now - they get individual points regardless of competition status
+  const canSubmitActivity = true;
 
   return (
     <>
@@ -71,12 +72,10 @@ export default function FloatingActionButton() {
         </svg>
       </Button>
 
-      {canSubmitActivity && (
-        <ActivitySubmissionModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-        />
-      )}
+      <ActivitySubmissionModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </>
   );
 }

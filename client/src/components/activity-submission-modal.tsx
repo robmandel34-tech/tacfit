@@ -76,11 +76,11 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     select: (data: ActivityType[]) => data.filter(at => at.isActive).sort((a, b) => a.name.localeCompare(b.name))
   });
 
-  // Get required activities for current competition or fallback to all active types
-  const availableActivityTypes = competition?.requiredActivities || activityTypes.map(at => at.name);
+  // Users can now choose from all available activity types
+  const availableActivityTypes = activityTypes;
   
-  // Get filtered activity types that are available for this competition
-  const competitionActivityTypes = activityTypes.filter(at => availableActivityTypes.includes(at.name));
+  // Use all activity types instead of limiting to competition requirements
+  const competitionActivityTypes = activityTypes;
 
   // Check if competition has started
   const competitionHasStarted = competition ? new Date() >= new Date(competition.startDate) : false;
@@ -172,14 +172,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
       return;
     }
 
-    if (!competitionHasStarted) {
-      toast({
-        title: "Competition hasn't started",
-        description: `Competition starts in ${daysUntilStart} day${daysUntilStart !== 1 ? 's' : ''}. Please wait until then to submit activities.`,
-        variant: "destructive",
-      });
-      return;
-    }
+    // Removed competition start check - users can now submit activities anytime
 
     if (!isTextInputValid && requiresTextInput) {
       toast({
@@ -275,18 +268,17 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {!competitionHasStarted ? (
-            <div className="p-4 bg-yellow-500/20 border border-yellow-500/30 rounded-lg">
-              <div className="flex items-center gap-2 text-yellow-400 mb-2">
-                ⏰ Competition Not Started
+          {/* Independent Activity Notice */}
+          {!competitionHasStarted && (
+            <div className="p-4 bg-blue-500/20 border border-blue-500/30 rounded-lg">
+              <div className="flex items-center gap-2 text-blue-400 mb-2">
+                ℹ️ Independent Activity
               </div>
               <p className="text-sm text-gray-300">
-                The competition starts in {daysUntilStart} day{daysUntilStart !== 1 ? 's' : ''}. 
-                Come back then to start logging activities!
+                This activity will not count toward any competition but you'll still earn individual points (15-30 pts).
               </p>
             </div>
-          ) : (
-            <>
+          )}
               {/* Activity Type Selection */}
               <div className="space-y-2">
                 <Label className="text-gray-300 font-medium">Activity Type</Label>
@@ -483,14 +475,12 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                   </div>
                 )}
               </div>
-            </>
-          )}
 
           {/* Submit Button */}
           <Button
             type="submit"
             className="w-full bg-military-green hover:bg-military-green-dark text-white font-medium py-3"
-            disabled={submitActivity.isPending || !type || !description || !quantity || imageFiles.length === 0 || !competitionHasStarted}
+            disabled={submitActivity.isPending || !type || !description || !quantity || imageFiles.length === 0}
           >
             {submitActivity.isPending
               ? "Submitting..."

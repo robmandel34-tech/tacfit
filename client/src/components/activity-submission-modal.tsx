@@ -270,11 +270,11 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Independent Activity Notice */}
           {!competitionHasStarted && (
-            <div className="p-4 bg-blue-500/20 border border-blue-500/30 rounded-lg">
-              <div className="flex items-center gap-2 text-blue-400 mb-2">
+            <div className="p-4 bg-blue-900/80 border border-blue-500/50 rounded-lg backdrop-blur-sm">
+              <div className="flex items-center gap-2 text-blue-300 mb-2">
                 ℹ️ Independent Activity
               </div>
-              <p className="text-sm text-gray-300">
+              <p className="text-sm text-gray-100">
                 This activity will not count toward any competition but you'll still earn individual points (15-30 pts).
               </p>
             </div>

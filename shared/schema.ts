@@ -296,6 +296,9 @@ export const insertTeamMemberSchema = createInsertSchema(teamMembers).omit({
 export const insertActivitySchema = createInsertSchema(activities).omit({
   id: true,
   createdAt: true,
+}).extend({
+  competitionId: z.number().nullable().optional(),
+  teamId: z.number().nullable().optional(),
 });
 
 export const insertActivityTypeSchema = createInsertSchema(activityTypes).omit({

@@ -1874,9 +1874,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
       
-      // Find user's current team
+      // Find user's current team (optional now)
       const userTeams = await storage.getTeams();
       let userTeam = null;
+      let competition = null;
+      let isInActiveCompetition = false;
+      
       for (const team of userTeams) {
         const members = await storage.getTeamMembers(team.id);
         if (members.some(member => member.userId === userId)) {
@@ -1885,35 +1888,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Check if user is part of a team and competition
-      if (!userTeam || !userTeam.competitionId) {
-        return res.status(400).json({ message: "You must be part of a team in an active competition to submit activities" });
-      }
-      
-      // Get competition details to check if it has started
-      const competition = await storage.getCompetition(userTeam.competitionId);
-      if (!competition) {
-        return res.status(400).json({ message: "Competition not found" });
-      }
-      
-      // Check if competition has started and not ended
-      const now = new Date();
-      const startDate = new Date(competition.startDate);
-      const endDate = new Date(competition.endDate);
-      
-      if (now < startDate) {
-        const daysUntilStart = Math.ceil((startDate.getTime() - now.getTime()) / (1000 * 3600 * 24));
-        return res.status(400).json({ 
-          message: `Competition has not started yet. Activities can be submitted starting ${startDate.toLocaleDateString()}`,
-          daysUntilStart 
-        });
-      }
-      
-      if (now > endDate) {
-        return res.status(400).json({ 
-          message: `Competition has ended. Activities can no longer be submitted. Competition ended on ${endDate.toLocaleDateString()}`,
-          competitionEnded: true
-        });
+      // If user is part of a team, check competition status
+      if (userTeam && userTeam.competitionId) {
+        competition = await storage.getCompetition(userTeam.competitionId);
+        
+        if (competition) {
+          const now = new Date();
+          const startDate = new Date(competition.startDate);
+          const endDate = new Date(competition.endDate);
+          
+          // Check if competition is active (started and not ended)
+          if (now >= startDate && now <= endDate) {
+            isInActiveCompetition = true;
+          } else if (now < startDate) {
+            // Competition hasn't started - activity won't count toward competition
+            console.log(`User ${userId} submitting activity before competition starts. Activity will be independent.`);
+          } else if (now > endDate) {
+            // Competition has ended - activity won't count toward competition
+            console.log(`User ${userId} submitting activity after competition ends. Activity will be independent.`);
+          }
+        }
       }
       
       // Handle file uploads - upload.any() returns an array
@@ -2033,8 +2027,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const activityData = {
         userId: userId,
-        competitionId: userTeam?.competitionId,
-        teamId: userTeam?.id,
+        competitionId: isInActiveCompetition ? userTeam?.competitionId : null,
+        teamId: isInActiveCompetition ? userTeam?.id : null,
         type: req.body.type,
         description: description,
         quantity: req.body.quantity,
@@ -2057,7 +2051,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const activity = await storage.createActivity(validatedData);
       
       
-      // Update user and team points
+      // Always update user points (15 or 30 depending on evidence)
       if (activity.userId && activity.points) {
         const currentUser = await storage.getUser(activity.userId);
         if (currentUser) {
@@ -2067,7 +2061,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      if (activity.teamId && activity.points) {
+      // Only update team points if activity is part of an active competition
+      if (activity.teamId && activity.points && isInActiveCompetition) {
         const team = await storage.getTeam(activity.teamId);
         if (team) {
           await storage.updateTeam(activity.teamId, {

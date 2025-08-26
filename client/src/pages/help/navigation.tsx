@@ -120,15 +120,13 @@ export default function NavigationHelp() {
             </CardHeader>
             <CardContent className="space-y-6">
               <p className="text-gray-300">
-                The bottom navigation appears for users who have joined a team and are participating 
-                in competitions. It provides quick access to the three most important sections.
+                The bottom navigation appears for all authenticated users and provides quick access to the three most important sections.
               </p>
 
               <div className="bg-yellow-900/20 border border-yellow-600/30 p-4 rounded-lg">
                 <h4 className="font-semibold text-yellow-300 mb-2">Availability:</h4>
                 <p className="text-sm text-gray-300">
-                  Bottom navigation only appears when you're actively participating in a competition 
-                  as part of a team. Users without team membership will only see the top navigation.
+                  Bottom navigation appears for all users. The Team tab is only available when you're actively participating in a competition as part of a team.
                 </p>
               </div>
 

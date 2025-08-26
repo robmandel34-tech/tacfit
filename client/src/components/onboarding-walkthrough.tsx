@@ -386,7 +386,7 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
           </div>
           <div className="bg-blue-900/20 border border-blue-600/30 p-3 rounded-lg">
             <p className="text-sm text-blue-200">
-              <strong>Navigation Tip:</strong> The bottom navigation will appear after you join a competition and team.
+              <strong>Navigation Tip:</strong> The bottom navigation is always available. The Team tab will only appear after you join a competition and team.
             </p>
           </div>
           <div className="flex justify-center mt-4">

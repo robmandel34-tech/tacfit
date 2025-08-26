@@ -56,11 +56,11 @@ export default function PointSystemHelp() {
                   
                   <div className="bg-gray-700/50 border border-gray-600/30 p-4 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-white">Base Activity</span>
+                      <span className="text-sm font-medium text-white">Base Activity (minimum 1 image)</span>
                       <span className="font-bold text-military-green text-lg">15 pts</span>
                     </div>
                     <p className="text-xs text-gray-400">
-                      Submit any fitness activity (cardio, strength, mobility) with quantity measurement
+                      Submit any fitness activity (cardio, strength, mobility) with quantity measurement and at least 1 photo
                     </p>
                   </div>
 

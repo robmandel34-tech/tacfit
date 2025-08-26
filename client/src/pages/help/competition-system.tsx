@@ -179,7 +179,7 @@ export default function CompetitionSystemHelp() {
                   <h4 className="font-semibold text-white mb-3">Activity Points</h4>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
-                      <span className="text-sm">Base Activity Submission</span>
+                      <span className="text-sm">Base Activity (minimum 1 image)</span>
                       <span className="font-semibold text-military-green">15 points</span>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
@@ -238,7 +238,7 @@ export default function CompetitionSystemHelp() {
                       <div>
                         <span className="font-medium text-white">Individual Activity Rewards</span>
                         <p className="text-sm text-gray-400 mt-1">
-                          Earn <span className="text-military-green font-semibold">15 points</span> for basic submissions or 
+                          Earn <span className="text-military-green font-semibold">15 points</span> for submissions with at least 1 image or 
                           <span className="text-military-green font-semibold"> 30 points</span> with photo + video evidence
                         </p>
                       </div>

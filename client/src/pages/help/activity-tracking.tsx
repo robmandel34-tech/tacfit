@@ -110,8 +110,8 @@ export default function ActivityTrackingHelp() {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
                       <div>
-                        <span className="text-sm font-medium text-white">Base Activity</span>
-                        <p className="text-xs text-gray-400">Activity submission only</p>
+                        <span className="text-sm font-medium text-white">Base Activity (minimum 1 image)</span>
+                        <p className="text-xs text-gray-400">Activity submission with at least 1 photo</p>
                       </div>
                       <span className="font-bold text-military-green text-lg">15 pts</span>
                     </div>

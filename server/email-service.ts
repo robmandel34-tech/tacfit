@@ -147,7 +147,7 @@ export const sendWelcomeEmail = async (
         <ul style="color: #555; font-size: 16px; line-height: 1.8; padding-left: 20px;">
           <li><strong>Join a Competition:</strong> Find active competitions and form or join a team</li>
           <li><strong>Submit Activities:</strong> Track your cardio, strength, and mobility training</li>
-          <li><strong>Earn Points:</strong> Get 15 points per activity, 30 points with evidence</li>
+          <li><strong>Earn Points:</strong> Get 15 points per activity (minimum 1 image required), 30 points with photo + video evidence</li>
           <li><strong>Daily Wellness:</strong> Complete mood check-ins for 5 bonus points</li>
           <li><strong>Connect with Buddies:</strong> Build your tactical network</li>
         </ul>

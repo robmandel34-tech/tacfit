@@ -386,7 +386,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                 <Label className="text-gray-300 font-medium">Photo Evidence <span className="text-red-400">*</span> <span className="text-gray-400">(at least 1 image required)</span></Label>
                 <div className="p-3 bg-military-green/20 border border-military-green/30 rounded-lg">
                   <p className="text-sm text-green-300">
-                    <strong>Points:</strong> User awarded 15 points for submission with image and 30 points for submission with image + video
+                    <strong>Points:</strong> 15 points for submission with at least 1 image, 30 points for submission with image + video
                   </p>
                 </div>
                 <div className="grid grid-cols-2 gap-3">

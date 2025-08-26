@@ -306,8 +306,8 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
           <div className="bg-military-green/20 border border-military-green/30 p-3 rounded-lg">
             <h5 className="font-semibold text-military-green mb-2">Point System</h5>
             <div className="space-y-1 text-sm">
-              <p className="text-gray-300">• Base activity: <strong className="text-white">15 points</strong></p>
-              <p className="text-gray-300">• With photo evidence: <strong className="text-white">15 points</strong></p>
+              <p className="text-gray-300">• Base activity (minimum 1 image): <strong className="text-white">15 points</strong></p>
+              <p className="text-gray-300">• With additional photo evidence: <strong className="text-white">15 points</strong></p>
               <p className="text-gray-300">• With photo + video: <strong className="text-white">30 points</strong></p>
             </div>
           </div>

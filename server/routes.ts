@@ -21,9 +21,46 @@ import fs from "fs";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { generateVerificationToken, sendVerificationEmail, sendWelcomeEmail } from "./email-service";
+import { webhookService } from "./webhook-service";
 import Stripe from "stripe";
 
 const execAsync = promisify(exec);
+
+// Helper function to update user points and send webhook notifications
+async function updateUserPointsWithWebhook(
+  userId: number, 
+  pointsChange: number, 
+  reason: string
+): Promise<void> {
+  const currentUser = await storage.getUser(userId);
+  if (!currentUser) {
+    console.error(`User ${userId} not found when updating points`);
+    return;
+  }
+
+  const previousPoints = currentUser.points || 0;
+  const newPoints = previousPoints + pointsChange;
+  
+  await storage.updateUser(userId, { points: newPoints });
+  
+  console.log(`${pointsChange > 0 ? 'Awarded' : 'Deducted'} ${Math.abs(pointsChange)} points for ${reason}. User ${userId} now has ${newPoints} points.`);
+  
+  // Send webhook notification
+  try {
+    await webhookService.notifyPointsUpdate({
+      userId: currentUser.id,
+      username: currentUser.username,
+      email: currentUser.email,
+      previousPoints,
+      newPoints,
+      pointsChange,
+      reason,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Webhook notification error:', error);
+  }
+}
 
 // Generate video thumbnail function
 async function generateVideoThumbnail(videoPath: string, thumbnailPath: string): Promise<boolean> {
@@ -266,13 +303,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Award 200 points to the person who invited them
           if (pendingInvitation.invitedBy) {
-            const referrer = await storage.getUser(pendingInvitation.invitedBy);
-            if (referrer) {
-              await storage.updateUser(pendingInvitation.invitedBy, {
-                points: (referrer.points || 0) + 200
-              });
-              console.log(`Awarded 200 referral points to user ${referrer.username} (ID: ${referrer.id})`);
-            }
+            await updateUserPointsWithWebhook(
+              pendingInvitation.invitedBy,
+              200,
+              'Successful referral invitation'
+            );
           }
         }
       }
@@ -2053,12 +2088,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Always update user points (15 or 30 depending on evidence)
       if (activity.userId && activity.points) {
-        const currentUser = await storage.getUser(activity.userId);
-        if (currentUser) {
-          await storage.updateUser(activity.userId, { 
-            points: (currentUser.points || 0) + activity.points 
-          });
-        }
+        await updateUserPointsWithWebhook(
+          activity.userId, 
+          activity.points, 
+          'Activity submission'
+        );
       }
       
       // Only update team points if activity is part of an active competition
@@ -3435,12 +3469,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Mood log created:', moodLog);
       
       // Award 5 points for mood logging
-      const currentUser = await storage.getUser(req.session.user.id);
-      if (currentUser) {
-        const updatedPoints = (currentUser.points || 0) + 5;
-        await storage.updateUser(req.session.user.id, { points: updatedPoints });
-        console.log(`Awarded 5 points for mood logging. User ${req.session.user.id} now has ${updatedPoints} points.`);
-      }
+      await updateUserPointsWithWebhook(
+        req.session.user.id, 
+        5, 
+        'Daily mood log'
+      );
       
       res.status(201).json({ ...moodLog, pointsAwarded: 5 });
     } catch (error: any) {
@@ -3810,6 +3843,143 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error searching for public object:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
+  });
+
+  // =============================================================================
+  // DATA SYNC API - For external website integration
+  // =============================================================================
+
+  // Get all users with their points (for bulk sync)
+  app.get("/api/sync/users-points", async (req, res) => {
+    try {
+      // Simple API key authentication
+      const apiKey = req.headers['x-api-key'];
+      if (!apiKey || apiKey !== process.env.SYNC_API_KEY) {
+        return res.status(401).json({ message: "Invalid API key" });
+      }
+
+      const users = await storage.getUsers();
+      const usersWithPoints = users.map(user => ({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        points: user.points || 0,
+        lastUpdated: new Date().toISOString()
+      }));
+
+      res.json({
+        success: true,
+        timestamp: new Date().toISOString(),
+        count: usersWithPoints.length,
+        users: usersWithPoints
+      });
+    } catch (error) {
+      console.error('Error syncing user points:', error);
+      res.status(500).json({ message: "Error retrieving user points" });
+    }
+  });
+
+  // Get specific user points by ID
+  app.get("/api/sync/user/:userId/points", async (req, res) => {
+    try {
+      const apiKey = req.headers['x-api-key'];
+      if (!apiKey || apiKey !== process.env.SYNC_API_KEY) {
+        return res.status(401).json({ message: "Invalid API key" });
+      }
+
+      const userId = parseInt(req.params.userId);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({
+        success: true,
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          points: user.points || 0,
+          lastUpdated: new Date().toISOString()
+        }
+      });
+    } catch (error) {
+      console.error('Error getting user points:', error);
+      res.status(500).json({ message: "Error retrieving user points" });
+    }
+  });
+
+  // Get user points by username (alternative lookup)
+  app.get("/api/sync/user-by-username/:username/points", async (req, res) => {
+    try {
+      const apiKey = req.headers['x-api-key'];
+      if (!apiKey || apiKey !== process.env.SYNC_API_KEY) {
+        return res.status(401).json({ message: "Invalid API key" });
+      }
+
+      const username = req.params.username;
+      const user = await storage.getUserByUsername(username);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({
+        success: true,
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          points: user.points || 0,
+          lastUpdated: new Date().toISOString()
+        }
+      });
+    } catch (error) {
+      console.error('Error getting user points by username:', error);
+      res.status(500).json({ message: "Error retrieving user points" });
+    }
+  });
+
+  // Webhook endpoint to register external website for point updates
+  app.post("/api/sync/register-webhook", async (req, res) => {
+    try {
+      const apiKey = req.headers['x-api-key'];
+      if (!apiKey || apiKey !== process.env.SYNC_API_KEY) {
+        return res.status(401).json({ message: "Invalid API key" });
+      }
+
+      const { webhook_url } = req.body;
+      if (!webhook_url) {
+        return res.status(400).json({ message: "webhook_url is required" });
+      }
+
+      // Store webhook URL in environment or database
+      // For now, we'll just acknowledge registration
+      console.log(`Webhook registered: ${webhook_url}`);
+      
+      res.json({
+        success: true,
+        message: "Webhook registered successfully",
+        webhook_url: webhook_url,
+        registered_at: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error registering webhook:', error);
+      res.status(500).json({ message: "Error registering webhook" });
+    }
+  });
+
+  // Health check for sync API
+  app.get("/api/sync/health", (req, res) => {
+    res.json({
+      status: "healthy",
+      service: "TacFit Data Sync API",
+      timestamp: new Date().toISOString(),
+      version: "1.0.0"
+    });
   });
 
   const httpServer = createServer(app);

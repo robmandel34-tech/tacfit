@@ -242,21 +242,21 @@ export default function NavigationHelp() {
                 <div>
                   <h4 className="font-semibold text-white mb-3">Efficient Navigation:</h4>
                   <div className="space-y-2">
-                    <div className="flex items-start p-2 bg-gray-700/30 rounded">
+                    <div className="flex items-start p-2 bg-gray-700/70 rounded">
                       <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
-                      <span className="text-sm">Use the logo to quickly return to Intel Feed</span>
+                      <span className="text-sm text-white">Use the logo to quickly return to Intel Feed</span>
                     </div>
-                    <div className="flex items-start p-2 bg-gray-700/30 rounded">
+                    <div className="flex items-start p-2 bg-gray-700/70 rounded">
                       <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
-                      <span className="text-sm">Bottom navigation for quick tab switching</span>
+                      <span className="text-sm text-white">Bottom navigation for quick tab switching</span>
                     </div>
-                    <div className="flex items-start p-2 bg-gray-700/30 rounded">
+                    <div className="flex items-start p-2 bg-gray-700/70 rounded">
                       <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
-                      <span className="text-sm">Floating button for instant activity submission</span>
+                      <span className="text-sm text-white">Floating button for instant activity submission</span>
                     </div>
-                    <div className="flex items-start p-2 bg-gray-700/30 rounded">
+                    <div className="flex items-start p-2 bg-gray-700/70 rounded">
                       <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
-                      <span className="text-sm">Profile menu for account and help access</span>
+                      <span className="text-sm text-white">Profile menu for account and help access</span>
                     </div>
                   </div>
                 </div>
@@ -264,21 +264,21 @@ export default function NavigationHelp() {
                 <div>
                   <h4 className="font-semibold text-white mb-3">Mobile Navigation:</h4>
                   <div className="space-y-2">
-                    <div className="flex items-start p-2 bg-gray-700/30 rounded">
+                    <div className="flex items-start p-2 bg-gray-700/70 rounded">
                       <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
-                      <span className="text-sm">Bottom tabs are optimized for thumb navigation</span>
+                      <span className="text-sm text-white">Bottom tabs are optimized for thumb navigation</span>
                     </div>
-                    <div className="flex items-start p-2 bg-gray-700/30 rounded">
+                    <div className="flex items-start p-2 bg-gray-700/70 rounded">
                       <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
-                      <span className="text-sm">Floating button positioned for easy access</span>
+                      <span className="text-sm text-white">Floating button positioned for easy access</span>
                     </div>
-                    <div className="flex items-start p-2 bg-gray-700/30 rounded">
+                    <div className="flex items-start p-2 bg-gray-700/70 rounded">
                       <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
-                      <span className="text-sm">Top navigation collapses on smaller screens</span>
+                      <span className="text-sm text-white">Top navigation collapses on smaller screens</span>
                     </div>
-                    <div className="flex items-start p-2 bg-gray-700/30 rounded">
+                    <div className="flex items-start p-2 bg-gray-700/70 rounded">
                       <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
-                      <span className="text-sm">Swipe gestures supported for tab switching</span>
+                      <span className="text-sm text-white">Swipe gestures supported for tab switching</span>
                     </div>
                   </div>
                 </div>

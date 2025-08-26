@@ -817,9 +817,6 @@ export default function Profile() {
                 <CardTitle className="text-white flex items-center gap-2">
                   <Target className="h-5 w-5 text-military-green" />
                   {isOwnProfile ? "Your Activities" : `${displayUser.username}'s Activities`}
-                  <Badge className="bg-military-green/20 text-military-green border border-military-green/30 ml-2">
-                    {activities.length}
-                  </Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -840,8 +837,7 @@ export default function Profile() {
                       <Button
                         variant={selectedActivityType === null ? "default" : "outline"}
                         onClick={() => setSelectedActivityType(null)}
-                        size="sm"
-                        className={`rounded-full px-2 py-1 text-xs font-medium transition-all ${
+                        className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium transition-all h-6 ${
                           selectedActivityType === null
                             ? "bg-military-green hover:bg-military-green-dark text-white border-military-green"
                             : "bg-white/10 hover:bg-white/20 text-gray-300 border-white/20"
@@ -854,8 +850,7 @@ export default function Profile() {
                           key={type}
                           variant={selectedActivityType === type ? "default" : "outline"}
                           onClick={() => setSelectedActivityType(type)}
-                          size="sm"
-                          className={`rounded-full px-2 py-1 text-xs font-medium transition-all ${
+                          className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium transition-all h-6 ${
                             selectedActivityType === type
                               ? "bg-military-green hover:bg-military-green-dark text-white border-military-green"
                               : "bg-white/10 hover:bg-white/20 text-gray-300 border-white/20"

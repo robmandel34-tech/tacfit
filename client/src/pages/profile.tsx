@@ -20,6 +20,7 @@ import FindFriendsModal from "@/components/find-friends-modal";
 import MessageInbox from "@/components/message-inbox";
 import ProfileEditModal from "@/components/profile-edit-modal";
 import MoodTrackingCard from "@/components/mood-tracking-card";
+import ActivityCard from "@/components/activity-card";
 
 import type { User, CompetitionHistory, Activity, TeamMember, Team, Competition, Friendship, MissionTask } from "@shared/schema";
 
@@ -65,6 +66,12 @@ export default function Profile() {
     queryKey: ["/api/activities", "user", targetUserId],
     queryFn: () => fetch(`/api/activities?userId=${targetUserId}`).then(res => res.json()),
     enabled: !!targetUserId,
+    select: (data: any[]) => {
+      // Sort activities by creation date (newest first) and ensure proper structure
+      return data.sort((a: any, b: any) => {
+        return new Date(b.createdAt || b.submittedAt).getTime() - new Date(a.createdAt || a.submittedAt).getTime();
+      });
+    }
   });
 
   // Get current team membership to check active competition participation
@@ -775,6 +782,42 @@ export default function Profile() {
                 </DialogContent>
               </Dialog>
             </div>
+
+            {/* Individual Activity Feed */}
+            <Card className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl shadow-xl">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Target className="h-5 w-5 text-military-green" />
+                  {isOwnProfile ? "Your Activities" : `${displayUser.username}'s Activities`}
+                  <Badge className="bg-military-green/20 text-military-green border border-military-green/30 ml-2">
+                    {activities.length}
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {activities.length === 0 ? (
+                  <div className="text-center py-8">
+                    <div className="flex items-center justify-center w-16 h-16 backdrop-blur-sm bg-white/5 border border-white/10 rounded-full mx-auto mb-4">
+                      <Target className="h-8 w-8 text-gray-500" />
+                    </div>
+                    <h3 className="text-white font-semibold text-lg mb-2">No Activities Yet</h3>
+                    <p className="text-gray-400 text-sm">
+                      {isOwnProfile ? "Submit your first activity to get started" : `${displayUser.username} hasn't submitted any activities yet`}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {activities.map((activity: any) => (
+                      <ActivityCard
+                        key={activity.id}
+                        activity={activity}
+                        showFlagButton={!isOwnProfile}
+                      />
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
           </div>
         </div>

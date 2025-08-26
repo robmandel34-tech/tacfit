@@ -229,11 +229,10 @@ export default function Profile() {
                 {isOwnProfile && (
                   <Button
                     onClick={() => setIsProfileEditModalOpen(true)}
-                    className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white backdrop-blur-sm border border-white/20"
+                    className="absolute top-2 right-2 backdrop-blur-md bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-full p-2"
                     size="sm"
                   >
-                    <Edit className="w-4 h-4 mr-2" />
-                    Edit Profile
+                    <Edit className="w-4 h-4" />
                   </Button>
                 )}
               </div>

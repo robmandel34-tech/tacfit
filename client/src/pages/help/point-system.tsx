@@ -36,6 +36,7 @@ export default function PointSystemHelp() {
                   <li>• <strong>Team Contribution:</strong> Your points directly impact team competition rankings</li>
                   <li>• <strong>Platform Access:</strong> Create competitions and unlock premium features</li>
                   <li>• <strong>Social Status:</strong> Display your dedication to the TacFit community</li>
+                  <li>• <strong>Exclusive Rewards:</strong> Use points to earn slick TacFit swag</li>
                 </ul>
               </div>
             </CardContent>

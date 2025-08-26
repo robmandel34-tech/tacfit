@@ -9,14 +9,14 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-gradient-to-b from-primary to-primary/90 text-primary-foreground hover:from-primary/95 hover:to-primary/85 shadow-md hover:shadow-lg border border-primary/20 rounded-lg",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg border-2 border-primary/30 hover:border-primary/50 rounded-lg",
         destructive:
-          "bg-gradient-to-b from-destructive to-destructive/90 text-destructive-foreground hover:from-destructive/95 hover:to-destructive/85 shadow-md hover:shadow-lg border border-destructive/20 rounded-lg",
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-md hover:shadow-lg border-2 border-destructive/30 hover:border-destructive/50 rounded-lg",
         outline:
           "border-2 border-input bg-background/50 backdrop-blur-sm hover:bg-accent hover:text-accent-foreground hover:border-accent hover:shadow-md rounded-lg",
         secondary:
-          "bg-gradient-to-b from-secondary to-secondary/90 text-secondary-foreground hover:from-secondary/95 hover:to-secondary/85 shadow-sm hover:shadow-md border border-secondary/20 rounded-lg",
-        ghost: "hover:bg-accent/80 hover:text-accent-foreground hover:shadow-sm rounded-lg backdrop-blur-sm",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-sm hover:shadow-md border-2 border-secondary/30 hover:border-secondary/50 rounded-lg",
+        ghost: "hover:bg-accent/80 hover:text-accent-foreground hover:shadow-sm rounded-lg backdrop-blur-sm border-2 border-transparent hover:border-accent/30",
         link: "text-primary underline-offset-4 hover:underline rounded-md",
       },
       size: {

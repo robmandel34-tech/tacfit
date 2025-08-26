@@ -813,13 +813,13 @@ export default function Team() {
                       </div>
                       <p className="text-sm text-military-green">{member.user?.points || 0} points</p>
                     </div>
-                    {member.user?.motto && (
-                      <div className="ml-4 flex-shrink-0">
+                    <div className="flex-1 flex justify-center">
+                      {member.user?.motto && (
                         <p className="text-sm text-gray-300 italic">
                           "{member.user.motto}"
                         </p>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

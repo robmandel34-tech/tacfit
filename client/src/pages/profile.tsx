@@ -19,6 +19,7 @@ import DirectMessageModal from "@/components/direct-message-modal";
 import FindFriendsModal from "@/components/find-friends-modal";
 import MessageInbox from "@/components/message-inbox";
 import ProfileEditModal from "@/components/profile-edit-modal";
+import MoodTrackingCard from "@/components/mood-tracking-card";
 
 import type { User, CompetitionHistory, Activity, TeamMember, Team, Competition, Friendship, MissionTask } from "@shared/schema";
 
@@ -280,6 +281,11 @@ export default function Profile() {
                     </div>
                     <p className="text-gray-300 text-sm text-center">Total Points</p>
                   </div>
+
+                  {/* Mood Tracking - Only show on own profile */}
+                  {isOwnProfile && (
+                    <MoodTrackingCard userId={user.id} />
+                  )}
 
                   {/* Friend Actions */}
                   <div className="space-y-2 w-full">

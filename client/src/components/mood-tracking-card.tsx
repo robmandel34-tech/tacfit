@@ -81,46 +81,36 @@ export default function MoodTrackingCard({ userId }: MoodTrackingCardProps) {
   const hasLoggedToday = moodStatus?.hasLoggedToday;
 
   return (
-    <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-4 mb-4">
-      <div className="flex items-center justify-between mb-3">
+    <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-3 mb-3">
+      <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <Activity className="h-5 w-5 text-military-green" />
-          <span className="text-white font-medium">Daily Wellness Check</span>
+          <Activity className="h-4 w-4 text-military-green" />
+          <span className="text-white text-sm font-medium">Daily Check-In</span>
+          {hasLoggedToday && (
+            <Badge className="bg-military-green/20 text-military-green text-xs px-2 py-0">
+              <Check className="h-3 w-3 mr-1" />
+              Done
+            </Badge>
+          )}
         </div>
-        {hasLoggedToday && (
-          <Badge className="bg-military-green text-white">
-            <Check className="h-3 w-3 mr-1" />
-            Completed
-          </Badge>
-        )}
-      </div>
-      
-      <div className="space-y-3">
-        <p className="text-gray-300 text-sm">
-          {hasLoggedToday 
-            ? "Great job! You've completed your wellness check today." 
-            : "Take a moment to check in with yourself and track your daily mood."
-          }
-        </p>
         
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2 text-sm">
-            <Coins className="h-4 w-4 text-yellow-500" />
-            <span className="text-gray-300">Earn 5 points daily</span>
+        <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1 text-xs text-gray-400">
+            <Coins className="h-3 w-3 text-yellow-500" />
+            <span>+5</span>
           </div>
           
           <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
             <DialogTrigger asChild>
               <Button 
                 className={hasLoggedToday 
-                  ? "bg-gray-600 hover:bg-gray-700 cursor-not-allowed" 
-                  : "bg-military-green hover:bg-military-green-light"
+                  ? "bg-gray-700 hover:bg-gray-700 cursor-not-allowed text-xs px-2 py-1 h-7" 
+                  : "bg-military-green hover:bg-military-green-light text-xs px-2 py-1 h-7"
                 }
                 disabled={hasLoggedToday}
                 size="sm"
               >
-                <Activity className="mr-2 h-4 w-4" />
-                {hasLoggedToday ? "Submitted Today" : "Check In"}
+                {hasLoggedToday ? "✓" : "Check In"}
               </Button>
             </DialogTrigger>
             

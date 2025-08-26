@@ -14,10 +14,10 @@ import type { User } from '@shared/schema';
 interface ProfileEditModalProps {
   user: User;
   isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
+  onClose: () => void;
 }
 
-export default function ProfileEditModal({ user, isOpen, onOpenChange }: ProfileEditModalProps) {
+export default function ProfileEditModal({ user, isOpen, onClose }: ProfileEditModalProps) {
   const { updateUser } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -27,6 +27,12 @@ export default function ProfileEditModal({ user, isOpen, onOpenChange }: Profile
   const [motto, setMotto] = useState((user as any)?.motto || '');
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isUploadingCover, setIsUploadingCover] = useState(false);
+  
+  // Image preview state
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
 
   // Avatar upload mutation
   const uploadAvatar = useMutation({
@@ -172,14 +178,24 @@ export default function ProfileEditModal({ user, isOpen, onOpenChange }: Profile
   const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      uploadAvatar.mutate(file);
+      setAvatarFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setAvatarPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   const handleCoverUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      uploadCover.mutate(file);
+      setCoverFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setCoverPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -188,10 +204,22 @@ export default function ProfileEditModal({ user, isOpen, onOpenChange }: Profile
     try {
       const updates = [];
       
+      // Upload avatar if changed
+      if (avatarFile) {
+        updates.push(uploadAvatar.mutateAsync(avatarFile));
+      }
+      
+      // Upload cover if changed
+      if (coverFile) {
+        updates.push(uploadCover.mutateAsync(coverFile));
+      }
+      
+      // Update username if changed
       if (username.trim() !== user.username && username.trim()) {
         updates.push(updateUsername.mutateAsync(username.trim()));
       }
       
+      // Update motto if changed
       if (motto.trim() !== ((user as any)?.motto || '')) {
         updates.push(updateMottoMutation.mutateAsync(motto.trim()));
       }
@@ -200,7 +228,12 @@ export default function ProfileEditModal({ user, isOpen, onOpenChange }: Profile
         await Promise.all(updates);
       }
       
-      onOpenChange(false);
+      // Reset file states and close modal
+      setAvatarFile(null);
+      setCoverFile(null);
+      setAvatarPreview(null);
+      setCoverPreview(null);
+      onClose();
     } catch (error) {
       // Individual errors are handled by mutations
     }
@@ -210,14 +243,18 @@ export default function ProfileEditModal({ user, isOpen, onOpenChange }: Profile
     // Reset form to original values
     setUsername(user.username);
     setMotto((user as any)?.motto || '');
-    onOpenChange(false);
+    setAvatarFile(null);
+    setCoverFile(null);
+    setAvatarPreview(null);
+    setCoverPreview(null);
+    onClose();
   };
 
-  const isLoading = updateUsername.isPending || updateMottoMutation.isPending;
-  const hasChanges = username.trim() !== user.username || motto.trim() !== ((user as any)?.motto || '');
+  const isLoading = updateUsername.isPending || updateMottoMutation.isPending || isUploadingAvatar || isUploadingCover;
+  const hasChanges = username.trim() !== user.username || motto.trim() !== ((user as any)?.motto || '') || avatarFile || coverFile;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="backdrop-blur-md bg-white/5 border border-white/10 text-white max-w-md">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-center">Edit Profile</DialogTitle>
@@ -229,12 +266,22 @@ export default function ProfileEditModal({ user, isOpen, onOpenChange }: Profile
             <Label className="text-sm font-medium text-gray-300">Cover Photo</Label>
             <div className="relative">
               <div className="w-full h-24 bg-gradient-to-r from-military-green to-steel-blue rounded-lg overflow-hidden">
-                {user.coverPhoto && (
+                {coverPreview ? (
+                  <img
+                    src={coverPreview}
+                    alt="Cover Preview"
+                    className="w-full h-full object-cover"
+                  />
+                ) : user.coverPhoto ? (
                   <img
                     src={`/api/uploads/${user.coverPhoto}`}
                     alt="Cover"
                     className="w-full h-full object-cover"
                   />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <span className="text-white text-sm opacity-70">No cover photo</span>
+                  </div>
                 )}
               </div>
               <input
@@ -263,7 +310,13 @@ export default function ProfileEditModal({ user, isOpen, onOpenChange }: Profile
             <div className="flex justify-center">
               <div className="relative">
                 <div className="w-20 h-20 rounded-full bg-military-green flex items-center justify-center overflow-hidden">
-                  {user.avatar ? (
+                  {avatarPreview ? (
+                    <img
+                      src={avatarPreview}
+                      alt="Avatar Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : user.avatar ? (
                     <img
                       src={`/api/uploads/${user.avatar}`}
                       alt="Profile"

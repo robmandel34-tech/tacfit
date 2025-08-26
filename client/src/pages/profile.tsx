@@ -214,7 +214,7 @@ export default function Profile() {
           <div className="lg:col-span-1">
             <Card className="backdrop-blur-md bg-white/5 border border-white/10 overflow-hidden rounded-2xl shadow-xl">
               {/* Cover Photo Section */}
-              <div className="relative h-32 bg-gradient-to-r from-military-green to-steel-blue">
+              <div className="relative h-40 bg-gradient-to-r from-military-green to-steel-blue">
                 {displayUser.coverPhoto ? (
                   <img
                     src={`/uploads/${displayUser.coverPhoto}`}

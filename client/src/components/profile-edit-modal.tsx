@@ -265,7 +265,7 @@ export default function ProfileEditModal({ user, isOpen, onClose }: ProfileEditM
           <div className="space-y-2">
             <Label className="text-sm font-medium text-gray-300">Cover Photo</Label>
             <div className="relative">
-              <div className="w-full h-24 bg-gradient-to-r from-military-green to-steel-blue rounded-lg overflow-hidden">
+              <div className="w-full h-32 bg-gradient-to-r from-military-green to-steel-blue rounded-lg overflow-hidden">
                 {coverPreview ? (
                   <img
                     src={coverPreview}

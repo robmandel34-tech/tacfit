@@ -273,7 +273,7 @@ export default function Profile() {
                     </p>
                   </div>
                   
-                  <div className="bg-tactical-gray-lighter rounded-lg p-4 mb-4 text-center">
+                  <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-4 mb-4 text-center">
                     <div className="flex items-center justify-center space-x-2 mb-2">
                       <Trophy className="h-5 w-5" style={{ color: '#fb923c' }} />
                       <span className="font-bold text-lg" style={{ color: '#fb923c' }}>{displayUser.points}</span>

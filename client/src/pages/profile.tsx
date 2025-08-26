@@ -240,7 +240,7 @@ export default function Profile() {
               
               <CardContent className="pt-0 px-4 flex flex-col items-center relative">
                 <div className="text-center w-full max-w-sm mx-auto">
-                  <div className="absolute left-1/2 transform -translate-x-1/2 z-10" style={{ top: '-2rem' }}>
+                  <div className="absolute left-1/2 transform -translate-x-1/2 z-10" style={{ top: '-3rem' }}>
                     <div className="relative">
                       {displayUser.avatar ? (
                         <img

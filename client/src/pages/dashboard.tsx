@@ -1,4 +1,5 @@
 import { useAuthRequired } from "@/lib/auth";
+import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Navigation from "@/components/navigation";
 import ActivityCard from "@/components/activity-card";
@@ -15,10 +16,10 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function Dashboard() {
   const { user, isLoading } = useAuthRequired();
+  const { refreshUser } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [onboardingDismissedThisSession, setOnboardingDismissedThisSession] = useState(false);
 
   const { data: activities = [] } = useQuery({
     queryKey: ["/api/activities"],
@@ -84,13 +85,16 @@ export default function Dashboard() {
       if (!user?.id) throw new Error("User not found");
       return apiRequest("PATCH", `/api/users/${user.id}/onboarding`, {});
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast({
         title: "Welcome to TacFit!",
         description: "You're now ready to start your tactical fitness journey.",
       });
-      // Refresh user data to update onboarding status
+      // Refresh user data to update onboarding status both in queries and auth context
       queryClient.invalidateQueries({ queryKey: [`/api/users/${user?.id}`] });
+      await refreshUser();
+      // Close the onboarding modal
+      setShowOnboarding(false);
     },
     onError: (error: any) => {
       toast({
@@ -125,9 +129,9 @@ export default function Dashboard() {
     },
   });
 
-  // Show onboarding to new users who haven't completed it (only once per session)
+  // Show onboarding to new users who haven't completed it (only once ever)
   useEffect(() => {
-    if (user && (user as any).onboardingCompleted === false && !onboardingDismissedThisSession) {
+    if (user && (user as any).onboardingCompleted === false) {
       setShowOnboarding(true);
     }
     
@@ -187,7 +191,7 @@ export default function Dashboard() {
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname);
     }
-  }, [user, onboardingDismissedThisSession, toast, queryClient]);
+  }, [user, toast, queryClient]);
 
 
 
@@ -354,10 +358,8 @@ export default function Dashboard() {
         isOpen={showOnboarding}
         onClose={() => {
           setShowOnboarding(false);
-          setOnboardingDismissedThisSession(true);
         }}
         onComplete={() => {
-          setOnboardingDismissedThisSession(true);
           completeOnboardingMutation.mutate();
         }}
       />

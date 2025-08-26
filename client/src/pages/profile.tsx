@@ -455,7 +455,7 @@ export default function Profile() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Profile Info */}
           <div className="lg:col-span-1">
-            <Card className="bg-tactical-gray-light border-tactical-gray overflow-hidden">
+            <Card className="backdrop-blur-md bg-white/5 border border-white/10 overflow-hidden rounded-2xl shadow-xl">
               {/* Cover Photo Section */}
               <div className="relative h-32 bg-gradient-to-r from-military-green to-steel-blue">
                 {displayUser.coverPhoto ? (
@@ -729,7 +729,7 @@ export default function Profile() {
                         </div>
                         
                         <Dialog open={isFriendsModalOpen} onOpenChange={setIsFriendsModalOpen}>
-                          <DialogContent className="bg-tactical-gray-light border-tactical-gray max-w-md">
+                          <DialogContent className="backdrop-blur-md bg-black/80 border border-white/10 max-w-md">
                             <DialogHeader>
                               <DialogTitle className="text-white">Your Buddies</DialogTitle>
                             </DialogHeader>
@@ -811,7 +811,7 @@ export default function Profile() {
                                 )}
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="bg-tactical-gray-light border-tactical-gray max-w-md">
+                            <DialogContent className="backdrop-blur-md bg-black/80 border border-white/10 max-w-md">
                               <DialogHeader>
                                 <DialogTitle className="text-white">Friend Requests</DialogTitle>
                               </DialogHeader>
@@ -872,7 +872,9 @@ export default function Profile() {
           {/* Message Inbox - Only show on own profile */}
           {isOwnProfile && displayUser && (
             <div className="lg:col-span-3">
-              <MessageInbox userId={displayUser.id} />
+              <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl shadow-xl">
+                <MessageInbox userId={displayUser.id} />
+              </div>
             </div>
           )}
 
@@ -880,7 +882,7 @@ export default function Profile() {
           <div className="lg:col-span-2 space-y-6">
             {/* Task Notifications - Only show on own profile if there are pending tasks */}
             {isOwnProfile && pendingTasks.length > 0 && (
-              <Card className="bg-tactical-gray-light border-tactical-gray border-orange-500/50">
+              <Card className="backdrop-blur-md bg-white/5 border border-orange-500/30 rounded-2xl shadow-xl">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
                     <Bell className="h-5 w-5 text-orange-500" />
@@ -930,7 +932,7 @@ export default function Profile() {
             )}
 
             {/* Current Competition Participation */}
-            <Card className="bg-tactical-gray-light border-tactical-gray">
+            <Card className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl shadow-xl">
               <CardHeader className="pb-4">
                 <CardTitle className="text-white flex items-center gap-2">
                   <Trophy className="h-5 w-5 text-military-green" />
@@ -957,7 +959,7 @@ export default function Profile() {
                     </div>
                     
                     {/* Competition Period */}
-                    <div className="bg-tactical-gray rounded-lg p-4 border border-tactical-gray">
+                    <div className="backdrop-blur-sm bg-white/5 rounded-xl p-4 border border-white/5">
                       <div className="flex items-center justify-between">
                         <span className="text-gray-400 text-sm font-medium">Competition Period</span>
                         <span className="text-white text-sm font-medium">
@@ -976,7 +978,7 @@ export default function Profile() {
                   </div>
                 ) : (
                   <div className="text-center py-8">
-                    <div className="flex items-center justify-center w-16 h-16 bg-tactical-gray rounded-full mx-auto mb-4">
+                    <div className="flex items-center justify-center w-16 h-16 backdrop-blur-sm bg-white/5 border border-white/10 rounded-full mx-auto mb-4">
                       <Trophy className="h-8 w-8 text-gray-500" />
                     </div>
                     <h3 className="text-white font-semibold text-lg mb-2">Not Currently Participating</h3>
@@ -1000,7 +1002,7 @@ export default function Profile() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Dialog open={isActivitiesModalOpen} onOpenChange={setIsActivitiesModalOpen}>
                 <DialogTrigger asChild>
-                  <Card className="bg-tactical-gray-light border-tactical-gray cursor-pointer hover:bg-tactical-gray transition-colors">
+                  <Card className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl shadow-xl cursor-pointer hover:bg-white/10 transition-colors">
                     <CardContent className="p-4 text-center">
                       <Target className="mx-auto h-8 w-8 text-military-green mb-2" />
                       <div className="text-2xl font-bold text-white">{activities.length}</div>
@@ -1008,7 +1010,7 @@ export default function Profile() {
                     </CardContent>
                   </Card>
                 </DialogTrigger>
-                <DialogContent className="bg-tactical-gray-light border-tactical-gray max-w-2xl max-h-[80vh]">
+                <DialogContent className="backdrop-blur-md bg-black/80 border border-white/10 max-w-2xl max-h-[80vh]">
                   <DialogHeader>
                     <DialogTitle className="text-white">Activities ({activities.length})</DialogTitle>
                   </DialogHeader>
@@ -1040,7 +1042,7 @@ export default function Profile() {
               
               <Dialog open={isCompetitionsModalOpen} onOpenChange={setIsCompetitionsModalOpen}>
                 <DialogTrigger asChild>
-                  <Card className="bg-tactical-gray-light border-tactical-gray cursor-pointer hover:bg-tactical-gray transition-colors">
+                  <Card className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl shadow-xl cursor-pointer hover:bg-white/10 transition-colors">
                     <CardContent className="p-4 text-center">
                       <Users className="mx-auto h-8 w-8 text-steel-blue mb-2" />
                       <div className="text-2xl font-bold text-white">{totalCompetitions}</div>
@@ -1048,7 +1050,7 @@ export default function Profile() {
                     </CardContent>
                   </Card>
                 </DialogTrigger>
-                <DialogContent className="bg-tactical-gray-light border-tactical-gray max-w-2xl max-h-[80vh]">
+                <DialogContent className="backdrop-blur-md bg-black/80 border border-white/10 max-w-2xl max-h-[80vh]">
                   <DialogHeader>
                     <DialogTitle className="text-white">Competitions ({totalCompetitions})</DialogTitle>
                   </DialogHeader>
@@ -1102,7 +1104,7 @@ export default function Profile() {
               
               <Dialog open={isWinsModalOpen} onOpenChange={setIsWinsModalOpen}>
                 <DialogTrigger asChild>
-                  <Card className="bg-tactical-gray-light border-tactical-gray cursor-pointer hover:bg-tactical-gray transition-colors">
+                  <Card className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl shadow-xl cursor-pointer hover:bg-white/10 transition-colors">
                     <CardContent className="p-4 text-center">
                       <Trophy className="mx-auto h-8 w-8 text-combat-orange mb-2" />
                       <div className="text-2xl font-bold text-white">{wins}</div>
@@ -1110,7 +1112,7 @@ export default function Profile() {
                     </CardContent>
                   </Card>
                 </DialogTrigger>
-                <DialogContent className="bg-tactical-gray-light border-tactical-gray max-w-2xl max-h-[80vh]">
+                <DialogContent className="backdrop-blur-md bg-black/80 border border-white/10 max-w-2xl max-h-[80vh]">
                   <DialogHeader>
                     <DialogTitle className="text-white">Wins ({wins})</DialogTitle>
                   </DialogHeader>
@@ -1163,7 +1165,7 @@ export default function Profile() {
 
       {/* Remove Buddy Confirmation Dialog */}
       <Dialog open={isConfirmRemoveOpen} onOpenChange={setIsConfirmRemoveOpen}>
-        <DialogContent className="bg-tactical-gray-light border-tactical-gray max-w-md">
+        <DialogContent className="backdrop-blur-md bg-black/80 border border-white/10 max-w-md">
           <DialogHeader>
             <DialogTitle className="text-white">Remove Buddy</DialogTitle>
           </DialogHeader>

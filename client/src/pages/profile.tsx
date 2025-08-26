@@ -1,9 +1,8 @@
 import { useAuthRequired } from "@/lib/auth";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
-import { useEffect } from "react";
 import Navigation from "@/components/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -43,6 +42,7 @@ export default function Profile() {
   const [isWinsModalOpen, setIsWinsModalOpen] = useState(false);
   const [isConfirmRemoveOpen, setIsConfirmRemoveOpen] = useState(false);
   const [friendToRemove, setFriendToRemove] = useState<any>(null);
+  const [selectedActivityType, setSelectedActivityType] = useState<string | null>(null);
 
   const isOwnProfile = !userId || userId === user?.id?.toString();
   const targetUserId = isOwnProfile ? user?.id : parseInt(userId!);
@@ -99,6 +99,34 @@ export default function Profile() {
 
   // Calculate wins (1st place finishes)
   const wins = history.filter((record) => record.finalRank === 1).length;
+
+  // Group activities by type for bubbles
+  const activityTypeGroups = useMemo(() => {
+    const groups: { [key: string]: { count: number; displayName: string; activities: any[] } } = {};
+    
+    activities.forEach((activity: any) => {
+      const activityType = activity.type;
+      if (!groups[activityType]) {
+        groups[activityType] = {
+          count: 0,
+          displayName: activity.activityType?.displayName || activityType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+          activities: []
+        };
+      }
+      groups[activityType].count++;
+      groups[activityType].activities.push(activity);
+    });
+    
+    return groups;
+  }, [activities]);
+
+  // Filter activities based on selected type
+  const filteredActivities = useMemo(() => {
+    if (!selectedActivityType) {
+      return activities;
+    }
+    return activities.filter((activity: any) => activity.type === selectedActivityType);
+  }, [activities, selectedActivityType]);
 
   // Get friends for the current user to check relationships
   const { data: friends = [] } = useQuery<Friendship[]>({
@@ -807,13 +835,51 @@ export default function Profile() {
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    {activities.map((activity: any) => (
-                      <ActivityCard
-                        key={activity.id}
-                        activity={activity}
-                        showFlagButton={!isOwnProfile}
-                      />
-                    ))}
+                    {/* Activity Type Filter Bubbles */}
+                    <div className="flex flex-wrap gap-3">
+                      <Button
+                        variant={selectedActivityType === null ? "default" : "outline"}
+                        onClick={() => setSelectedActivityType(null)}
+                        className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                          selectedActivityType === null
+                            ? "bg-military-green hover:bg-military-green-dark text-white border-military-green"
+                            : "bg-white/10 hover:bg-white/20 text-gray-300 border-white/20"
+                        }`}
+                      >
+                        All Activities ({activities.length})
+                      </Button>
+                      {Object.entries(activityTypeGroups).map(([type, data]) => (
+                        <Button
+                          key={type}
+                          variant={selectedActivityType === type ? "default" : "outline"}
+                          onClick={() => setSelectedActivityType(type)}
+                          className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                            selectedActivityType === type
+                              ? "bg-military-green hover:bg-military-green-dark text-white border-military-green"
+                              : "bg-white/10 hover:bg-white/20 text-gray-300 border-white/20"
+                          }`}
+                        >
+                          {data.displayName} ({data.count})
+                        </Button>
+                      ))}
+                    </div>
+
+                    {/* Activity Feed */}
+                    <div className="space-y-6">
+                      {filteredActivities.length === 0 ? (
+                        <div className="text-center py-8">
+                          <p className="text-gray-400">No activities found for the selected filter.</p>
+                        </div>
+                      ) : (
+                        filteredActivities.map((activity: any) => (
+                          <ActivityCard
+                            key={activity.id}
+                            activity={activity}
+                            showFlagButton={!isOwnProfile}
+                          />
+                        ))
+                      )}
+                    </div>
                   </div>
                 )}
               </CardContent>

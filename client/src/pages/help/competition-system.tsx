@@ -275,8 +275,7 @@ export default function CompetitionSystemHelp() {
                       <div>
                         <span className="font-medium text-white">Individual + Team Rewards</span>
                         <p className="text-sm text-gray-400 mt-1">
-                          Same individual points (15/30 per activity) <span className="text-military-green font-semibold">PLUS</span> 
-                          massive team completion bonuses
+                          Same individual points (15/30 per activity) <span className="text-military-green font-semibold">PLUS</span> massive team completion bonuses
                         </p>
                       </div>
                     </div>

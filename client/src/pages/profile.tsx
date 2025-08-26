@@ -840,20 +840,22 @@ export default function Profile() {
                       <Button
                         variant={selectedActivityType === null ? "default" : "outline"}
                         onClick={() => setSelectedActivityType(null)}
-                        className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                        size="sm"
+                        className={`rounded-full px-2 py-1 text-xs font-medium transition-all ${
                           selectedActivityType === null
                             ? "bg-military-green hover:bg-military-green-dark text-white border-military-green"
                             : "bg-white/10 hover:bg-white/20 text-gray-300 border-white/20"
                         }`}
                       >
-                        All Activities ({activities.length})
+                        All ({activities.length})
                       </Button>
                       {Object.entries(activityTypeGroups).map(([type, data]) => (
                         <Button
                           key={type}
                           variant={selectedActivityType === type ? "default" : "outline"}
                           onClick={() => setSelectedActivityType(type)}
-                          className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                          size="sm"
+                          className={`rounded-full px-2 py-1 text-xs font-medium transition-all ${
                             selectedActivityType === type
                               ? "bg-military-green hover:bg-military-green-dark text-white border-military-green"
                               : "bg-white/10 hover:bg-white/20 text-gray-300 border-white/20"

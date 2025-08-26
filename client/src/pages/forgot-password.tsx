@@ -59,10 +59,10 @@ export default function ForgotPassword() {
           <div className="flex justify-center mb-6">
             <Shield className="h-20 w-20 text-military-green" />
           </div>
-          <CardTitle className="text-3xl font-bold text-heading tracking-tight">
+          <CardTitle className="text-3xl font-bold text-white tracking-tight">
             Password Recovery
           </CardTitle>
-          <CardDescription className="text-body text-lg">
+          <CardDescription className="text-gray-300 text-lg">
             Enter your email to receive reset instructions
           </CardDescription>
         </CardHeader>
@@ -88,7 +88,7 @@ export default function ForgotPassword() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-label">
+                <Label htmlFor="email" className="text-white font-medium">
                   Email Address
                 </Label>
                 <Input

@@ -103,10 +103,10 @@ export default function ResetPassword() {
           <div className="flex justify-center mb-6">
             <Shield className="h-20 w-20 text-military-green" />
           </div>
-          <CardTitle className="text-3xl font-bold text-heading tracking-tight">
+          <CardTitle className="text-3xl font-bold text-white tracking-tight">
             Set New Password
           </CardTitle>
-          <CardDescription className="text-body text-lg">
+          <CardDescription className="text-gray-300 text-lg">
             Enter your new password below
           </CardDescription>
         </CardHeader>
@@ -124,7 +124,7 @@ export default function ResetPassword() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-label">
+                <Label htmlFor="password" className="text-white font-medium">
                   New Password
                 </Label>
                 <div className="relative">
@@ -143,7 +143,7 @@ export default function ResetPassword() {
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent text-gray-400 hover:text-white"
                     onClick={() => setShowPassword(!showPassword)}
                     disabled={isLoading}
                   >
@@ -156,7 +156,7 @@ export default function ResetPassword() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="text-label">
+                <Label htmlFor="confirmPassword" className="text-white font-medium">
                   Confirm New Password
                 </Label>
                 <div className="relative">
@@ -175,7 +175,7 @@ export default function ResetPassword() {
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent text-gray-400 hover:text-white"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     disabled={isLoading}
                   >

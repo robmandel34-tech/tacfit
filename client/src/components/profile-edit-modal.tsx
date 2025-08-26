@@ -274,7 +274,7 @@ export default function ProfileEditModal({ user, isOpen, onClose }: ProfileEditM
                   />
                 ) : user.coverPhoto ? (
                   <img
-                    src={`/api/uploads/${user.coverPhoto}`}
+                    src={`/uploads/${user.coverPhoto}`}
                     alt="Cover"
                     className="w-full h-full object-cover"
                   />
@@ -318,7 +318,7 @@ export default function ProfileEditModal({ user, isOpen, onClose }: ProfileEditM
                     />
                   ) : user.avatar ? (
                     <img
-                      src={`/api/uploads/${user.avatar}`}
+                      src={`/uploads/${user.avatar}`}
                       alt="Profile"
                       className="w-full h-full object-cover"
                     />

@@ -122,6 +122,89 @@ export const sendVerificationEmail = async (
   }
 };
 
+// Send password reset email
+export const sendPasswordResetEmail = async (
+  email: string,
+  username: string,
+  token: string
+): Promise<void> => {
+  const baseUrl = process.env.APP_URL || 'http://localhost:5000';
+  const resetUrl = `${baseUrl}/reset-password?token=${token}`;
+  console.log('Generated password reset URL:', resetUrl);
+  
+  const emailHtml = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="color: #7cb342; font-size: 32px; margin: 0;">TacFit</h1>
+        <p style="color: #666; font-size: 16px; margin: 5px 0;">Teamwork, Fitness, Winning</p>
+      </div>
+      
+      <div style="background-color: #f8f9fa; padding: 30px; border-radius: 8px; border-left: 4px solid #7cb342;">
+        <h2 style="color: #333; margin-top: 0;">Password Reset Request, ${username}</h2>
+        <p style="color: #555; font-size: 16px; line-height: 1.5;">
+          We received a request to reset your password for your TacFit account. If you requested this, click the button below to set a new password.
+        </p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${resetUrl}" 
+             style="background-color: #7cb342; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+            Reset Password
+          </a>
+        </div>
+        
+        <p style="color: #777; font-size: 14px; margin-bottom: 0;">
+          If the button doesn't work, copy and paste this link into your browser:<br>
+          <a href="${resetUrl}" style="color: #7cb342; word-break: break-all;">${resetUrl}</a>
+        </p>
+      </div>
+      
+      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+        <p style="color: #999; font-size: 12px; text-align: center; margin: 0;">
+          This password reset link will expire in 1 hour.<br>
+          If you didn't request a password reset, please ignore this email.
+        </p>
+      </div>
+    </div>
+  `;
+
+  try {
+    if (process.env.SENDGRID_API_KEY) {
+      // Use SendGrid
+      const msg = {
+        to: email,
+        from: process.env.FROM_EMAIL || 'noreply@tacfit.app',
+        subject: 'TacFit - Reset Your Password',
+        html: emailHtml,
+        // Disable click tracking to prevent link redirects
+        trackingSettings: {
+          clickTracking: {
+            enable: false,
+            enableText: false
+          },
+          openTracking: {
+            enable: false
+          }
+        }
+      };
+      await sgMail.send(msg);
+      console.log('Password reset email sent via SendGrid to:', email);
+    } else {
+      // Use SMTP
+      const transporter = createEmailTransporter();
+      const info = await transporter.sendMail({
+        from: process.env.FROM_EMAIL || 'noreply@tacfit.app',
+        to: email,
+        subject: 'TacFit - Reset Your Password',
+        html: emailHtml,
+      });
+      console.log('Password reset email sent via SMTP:', info.messageId);
+    }
+  } catch (error) {
+    console.error('Error sending password reset email:', error);
+    throw error;
+  }
+};
+
 // Send welcome email after verification
 export const sendWelcomeEmail = async (
   email: string,

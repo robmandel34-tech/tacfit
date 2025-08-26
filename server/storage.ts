@@ -6,10 +6,7 @@ import {
   InsertCompetitionInvitation, CompetitionEntry, InsertCompetitionEntry,
   PhoneInvitation, InsertPhoneInvitation, WhiteboardItem, InsertWhiteboardItem, 
   MissionTask, InsertMissionTask, ActivityType, InsertActivityType,
-  AdminPost, InsertAdminPost, MoodLog, InsertMoodLog,
-  AppleHealthConnection, InsertAppleHealthConnection,
-  AppleHealthData, InsertAppleHealthData,
-  AppleHealthWorkout, InsertAppleHealthWorkout
+  AdminPost, InsertAdminPost, MoodLog, InsertMoodLog
 } from "@shared/schema";
 
 export interface IStorage {
@@ -19,6 +16,7 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmailVerificationToken(token: string): Promise<User | undefined>;
+  getUserByPasswordResetToken(token: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, updates: Partial<User>): Promise<User | undefined>;
   

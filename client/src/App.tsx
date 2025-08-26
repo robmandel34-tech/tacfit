@@ -11,6 +11,8 @@ import Dashboard from "@/pages/dashboard";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
 import EmailVerification from "@/pages/email-verification";
+import ForgotPassword from "@/pages/forgot-password";
+import ResetPassword from "@/pages/reset-password";
 import Competitions from "@/pages/competitions";
 import CompetitionStatus from "@/pages/competition-status";
 import Team from "@/pages/team";
@@ -42,6 +44,8 @@ function Router() {
         <Route path="/login" component={Login} />
         <Route path="/register" component={Register} />
         <Route path="/verify-email" component={EmailVerification} />
+        <Route path="/forgot-password" component={ForgotPassword} />
+        <Route path="/reset-password" component={ResetPassword} />
         <Route path="/competitions" component={Competitions} />
         <Route path="/competition-status" component={CompetitionStatus} />
         <Route path="/team" component={Team} />

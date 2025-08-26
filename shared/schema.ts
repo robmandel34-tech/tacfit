@@ -26,6 +26,10 @@ export const users = pgTable("users", {
   isEmailVerified: boolean("is_email_verified").default(false),
   emailVerificationToken: text("email_verification_token"),
   emailVerificationTokenExpiresAt: timestamp("email_verification_token_expires_at"),
+  
+  // Password reset fields
+  passwordResetToken: text("password_reset_token"),
+  passwordResetTokenExpiresAt: timestamp("password_reset_token_expires_at"),
 
   // Advertisement preferences
   hideAdvertisements: boolean("hide_advertisements").default(false),

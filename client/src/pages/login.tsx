@@ -137,13 +137,16 @@ export default function Login() {
             </Button>
           </form>
             
-            <div className="text-center">
-            <span className="text-secondary text-sm">
-              Need tactical clearance?{" "}
-              <Link href="/register" className="text-military-green hover:text-military-green-light font-semibold transition-colors">
-                Join the force
+            <div className="text-center space-y-3">
+              <Link href="/forgot-password" className="block text-gray-400 hover:text-military-green text-sm transition-colors">
+                Forgot your password?
               </Link>
-            </span>
+              <span className="text-secondary text-sm">
+                Need tactical clearance?{" "}
+                <Link href="/register" className="text-military-green hover:text-military-green-light font-semibold transition-colors">
+                  Join the force
+                </Link>
+              </span>
             </div>
             </>
           )}

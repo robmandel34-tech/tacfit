@@ -778,7 +778,7 @@ export default function Team() {
               {/* Filled Member Slots */}
               {teamMembers.map((member: any) => (
                 <div key={member.id} className="content-tile p-4">
-                  <div className="flex items-start space-x-3">
+                  <div className="flex items-center space-x-3">
                     <Avatar 
                       className="h-12 w-12 cursor-pointer hover:ring-2 hover:ring-military-green transition-all"
                       onClick={() => navigate(`/profile/${member.user?.id}`)}
@@ -812,12 +812,14 @@ export default function Team() {
                         )}
                       </div>
                       <p className="text-sm text-military-green">{member.user?.points || 0} points</p>
-                      {member.user?.motto && (
-                        <p className="text-xs text-gray-300 italic mt-1">
+                    </div>
+                    {member.user?.motto && (
+                      <div className="text-right">
+                        <p className="text-xs text-gray-300 italic">
                           "{member.user.motto}"
                         </p>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

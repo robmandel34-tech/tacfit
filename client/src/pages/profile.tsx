@@ -872,9 +872,7 @@ export default function Profile() {
           {/* Message Inbox - Only show on own profile */}
           {isOwnProfile && displayUser && (
             <div className="lg:col-span-3">
-              <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl shadow-xl">
-                <MessageInbox userId={displayUser.id} />
-              </div>
+              <MessageInbox userId={displayUser.id} />
             </div>
           )}
 

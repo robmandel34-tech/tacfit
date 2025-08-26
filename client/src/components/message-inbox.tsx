@@ -86,7 +86,7 @@ export default function MessageInbox({ userId }: MessageInboxProps) {
 
   if (isLoading) {
     return (
-      <Card className="bg-tactical-gray-light border-tactical-gray">
+      <Card className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl shadow-xl">
         <CardHeader>
           <CardTitle className="text-white flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -95,7 +95,7 @@ export default function MessageInbox({ userId }: MessageInboxProps) {
             </div>
             <div
               onClick={() => setIsExpanded(!isExpanded)}
-              className="p-2 text-gray-400 hover:text-white cursor-pointer transition-colors rounded-md hover:bg-gray-700/50"
+              className="p-2 text-gray-400 hover:text-white cursor-pointer transition-colors rounded-md hover:bg-white/10"
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
@@ -120,7 +120,7 @@ export default function MessageInbox({ userId }: MessageInboxProps) {
 
   if (conversations.length === 0) {
     return (
-      <Card className="bg-tactical-gray-light border-tactical-gray">
+      <Card className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl shadow-xl">
         <CardHeader>
           <CardTitle className="text-white flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -129,7 +129,7 @@ export default function MessageInbox({ userId }: MessageInboxProps) {
             </div>
             <div
               onClick={() => setIsExpanded(!isExpanded)}
-              className="p-2 text-gray-400 hover:text-white cursor-pointer transition-colors rounded-md hover:bg-gray-700/50"
+              className="p-2 text-gray-400 hover:text-white cursor-pointer transition-colors rounded-md hover:bg-white/10"
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
@@ -158,7 +158,7 @@ export default function MessageInbox({ userId }: MessageInboxProps) {
 
   return (
     <>
-      <Card className="bg-tactical-gray-light border-tactical-gray">
+      <Card className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl shadow-xl">
         <CardHeader>
           <CardTitle className="text-white flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -172,7 +172,7 @@ export default function MessageInbox({ userId }: MessageInboxProps) {
             </div>
             <div
               onClick={() => setIsExpanded(!isExpanded)}
-              className="p-2 text-gray-400 hover:text-white cursor-pointer transition-colors rounded-md hover:bg-gray-700/50"
+              className="p-2 text-gray-400 hover:text-white cursor-pointer transition-colors rounded-md hover:bg-white/10"
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
@@ -194,7 +194,7 @@ export default function MessageInbox({ userId }: MessageInboxProps) {
               className={`flex items-center space-x-3 p-3 rounded-lg border transition-colors cursor-pointer ${
                 Number(conversation.unreadCount || 0) > 0
                   ? 'bg-military-green/10 border-military-green/30 hover:bg-military-green/20'
-                  : 'bg-tactical-gray border-gray-700 hover:bg-gray-700/50'
+                  : 'backdrop-blur-sm bg-white/5 border border-white/10 hover:bg-white/10'
               }`}
               onClick={() => handleOpenMessage(conversation.friend)}
             >

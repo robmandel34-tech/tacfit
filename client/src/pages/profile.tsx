@@ -267,8 +267,8 @@ export default function Profile() {
                   <p className="text-gray-400 text-sm mb-2 text-center">{displayUser.email}</p>
                   
                   {/* User Motto */}
-                  <div className="mb-4 px-4">
-                    <p className="text-gray-300 text-sm italic text-center break-words leading-relaxed max-w-xs mx-auto">
+                  <div className="mb-4 px-6">
+                    <p className="text-gray-300 text-sm italic text-center break-words leading-relaxed max-w-sm mx-auto hyphens-auto">
                       {(displayUser as any)?.motto ? `"${(displayUser as any)?.motto}"` : "No motto set"}
                     </p>
                   </div>

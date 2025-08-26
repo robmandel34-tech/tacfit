@@ -871,7 +871,7 @@ export default function Profile() {
 
           {/* Message Inbox - Only show on own profile */}
           {isOwnProfile && displayUser && (
-            <div className="lg:col-span-3 mb-6">
+            <div className="lg:col-span-3">
               <MessageInbox userId={displayUser.id} />
             </div>
           )}

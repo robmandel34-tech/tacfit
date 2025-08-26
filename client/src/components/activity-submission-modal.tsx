@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -76,11 +76,21 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     select: (data: ActivityType[]) => data.filter(at => at.isActive).sort((a, b) => a.name.localeCompare(b.name))
   });
 
-  // Users can now choose from all available activity types
-  const availableActivityTypes = activityTypes;
+  // Filter activity types based on competition requirements
+  const availableActivityTypes = useMemo(() => {
+    if (!competition?.requiredActivities || competition.requiredActivities.length === 0) {
+      // If no competition or no requirements, allow all active activity types
+      return activityTypes;
+    }
+    
+    // Filter to only show competition-required activity types
+    return activityTypes.filter(activityType => 
+      competition.requiredActivities.includes(activityType.name)
+    );
+  }, [activityTypes, competition?.requiredActivities]);
   
-  // Use all activity types instead of limiting to competition requirements
-  const competitionActivityTypes = activityTypes;
+  // Use filtered activity types for competition submissions
+  const competitionActivityTypes = availableActivityTypes;
 
   // Check if competition has started
   const competitionHasStarted = competition ? new Date() >= new Date(competition.startDate) : false;

@@ -287,19 +287,34 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
       content: (
         <div className="space-y-4">
           <div className="bg-gray-800/50 p-4 rounded-lg">
-            <h4 className="font-semibold text-white mb-3">Training Types</h4>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between p-2 bg-gray-700/30 rounded">
-                <span className="text-sm text-white">Cardio Training</span>
-                <Badge variant="secondary" className="text-xs bg-gray-700 text-gray-300 border-gray-600">Minutes</Badge>
+            <h4 className="font-semibold text-white mb-3">How to Submit Activities</h4>
+            <div className="space-y-3">
+              <div className="flex items-center space-x-3 p-2 bg-gray-700/30 rounded">
+                <div className="w-8 h-8 rounded-full bg-military-green flex items-center justify-center">
+                  <span className="text-xs text-black font-bold">⊕</span>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-white">Click the Crosshair Icon</p>
+                  <p className="text-xs text-gray-400">Located in the bottom-right corner of any page</p>
+                </div>
               </div>
-              <div className="flex items-center justify-between p-2 bg-gray-700/30 rounded">
-                <span className="text-sm text-white">Strength Training</span>
-                <Badge variant="secondary" className="text-xs bg-gray-700 text-gray-300 border-gray-600">Reps</Badge>
+              <div className="flex items-center space-x-3 p-2 bg-gray-700/30 rounded">
+                <div className="w-8 h-8 rounded bg-military-green/20 flex items-center justify-center">
+                  <span className="text-xs text-military-green">📝</span>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-white">Fill Out Activity Details</p>
+                  <p className="text-xs text-gray-400">Choose activity type, quantity, and description</p>
+                </div>
               </div>
-              <div className="flex items-center justify-between p-2 bg-gray-700/30 rounded">
-                <span className="text-sm text-white">Mobility Training</span>
-                <Badge variant="secondary" className="text-xs bg-gray-700 text-gray-300 border-gray-600">Minutes</Badge>
+              <div className="flex items-center space-x-3 p-2 bg-gray-700/30 rounded">
+                <div className="w-8 h-8 rounded bg-military-green/20 flex items-center justify-center">
+                  <span className="text-xs text-military-green">📷</span>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-white">Add Evidence</p>
+                  <p className="text-xs text-gray-400">Upload photos and videos to earn maximum points</p>
+                </div>
               </div>
             </div>
           </div>

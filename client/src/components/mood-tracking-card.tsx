@@ -52,6 +52,7 @@ export default function MoodTrackingCard({ userId }: MoodTrackingCardProps) {
 
       // Invalidate mood-related queries and refresh user context for points update
       queryClient.invalidateQueries({ queryKey: ["/api/mood-logs"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/mood-logs/today", userId] });
       await refreshUser();
 
       toast({

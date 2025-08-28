@@ -95,6 +95,10 @@ export default function Dashboard() {
       await refreshUser();
       // Close the onboarding modal
       setShowOnboarding(false);
+      // Clear session storage since onboarding is now completed
+      if (user?.id) {
+        sessionStorage.removeItem(`walkthrough_shown_${user.id}`);
+      }
     },
     onError: (error: any) => {
       toast({
@@ -129,10 +133,16 @@ export default function Dashboard() {
     },
   });
 
-  // Show onboarding to new users who haven't completed it (only once ever)
+  // Show onboarding to new users who haven't completed it (only once per session)
   useEffect(() => {
     if (user && (user as any).onboardingCompleted === false) {
-      setShowOnboarding(true);
+      // Check if walkthrough was already shown this session
+      const walkthroughShown = sessionStorage.getItem(`walkthrough_shown_${user.id}`);
+      if (!walkthroughShown) {
+        setShowOnboarding(true);
+        // Mark as shown for this session
+        sessionStorage.setItem(`walkthrough_shown_${user.id}`, 'true');
+      }
     }
     
     // Check for Strava connection success

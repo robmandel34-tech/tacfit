@@ -174,10 +174,10 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
   const unreadCount = Math.max(0, messages.length - lastViewedCount);
 
   return (
-    <Card className="bg-tactical-gray-light border-tactical-gray text-white">
+    <Card className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl shadow-xl text-white">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
-          <CardHeader className="cursor-pointer hover:bg-tactical-gray-lighter transition-colors">
+          <CardHeader className="cursor-pointer hover:bg-white/10 transition-colors">
             <CardTitle className="flex items-center justify-between text-lg text-white">
               <div className="flex items-center space-x-2">
                 <Radio className="w-5 h-5" />

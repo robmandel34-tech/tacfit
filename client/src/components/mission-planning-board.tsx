@@ -262,10 +262,10 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
   };
 
   return (
-    <Card className="bg-tactical-gray-light border-tactical-gray text-white">
+    <Card className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl shadow-xl text-white">
       <Collapsible open={!isCollapsed} onOpenChange={(open) => setIsCollapsed(!open)}>
         <CollapsibleTrigger asChild>
-          <CardHeader className="cursor-pointer hover:bg-tactical-gray-lighter transition-colors">
+          <CardHeader className="cursor-pointer hover:bg-white/10 transition-colors">
             <CardTitle className="flex items-center justify-between text-lg text-white">
               <div className="flex items-center space-x-2">
                 <Clipboard className="w-5 h-5" />
@@ -292,7 +292,7 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
               
               {/* Add Task Form */}
               {isAddingTask && (
-                <Card className="bg-slate-800 border-slate-700">
+                <Card className="backdrop-blur-sm bg-white/5 border border-white/10 rounded-xl">
               <CardHeader>
                 <CardTitle className="text-white text-sm">Create New Task</CardTitle>
               </CardHeader>
@@ -369,7 +369,7 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
                   </div>
                 ) : (
                   tasks.map((task: MissionTask) => (
-              <Card key={task.id} className="bg-slate-800 border-slate-700">
+              <Card key={task.id} className="backdrop-blur-sm bg-white/5 border border-white/10 rounded-xl">
                 <CardContent className="p-4">
               {editingTaskId === task.id ? (
                 /* Edit Mode */

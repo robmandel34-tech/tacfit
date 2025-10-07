@@ -232,6 +232,9 @@ async function completeCompetition(competitionId: number) {
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Create PostgreSQL session store
+  // Trust proxy - required for secure cookies behind reverse proxies (like Replit deployments)
+  app.set('trust proxy', 1);
+  
   const PgSession = ConnectPgSimple(session);
   
   // Configure session middleware with PostgreSQL session store

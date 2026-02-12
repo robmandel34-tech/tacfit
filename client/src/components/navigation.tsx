@@ -81,7 +81,6 @@ export default function Navigation() {
               />
               <span className="text-sm font-semibold text-white">{user.points || 0} PTS</span>
             </div>
-            <InstallAppButton />
             <HamburgerMenu />
             <div className="relative">
               <button 

@@ -118,10 +118,16 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
       const response = await fetch("/api/activities", {
         method: "POST",
         body: data,
+        credentials: "include",
       });
 
       if (!response.ok) {
-        throw new Error("Failed to submit activity");
+        let message = "Failed to submit activity";
+        try {
+          const errData = await response.json();
+          message = errData.message || message;
+        } catch {}
+        throw new Error(message);
       }
 
       return response.json();

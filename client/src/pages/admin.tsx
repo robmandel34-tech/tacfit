@@ -32,6 +32,7 @@ interface Competition {
   completedAt?: string;
   paymentType?: string;
   entryFee?: number;
+  requireActivityReflection?: boolean;
   createdAt: string;
 }
 
@@ -202,7 +203,8 @@ export default function AdminPage() {
     requiredActivities: [] as string[],
     targetGoals: [] as string[],
     paymentType: 'free' as 'free' | 'one_time',
-    entryFee: 0
+    entryFee: 0,
+    requireActivityReflection: false,
   });
 
   // Activity type form state
@@ -518,7 +520,8 @@ export default function AdminPage() {
       requiredActivities: [],
       targetGoals: [],
       paymentType: 'free' as 'free' | 'one_time',
-      entryFee: 0
+      entryFee: 0,
+      requireActivityReflection: false,
     });
   };
 
@@ -936,7 +939,8 @@ export default function AdminPage() {
       requiredActivities: competition.requiredActivities || [],
       targetGoals: competition.targetGoals || [],
       paymentType: (competition.paymentType as 'free' | 'one_time') || 'free',
-      entryFee: competition.entryFee || 0
+      entryFee: competition.entryFee || 0,
+      requireActivityReflection: competition.requireActivityReflection || false,
     });
     setIsCreateCompetitionOpen(true);
   };
@@ -1284,6 +1288,34 @@ export default function AdminPage() {
                       )}
                     </div>
                     
+                    {/* Activity Reflection Setting */}
+                    <div className="space-y-3 border border-tactical-gray rounded-lg p-4">
+                      <Label className="text-gray-300 text-lg font-semibold">Activity Reflection</Label>
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1 pr-4">
+                          <p className="text-white font-medium text-sm">Require written reflection</p>
+                          <p className="text-gray-400 text-xs mt-1">
+                            When enabled, participants must write a short reflection (50–100 words) when submitting any activity.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={competitionForm.requireActivityReflection}
+                          onClick={() => setCompetitionForm(prev => ({ ...prev, requireActivityReflection: !prev.requireActivityReflection }))}
+                          className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none ${
+                            competitionForm.requireActivityReflection ? 'bg-military-green' : 'bg-gray-600'
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                              competitionForm.requireActivityReflection ? 'translate-x-8' : 'translate-x-1'
+                            }`}
+                          />
+                        </button>
+                      </div>
+                    </div>
+
                     <div className="flex space-x-4 pt-4">
                       <Button 
                         type="button" 

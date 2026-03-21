@@ -58,6 +58,7 @@ export const competitions = pgTable("competitions", {
   paymentType: text("payment_type").default("free"), // "free", "one_time", "subscription"
   stripeProductId: text("stripe_product_id"), // Stripe product ID for paid competitions
   stripePriceId: text("stripe_price_id"), // Stripe price ID for paid competitions
+  requireActivityReflection: boolean("require_activity_reflection").default(false), // Require text reflection for all activity submissions
   createdAt: timestamp("created_at").defaultNow(),
 });
 

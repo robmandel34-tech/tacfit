@@ -34,6 +34,7 @@ interface Competition {
   name: string;
   startDate: string;
   requiredActivities?: string[];
+  requireActivityReflection?: boolean;
 }
 
 interface Team {
@@ -104,8 +105,9 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   };
 
   const selectedActivityType = competitionActivityTypes.find(at => at.name === type);
-  const requiresTextInput = selectedActivityType?.requiresTextInput || false;
-  const textInputDescription = selectedActivityType?.textInputDescription || "";
+  // Require reflection if the competition has it enabled, OR if the activity type requires it
+  const requiresTextInput = competition?.requireActivityReflection || selectedActivityType?.requiresTextInput || false;
+  const textInputDescription = selectedActivityType?.textInputDescription || (competition?.requireActivityReflection ? "Share your thoughts on this activity" : "");
   const minWords = selectedActivityType?.textInputMinWords || 50;
   const maxWords = 100;
   const currentWordCount = countWords(textInput);
@@ -358,11 +360,11 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                 </div>
               )}
 
-              {/* Text Input for specific activity types */}
+              {/* Activity Reflection / Text Input */}
               {type && requiresTextInput && (
                 <div className="space-y-2">
                   <Label className="text-gray-300 font-medium">
-                    Additional Response {minWords && `(${minWords}-${maxWords} words)`}
+                    Activity Reflection {minWords && `(${minWords}-${maxWords} words)`}
                   </Label>
                   {textInputDescription && (
                     <p className="text-sm text-gray-400 mb-2">
@@ -372,7 +374,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                   <Textarea
                     value={textInput}
                     onChange={(e) => setTextInput(e.target.value)}
-                    placeholder="Please provide your response here..."
+                    placeholder="Describe your experience — how did it go, how did you feel, what did you notice?"
                     className={`bg-tactical-gray-lighter border-2 text-white placeholder-gray-400 resize-none focus:ring-0 focus:ring-offset-0 focus:outline-none ${
                       !isTextInputValid ? 'border-red-500 focus:border-red-500' : 'border-tactical-gray focus:border-white'
                     }`}

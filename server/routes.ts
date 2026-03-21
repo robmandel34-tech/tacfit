@@ -69,7 +69,7 @@ async function generateVideoThumbnail(videoPath: string, thumbnailPath: string):
     const ffmpegCommand = `ffmpeg -i "${videoPath}" -ss 00:00:01 -vframes 1 -vf "scale=640:360:force_original_aspect_ratio=decrease,pad=640:360:(ow-iw)/2:(oh-ih)/2" -y "${thumbnailPath}"`;
     console.log(`Generating thumbnail: ${ffmpegCommand}`);
     
-    const { stdout, stderr } = await execAsync(ffmpegCommand);
+    const { stdout, stderr } = await execAsync(ffmpegCommand, { maxBuffer: 50 * 1024 * 1024 });
     console.log(`Thumbnail generated: ${thumbnailPath}`);
     
     // Check if thumbnail file exists and has content
@@ -96,7 +96,7 @@ async function convertVideoToMp4(inputPath: string, outputPath: string): Promise
     const ffmpegCommand = `ffmpeg -i "${inputPath}" -c:v libx264 -preset ultrafast -profile:v baseline -level 3.0 -pix_fmt yuv420p -crf 28 -maxrate 800k -bufsize 1600k -c:a aac -ac 2 -ar 44100 -b:a 96k -movflags +faststart -f mp4 "${outputPath}"`;
     console.log(`Converting video to basic MP4: ${ffmpegCommand}`);
     
-    const { stdout, stderr } = await execAsync(ffmpegCommand);
+    const { stdout, stderr } = await execAsync(ffmpegCommand, { maxBuffer: 100 * 1024 * 1024, timeout: 300000 });
     console.log(`Video conversion completed: ${outputPath}`);
     console.log(`FFmpeg output:`, stderr.substring(0, 300)); // Show partial output
     
@@ -131,7 +131,7 @@ declare module 'express-session' {
 
 const upload = multer({ 
   dest: 'uploads/',
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
+  limits: { fileSize: 200 * 1024 * 1024 }, // 200MB limit per file
 });
 
 // Initialize Stripe
@@ -1991,7 +1991,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/activities", upload.any(), async (req, res) => {
+  app.post("/api/activities", (req, res, next) => {
+    upload.any()(req, res, (err) => {
+      if (err) {
+        console.error("Multer upload error:", err);
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(400).json({ message: "File too large. Videos must be under 200MB and images under 200MB." });
+        }
+        return res.status(400).json({ message: `Upload error: ${err.message}` });
+      }
+      next();
+    });
+  }, async (req, res) => {
     try {
       console.log("Activity submission request body:", req.body);
       console.log("Activity submission files:", req.files);

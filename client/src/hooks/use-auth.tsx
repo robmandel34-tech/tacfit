@@ -34,25 +34,30 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
       const savedUser = localStorage.getItem("user");
       if (savedUser) {
         try {
-          const userData = JSON.parse(savedUser);
-          // Validate the user still exists in the database
-          const response = await fetch(`/api/users/${userData.id}`, {
+          // Validate session is still active on the server
+          const sessionResponse = await fetch("/api/auth/me", {
             credentials: "include",
           });
-          if (response.ok) {
-            const currentUser = await response.json();
+          if (sessionResponse.ok) {
+            const currentUser = await sessionResponse.json();
             setUser(currentUser);
+            localStorage.setItem("user", JSON.stringify(currentUser));
           } else {
-            // User no longer exists, clear localStorage and redirect to login
+            // Session expired or invalid — clear local state and force re-login
             localStorage.removeItem("user");
             setUser(null);
             setLocation("/login");
           }
         } catch (error) {
-          // Invalid user data, clear localStorage and redirect to login
-          localStorage.removeItem("user");
-          setUser(null);
-          setLocation("/login");
+          // Network error — keep local user data to avoid unnecessary logouts
+          try {
+            const userData = JSON.parse(savedUser);
+            setUser(userData);
+          } catch {
+            localStorage.removeItem("user");
+            setUser(null);
+            setLocation("/login");
+          }
         }
       }
       setIsLoading(false);

@@ -655,6 +655,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Check current session status - used by frontend on startup
+  app.get("/api/auth/me", async (req, res) => {
+    try {
+      if (!req.session?.userId) {
+        return res.status(401).json({ message: "Not logged in" });
+      }
+      const user = await storage.getUser(req.session.userId);
+      if (!user) {
+        req.session.destroy(() => {});
+        return res.status(401).json({ message: "User not found" });
+      }
+      // Refresh session user data
+      req.session.user = user;
+      const { password: _, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to check session" });
+    }
+  });
+
   // Refresh user session from database
   app.post("/api/auth/refresh-session", async (req, res) => {
     try {
@@ -3528,13 +3548,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create a mood log entry
   app.post("/api/mood-logs", async (req, res) => {
     try {
-      if (!req.session?.user?.id) {
+      const sessionUserId = req.session?.userId || req.session?.user?.id;
+      if (!sessionUserId) {
         return res.sendStatus(401);
       }
 
       const requestData = {
         ...req.body,
-        userId: req.session.user.id
+        userId: sessionUserId
       };
 
       const validationResult = insertMoodLogSchema.safeParse(requestData);
@@ -3552,7 +3573,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Award 5 points for mood logging
       await updateUserPointsWithWebhook(
-        req.session.user.id, 
+        sessionUserId, 
         5, 
         'Daily mood log'
       );
@@ -3567,7 +3588,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get user's mood logs
   app.get("/api/mood-logs/user/:userId", async (req, res) => {
     try {
-      if (!req.session?.user?.id) {
+      const sessionUserId = req.session?.userId || req.session?.user?.id;
+      if (!sessionUserId) {
         return res.sendStatus(401);
       }
 
@@ -3575,7 +3597,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
 
       // Users can only access their own mood logs
-      if (req.session.user.id !== userId) {
+      if (sessionUserId !== userId) {
         return res.sendStatus(403);
       }
 
@@ -3590,14 +3612,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get user's latest mood log
   app.get("/api/mood-logs/user/:userId/latest", async (req, res) => {
     try {
-      if (!req.session?.user?.id) {
+      const sessionUserId = req.session?.userId || req.session?.user?.id;
+      if (!sessionUserId) {
         return res.sendStatus(401);
       }
 
       const userId = parseInt(req.params.userId);
 
       // Users can only access their own mood logs
-      if (req.session.user.id !== userId) {
+      if (sessionUserId !== userId) {
         return res.sendStatus(403);
       }
 
@@ -3612,14 +3635,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Check if user has logged mood today
   app.get("/api/mood-logs/user/:userId/today", async (req, res) => {
     try {
-      if (!req.session?.user?.id) {
+      const sessionUserId = req.session?.userId || req.session?.user?.id;
+      if (!sessionUserId) {
         return res.sendStatus(401);
       }
 
       const userId = parseInt(req.params.userId);
 
       // Users can only check their own mood logs
-      if (req.session.user.id !== userId) {
+      if (sessionUserId !== userId) {
         return res.sendStatus(403);
       }
 
@@ -3634,12 +3658,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin-only route to get any user's mood logs
   app.get("/api/admin/mood-logs/user/:userId", async (req, res) => {
     try {
-      if (!req.session?.user?.id) {
+      const sessionUserId = req.session?.userId || req.session?.user?.id;
+      if (!sessionUserId) {
         return res.sendStatus(401);
       }
 
       // Check if user is admin
-      const currentUser = await storage.getUser(req.session.user.id);
+      const currentUser = await storage.getUser(sessionUserId);
       if (!currentUser?.isAdmin) {
         return res.sendStatus(403);
       }

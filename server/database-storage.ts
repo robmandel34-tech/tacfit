@@ -615,27 +615,17 @@ export class DatabaseStorage implements IStorage {
 
   // Friend operations
   async getFriendships(userId: number): Promise<Friendship[]> {
-    // Get friendships where user is either the requester or the recipient
-    // and the friendship is accepted
+    // Get all friendships where user is either the requester or the recipient
+    // (includes pending and accepted so the UI can show correct state)
     const userFriendships = await db
       .select()
       .from(friendships)
-      .where(
-        and(
-          eq(friendships.userId, userId),
-          eq(friendships.status, "accepted")
-        )
-      );
+      .where(eq(friendships.userId, userId));
     
     const friendFriendships = await db
       .select()
       .from(friendships)
-      .where(
-        and(
-          eq(friendships.friendId, userId),
-          eq(friendships.status, "accepted")
-        )
-      );
+      .where(eq(friendships.friendId, userId));
     
     return [...userFriendships, ...friendFriendships];
   }

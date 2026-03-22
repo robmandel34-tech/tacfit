@@ -501,6 +501,8 @@ export default function Profile() {
                             (f.userId === targetUserId && f.friendId === user?.id)
                           );
                           
+                          const requestAlreadySent = sendFriendRequest.isSuccess || existingFriendship?.status === "pending";
+
                           if (existingFriendship?.status === "accepted") {
                             return (
                               <Button 
@@ -518,14 +520,14 @@ export default function Profile() {
                                 Send Message
                               </Button>
                             );
-                          } else if (existingFriendship?.status === "pending") {
+                          } else if (requestAlreadySent) {
                             return (
                               <Button 
                                 disabled
-                                className="w-full bg-gray-600 cursor-not-allowed"
+                                className="w-full bg-gray-600 cursor-not-allowed opacity-80"
                               >
                                 <Clock className="mr-2 h-4 w-4" />
-                                Friend Request Pending
+                                Request Pending
                               </Button>
                             );
                           } else {
@@ -536,7 +538,7 @@ export default function Profile() {
                                 className="w-full bg-military-green hover:bg-military-green-light"
                               >
                                 <UserPlus className="mr-2 h-4 w-4" />
-                                {sendFriendRequest.isPending ? "Sending..." : "Send Friend Request"}
+                                {sendFriendRequest.isPending ? "Sending..." : "Add Buddy"}
                               </Button>
                             );
                           }

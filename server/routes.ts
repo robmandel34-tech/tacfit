@@ -2778,7 +2778,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!invitation) return res.status(404).json({ message: "Invitation not found" });
 
       // Add user to team
-      await storage.createTeamMember({ teamId: invitation.teamId, userId: invitation.userId, role: 'member' });
+      await storage.addTeamMember({ teamId: invitation.teamId, userId: invitation.userId, role: 'member' });
 
       // Mark accepted
       const updated = await storage.updateUserInvitation(id, 'accepted');

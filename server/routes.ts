@@ -2085,74 +2085,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let thumbnailUrl = '';
       if (videoFiles.length > 0) {
         const videoFile = videoFiles[0];
-        const originalExtension = path.extname(videoFile.originalname);
+        const originalExtension = path.extname(videoFile.originalname).toLowerCase() || '.mp4';
         const timestamp = Date.now();
-        
-        if (videoFile.mimetype.startsWith('video/')) {
+        const fileName = `${timestamp}${originalExtension}`;
+        const filePath = path.join('uploads', fileName);
+
+        fs.renameSync(videoFile.path, filePath);
+
+        if (videoFile.mimetype.startsWith('video/') || ['mov', 'mp4', 'webm', 'avi', 'hevc', 'm4v'].includes(originalExtension.replace('.', ''))) {
           evidenceType = 'video';
-          
-          // For non-MP4 videos, convert to MP4 for better browser compatibility
-          if (originalExtension.toLowerCase() === '.mov' || originalExtension.toLowerCase() === '.avi' || originalExtension.toLowerCase() === '.webm') {
-            const tempFileName = `${timestamp}_temp${originalExtension}`;
-            const tempFilePath = path.join('uploads', tempFileName);
-            const mp4FileName = `${timestamp}.mp4`;
-            const mp4FilePath = path.join('uploads', mp4FileName);
-            
-            // Move uploaded file to temp location
-            fs.renameSync(videoFile.path, tempFilePath);
-            
-            console.log(`Converting ${originalExtension} video to MP4 for maximum browser compatibility...`);
-            
-            // Convert to MP4
-            const conversionSuccess = await convertVideoToMp4(tempFilePath, mp4FilePath);
-            
-            if (conversionSuccess) {
-              evidenceUrl = `/uploads/${mp4FileName}`;
-              console.log(`Video conversion successful: ${mp4FileName}`);
-              
-              // Generate thumbnail for converted video
-              const thumbnailFileName = `${timestamp}_thumb.jpg`;
-              const thumbnailPath = path.join('uploads', thumbnailFileName);
-              const thumbnailGenerated = await generateVideoThumbnail(mp4FilePath, thumbnailPath);
-              if (thumbnailGenerated) {
-                thumbnailUrl = `/uploads/${thumbnailFileName}`;
-              }
-            } else {
-              // If conversion fails, use original file
-              fs.renameSync(tempFilePath, path.join('uploads', `${timestamp}${originalExtension}`));
-              evidenceUrl = `/uploads/${timestamp}${originalExtension}`;
-              console.log(`Video conversion failed, using original format`);
-              
-              // Try to generate thumbnail from original video
-              const thumbnailFileName = `${timestamp}_thumb.jpg`;
-              const thumbnailPath = path.join('uploads', thumbnailFileName);
-              const originalVideoPath = path.join('uploads', `${timestamp}${originalExtension}`);
-              const thumbnailGenerated = await generateVideoThumbnail(originalVideoPath, thumbnailPath);
-              if (thumbnailGenerated) {
-                thumbnailUrl = `/uploads/${thumbnailFileName}`;
-              }
-            }
-          } else {
-            // For MP4 and other formats, use directly
-            const fileName = `${timestamp}${originalExtension}`;
-            const filePath = path.join('uploads', fileName);
-            fs.renameSync(videoFile.path, filePath);
-            evidenceUrl = `/uploads/${fileName}`;
-            
-            // Generate thumbnail for MP4 video
-            const thumbnailFileName = `${timestamp}_thumb.jpg`;
-            const thumbnailPath = path.join('uploads', thumbnailFileName);
-            const thumbnailGenerated = await generateVideoThumbnail(filePath, thumbnailPath);
-            if (thumbnailGenerated) {
-              thumbnailUrl = `/uploads/${thumbnailFileName}`;
-            }
-          }
+          evidenceUrl = `/uploads/${fileName}`;
+          console.log(`Video saved: ${fileName} (${videoFile.mimetype}, ${videoFile.size} bytes)`);
         } else {
-          // Handle non-video files as photos
+          // Fallback: treat as photo
           evidenceType = 'photo';
-          const fileName = `${timestamp}${originalExtension}`;
-          const filePath = path.join('uploads', fileName);
-          fs.renameSync(videoFile.path, filePath);
           evidenceUrl = `/uploads/${fileName}`;
         }
       }

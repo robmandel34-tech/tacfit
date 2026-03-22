@@ -94,6 +94,13 @@ app.use('/uploads', (req, res, next) => {
   }
 }));
 
+app.use((req, _res, next) => {
+  if (req.method !== "GET" && req.path.startsWith("/api")) {
+    console.log(`>>> INCOMING ${req.method} ${req.path} content-type=${req.headers["content-type"]?.slice(0, 60)}`);
+  }
+  next();
+});
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;

@@ -1992,6 +1992,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/activities", (req, res, next) => {
+    console.log("POST /api/activities received — starting multer");
     upload.any()(req, res, (err) => {
       if (err) {
         console.error("Multer upload error:", err);

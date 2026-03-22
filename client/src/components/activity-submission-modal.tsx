@@ -115,11 +115,24 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
 
   const submitActivity = useMutation({
     mutationFn: async (data: FormData) => {
-      const response = await fetch("/api/activities", {
-        method: "POST",
-        body: data,
-        credentials: "include",
-      });
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 60000);
+      let response: Response;
+      try {
+        response = await fetch("/api/activities", {
+          method: "POST",
+          body: data,
+          credentials: "include",
+          signal: controller.signal,
+        });
+      } catch (err: any) {
+        clearTimeout(timeout);
+        if (err.name === "AbortError") {
+          throw new Error("Upload timed out — try a shorter or smaller video.");
+        }
+        throw new Error(`Network error: ${err.message}`);
+      }
+      clearTimeout(timeout);
 
       if (!response.ok) {
         let message = "Failed to submit activity";

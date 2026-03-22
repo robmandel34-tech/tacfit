@@ -258,8 +258,24 @@ export default function Profile() {
                     className="w-full h-full object-cover object-center"
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-r from-military-green to-steel-blue flex items-center justify-center">
-                    <span className="text-white text-sm opacity-70">No cover photo</span>
+                  <div className="w-full h-full bg-gradient-to-br from-[#1a2e1a] via-[#1e3a2e] to-[#0f1f2e] relative overflow-hidden">
+                    {/* Subtle grid overlay */}
+                    <div className="absolute inset-0 opacity-10"
+                      style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '20px 20px' }}
+                    />
+                    {/* Mountain terrain silhouette */}
+                    <svg className="absolute bottom-0 w-full" viewBox="0 0 400 80" preserveAspectRatio="none" fill="none">
+                      <path d="M0 80 L0 55 L40 30 L80 50 L130 15 L180 45 L220 20 L270 48 L310 25 L360 42 L400 28 L400 80 Z" fill="rgba(0,0,0,0.25)" />
+                      <path d="M0 80 L0 65 L50 45 L90 60 L140 38 L190 58 L240 42 L290 60 L340 48 L400 55 L400 80 Z" fill="rgba(0,0,0,0.2)" />
+                    </svg>
+                    {/* TacFit crossed-swords emblem */}
+                    <div className="absolute inset-0 flex items-center justify-center pb-6">
+                      <svg viewBox="0 0 60 60" className="w-12 h-12 opacity-20" fill="white">
+                        <path d="M10 10 L50 50 M12 10 L14 10 L50 48 L50 50 L48 50 L12 12 Z" />
+                        <path d="M50 10 L10 50 M48 10 L50 10 L50 12 L14 48 L12 48 L12 50 L10 50 L10 48 L46 12 Z" />
+                        <circle cx="30" cy="30" r="5" />
+                      </svg>
+                    </div>
                   </div>
                 )}
                 {isOwnProfile && (
@@ -284,10 +300,22 @@ export default function Profile() {
                           className="w-24 h-24 rounded-full border-4 border-white object-cover shadow-lg"
                         />
                       ) : (
-                        <div className="w-24 h-24 bg-military-green rounded-full flex items-center justify-center border-4 border-white shadow-lg">
-                          <span className="text-white font-bold text-2xl">
-                            {getInitials(displayUser.username)}
-                          </span>
+                        <div className="w-24 h-24 bg-gradient-to-b from-military-green to-[#1a2e1a] rounded-full flex items-center justify-center border-4 border-white shadow-lg overflow-hidden">
+                          {/* Soldier silhouette */}
+                          <svg viewBox="0 0 80 80" className="w-20 h-20" fill="none">
+                            {/* Helmet */}
+                            <ellipse cx="40" cy="22" rx="16" ry="10" fill="rgba(255,255,255,0.85)" />
+                            <rect x="24" y="29" width="32" height="4" rx="2" fill="rgba(255,255,255,0.85)" />
+                            {/* Head */}
+                            <ellipse cx="40" cy="40" rx="9" ry="10" fill="rgba(255,255,255,0.85)" />
+                            {/* Shoulders / jacket */}
+                            <path d="M18 80 Q18 58 22 55 L30 52 Q35 56 40 56 Q45 56 50 52 L58 55 Q62 58 62 80 Z" fill="rgba(255,255,255,0.85)" />
+                            {/* Collar / neck */}
+                            <rect x="36" y="49" width="8" height="6" rx="1" fill="rgba(255,255,255,0.85)" />
+                            {/* Small rank stripe */}
+                            <rect x="30" y="63" width="20" height="2" rx="1" fill="rgba(255,255,255,0.3)" />
+                            <rect x="30" y="67" width="20" height="2" rx="1" fill="rgba(255,255,255,0.3)" />
+                          </svg>
                         </div>
                       )}
                     </div>
@@ -564,8 +592,13 @@ export default function Profile() {
                                               className="w-10 h-10 rounded-full object-cover"
                                             />
                                           ) : (
-                                            <AvatarFallback className="bg-military-green text-white">
-                                              {friendship.friend?.username?.charAt(0).toUpperCase()}
+                                            <AvatarFallback className="bg-gradient-to-b from-military-green to-[#1a2e1a] p-0 overflow-hidden">
+                                              <svg viewBox="0 0 40 40" className="w-10 h-10" fill="none">
+                                                <ellipse cx="20" cy="11" rx="8" ry="5" fill="rgba(255,255,255,0.85)" />
+                                                <rect x="12" y="15" width="16" height="2" rx="1" fill="rgba(255,255,255,0.85)" />
+                                                <ellipse cx="20" cy="20" rx="5" ry="5" fill="rgba(255,255,255,0.85)" />
+                                                <path d="M9 40 Q9 29 11 27 L15 26 Q18 28 20 28 Q22 28 25 26 L29 27 Q31 29 31 40 Z" fill="rgba(255,255,255,0.85)" />
+                                              </svg>
                                             </AvatarFallback>
                                           )}
                                         </Avatar>

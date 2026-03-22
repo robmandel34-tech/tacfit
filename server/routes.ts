@@ -2721,19 +2721,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (existingMember) {
         return res.status(400).json({ message: "User is already a team member" });
       }
-      
+
+      // Look up competitionId from the team
+      const team = await storage.getTeam(teamId);
+
       // Create invitation
       const invitation = await storage.createUserInvitation({
         userId,
         invitedBy,
         teamId,
+        competitionId: team?.competitionId || null,
         status: 'pending',
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
       });
       
       res.json({ message: "Invitation sent", invitation });
     } catch (error) {
+      console.error("Error sending user invitation:", error);
       res.status(500).json({ message: "Error sending user invitation" });
+    }
+  });
+
+  // Get pending invitations for a user
+  app.get("/api/users/:userId/team-invitations", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const invitations = await storage.getUserInvitations(userId);
+
+      // Enrich with team, competition, and inviter details
+      const enriched = await Promise.all(invitations.map(async (inv: any) => {
+        const team = inv.teamId ? await storage.getTeam(inv.teamId) : null;
+        const competition = inv.competitionId ? await storage.getCompetition(inv.competitionId) : null;
+        const inviter = inv.invitedBy ? await storage.getUser(inv.invitedBy) : null;
+        return {
+          ...inv,
+          team: team ? { id: team.id, name: team.name } : null,
+          competition: competition ? { id: competition.id, name: competition.name } : null,
+          inviter: inviter ? { id: inviter.id, username: inviter.username, avatar: inviter.avatar } : null,
+        };
+      }));
+
+      res.json(enriched);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching invitations" });
+    }
+  });
+
+  // Accept a team invitation
+  app.post("/api/team-invitations/:id/accept", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { userId } = req.body;
+      if (!userId) return res.status(400).json({ message: "userId required" });
+      const invitations = await storage.getUserInvitations(userId);
+      const invitation = invitations.find((i: any) => i.id === id);
+      if (!invitation) return res.status(404).json({ message: "Invitation not found" });
+
+      // Add user to team
+      await storage.createTeamMember({ teamId: invitation.teamId, userId: invitation.userId, role: 'member' });
+
+      // Mark accepted
+      const updated = await storage.updateUserInvitation(id, 'accepted');
+      res.json({ message: "Invitation accepted", invitation: updated });
+    } catch (error) {
+      console.error("Error accepting invitation:", error);
+      res.status(500).json({ message: "Error accepting invitation" });
+    }
+  });
+
+  // Decline a team invitation
+  app.post("/api/team-invitations/:id/decline", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updated = await storage.updateUserInvitation(id, 'declined');
+      res.json({ message: "Invitation declined", invitation: updated });
+    } catch (error) {
+      res.status(500).json({ message: "Error declining invitation" });
     }
   });
 

@@ -189,6 +189,21 @@ export const phoneInvitations = pgTable("phone_invitations", {
   expiresAt: timestamp("expires_at").notNull(),
 });
 
+export const userInvitations = pgTable("user_invitations", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  invitedBy: integer("invited_by").references(() => users.id).notNull(),
+  teamId: integer("team_id").references(() => teams.id).notNull(),
+  competitionId: integer("competition_id").references(() => competitions.id),
+  status: text("status").default("pending"), // pending, accepted, declined
+  createdAt: timestamp("created_at").defaultNow(),
+  expiresAt: timestamp("expires_at").notNull(),
+});
+
+export const insertUserInvitationSchema = createInsertSchema(userInvitations).omit({ id: true, createdAt: true });
+export type UserInvitation = typeof userInvitations.$inferSelect;
+export type InsertUserInvitation = z.infer<typeof insertUserInvitationSchema>;
+
 export const competitionEntries = pgTable("competition_entries", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id),

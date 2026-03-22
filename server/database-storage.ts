@@ -7,10 +7,11 @@ import {
   InsertCompetitionEntry, PhoneInvitation, InsertPhoneInvitation, WhiteboardItem, 
   InsertWhiteboardItem, MissionTask, InsertMissionTask, ActivityType, InsertActivityType,
   AdminPost, InsertAdminPost, Advertisement, InsertAdvertisement, MoodLog, InsertMoodLog,
+  UserInvitation, InsertUserInvitation,
   users, competitions, teams, teamMembers, activities, activityTypes,
   activityComments, activityLikes, activityFlags, chatMessages, friendships, 
   competitionHistory, competitionInvitations, competitionEntries, phoneInvitations, 
-  whiteboardItems, missionTasks, adminPosts, advertisements, moodLogs
+  whiteboardItems, missionTasks, adminPosts, advertisements, moodLogs, userInvitations
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc, isNull, gt, lte, inArray, sql } from "drizzle-orm";
@@ -843,12 +844,35 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUserInvitation(invitation: any): Promise<any> {
-    // For now, return a mock invitation - this would need proper schema implementation
-    return {
-      id: Date.now(),
-      ...invitation,
-      createdAt: new Date(),
-    };
+    const [created] = await db
+      .insert(userInvitations)
+      .values({
+        userId: invitation.userId,
+        invitedBy: invitation.invitedBy,
+        teamId: invitation.teamId,
+        competitionId: invitation.competitionId || null,
+        status: 'pending',
+        expiresAt: invitation.expiresAt || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      })
+      .returning();
+    return created;
+  }
+
+  async getUserInvitations(userId: number): Promise<any[]> {
+    const rows = await db
+      .select()
+      .from(userInvitations)
+      .where(and(eq(userInvitations.userId, userId), eq(userInvitations.status, 'pending')));
+    return rows;
+  }
+
+  async updateUserInvitation(id: number, status: string): Promise<any> {
+    const [updated] = await db
+      .update(userInvitations)
+      .set({ status })
+      .where(eq(userInvitations.id, id))
+      .returning();
+    return updated;
   }
 
   // Phone invitation operations for referral system

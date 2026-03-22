@@ -12,7 +12,7 @@ import CompetitionPaymentModal from "@/components/competition-payment-modal";
 import FindFriendsModal from "@/components/find-friends-modal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trophy, Users } from "lucide-react";
+import { Trophy, Users, Mail, Check, X } from "lucide-react";
 
 export default function Competitions() {
   const [, setLocation] = useLocation();
@@ -104,6 +104,37 @@ export default function Competitions() {
         return dateB - dateA;
       });
     }
+  });
+
+  // Fetch pending team invitations for this user
+  const { data: teamInvitations = [] } = useQuery<any[]>({
+    queryKey: ["/api/users", user?.id, "team-invitations"],
+    queryFn: () => fetch(`/api/users/${user?.id}/team-invitations`, { credentials: "include" }).then(r => r.json()),
+    enabled: !!user?.id,
+  });
+
+  const acceptInvitation = useMutation({
+    mutationFn: async (invitationId: number) => {
+      const res = await apiRequest("POST", `/api/team-invitations/${invitationId}/accept`, { userId: user?.id });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/users", user?.id, "team-invitations"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/team-members", user?.id] });
+      toast({ title: "Joined!", description: "You've joined the team. Head to Team to see your squad." });
+    },
+    onError: () => toast({ title: "Error", description: "Could not accept the invitation.", variant: "destructive" }),
+  });
+
+  const declineInvitation = useMutation({
+    mutationFn: async (invitationId: number) => {
+      const res = await apiRequest("POST", `/api/team-invitations/${invitationId}/decline`, {});
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/users", user?.id, "team-invitations"] });
+      toast({ title: "Declined", description: "Invitation declined." });
+    },
   });
 
   // Remove the old automatic joining logic
@@ -209,6 +240,46 @@ export default function Competitions() {
             </div>
           </CardHeader>
         </Card>
+
+        {/* Pending Team Invitations */}
+        {teamInvitations.length > 0 && (
+          <div className="mb-6 space-y-3">
+            {teamInvitations.map((inv: any) => (
+              <div key={inv.id} className="flex items-center justify-between gap-4 p-4 rounded-xl backdrop-blur-md bg-military-green/20 border border-military-green/40">
+                <div className="flex items-center gap-3 min-w-0">
+                  <Mail className="w-5 h-5 text-military-green shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-white font-semibold text-sm">
+                      <span className="text-military-green">{inv.inviter?.username || "Someone"}</span> invited you to join{" "}
+                      <span className="text-military-green">{inv.team?.name || "a team"}</span>
+                      {inv.competition?.name ? ` in ${inv.competition.name}` : ""}
+                    </p>
+                    <p className="text-gray-400 text-xs mt-0.5">Expires {new Date(inv.expiresAt).toLocaleDateString()}</p>
+                  </div>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <Button
+                    size="sm"
+                    onClick={() => acceptInvitation.mutate(inv.id)}
+                    disabled={acceptInvitation.isPending}
+                    className="bg-military-green hover:bg-military-green-light text-white h-8 px-3"
+                  >
+                    <Check className="w-4 h-4 mr-1" /> Accept
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => declineInvitation.mutate(inv.id)}
+                    disabled={declineInvitation.isPending}
+                    className="border-white/20 text-white hover:bg-white/10 h-8 px-3"
+                  >
+                    <X className="w-4 h-4 mr-1" /> Decline
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {competitions.length === 0 ? (

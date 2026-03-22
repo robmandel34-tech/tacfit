@@ -128,6 +128,8 @@ export interface IStorage {
   // Team invitation operations
   createInvitation(invitation: any): Promise<any>;
   createUserInvitation(invitation: any): Promise<any>;
+  getUserInvitations(userId: number): Promise<any[]>;
+  updateUserInvitation(id: number, status: string): Promise<any>;
   
   // Phone invitation operations
   createPhoneInvitation(invitation: InsertPhoneInvitation): Promise<PhoneInvitation>;

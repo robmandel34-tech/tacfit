@@ -1226,9 +1226,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (now < competition.joinStartDate) {
           return res.status(400).json({ message: "Join window has not opened yet" });
         }
-        // Set join end to end of day (23:59:59.999) instead of beginning of day
+        // Set join end to end of day UTC
         const joinEnd = new Date(competition.joinEndDate);
-        joinEnd.setHours(23, 59, 59, 999);
+        joinEnd.setUTCHours(23, 59, 59, 999);
         if (now > joinEnd) {
           return res.status(400).json({ message: "Join window has closed" });
         }
@@ -1311,9 +1311,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (now < competition.joinStartDate) {
           return res.status(400).json({ message: "Join window has not opened yet" });
         }
-        // Set join end to end of day (23:59:59.999) instead of beginning of day
+        // Set join end to end of day UTC
         const joinEnd = new Date(competition.joinEndDate);
-        joinEnd.setHours(23, 59, 59, 999);
+        joinEnd.setUTCHours(23, 59, 59, 999);
         if (now > joinEnd) {
           return res.status(400).json({ message: "Join window has closed" });
         }

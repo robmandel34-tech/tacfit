@@ -121,14 +121,25 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
         xhr.open("POST", "/api/activities");
         xhr.withCredentials = true;
 
+        // Simulate progress since proxied environments don't fire reliable progress events
+        let simulated = 5;
+        setUploadProgress(5);
+        const ticker = setInterval(() => {
+          simulated = Math.min(simulated + (Math.random() * 3), 90);
+          setUploadProgress(Math.round(simulated));
+        }, 1500);
+
         xhr.upload.addEventListener("progress", (e) => {
           if (e.lengthComputable) {
-            setUploadProgress(Math.round((e.loaded / e.total) * 100));
+            clearInterval(ticker);
+            setUploadProgress(Math.round((e.loaded / e.total) * 90));
           }
         });
 
         xhr.addEventListener("load", () => {
-          setUploadProgress(0);
+          clearInterval(ticker);
+          setUploadProgress(100);
+          setTimeout(() => setUploadProgress(0), 500);
           if (xhr.status >= 200 && xhr.status < 300) {
             try { resolve(JSON.parse(xhr.responseText)); } catch { resolve({}); }
           } else {
@@ -139,11 +150,13 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
         });
 
         xhr.addEventListener("error", () => {
+          clearInterval(ticker);
           setUploadProgress(0);
           reject(new Error("Network error — check your connection and try again."));
         });
 
         xhr.addEventListener("abort", () => {
+          clearInterval(ticker);
           setUploadProgress(0);
           reject(new Error("Upload was cancelled."));
         });
@@ -517,8 +530,8 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
           {submitActivity.isPending && (
             <div className="space-y-1">
               <div className="flex justify-between text-xs text-gray-400">
-                <span>{uploadProgress > 0 ? "Uploading files..." : "Preparing..."}</span>
-                {uploadProgress > 0 && <span>{uploadProgress}%</span>}
+                <span>Uploading — please keep this open...</span>
+                <span>{uploadProgress}%</span>
               </div>
               <div className="w-full bg-white/10 rounded-full h-2">
                 <div

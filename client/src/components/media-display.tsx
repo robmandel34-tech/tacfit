@@ -1,6 +1,65 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import * as React from 'react';
 import { X, ChevronLeft, ChevronRight, Images, Maximize2 } from 'lucide-react';
+
+function useVideoThumbnail(videoUrl: string | undefined): string | null {
+  const [thumbnail, setThumbnail] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!videoUrl) return;
+    let cancelled = false;
+
+    const video = document.createElement('video');
+    video.muted = true;
+    video.preload = 'metadata';
+    video.playsInline = true;
+    video.crossOrigin = 'anonymous';
+
+    const capture = () => {
+      if (cancelled) return;
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 360;
+        const ctx = canvas.getContext('2d');
+        if (ctx && canvas.width > 0 && canvas.height > 0) {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          if (dataUrl && dataUrl !== 'data:,') setThumbnail(dataUrl);
+        }
+      } catch {
+        // canvas tainted or capture failed — fall back to blank
+      }
+      cleanup();
+    };
+
+    const onSeeked = () => capture();
+    const onLoadedMetadata = () => { video.currentTime = 0.001; };
+    const onLoadedData = () => {
+      // Fallback: capture immediately if seeked never fired
+      if (!thumbnail) capture();
+    };
+
+    const cleanup = () => {
+      video.removeEventListener('loadedmetadata', onLoadedMetadata);
+      video.removeEventListener('seeked', onSeeked);
+      video.removeEventListener('loadeddata', onLoadedData);
+      video.src = '';
+    };
+
+    video.addEventListener('loadedmetadata', onLoadedMetadata);
+    video.addEventListener('seeked', onSeeked);
+    video.addEventListener('loadeddata', onLoadedData);
+    video.src = videoUrl;
+
+    return () => {
+      cancelled = true;
+      cleanup();
+    };
+  }, [videoUrl]);
+
+  return thumbnail;
+}
 
 interface MediaDisplayProps {
   imageUrls: string[];
@@ -147,6 +206,10 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
   const [showVideo, setShowVideo] = useState(false);
   const [isWorkoutDetailsOpen, setIsWorkoutDetailsOpen] = useState(false);
   const [workoutDetailsImageUrl, setWorkoutDetailsImageUrl] = useState('');
+
+  // Generate first-frame thumbnail client-side when no server thumbnail exists
+  const generatedThumbnail = useVideoThumbnail(!thumbnailUrl ? videoUrl : undefined);
+  const effectiveThumbnail = thumbnailUrl || generatedThumbnail;
   
 
 
@@ -178,14 +241,13 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
     return (
       <div className="relative w-full h-64 bg-tactical-gray-light rounded-lg overflow-hidden">
         {/* Show thumbnail with play button overlay if available and video not playing */}
-        {thumbnailUrl && !showVideo ? (
+        {effectiveThumbnail && !showVideo ? (
           <div className="relative w-full h-full">
             <img
-              src={thumbnailUrl}
+              src={effectiveThumbnail}
               alt="Video thumbnail"
               className="w-full h-full object-cover"
               onError={(e) => {
-                console.error("Thumbnail failed to load:", thumbnailUrl);
                 // Fall back to video element
                 setShowVideo(true);
               }}

@@ -52,6 +52,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   const [textInput, setTextInput] = useState("");
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
 
   // Get user's current team membership
   const { data: userTeamMember } = useQuery<any[]>({
@@ -114,37 +115,41 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   const isTextInputValid = !requiresTextInput || (currentWordCount >= minWords && currentWordCount <= maxWords);
 
   const submitActivity = useMutation({
-    mutationFn: async (data: FormData) => {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 60000);
-      let response: Response;
-      try {
-        response = await fetch("/api/activities", {
-          method: "POST",
-          body: data,
-          credentials: "include",
-          signal: controller.signal,
+    mutationFn: (data: FormData) =>
+      new Promise<any>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "/api/activities");
+        xhr.withCredentials = true;
+
+        xhr.upload.addEventListener("progress", (e) => {
+          if (e.lengthComputable) {
+            setUploadProgress(Math.round((e.loaded / e.total) * 100));
+          }
         });
-      } catch (err: any) {
-        clearTimeout(timeout);
-        if (err.name === "AbortError") {
-          throw new Error("Upload timed out — try a shorter or smaller video.");
-        }
-        throw new Error(`Network error: ${err.message}`);
-      }
-      clearTimeout(timeout);
 
-      if (!response.ok) {
-        let message = "Failed to submit activity";
-        try {
-          const errData = await response.json();
-          message = errData.message || message;
-        } catch {}
-        throw new Error(message);
-      }
+        xhr.addEventListener("load", () => {
+          setUploadProgress(0);
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try { resolve(JSON.parse(xhr.responseText)); } catch { resolve({}); }
+          } else {
+            let message = "Failed to submit activity";
+            try { message = JSON.parse(xhr.responseText)?.message || message; } catch {}
+            reject(new Error(message));
+          }
+        });
 
-      return response.json();
-    },
+        xhr.addEventListener("error", () => {
+          setUploadProgress(0);
+          reject(new Error("Network error — check your connection and try again."));
+        });
+
+        xhr.addEventListener("abort", () => {
+          setUploadProgress(0);
+          reject(new Error("Upload was cancelled."));
+        });
+
+        xhr.send(data);
+      }),
     onSuccess: () => {
       toast({
         title: "Activity submitted!",
@@ -189,6 +194,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     setTextInput("");
     setImageFiles([]);
     setVideoFile(null);
+    setUploadProgress(0);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -507,6 +513,25 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                 )}
               </div>
 
+          {/* Upload progress bar */}
+          {submitActivity.isPending && (
+            <div className="space-y-1">
+              <div className="flex justify-between text-xs text-gray-400">
+                <span>{uploadProgress > 0 ? "Uploading files..." : "Preparing..."}</span>
+                {uploadProgress > 0 && <span>{uploadProgress}%</span>}
+              </div>
+              <div className="w-full bg-white/10 rounded-full h-2">
+                <div
+                  className="bg-military-green h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${uploadProgress || 5}%` }}
+                />
+              </div>
+              {uploadProgress === 100 && (
+                <p className="text-xs text-gray-400">Processing on server...</p>
+              )}
+            </div>
+          )}
+
           {/* Submit Button */}
           <Button
             type="submit"
@@ -514,7 +539,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
             disabled={submitActivity.isPending || !type || !description || !quantity || imageFiles.length === 0}
           >
             {submitActivity.isPending
-              ? "Submitting..."
+              ? uploadProgress > 0 ? `Uploading ${uploadProgress}%` : "Preparing..."
               : "Submit Activity"}
           </Button>
         </form>

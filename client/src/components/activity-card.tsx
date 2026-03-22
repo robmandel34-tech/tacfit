@@ -101,7 +101,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
   };
 
   const handleProfileClick = () => {
-    navigate(`/profile/${activity.user.id}`);
+    if (activity.user?.id) navigate(`/profile/${activity.user.id}`);
   };
 
   const getActivityIcon = (type: string) => {
@@ -324,17 +324,20 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
                     }}
                   />
                 ) : null}
-                <div className="w-12 h-12 bg-military-green rounded-full flex items-center justify-center hover:bg-military-green-light transition-colors" style={{ display: activity.user?.avatar ? 'none' : 'flex' }}>
-                  <span className="text-white font-bold text-sm">
-                    {getInitials(activity.user.username)}
-                  </span>
+                <div className="w-12 h-12 bg-gradient-to-b from-military-green to-[#1a2e1a] rounded-full flex items-center justify-center hover:opacity-80 transition-opacity overflow-hidden" style={{ display: activity.user?.avatar ? 'none' : 'flex' }}>
+                  <svg viewBox="0 0 40 40" className="w-12 h-12" fill="none">
+                    <ellipse cx="20" cy="11" rx="8" ry="5" fill="rgba(255,255,255,0.85)" />
+                    <rect x="12" y="15" width="16" height="2" rx="1" fill="rgba(255,255,255,0.85)" />
+                    <ellipse cx="20" cy="20" rx="5" ry="5" fill="rgba(255,255,255,0.85)" />
+                    <path d="M9 40 Q9 29 11 27 L15 26 Q18 28 20 28 Q22 28 25 26 L29 27 Q31 29 31 40 Z" fill="rgba(255,255,255,0.85)" />
+                  </svg>
                 </div>
               </div>
               <span 
                 className="text-white text-sm font-medium cursor-pointer hover:text-military-green transition-colors text-center"
                 onClick={handleProfileClick}
               >
-                {activity.user.username}
+                {activity.user?.username || 'Unknown'}
               </span>
             </div>
             <div className="flex-1 min-w-0">

@@ -1,6 +1,5 @@
 import { useAuth } from "@/hooks/use-auth";
 import { Link, useLocation } from "wouter";
-import { InstallAppButton } from "@/components/install-app-button";
 import { HamburgerMenu } from "@/components/hamburger-menu";
 import { ShieldPlus, Trophy } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";

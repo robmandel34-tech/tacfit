@@ -6,7 +6,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "./hooks/use-auth";
 import { MoodTracker } from "@/components/mood-tracker";
-import { InstallPrompt } from "@/components/install-prompt";
 import Dashboard from "@/pages/dashboard";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
@@ -80,7 +79,6 @@ function AppContent() {
       <Router />
       <BottomNavigation />
       <FloatingActionButton />
-      {user && <InstallPrompt />}
     </MoodTracker>
   );
 }

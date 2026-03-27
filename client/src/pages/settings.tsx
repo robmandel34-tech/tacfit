@@ -11,16 +11,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Settings,
   Lock,
@@ -45,6 +42,7 @@ export default function SettingsPage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [deletePassword, setDeletePassword] = useState("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const changePassword = useMutation({
     mutationFn: async () => {
@@ -106,11 +104,13 @@ export default function SettingsPage() {
       return res.json();
     },
     onSuccess: () => {
+      setDeleteDialogOpen(false);
       queryClient.clear();
       setLocation("/login");
     },
     onError: (err: Error) => {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      // Keep dialog open so user can try again
+      toast({ title: "Could not delete account", description: err.message, variant: "destructive" });
     },
   });
 
@@ -324,43 +324,54 @@ export default function SettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" className="w-full bg-red-900/50 hover:bg-red-800 border border-red-700 text-red-200">
-                    Delete My Account
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="bg-[#111] border-white/10 text-white">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle className="text-white">Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription className="text-gray-400">
-                      This will permanently delete your account, all your activities, points, and competition history. This action cannot be reversed.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <div className="py-2">
-                    <Label className="text-gray-300 text-sm">Confirm with your password</Label>
+              <Button
+                variant="destructive"
+                className="w-full bg-red-900/50 hover:bg-red-800 border border-red-700 text-red-200"
+                onClick={() => { setDeletePassword(""); setDeleteDialogOpen(true); }}
+              >
+                Delete My Account
+              </Button>
+
+              <Dialog open={deleteDialogOpen} onOpenChange={open => { if (!deleteAccount.isPending) setDeleteDialogOpen(open); }}>
+                <DialogContent className="bg-[#111] border-white/10 text-white max-w-sm">
+                  <DialogHeader>
+                    <DialogTitle className="text-white text-lg">Delete your account?</DialogTitle>
+                    <DialogDescription className="text-gray-400 text-sm">
+                      This permanently deletes your account, all activities, points, and competition history. <span className="text-red-400 font-semibold">This cannot be undone.</span>
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <div className="py-1">
+                    <Label className="text-gray-300 text-sm">Enter your password to confirm</Label>
                     <Input
                       type="password"
                       value={deletePassword}
                       onChange={e => setDeletePassword(e.target.value)}
-                      placeholder="Enter your password to confirm"
+                      placeholder="Your password"
                       className="mt-2 bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                      onKeyDown={e => { if (e.key === "Enter" && deletePassword && !deleteAccount.isPending) deleteAccount.mutate(); }}
                     />
                   </div>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel className="bg-white/5 border-white/10 text-white hover:bg-white/10">
+
+                  <DialogFooter className="gap-2 flex-row">
+                    <Button
+                      variant="outline"
+                      className="flex-1 bg-white/5 border-white/10 text-white hover:bg-white/10"
+                      onClick={() => setDeleteDialogOpen(false)}
+                      disabled={deleteAccount.isPending}
+                    >
                       Cancel
-                    </AlertDialogCancel>
-                    <AlertDialogAction
+                    </Button>
+                    <Button
+                      className="flex-1 bg-red-700 hover:bg-red-600 text-white border-0"
                       onClick={() => deleteAccount.mutate()}
                       disabled={!deletePassword || deleteAccount.isPending}
-                      className="bg-red-700 hover:bg-red-600 text-white"
                     >
-                      {deleteAccount.isPending ? "Deleting..." : "Yes, delete my account"}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+                      {deleteAccount.isPending ? "Deleting…" : "Yes, delete it"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </CardContent>
           </Card>
 

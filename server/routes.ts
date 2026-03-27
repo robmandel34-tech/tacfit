@@ -934,6 +934,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Change password
+  app.patch("/api/users/:id/change-password", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { currentPassword, newPassword } = req.body;
+      if (!currentPassword || !newPassword) return res.status(400).json({ message: "Current and new password required" });
+      if (newPassword.length < 6) return res.status(400).json({ message: "New password must be at least 6 characters" });
+      const user = await storage.getUser(userId);
+      if (!user) return res.status(404).json({ message: "User not found" });
+      if (user.password !== currentPassword) return res.status(401).json({ message: "Current password is incorrect" });
+      const updatedUser = await storage.updateUser(userId, { password: newPassword });
+      if (!updatedUser) return res.status(500).json({ message: "Failed to update password" });
+      res.json({ message: "Password updated successfully" });
+    } catch (error) {
+      console.error("Change password error:", error);
+      res.status(500).json({ message: "Error changing password" });
+    }
+  });
+
+  // Toggle profile public/private
+  app.patch("/api/users/:id/privacy", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { profilePublic } = req.body;
+      const user = await storage.getUser(userId);
+      if (!user) return res.status(404).json({ message: "User not found" });
+      const updatedUser = await storage.updateUser(userId, { profilePublic });
+      if (!updatedUser) return res.status(500).json({ message: "Failed to update privacy setting" });
+      const { password, ...userWithoutPassword } = updatedUser;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      res.status(500).json({ message: "Error updating privacy setting" });
+    }
+  });
+
+  // Toggle push notifications
+  app.patch("/api/users/:id/notifications", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { pushNotificationsEnabled } = req.body;
+      const user = await storage.getUser(userId);
+      if (!user) return res.status(404).json({ message: "User not found" });
+      const updatedUser = await storage.updateUser(userId, { pushNotificationsEnabled });
+      if (!updatedUser) return res.status(500).json({ message: "Failed to update notification setting" });
+      const { password, ...userWithoutPassword } = updatedUser;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      res.status(500).json({ message: "Error updating notification setting" });
+    }
+  });
+
+  // Self-delete account (user deletes their own account)
+  app.delete("/api/auth/account", async (req, res) => {
+    try {
+      const { userId, password } = req.body;
+      if (!userId || !password) return res.status(400).json({ message: "userId and password required" });
+      const user = await storage.getUser(userId);
+      if (!user) return res.status(404).json({ message: "User not found" });
+      if (user.password !== password) return res.status(401).json({ message: "Password is incorrect" });
+      await storage.deleteUser(userId);
+      req.session.destroy(() => {});
+      res.json({ message: "Account deleted successfully" });
+    } catch (error) {
+      console.error("Account deletion error:", error);
+      res.status(500).json({ message: "Error deleting account" });
+    }
+  });
+
   // Check if user has entered paid competitions
   app.get("/api/users/:id/paid-competitions", async (req, res) => {
     try {

@@ -34,6 +34,10 @@ export const users = pgTable("users", {
   // Advertisement preferences
   hideAdvertisements: boolean("hide_advertisements").default(false),
 
+  // Privacy & notification preferences
+  profilePublic: boolean("profile_public").default(true),
+  pushNotificationsEnabled: boolean("push_notifications_enabled").default(true),
+
   createdAt: timestamp("created_at").defaultNow(),
 });
 

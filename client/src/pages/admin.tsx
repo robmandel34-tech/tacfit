@@ -430,8 +430,7 @@ export default function AdminPage() {
         title: "User deleted",
         description: "The user and all associated data have been permanently removed.",
       });
-      // Use refetch instead of invalidate to avoid race conditions
-      queryClient.refetchQueries({ queryKey: ["/api/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/users"], exact: true });
       setDeleteUser(null);
     },
     onError: (error: any) => {

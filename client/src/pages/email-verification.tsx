@@ -26,9 +26,8 @@ export default function EmailVerification() {
         return;
       }
 
-      let response: Response | undefined;
       try {
-        response = await fetch("/api/auth/verify-email", {
+        const response = await fetch("/api/auth/verify-email", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ token }),
@@ -41,23 +40,25 @@ export default function EmailVerification() {
             title: "Email verified successfully",
             description: "You can now log in to your account.",
           });
-          
-          // Redirect to login after 3 seconds
           setTimeout(() => setLocation("/login"), 3000);
+        } else {
+          // Non-ok response — data already parsed above, handle it here
+          const errorMessage = data?.message || "Email verification failed";
+          if (data?.tokenExpired) {
+            setIsExpired(true);
+          } else {
+            setError(errorMessage);
+          }
+          toast({
+            title: "Verification failed",
+            description: errorMessage,
+            variant: "destructive",
+          });
         }
       } catch (error: any) {
-        let errorData: any = {};
-        try {
-          if (response && !response.ok) {
-            errorData = await response.json();
-          }
-        } catch {}
-        const errorMessage = errorData?.message || error.message || "Email verification failed";
-        if (errorData?.tokenExpired) {
-          setIsExpired(true);
-        } else {
-          setError(errorMessage);
-        }
+        // Network or JSON parse failure
+        const errorMessage = error.message || "Email verification failed";
+        setError(errorMessage);
         toast({
           title: "Verification failed",
           description: errorMessage,

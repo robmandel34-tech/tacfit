@@ -7,11 +7,12 @@ import {
   InsertCompetitionEntry, PhoneInvitation, InsertPhoneInvitation, WhiteboardItem, 
   InsertWhiteboardItem, MissionTask, InsertMissionTask, ActivityType, InsertActivityType,
   AdminPost, InsertAdminPost, Advertisement, InsertAdvertisement, MoodLog, InsertMoodLog,
-  UserInvitation, InsertUserInvitation,
+  UserInvitation, InsertUserInvitation, UserBlock,
   users, competitions, teams, teamMembers, activities, activityTypes,
   activityComments, activityLikes, activityFlags, chatMessages, friendships, 
   competitionHistory, competitionInvitations, competitionEntries, phoneInvitations, 
-  whiteboardItems, missionTasks, adminPosts, advertisements, moodLogs, userInvitations
+  whiteboardItems, missionTasks, adminPosts, advertisements, moodLogs, userInvitations,
+  userBlocks
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc, isNull, gt, lte, inArray, sql } from "drizzle-orm";
@@ -1106,13 +1107,27 @@ export class DatabaseStorage implements IStorage {
     return new Date(latestLog.loggedAt || new Date()) > twoDaysAgo; // True if logged within 2 days
   }
 
+  async blockUser(blockerId: number, blockedId: number): Promise<void> {
+    await db.insert(userBlocks).values({ blockerId, blockedId }).onConflictDoNothing();
+  }
 
+  async unblockUser(blockerId: number, blockedId: number): Promise<void> {
+    await db.delete(userBlocks).where(
+      and(eq(userBlocks.blockerId, blockerId), eq(userBlocks.blockedId, blockedId))
+    );
+  }
 
+  async getBlockedUsers(blockerId: number): Promise<number[]> {
+    const rows = await db.select({ blockedId: userBlocks.blockedId })
+      .from(userBlocks)
+      .where(eq(userBlocks.blockerId, blockerId));
+    return rows.map(r => r.blockedId);
+  }
 
-
-
-
-
-
-
+  async isBlocked(blockerId: number, blockedId: number): Promise<boolean> {
+    const [row] = await db.select().from(userBlocks).where(
+      and(eq(userBlocks.blockerId, blockerId), eq(userBlocks.blockedId, blockedId))
+    ).limit(1);
+    return !!row;
+  }
 }

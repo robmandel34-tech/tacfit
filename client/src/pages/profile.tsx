@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Target, Users, Calendar, UserPlus, MessageCircle, Send, Clock, Check, X, Bell, Camera, Upload, Search, Edit, Trash2 } from "lucide-react";
+import { Trophy, Target, Users, Calendar, UserPlus, MessageCircle, Send, Clock, Check, X, Bell, Camera, Upload, Search, Edit, Trash2, ShieldOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import DirectMessageModal from "@/components/direct-message-modal";
@@ -227,6 +227,28 @@ export default function Profile() {
     },
   });
 
+  // Block status query
+  const { data: blockStatus } = useQuery<{ blocked: boolean }>({
+    queryKey: ["/api/users", targetUserId, "block"],
+    queryFn: () => fetch(`/api/users/${targetUserId}/block`, { credentials: "include" }).then(r => r.json()),
+    enabled: !!targetUserId && !isOwnProfile && !!user?.id,
+  });
+
+  const blockUserMutation = useMutation({
+    mutationFn: () => apiRequest("POST", `/api/users/${targetUserId}/block`),
+    onSuccess: () => {
+      toast({ title: "User blocked", description: "You will no longer see content from this user." });
+      queryClient.invalidateQueries({ queryKey: ["/api/users", targetUserId, "block"] });
+    },
+  });
+
+  const unblockUserMutation = useMutation({
+    mutationFn: () => apiRequest("DELETE", `/api/users/${targetUserId}/block`),
+    onSuccess: () => {
+      toast({ title: "User unblocked", description: "You can now see content from this user again." });
+      queryClient.invalidateQueries({ queryKey: ["/api/users", targetUserId, "block"] });
+    },
+  });
 
   if (isLoading) {
     return <div className="min-h-screen bg-tactical-gray flex items-center justify-center">
@@ -543,6 +565,16 @@ export default function Profile() {
                             );
                           }
                         })()}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => blockStatus?.blocked ? unblockUserMutation.mutate() : blockUserMutation.mutate()}
+                          disabled={blockUserMutation.isPending || unblockUserMutation.isPending}
+                          className="w-full text-xs text-gray-500 hover:text-red-400 hover:bg-red-400/10 mt-1"
+                        >
+                          <ShieldOff className="mr-1 h-3 w-3" />
+                          {blockStatus?.blocked ? "Unblock User" : "Block User"}
+                        </Button>
                       </>
                     )}
                     

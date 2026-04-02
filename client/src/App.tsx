@@ -22,8 +22,6 @@ import NotFound from "@/pages/not-found";
 import Invitation from "@/pages/invitation";
 import TeamInvite from "@/pages/team-invite";
 import AdminPage from "@/pages/admin";
-import Checkout from "@/pages/checkout";
-import Subscribe from "@/pages/subscribe";
 import CompetitionSystemHelp from "@/pages/help/competition-system";
 import TeamFormationHelp from "@/pages/help/team-formation";
 import ActivityTrackingHelp from "@/pages/help/activity-tracking";
@@ -55,8 +53,6 @@ function Router() {
         <Route path="/invite/:token" component={Invitation} />
         <Route path="/team-invite/:token" component={TeamInvite} />
         <Route path="/admin" component={AdminPage} />
-        <Route path="/checkout/:id" component={Checkout} />
-        <Route path="/subscribe" component={Subscribe} />
         <Route path="/help/competition-system" component={CompetitionSystemHelp} />
         <Route path="/help/team-formation" component={TeamFormationHelp} />
         <Route path="/help/activity-tracking" component={ActivityTrackingHelp} />

@@ -4177,6 +4177,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User block routes
+  app.post("/api/users/:id/block", async (req, res) => {
+    if (!req.session?.userId) return res.status(401).json({ message: "Unauthorized" });
+    const blockerId = req.session.userId;
+    const blockedId = parseInt(req.params.id);
+    if (blockerId === blockedId) return res.status(400).json({ message: "Cannot block yourself" });
+    try {
+      await storage.blockUser(blockerId, blockedId);
+      res.json({ message: "User blocked" });
+    } catch (error) {
+      res.status(500).json({ message: "Error blocking user" });
+    }
+  });
+
+  app.delete("/api/users/:id/block", async (req, res) => {
+    if (!req.session?.userId) return res.status(401).json({ message: "Unauthorized" });
+    const blockerId = req.session.userId;
+    const blockedId = parseInt(req.params.id);
+    try {
+      await storage.unblockUser(blockerId, blockedId);
+      res.json({ message: "User unblocked" });
+    } catch (error) {
+      res.status(500).json({ message: "Error unblocking user" });
+    }
+  });
+
+  app.get("/api/users/:id/block", async (req, res) => {
+    if (!req.session?.userId) return res.status(401).json({ message: "Unauthorized" });
+    const blockerId = req.session.userId;
+    const blockedId = parseInt(req.params.id);
+    try {
+      const blocked = await storage.isBlocked(blockerId, blockedId);
+      res.json({ blocked });
+    } catch (error) {
+      res.status(500).json({ message: "Error checking block status" });
+    }
+  });
+
   // Health check for sync API
   app.get("/api/sync/health", (req, res) => {
     res.json({

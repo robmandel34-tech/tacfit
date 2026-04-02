@@ -162,6 +162,12 @@ export interface IStorage {
   getAppleHealthWorkout(id: number): Promise<AppleHealthWorkout | undefined>;
   getAppleHealthWorkoutByHealthKitId(userId: number, healthKitWorkoutId: string): Promise<AppleHealthWorkout | undefined>;
   updateAppleHealthWorkout(id: number, updates: Partial<AppleHealthWorkout>): Promise<AppleHealthWorkout | undefined>;
+
+  // User block operations
+  blockUser(blockerId: number, blockedId: number): Promise<void>;
+  unblockUser(blockerId: number, blockedId: number): Promise<void>;
+  getBlockedUsers(blockerId: number): Promise<number[]>;
+  isBlocked(blockerId: number, blockedId: number): Promise<boolean>;
 }
 
 import { DatabaseStorage } from "./database-storage";

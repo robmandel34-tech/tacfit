@@ -438,3 +438,14 @@ export type InsertAdvertisement = z.infer<typeof insertAdvertisementSchema>;
 export type MoodLog = typeof moodLogs.$inferSelect;
 export type InsertMoodLog = z.infer<typeof insertMoodLogSchema>;
 
+export const userBlocks = pgTable("user_blocks", {
+  id: serial("id").primaryKey(),
+  blockerId: integer("blocker_id").references(() => users.id).notNull(),
+  blockedId: integer("blocked_id").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertUserBlockSchema = createInsertSchema(userBlocks).omit({ id: true, createdAt: true });
+export type UserBlock = typeof userBlocks.$inferSelect;
+export type InsertUserBlock = z.infer<typeof insertUserBlockSchema>;
+

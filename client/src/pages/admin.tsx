@@ -1256,6 +1256,7 @@ export default function AdminPage() {
                                   Require written reflection for this activity
                                 </Label>
                               </div>
+                            </div>
                           );
                         })}
                       </div>

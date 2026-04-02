@@ -13,7 +13,9 @@ app.use(express.urlencoded({ extended: false }));
 app.use((req, res, next) => {
   const allowedOrigins = [
     process.env.APP_ORIGIN,
-    'https://hooks.stripe.com',
+    'capacitor://localhost',
+    'ionic://localhost',
+    'http://localhost',
   ].filter(Boolean);
   const origin = req.headers.origin;
   if (origin && allowedOrigins.includes(origin)) {

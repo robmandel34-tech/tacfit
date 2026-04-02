@@ -277,7 +277,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
       httpOnly: true,
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-      sameSite: 'lax', // Help with CSRF protection while allowing normal navigation
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' required for Capacitor cross-origin requests
       domain: undefined // Let browser determine domain
     }
   }));

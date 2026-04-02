@@ -59,6 +59,24 @@ The platform follows a military/tactical theme across its UI/UX, language, and i
 - **TypeScript**: Strict type checking.
 - **Linting**: ESLint.
 - **Database**: Drizzle Kit.
+## Capacitor iOS Setup (2026-04-02)
+
+### What was configured
+- ✅ Installed `@capacitor/core`, `@capacitor/ios`, `@capacitor/cli`, `@capacitor/status-bar`, `@capacitor/splash-screen`
+- ✅ Created `capacitor.config.ts` — appId: `com.tacfit.app`, webDir: `dist/public`, dark bg `#0a0f0a`
+- ✅ `client/src/lib/queryClient.ts` now prefixes all API calls with `VITE_API_URL` env var (empty string = relative, set to deployed backend URL for native builds)
+- ✅ CORS updated to allow `capacitor://localhost`, `ionic://localhost`, `http://localhost`
+- ✅ Session cookie: `sameSite` is `'none'` in production (required for cross-origin Capacitor ↔ backend requests), `'lax'` in development
+- ✅ Build script: `scripts/cap-build.sh` — builds Vite, adds iOS, patches Info.plist, syncs Capacitor
+- ✅ Permissions script: `scripts/ios-permissions.sh` — patches `Info.plist` with all required NSUsageDescription strings (camera, photos, microphone, health, notifications)
+
+### To build for iOS (on Mac)
+1. Set env var `VITE_API_URL` to your deployed backend URL (e.g. `https://tacfit.yourname.replit.app`)
+2. Run: `VITE_API_URL=https://... bash scripts/cap-build.sh`
+3. First run also does: `npx cap add ios` + patches Info.plist
+4. Open in Xcode: `npx cap open ios`
+5. Set your Team + Bundle ID, then Archive → Distribute
+
 ## Recent Optimizations (2025-08-21)
 
 ### Deployment Optimization

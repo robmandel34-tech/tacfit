@@ -23,6 +23,8 @@ import { promisify } from "util";
 import { generateVerificationToken, sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail } from "./email-service";
 import { webhookService } from "./webhook-service";
 import Stripe from "stripe";
+import bcrypt from "bcrypt";
+import rateLimit from "express-rate-limit";
 
 const execAsync = promisify(exec);
 
@@ -129,9 +131,31 @@ declare module 'express-session' {
   }
 }
 
+const ALLOWED_MIME_TYPES = new Set([
+  'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+  'video/mp4', 'video/quicktime', 'video/webm', 'video/x-msvideo',
+]);
+
 const upload = multer({ 
   dest: 'uploads/',
   limits: { fileSize: 200 * 1024 * 1024 }, // 200MB limit per file
+  fileFilter: (_req, file, cb) => {
+    if (ALLOWED_MIME_TYPES.has(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`File type not allowed: ${file.mimetype}`));
+    }
+  },
+});
+
+const BCRYPT_ROUNDS = 12;
+
+const authRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20,
+  message: { message: "Too many attempts. Please try again in 15 minutes." },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
 // Initialize Stripe
@@ -264,47 +288,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   // Auth routes
-  app.post("/api/auth/register", async (req, res) => {
+  app.post("/api/auth/register", authRateLimit, async (req, res) => {
     try {
-      console.log('Registration request received:', { body: req.body });
-      
       const { phoneNumber, ...userData } = req.body;
       
       // Validate required fields
       if (!userData.username || !userData.email || !userData.password) {
-        console.log('Missing required fields:', { username: !!userData.username, email: !!userData.email, password: !!userData.password });
         return res.status(400).json({ 
           message: "Missing required fields: username, email, and password are required" 
         });
       }
       
-      console.log('Parsing user data with schema...');
       const parsedData = insertUserSchema.parse(userData);
-      console.log('Schema validation successful');
       
       // Check if user exists
-      console.log('Checking for existing user with email:', parsedData.email);
       const existingUser = await storage.getUserByEmail(parsedData.email);
       if (existingUser) {
-        console.log('User already exists with email:', parsedData.email);
         return res.status(400).json({ message: "User already exists" });
       }
+
+      // Hash password before storing
+      const hashedPassword = await bcrypt.hash(parsedData.password, BCRYPT_ROUNDS);
       
       let referredBy = null;
       
       // Check for phone number referral if provided
       if (phoneNumber) {
-        console.log('Processing phone number referral:', phoneNumber);
         const phoneInvitations = await storage.getPhoneInvitationsByPhone(phoneNumber);
         const pendingInvitation = phoneInvitations.find(inv => inv.status === 'pending');
         
         if (pendingInvitation) {
           referredBy = pendingInvitation.invitedBy;
-          
-          // Mark invitation as completed
           await storage.updatePhoneInvitation(pendingInvitation.id, { status: 'completed' });
-          
-          // Award 200 points to the person who invited them
           if (pendingInvitation.invitedBy) {
             await updateUserPointsWithWebhook(
               pendingInvitation.invitedBy,
@@ -322,14 +337,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let tokenExpiresAt = null;
       
       if (!isTestAccount) {
-        // Generate email verification token for non-test accounts
         verificationToken = generateVerificationToken();
         tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
       }
 
-      console.log('Creating user in database...');
       const user = await storage.createUser({
         ...parsedData,
+        password: hashedPassword,
         referredBy,
         points: 100, // Starting points for new users
         isEmailVerified: isTestAccount, // Test accounts are auto-verified
@@ -384,31 +398,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/auth/login", async (req, res) => {
+  app.post("/api/auth/login", authRateLimit, async (req, res) => {
     try {
       const { email, password } = req.body;
       
-      console.log(`Login attempt for email: ${email} from ${req.ip}`);
-      console.log(`Environment: ${process.env.NODE_ENV}, Secure cookies: ${req.secure}`);
-      
       const user = await storage.getUserByEmail(email);
       if (!user) {
-        console.log(`User not found for email: ${email}`);
         return res.status(401).json({ message: "Invalid credentials" });
       }
-      
-      console.log(`User found: ${user.username}, checking password...`);
-      console.log(`Database password: ${user.password}, Input password: ${password}`);
-      
-      if (user.password !== password) {
-        console.log(`Password mismatch for user: ${email}`);
+
+      // Support both bcrypt hashes and legacy plaintext (transition period)
+      const isLegacyPlaintext = !user.password.startsWith('$2');
+      const passwordMatch = isLegacyPlaintext
+        ? user.password === password
+        : await bcrypt.compare(password, user.password);
+
+      if (!passwordMatch) {
         return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Upgrade legacy plaintext password to bcrypt hash on successful login
+      if (isLegacyPlaintext) {
+        const hashed = await bcrypt.hash(password, BCRYPT_ROUNDS);
+        await storage.updateUser(user.id, { password: hashed });
       }
 
       // Check if email is verified (skip for test.com accounts)
       const isTestAccount = user.email.endsWith('@test.com');
       if (!user.isEmailVerified && !isTestAccount) {
-        console.log(`Email not verified for user: ${email}`);
         return res.status(403).json({ 
           message: "Email not verified. Please check your email and verify your account before logging in.",
           requiresEmailVerification: true
@@ -417,7 +434,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Check if user is suspended
       if (user.isSuspended) {
-        console.log(`User suspended: ${email}`);
         return res.status(403).json({ 
           message: "Account suspended", 
           suspensionReason: user.suspensionReason || "No reason provided" 
@@ -639,9 +655,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Password reset token has expired" });
       }
       
-      // Update user password and clear reset token
+      // Hash and update the new password
+      const hashedPassword = await bcrypt.hash(password, BCRYPT_ROUNDS);
       await storage.updateUser(user.id, {
-        password: password, // Note: In production, this should be hashed
+        password: hashedPassword,
         passwordResetToken: null,
         passwordResetTokenExpiresAt: null
       });
@@ -943,8 +960,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (newPassword.length < 6) return res.status(400).json({ message: "New password must be at least 6 characters" });
       const user = await storage.getUser(userId);
       if (!user) return res.status(404).json({ message: "User not found" });
-      if (user.password !== currentPassword) return res.status(401).json({ message: "Current password is incorrect" });
-      const updatedUser = await storage.updateUser(userId, { password: newPassword });
+
+      // Support both bcrypt hashes and legacy plaintext
+      const isLegacyPlaintext = !user.password.startsWith('$2');
+      const passwordMatch = isLegacyPlaintext
+        ? user.password === currentPassword
+        : await bcrypt.compare(currentPassword, user.password);
+      if (!passwordMatch) return res.status(401).json({ message: "Current password is incorrect" });
+
+      const hashedNew = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+      const updatedUser = await storage.updateUser(userId, { password: hashedNew });
       if (!updatedUser) return res.status(500).json({ message: "Failed to update password" });
       res.json({ message: "Password updated successfully" });
     } catch (error) {

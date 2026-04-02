@@ -9,12 +9,21 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Add CORS headers for external callbacks
+// CORS — restrict to same origin; allow webhooks from known external services
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  const allowedOrigins = [
+    process.env.APP_ORIGIN,
+    'https://hooks.stripe.com',
+  ].filter(Boolean);
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  } else if (!origin) {
+    // Same-origin or server-to-server request — allow through
+  }
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  
+  res.header('Access-Control-Allow-Credentials', 'true');
   if (req.method === 'OPTIONS') {
     res.sendStatus(200);
   } else {
@@ -94,12 +103,6 @@ app.use('/uploads', (req, res, next) => {
   }
 }));
 
-app.use((req, _res, next) => {
-  if (req.method !== "GET" && req.path.startsWith("/api")) {
-    console.log(`>>> INCOMING ${req.method} ${req.path} content-type=${req.headers["content-type"]?.slice(0, 60)}`);
-  }
-  next();
-});
 
 app.use((req, res, next) => {
   const start = Date.now();

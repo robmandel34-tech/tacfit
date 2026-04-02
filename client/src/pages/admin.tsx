@@ -205,6 +205,7 @@ export default function AdminPage() {
     paymentType: 'free' as 'free' | 'one_time',
     entryFee: 0,
     requireActivityReflection: false,
+    reflectionActivities: [] as string[],
   });
 
   // Activity type form state
@@ -522,6 +523,7 @@ export default function AdminPage() {
       paymentType: 'free' as 'free' | 'one_time',
       entryFee: 0,
       requireActivityReflection: false,
+      reflectionActivities: [] as string[],
     });
   };
 
@@ -941,6 +943,7 @@ export default function AdminPage() {
       paymentType: (competition.paymentType as 'free' | 'one_time') || 'free',
       entryFee: competition.entryFee || 0,
       requireActivityReflection: competition.requireActivityReflection || false,
+      reflectionActivities: competition.reflectionActivities || [],
     });
     setIsCreateCompetitionOpen(true);
   };
@@ -1205,33 +1208,54 @@ export default function AdminPage() {
                         {competitionForm.requiredActivities.map((activity, index) => {
                           const activityType = activityTypes.find(at => at.name === activity);
                           if (!activityType) return null;
+                          const hasReflection = competitionForm.reflectionActivities.includes(activity);
                           
                           return (
-                            <div key={activity} className="flex items-center space-x-2">
-                              <Label className="text-gray-300 w-32 capitalize">
-                                {activityType.displayName}:
-                              </Label>
-                              <Input
-                                type="number"
-                                min="1"
-                                placeholder="Enter target quantity"
-                                value={competitionForm.targetGoals[index]?.split(' ')[0] || ''}
-                                onChange={(e) => {
-                                  const newGoals = [...competitionForm.targetGoals];
-                                  const activityIndex = competitionForm.requiredActivities.indexOf(activity);
-                                  newGoals[activityIndex] = `${e.target.value} ${activityType.measurementUnit} of ${activityType.displayName.toLowerCase()}`;
-                                  setCompetitionForm(prev => ({
-                                    ...prev,
-                                    targetGoals: newGoals
-                                  }));
-                                }}
-                                className="bg-tactical-gray-lighter border-tactical-gray text-white flex-1"
-                                required
-                              />
-                              <span className="text-gray-400 text-sm w-20">
-                                {activityType.measurementUnit}
-                              </span>
-                            </div>
+                            <div key={activity} className="space-y-1">
+                              <div className="flex items-center space-x-2">
+                                <Label className="text-gray-300 w-32 capitalize">
+                                  {activityType.displayName}:
+                                </Label>
+                                <Input
+                                  type="number"
+                                  min="1"
+                                  placeholder="Enter target quantity"
+                                  value={competitionForm.targetGoals[index]?.split(' ')[0] || ''}
+                                  onChange={(e) => {
+                                    const newGoals = [...competitionForm.targetGoals];
+                                    const activityIndex = competitionForm.requiredActivities.indexOf(activity);
+                                    newGoals[activityIndex] = `${e.target.value} ${activityType.measurementUnit} of ${activityType.displayName.toLowerCase()}`;
+                                    setCompetitionForm(prev => ({
+                                      ...prev,
+                                      targetGoals: newGoals
+                                    }));
+                                  }}
+                                  className="bg-tactical-gray-lighter border-tactical-gray text-white flex-1"
+                                  required
+                                />
+                                <span className="text-gray-400 text-sm w-20">
+                                  {activityType.measurementUnit}
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-2 pl-32">
+                                <input
+                                  type="checkbox"
+                                  id={`reflection-${activity}`}
+                                  checked={hasReflection}
+                                  onChange={(e) => {
+                                    setCompetitionForm(prev => ({
+                                      ...prev,
+                                      reflectionActivities: e.target.checked
+                                        ? [...prev.reflectionActivities, activity]
+                                        : prev.reflectionActivities.filter(a => a !== activity)
+                                    }));
+                                  }}
+                                  className="w-4 h-4 text-military-green bg-tactical-gray-lighter border-tactical-gray rounded"
+                                />
+                                <Label htmlFor={`reflection-${activity}`} className="text-gray-400 text-xs cursor-pointer">
+                                  Require written reflection for this activity
+                                </Label>
+                              </div>
                           );
                         })}
                       </div>
@@ -1288,33 +1312,6 @@ export default function AdminPage() {
                       )}
                     </div>
                     
-                    {/* Activity Reflection Setting */}
-                    <div className="space-y-3 border border-tactical-gray rounded-lg p-4">
-                      <Label className="text-gray-300 text-lg font-semibold">Activity Reflection</Label>
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1 pr-4">
-                          <p className="text-white font-medium text-sm">Require written reflection</p>
-                          <p className="text-gray-400 text-xs mt-1">
-                            When enabled, participants must write a short reflection (50–100 words) when submitting any activity.
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          role="switch"
-                          aria-checked={competitionForm.requireActivityReflection}
-                          onClick={() => setCompetitionForm(prev => ({ ...prev, requireActivityReflection: !prev.requireActivityReflection }))}
-                          className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none ${
-                            competitionForm.requireActivityReflection ? 'bg-military-green' : 'bg-gray-600'
-                          }`}
-                        >
-                          <span
-                            className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
-                              competitionForm.requireActivityReflection ? 'translate-x-8' : 'translate-x-1'
-                            }`}
-                          />
-                        </button>
-                      </div>
-                    </div>
 
                     <div className="flex space-x-4 pt-4">
                       <Button 

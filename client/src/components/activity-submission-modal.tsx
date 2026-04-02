@@ -106,9 +106,10 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   };
 
   const selectedActivityType = competitionActivityTypes.find(at => at.name === type);
-  // Require reflection if the competition has it enabled, OR if the activity type requires it
-  const requiresTextInput = competition?.requireActivityReflection || selectedActivityType?.requiresTextInput || false;
-  const textInputDescription = selectedActivityType?.textInputDescription || (competition?.requireActivityReflection ? "Share your thoughts on this activity" : "");
+  // Require reflection if this specific activity has it enabled in the competition, OR if the activity type globally requires it
+  const requiresReflectionForActivity = (competition?.reflectionActivities as string[] | undefined)?.includes(type || '') || false;
+  const requiresTextInput = requiresReflectionForActivity || selectedActivityType?.requiresTextInput || false;
+  const textInputDescription = selectedActivityType?.textInputDescription || (requiresReflectionForActivity ? "Share your thoughts on this activity" : "");
   const minWords = selectedActivityType?.textInputMinWords || 50;
   const maxWords = 100;
   const currentWordCount = countWords(textInput);

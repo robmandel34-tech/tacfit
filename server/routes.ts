@@ -2098,13 +2098,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   }, async (req, res) => {
     try {
-      console.log("Activity submission request body:", req.body);
-      console.log("Activity submission files:", req.files);
-      
       // Get user ID from request and validate against session
       const requestUserId = parseInt(req.body.userId);
-      console.log("User ID from request:", requestUserId, typeof requestUserId);
-      console.log("User ID from session:", req.session?.userId, typeof req.session?.userId);
       
       if (!req.session?.userId || req.session.userId !== requestUserId) {
         return res.status(401).json({ message: "Not authenticated or user ID mismatch" });
@@ -2142,12 +2137,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Check if competition is active (started and not ended)
           if (now >= startDate && now <= endDate) {
             isInActiveCompetition = true;
-          } else if (now < startDate) {
-            // Competition hasn't started - activity won't count toward competition
-            console.log(`User ${userId} submitting activity before competition starts. Activity will be independent.`);
-          } else if (now > endDate) {
-            // Competition has ended - activity won't count toward competition
-            console.log(`User ${userId} submitting activity after competition ends. Activity will be independent.`);
           }
         }
       }
@@ -2228,11 +2217,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         imageUrls: imageUrls
       };
       
-      console.log("Processed activity data:", activityData);
-      
-      if (hasBothEvidenceTypes) {
-        console.log(`Bonus points awarded! User submitted both video and image evidence. Points: ${basePoints} + bonus = ${finalPoints}`);
-      }
       
       const validatedData = insertActivitySchema.parse(activityData);
       

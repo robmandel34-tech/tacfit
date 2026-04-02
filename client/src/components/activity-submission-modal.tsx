@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -78,27 +78,32 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     select: (data: ActivityType[]) => data.filter(at => at.isActive).sort((a, b) => a.name.localeCompare(b.name))
   });
 
-  // Filter activity types based on competition requirements
-  const availableActivityTypes = useMemo(() => {
-    if (!competition?.requiredActivities || competition.requiredActivities.length === 0) {
-      // If no competition or no requirements, allow all active activity types
-      return activityTypes;
-    }
-    
-    // Filter to only show competition-required activity types
-    return activityTypes.filter(activityType => 
-      competition.requiredActivities.includes(activityType.name)
-    );
-  }, [activityTypes, competition?.requiredActivities]);
-  
-  // Use filtered activity types for competition submissions
-  const competitionActivityTypes = availableActivityTypes;
-
-  // Check if competition has started
+  // Check competition time window
   const competitionHasStarted = competition ? new Date() >= new Date(competition.startDate) : false;
+  const competitionHasEnded = competition
+    ? (competition.isCompleted || new Date() > new Date(competition.endDate))
+    : false;
   const daysUntilStart = competition && !competitionHasStarted 
     ? Math.ceil((new Date(competition.startDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24))
     : 0;
+
+  // When competition has ended switch to individual mode (all activity types)
+  // When active, only show competition-required types
+  const competitionActivityTypes = useMemo(() => {
+    if (competitionHasEnded) {
+      // Individual mode — offer all activity types
+      return activityTypes;
+    }
+    if (!competition?.requiredActivities || competition.requiredActivities.length === 0) {
+      return activityTypes;
+    }
+    return activityTypes.filter(at => competition.requiredActivities.includes(at.name));
+  }, [activityTypes, competition?.requiredActivities, competitionHasEnded]);
+
+  // Reset selected type whenever mode changes (ended ↔ active)
+  useEffect(() => {
+    setType("");
+  }, [competitionHasEnded]);
 
   // Helper functions for text input validation
   const countWords = (text: string): number => {
@@ -248,8 +253,11 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     formData.append("type", type);
     formData.append("description", description);
     formData.append("quantity", quantity);
-    formData.append("teamId", userTeamMember?.[0]?.teamId?.toString() || "");
-    formData.append("userId", user.id.toString()); // Add user ID for validation
+    // Only attach teamId for active competition submissions; omit for individual (ended competition)
+    if (!competitionHasEnded && userTeamMember?.[0]?.teamId) {
+      formData.append("teamId", userTeamMember[0].teamId.toString());
+    }
+    formData.append("userId", user.id.toString());
     
     // Add text input if required
     if (requiresTextInput && textInput.trim()) {
@@ -319,8 +327,19 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Independent Activity Notice */}
-          {!competitionHasStarted && (
+          {/* Competition Closed — Individual Mode */}
+          {competitionHasEnded && (
+            <div className="p-4 bg-orange-900/80 border border-orange-500/50 rounded-lg backdrop-blur-sm">
+              <div className="flex items-center gap-2 text-orange-300 mb-2 font-semibold">
+                🏁 Competition Closed
+              </div>
+              <p className="text-sm text-gray-100">
+                This competition has ended. You can still log an individual activity — it won't count toward any competition but you'll earn personal points (15–30 pts).
+              </p>
+            </div>
+          )}
+          {/* Pre-competition Independent Activity Notice */}
+          {!competitionHasEnded && !competitionHasStarted && (
             <div className="p-4 bg-blue-900/80 border border-blue-500/50 rounded-lg backdrop-blur-sm">
               <div className="flex items-center gap-2 text-blue-300 mb-2">
                 ℹ️ Independent Activity

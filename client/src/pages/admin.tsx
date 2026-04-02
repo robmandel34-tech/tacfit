@@ -1262,56 +1262,6 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    {/* Payment Options */}
-                    <div className="space-y-4">
-                      <Label className="text-gray-300 text-lg font-semibold">Payment Options</Label>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="paymentType" className="text-gray-300">Payment Type</Label>
-                          <select
-                            id="paymentType"
-                            value={competitionForm.paymentType}
-                            onChange={(e) => {
-                              const paymentType = e.target.value as 'free' | 'one_time';
-                              setCompetitionForm(prev => ({ 
-                                ...prev, 
-                                paymentType,
-                                entryFee: paymentType === 'free' ? 0 : prev.entryFee
-                              }));
-                            }}
-                            className="w-full bg-tactical-gray-lighter border-tactical-gray text-white rounded-md px-3 py-2"
-                          >
-                            <option value="free">Free Competition</option>
-                            <option value="one_time">Paid Competition</option>
-                          </select>
-                        </div>
-                        {competitionForm.paymentType === 'one_time' && (
-                          <div>
-                            <Label htmlFor="entryFee" className="text-gray-300">Entry Fee ($)</Label>
-                            <Input
-                              id="entryFee"
-                              type="number"
-                              min="1"
-                              step="0.01"
-                              value={competitionForm.entryFee / 100 || ''}
-                              onChange={(e) => {
-                                const dollars = parseFloat(e.target.value) || 0;
-                                setCompetitionForm(prev => ({ 
-                                  ...prev, 
-                                  entryFee: Math.round(dollars * 100) // Convert to cents
-                                }));
-                              }}
-                              className="bg-tactical-gray-lighter border-tactical-gray text-white"
-                              placeholder="10.00"
-                            />
-                            <p className="text-gray-400 text-xs mt-1">Amount in USD that users will pay to enter</p>
-                          </div>
-                        )}
-                      </div>
-                      {competitionForm.paymentType === 'free' && (
-                        <p className="text-gray-400 text-sm">Users can join this competition without any payment</p>
-                      )}
-                    </div>
                     
 
                     <div className="flex space-x-4 pt-4">
@@ -1349,7 +1299,6 @@ export default function AdminPage() {
                       <TableHead className="text-gray-300">Name</TableHead>
                       <TableHead className="text-gray-300">Duration</TableHead>
                       <TableHead className="text-gray-300">Teams</TableHead>
-                      <TableHead className="text-gray-300">Payment</TableHead>
                       <TableHead className="text-gray-300">Status</TableHead>
                       <TableHead className="text-gray-300">Actions</TableHead>
                     </TableRow>
@@ -1362,17 +1311,6 @@ export default function AdminPage() {
                           {format(new Date(competition.startDate), 'MMM d')} - {format(new Date(competition.endDate), 'MMM d, yyyy')}
                         </TableCell>
                         <TableCell className="text-gray-300">Max {competition.maxTeams}</TableCell>
-                        <TableCell className="text-gray-300">
-                          {competition.paymentType === 'free' ? (
-                            <Badge variant="secondary" className="bg-green-600/20 text-green-400 border-green-600/30">
-                              Free
-                            </Badge>
-                          ) : (
-                            <Badge variant="secondary" className="bg-yellow-600/20 text-yellow-400 border-yellow-600/30">
-                              ${((competition.entryFee || 0) / 100).toFixed(2)}
-                            </Badge>
-                          )}
-                        </TableCell>
                         <TableCell>
                           <Badge variant={competition.isActive ? 'default' : 'secondary'}>
                             {competition.isActive ? 'Active' : 'Inactive'}

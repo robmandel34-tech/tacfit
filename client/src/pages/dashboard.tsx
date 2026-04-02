@@ -56,20 +56,6 @@ export default function Dashboard() {
     }
   });
 
-  const { data: paidCompetitionStatus, refetch: refetchPaidStatus } = useQuery<{ hasPaidCompetitions: boolean }>({
-    queryKey: [`/api/users/${user?.id}/paid-competitions`],
-    enabled: !!user?.id,
-    staleTime: 0, // Don't cache
-    gcTime: 0, // Don't cache (TanStack Query v5 uses gcTime instead of cacheTime)
-  });
-
-  // Force refresh on component mount
-  useEffect(() => {
-    if (user?.id) {
-      refetchPaidStatus();
-    }
-  }, [user?.id, refetchPaidStatus]);
-
   const { data: currentUser } = useQuery<{ hideAdvertisements: boolean }>({
     queryKey: [`/api/users/${user?.id}`],
     enabled: !!user?.id,
@@ -109,29 +95,6 @@ export default function Dashboard() {
     },
   });
 
-  const updateAdvertisementPreferenceMutation = useMutation({
-    mutationFn: async (hideAdvertisements: boolean) => {
-      if (!user?.id) throw new Error("User not found");
-      return apiRequest("PATCH", `/api/users/${user.id}/advertisement-preference`, {
-        hideAdvertisements,
-      });
-    },
-    onSuccess: () => {
-      toast({
-        title: "Preference Updated",
-        description: "Your advertisement preference has been saved.",
-      });
-      // Refresh user data
-      queryClient.invalidateQueries({ queryKey: [`/api/users/${user?.id}`] });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: "Failed to update advertisement preference.",
-        variant: "destructive",
-      });
-    },
-  });
 
   // Show onboarding to new users who haven't completed it (only once per session)
   useEffect(() => {
@@ -235,32 +198,6 @@ export default function Dashboard() {
           </CardHeader>
         </Card>
 
-        {/* Advertisement Controls for Paid Competition Users */}
-        {paidCompetitionStatus?.hasPaidCompetitions && (
-          <Card className="tile-card mb-6">
-            <CardContent className="py-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <Shield className="h-5 w-5 text-military-green" />
-                  <div>
-                    <Label htmlFor="advertisement-toggle" className="text-white font-medium">
-                      Premium Features
-                    </Label>
-                    <p className="text-gray-400 text-sm">Hide advertisements in your Intel Feed</p>
-                  </div>
-                </div>
-                <Switch
-                  id="advertisement-toggle"
-                  checked={currentUser?.hideAdvertisements || false}
-                  onCheckedChange={(checked) => {
-                    updateAdvertisementPreferenceMutation.mutate(checked);
-                  }}
-                  disabled={updateAdvertisementPreferenceMutation.isPending}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Activity Feed */}
         <div className="max-w-2xl mx-auto">

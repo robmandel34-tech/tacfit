@@ -147,17 +147,11 @@ export default function Competitions() {
   const handleJoin = (competitionId: number, competitionName: string) => {
     const competition = competitions.find(c => c.id === competitionId);
     if (competition) {
-      // Check if competition requires payment
-      if (competition.paymentType === 'one_time' && competition.entryFee && competition.entryFee > 0) {
-        // Show payment modal for paid competitions (with both points and Stripe options)
-        setSelectedCompetition({ 
-          id: competition.id, 
-          name: competition.name, 
-          description: competition.description 
-        });
+      // All competitions treated as free — paid IAP coming in a future update
+      if (false) {
         setPaymentModalOpen(true);
       } else {
-        // For free competitions, skip payment and go directly to team selection
+        // Go directly to team selection
         setSelectedCompetition({ 
           id: competition.id, 
           name: competition.name, 

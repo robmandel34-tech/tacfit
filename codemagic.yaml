@@ -1,0 +1,62 @@
+workflows:
+  ios-release:
+    name: TacFit iOS Release
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: Apple Store Connect API
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.tacfit.app
+      vars:
+        BUNDLE_ID: "com.tacfit.app"
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
+      node: 20.9.0
+    scripts:
+      - name: Install dependencies
+        script: npm install
+      - name: Build frontend
+        script: |
+          VITE_API_URL=$VITE_API_URL npx vite build
+      - name: Add iOS platform if missing
+        script: |
+          if [ ! -d "ios" ]; then
+            npx cap add ios
+            bash scripts/ios-permissions.sh
+          fi
+      - name: Sync Capacitor
+        script: npx cap sync ios
+      - name: Install CocoaPods
+        script: |
+          cd ios/App
+          pod install
+      - name: Set build number
+        script: |
+          BUILD_NUMBER=$(($(app-store-connect get-latest-testflight-build-number "$BUNDLE_ID") + 1))
+          agvtool new-version -all $BUILD_NUMBER
+        working_directory: ios/App
+      - name: Build and sign iOS app
+        script: |
+          xcode-project use-profiles
+          xcodebuild \
+            -workspace "$XCODE_WORKSPACE" \
+            -scheme "$XCODE_SCHEME" \
+            -configuration Release \
+            -archivePath build/TacFit.xcarchive \
+            archive
+          xcodebuild \
+            -exportArchive \
+            -archivePath build/TacFit.xcarchive \
+            -exportOptionsPlist /Users/builder/export_options.plist \
+            -exportPath build/TacFit.ipa
+        working_directory: ios/App
+    artifacts:
+      - ios/App/build/**/*.ipa
+      - ios/App/build/**/*.dSYM.zip
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        submit_to_app_store: false

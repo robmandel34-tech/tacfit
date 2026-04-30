@@ -21,14 +21,16 @@ workflows:
       - name: Build frontend
         script: |
           VITE_API_URL=$VITE_API_URL npx vite build
-      - name: Add iOS platform if missing
+      - name: Add iOS platform and sync
         script: |
+          set -e
           if [ ! -d "ios" ]; then
             npx cap add ios
             bash scripts/ios-permissions.sh
+          else
+            echo "iOS platform already exists, skipping add"
           fi
-      - name: Sync Capacitor
-        script: npx cap sync ios
+          npx cap sync ios
       - name: Install CocoaPods
         script: |
           cd ios/App

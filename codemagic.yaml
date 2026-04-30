@@ -3,8 +3,6 @@ workflows:
     name: TacFit iOS Release
     max_build_duration: 60
     instance_type: mac_mini_m2
-    integrations:
-      app_store_connect: Apple Store Connect API
     environment:
       ios_signing:
         distribution_type: app_store
@@ -35,7 +33,7 @@ workflows:
           pod install
       - name: Set build number
         script: |
-          BUILD_NUMBER=$(($(app-store-connect get-latest-testflight-build-number "$BUNDLE_ID") + 1))
+          BUILD_NUMBER=$(date +%s)
           agvtool new-version -all $BUILD_NUMBER
         working_directory: ios/App
       - name: Build and sign iOS app
@@ -57,7 +55,9 @@ workflows:
       - ios/App/build/**/*.ipa
       - ios/App/build/**/*.dSYM.zip
     publishing:
-      app_store_connect:
-        auth: integration
-        submit_to_testflight: true
-        submit_to_app_store: false
+      email:
+        recipients:
+          - your@email.com
+        notify:
+          success: true
+          failure: true

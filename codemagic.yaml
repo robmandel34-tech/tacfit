@@ -3,6 +3,8 @@ workflows:
     name: TacFit iOS Release
     max_build_duration: 60
     instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: Apple Store Connect API
     environment:
       ios_signing:
         distribution_type: app_store
@@ -55,9 +57,7 @@ workflows:
       - ios/App/build/**/*.ipa
       - ios/App/build/**/*.dSYM.zip
     publishing:
-      email:
-        recipients:
-          - your@email.com
-        notify:
-          success: true
-          failure: true
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        submit_to_app_store: false

@@ -33,6 +33,8 @@ workflows:
           npx cap sync ios
       - name: Install CocoaPods
         script: |
+          # Ensure minimum iOS deployment target is 16.0 for Capacitor 7
+          sed -i '' "s/platform :ios, '[0-9.]*'/platform :ios, '16.0'/" ios/App/Podfile
           cd ios/App
           pod install
       - name: Set build number

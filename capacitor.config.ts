@@ -16,6 +16,7 @@ const config: CapacitorConfig = {
     preferredContentMode: "mobile",
     limitsNavigationsToAppBoundDomains: true,
     scheme: "tacfit",
+    minVersion: "16.0",
   },
   plugins: {
     SplashScreen: {

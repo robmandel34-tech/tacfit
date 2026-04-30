@@ -13,6 +13,8 @@ import { useToast } from "@/hooks/use-toast";
 // @ts-ignore
 import GiphyApi from 'giphy-api';
 
+const API_BASE = (import.meta.env.VITE_API_URL as string) ?? "";
+
 interface ChatCardProps {
   teamId?: number;
   competitionId?: number;
@@ -48,7 +50,7 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
 
   const sendMessage = useMutation({
     mutationFn: async (content: string) => {
-      const response = await fetch("/api/chat", {
+      const response = await fetch(`${API_BASE}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useLocation } from "wouter";
 
+const API_BASE = (import.meta.env.VITE_API_URL as string) ?? "";
+
 interface User {
   id: number;
   username: string;
@@ -35,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
       if (savedUser) {
         try {
           // Validate session is still active on the server
-          const sessionResponse = await fetch("/api/auth/me", {
+          const sessionResponse = await fetch(`${API_BASE}/api/auth/me`, {
             credentials: "include",
           });
           if (sessionResponse.ok) {
@@ -68,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch(`${API_BASE}/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -97,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
 
   const register = async (username: string, email: string, password: string, phoneNumber?: string) => {
     try {
-      const response = await fetch("/api/auth/register", {
+      const response = await fetch(`${API_BASE}/api/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -122,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
 
   const logout = async () => {
     try {
-      await fetch("/api/auth/logout", {
+      await fetch(`${API_BASE}/api/auth/logout`, {
         method: "POST",
         credentials: "include",
       });

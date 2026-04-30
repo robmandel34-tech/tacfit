@@ -8,6 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ShieldPlus, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+const API_BASE = (import.meta.env.VITE_API_URL as string) ?? "";
+
 export default function Login() {
   const { login } = useAuth();
   const { toast } = useToast();
@@ -20,7 +22,7 @@ export default function Login() {
   const handleResendVerification = async () => {
     setIsResending(true);
     try {
-      const response = await fetch("/api/auth/resend-verification", {
+      const response = await fetch(`${API_BASE}/api/auth/resend-verification`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),

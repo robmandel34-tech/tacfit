@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Shield, Mail, CheckCircle, XCircle, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+const API_BASE = (import.meta.env.VITE_API_URL as string) ?? "";
 
 export default function EmailVerification() {
   const [, setLocation] = useLocation();
@@ -27,7 +28,7 @@ export default function EmailVerification() {
       }
 
       try {
-        const response = await fetch("/api/auth/verify-email", {
+        const response = await fetch(`${API_BASE}/api/auth/verify-email`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ token }),

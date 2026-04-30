@@ -7,6 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Shield, Eye, EyeOff, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+const API_BASE = (import.meta.env.VITE_API_URL as string) ?? "";
+
 export default function ResetPassword() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -60,7 +62,7 @@ export default function ResetPassword() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/auth/reset-password", {
+      const response = await fetch(`${API_BASE}/api/auth/reset-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -11,11 +11,11 @@
     "db:push": "drizzle-kit push"
   },
   "dependencies": {
-    "@capacitor/cli": "^7.6.1",
-    "@capacitor/core": "^8.3.0",
-    "@capacitor/ios": "^8.3.0",
-    "@capacitor/splash-screen": "^8.0.1",
-    "@capacitor/status-bar": "^8.0.2",
+    "@capacitor/cli": "^6.2.1",
+    "@capacitor/core": "^6.2.1",
+    "@capacitor/ios": "^6.2.1",
+    "@capacitor/splash-screen": "^6.0.4",
+    "@capacitor/status-bar": "^6.0.3",
     "@google-cloud/storage": "^7.17.0",
     "@hookform/resolvers": "^3.10.0",
     "@neondatabase/serverless": "^0.10.4",

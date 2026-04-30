@@ -21,20 +21,13 @@ workflows:
       - name: Build frontend
         script: |
           VITE_API_URL=$VITE_API_URL npx vite build
-      - name: Add iOS platform
-        script: |
-          if [ ! -d "ios" ]; then
-            # Allow pod install inside cap add to fail — we patch and re-run below
-            npx cap add ios || true
-            bash scripts/ios-permissions.sh
-          fi
-      - name: Patch Podfile and install CocoaPods
+      - name: Sync web assets to iOS
         script: |
           set -e
-          # Set minimum deployment target required by Capacitor 7
-          sed -i '' "s/platform :ios, '[0-9.]*'/platform :ios, '16.0'/" ios/App/Podfile
-          # Copy web assets without triggering pod install
           npx cap copy ios
+      - name: Install CocoaPods
+        script: |
+          set -e
           cd ios/App
           pod install
       - name: Set build number

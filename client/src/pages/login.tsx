@@ -62,6 +62,10 @@ export default function Login() {
         title: "Mission briefing ready",
         description: "Access granted. Welcome back, operator.",
       });
+      // Use window.location.href for the redirect — this is the most reliable
+      // approach inside Capacitor's WKWebView and avoids a race between wouter's
+      // history push and React's state batching that can leave the screen stuck.
+      window.location.href = "/";
     } catch (error: any) {
       // Check if email verification is required
       if (error?.requiresEmailVerification) {

@@ -89,7 +89,8 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
       const userData = await response.json();
       setUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));
-      setLocation("/");
+      // Navigation is handled by the caller so Capacitor WKWebView gets a single
+      // reliable redirect rather than racing wouter's history push with React batching.
     } catch (error) {
       throw error;
     }

@@ -28,7 +28,7 @@
   --military-green: hsl(97, 45%, 45%);
   --military-green-light: hsl(97, 45%, 55%);
   --military-green-dark: hsl(97, 45%, 35%);
-  --tactical-gray: hsl(130, 12%, 3%);
+  --tactical-gray: hsl(100, 9%, 6%);
   --tactical-gray-light: hsl(220, 13%, 16%);
   --tactical-gray-lighter: hsl(220, 13%, 22%);
   --tactical-gray-lightest: hsl(220, 13%, 28%);
@@ -111,7 +111,7 @@
   
   body {
     @apply font-sans antialiased;
-    background: linear-gradient(135deg, var(--tactical-gray) 0%, hsl(130, 12%, 5%) 100%);
+    background: linear-gradient(135deg, var(--tactical-gray) 0%, hsl(100, 9%, 6%) 100%);
     color: var(--text-primary);
     min-height: 100vh;
   }
@@ -274,7 +274,7 @@
   }
   
   .bg-tactical-gray {
-    background: linear-gradient(135deg, var(--tactical-gray) 0%, hsl(220, 13%, 11%) 100%);
+    background: linear-gradient(135deg, var(--tactical-gray) 0%, hsl(100, 9%, 8%) 100%);
   }
   
   .bg-surface-elevated {

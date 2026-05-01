@@ -3,7 +3,7 @@ import { uploadUrl } from "@/lib/queryClient";
 import { Link, useLocation } from "wouter";
 import { HamburgerMenu } from "@/components/hamburger-menu";
 import { Trophy } from "lucide-react";
-import logoPath from "@assets/Untitled_design-2_1777654256479.png";
+import logoPath from "@assets/tacfit-logo-no-bg.png";
 import { useQuery } from "@tanstack/react-query";
 
 export default function Navigation() {

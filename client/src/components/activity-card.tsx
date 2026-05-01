@@ -361,7 +361,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 mb-3">
-                <Badge variant="outline" className="text-xs border-gray-600 text-gray-300 whitespace-nowrap">
+                <Badge variant="outline" className="text-xs border-[var(--bubble-accent)]/40 text-[var(--bubble-accent)] bg-[var(--bubble-bg)] whitespace-nowrap">
                   {getActivityIcon(activity.type)} {getActivityTypeDisplayName(activity.type)}
                 </Badge>
 
@@ -370,7 +370,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
                 <div className="space-y-3">
                   {/* HealthKit Label */}
                   <div className="flex items-center gap-2">
-                    <Badge className="bg-green-600 hover:bg-green-700 text-white text-xs px-2 py-1">
+                    <Badge className="bg-[var(--bubble-bg)] text-[var(--bubble-accent)] border-[var(--bubble-accent)]/40 hover:bg-[var(--bubble-bg)]/80 text-xs px-2 py-1">
                       🍎 Apple HealthKit
                     </Badge>
                   </div>

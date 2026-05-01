@@ -252,9 +252,9 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-military-green';
-      case 'in-progress': return 'bg-yellow-600';
-      default: return 'bg-gray-600';
+      case 'completed': return 'bg-[var(--bubble-accent)]';
+      case 'in-progress': return 'bg-[var(--bubble-accent)]/60';
+      default: return 'bg-[var(--bubble-bg)] border border-[var(--bubble-accent)]/30';
     }
   };
 
@@ -381,7 +381,7 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                      <Badge variant="outline" className="text-white border-gray-600">
+                      <Badge variant="outline" className="text-[var(--bubble-accent)] border-[var(--bubble-accent)]/40 bg-[var(--bubble-bg)]">
                         TASK
                       </Badge>
                       <div className="flex items-center space-x-2">
@@ -462,7 +462,7 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
                         className="data-[state=checked]:bg-military-green data-[state=checked]:border-military-green disabled:opacity-50 disabled:cursor-not-allowed"
                       />
                       <div className="flex items-center space-x-0.5">
-                        <Badge variant="outline" className="text-white border-gray-600">
+                        <Badge variant="outline" className="text-[var(--bubble-accent)] border-[var(--bubble-accent)]/40 bg-[var(--bubble-bg)]">
                           TASK
                         </Badge>
                         <Button

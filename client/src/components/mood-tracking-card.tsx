@@ -88,7 +88,7 @@ export default function MoodTrackingCard({ userId }: MoodTrackingCardProps) {
           <Activity className="h-4 w-4 text-military-green" />
           <span className="text-white text-sm font-medium">Daily Check-In</span>
           {hasLoggedToday && (
-            <Badge className="bg-military-green/20 text-military-green text-xs px-2 py-0">
+            <Badge className="bg-[var(--bubble-bg)] text-[var(--bubble-accent)] border border-[var(--bubble-accent)]/40 text-xs px-2 py-0">
               <Check className="h-3 w-3 mr-1" />
               Done
             </Badge>

@@ -160,10 +160,10 @@ export default function CompetitionStatus() {
                   <Badge 
                     className={`${
                       new Date() < new Date(competition.startDate) 
-                        ? "bg-orange-500/20 text-orange-200 border-orange-400/30" 
+                        ? "bg-[var(--bubble-bg)] text-[var(--bubble-accent)]/70 border-[var(--bubble-accent)]/30" 
                         : new Date() > new Date(competition.endDate)
-                        ? "bg-gray-500/20 text-gray-200 border-gray-400/30"
-                        : "bg-white/20 text-white border-white/30"
+                        ? "bg-[var(--bubble-bg)] text-[var(--bubble-accent)]/50 border-[var(--bubble-accent)]/20"
+                        : "bg-[var(--bubble-bg)] text-[var(--bubble-accent)] border-[var(--bubble-accent)]/60"
                     } text-xs font-medium`}
                   >
                     {new Date() < new Date(competition.startDate) ? (
@@ -260,14 +260,12 @@ export default function CompetitionStatus() {
                   onClick={() => setSelectedType(null)}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${
                     selectedType === null
-                      ? "bg-military-green text-white border-military-green shadow-md"
-                      : "bg-white/10 text-gray-300 border-white/20 hover:bg-white/20 hover:text-white"
+                      ? "bg-[var(--bubble-bg)] border-[var(--bubble-accent)] text-[var(--bubble-accent)] shadow-md shadow-[var(--bubble-accent)]/20"
+                      : "bg-[var(--bubble-bg)] border-[var(--bubble-accent)]/30 text-[var(--bubble-accent)]/70 hover:border-[var(--bubble-accent)] hover:text-[var(--bubble-accent)]"
                   }`}
                 >
                   All
-                  <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${
-                    selectedType === null ? "bg-white/20" : "bg-white/10"
-                  }`}>
+                  <span className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-[var(--bubble-accent)]/15 text-[var(--bubble-accent)]">
                     {Array.isArray(activities) ? activities.length : 0}
                   </span>
                 </button>
@@ -279,14 +277,12 @@ export default function CompetitionStatus() {
                     onClick={() => setSelectedType(selectedType === type ? null : type)}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${
                       selectedType === type
-                        ? "bg-military-green text-white border-military-green shadow-md"
-                        : "bg-white/10 text-gray-300 border-white/20 hover:bg-white/20 hover:text-white"
+                        ? "bg-[var(--bubble-bg)] border-[var(--bubble-accent)] text-[var(--bubble-accent)] shadow-md shadow-[var(--bubble-accent)]/20"
+                        : "bg-[var(--bubble-bg)] border-[var(--bubble-accent)]/30 text-[var(--bubble-accent)]/70 hover:border-[var(--bubble-accent)] hover:text-[var(--bubble-accent)]"
                     }`}
                   >
                     {typeLabels[type] || type.charAt(0).toUpperCase() + type.slice(1)}
-                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${
-                      selectedType === type ? "bg-white/20" : "bg-white/10"
-                    }`}>
+                    <span className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-[var(--bubble-accent)]/15 text-[var(--bubble-accent)]">
                       {count}
                     </span>
                   </button>

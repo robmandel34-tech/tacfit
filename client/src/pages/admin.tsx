@@ -1933,22 +1933,22 @@ export default function AdminPage() {
                         <TableCell className="text-gray-300">{activityType.defaultQuantity}</TableCell>
                         <TableCell>
                           {activityType.requiresTextInput ? (
-                            <Badge variant="outline" className="text-blue-400 border-blue-400">
+                            <Badge variant="outline" className="text-[var(--bubble-accent)] border-[var(--bubble-accent)]/40 bg-[var(--bubble-bg)]">
                               Required ({activityType.textInputMinWords} words)
                             </Badge>
                           ) : (
-                            <Badge variant="secondary" className="text-gray-500">
+                            <Badge variant="secondary">
                               Optional
                             </Badge>
                           )}
                         </TableCell>
                         <TableCell>
                           {activityType.requiresHealthKit ? (
-                            <Badge variant="outline" className="text-green-400 border-green-400">
+                            <Badge variant="outline" className="text-[var(--bubble-accent)] border-[var(--bubble-accent)]/40 bg-[var(--bubble-bg)]">
                               Required
                             </Badge>
                           ) : (
-                            <Badge variant="secondary" className="text-gray-500">
+                            <Badge variant="secondary">
                               Optional
                             </Badge>
                           )}

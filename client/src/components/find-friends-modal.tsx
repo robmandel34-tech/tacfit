@@ -210,7 +210,7 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
       case "pending":
         if (friendship.userId === user?.id) {
           return (
-            <Badge variant="secondary" className="text-gray-600 w-full sm:w-auto justify-center text-xs px-2 py-1">
+            <Badge variant="secondary" className="bg-[var(--bubble-bg)] text-[var(--bubble-accent)] border border-[var(--bubble-accent)]/30 w-full sm:w-auto justify-center text-xs px-2 py-1">
               Request Sent
             </Badge>
           );
@@ -422,10 +422,10 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
                             <h4 className="text-white font-medium text-base sm:text-lg truncate">{otherUser.username}</h4>
                             <p className="text-gray-400 text-xs sm:text-sm truncate mb-2">{otherUser.email}</p>
                             <div className="flex flex-wrap gap-1 sm:gap-2">
-                              <Badge variant="outline" className="text-combat-orange border-combat-orange bg-combat-orange/10 text-xs px-2 py-0.5">
+                              <Badge variant="outline" className="text-[var(--bubble-accent)] border-[var(--bubble-accent)]/40 bg-[var(--bubble-bg)] text-xs px-2 py-0.5">
                                 {otherUser.points} PTS
                               </Badge>
-                              <Badge variant="outline" className="text-steel-blue border-steel-blue bg-steel-blue/10 text-xs px-2 py-0.5">
+                              <Badge variant="outline" className="text-[var(--bubble-accent)] border-[var(--bubble-accent)]/40 bg-[var(--bubble-bg)] text-xs px-2 py-0.5">
                                 {otherUser.competitionsEntered || 0} Comps
                               </Badge>
                             </div>

@@ -433,7 +433,7 @@ export default function Profile() {
                                           <p className="text-gray-300 text-sm">Team: {currentTeam.name}</p>
                                         </div>
                                         <div className="text-right">
-                                          <Badge className="bg-steel-blue text-white mb-1 border-steel-blue">
+                                          <Badge className="bg-[var(--bubble-bg)] text-[var(--bubble-accent)] mb-1 border-[var(--bubble-accent)]/50">
                                             Active
                                           </Badge>
                                           <p className="text-gray-400 text-sm">In Progress</p>
@@ -761,7 +761,7 @@ export default function Profile() {
                   <CardTitle className="text-white flex items-center gap-2">
                     <Bell className="h-5 w-5 text-orange-500" />
                     Pending Mission Tasks
-                    <Badge className="bg-orange-500 text-white ml-2">
+                    <Badge className="bg-[var(--bubble-bg)] text-[var(--bubble-accent)] border border-[var(--bubble-accent)]/50 ml-2">
                       {pendingTasks.length}
                     </Badge>
                   </CardTitle>
@@ -824,10 +824,10 @@ export default function Profile() {
                     
                     {/* Team and Role Info */}
                     <div className="flex flex-wrap gap-3">
-                      <Badge className="bg-military-green/20 text-military-green border border-military-green/30 px-3 py-1">
+                      <Badge className="bg-[var(--bubble-bg)] text-[var(--bubble-accent)] border border-[var(--bubble-accent)]/40 px-3 py-1">
                         Team: {currentTeam.name}
                       </Badge>
-                      <Badge className="bg-steel-blue/20 text-steel-blue border border-steel-blue/30 px-3 py-1">
+                      <Badge className="bg-[var(--bubble-bg)] text-[var(--bubble-accent)]/80 border border-[var(--bubble-accent)]/30 px-3 py-1">
                         Role: {currentTeamMembership[0]?.role}
                       </Badge>
                     </div>
@@ -896,30 +896,28 @@ export default function Profile() {
                   <div className="space-y-6">
                     {/* Activity Type Filter Bubbles */}
                     <div className="flex flex-wrap gap-3">
-                      <Button
-                        variant={selectedActivityType === null ? "default" : "outline"}
+                      <button
                         onClick={() => setSelectedActivityType(null)}
-                        className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium transition-all h-6 ${
+                        className={`rounded-full px-3 py-1 text-xs font-medium transition-all border ${
                           selectedActivityType === null
-                            ? "bg-military-green hover:bg-military-green-dark text-white border-military-green"
-                            : "bg-white/10 hover:bg-white/20 text-gray-300 border-white/20"
+                            ? "bg-[var(--bubble-bg)] border-[var(--bubble-accent)] text-[var(--bubble-accent)] shadow-md shadow-[var(--bubble-accent)]/20"
+                            : "bg-[var(--bubble-bg)] border-[var(--bubble-accent)]/30 text-[var(--bubble-accent)]/70 hover:border-[var(--bubble-accent)] hover:text-[var(--bubble-accent)]"
                         }`}
                       >
                         All ({activities.length})
-                      </Button>
+                      </button>
                       {Object.entries(activityTypeGroups).map(([type, data]) => (
-                        <Button
+                        <button
                           key={type}
-                          variant={selectedActivityType === type ? "default" : "outline"}
                           onClick={() => setSelectedActivityType(type)}
-                          className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium transition-all h-6 ${
+                          className={`rounded-full px-3 py-1 text-xs font-medium transition-all border ${
                             selectedActivityType === type
-                              ? "bg-military-green hover:bg-military-green-dark text-white border-military-green"
-                              : "bg-white/10 hover:bg-white/20 text-gray-300 border-white/20"
+                              ? "bg-[var(--bubble-bg)] border-[var(--bubble-accent)] text-[var(--bubble-accent)] shadow-md shadow-[var(--bubble-accent)]/20"
+                              : "bg-[var(--bubble-bg)] border-[var(--bubble-accent)]/30 text-[var(--bubble-accent)]/70 hover:border-[var(--bubble-accent)] hover:text-[var(--bubble-accent)]"
                           }`}
                         >
                           {data.displayName} ({data.count})
-                        </Button>
+                        </button>
                       ))}
                     </div>
 

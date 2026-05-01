@@ -70,15 +70,15 @@ export default function AdminPostCard({ post }: AdminPostCardProps) {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'urgent':
-        return 'bg-red-500 text-white';
+        return 'bg-[var(--bubble-bg)] text-[var(--bubble-accent)] border-[var(--bubble-accent)]';
       case 'high':
-        return 'bg-orange-500 text-white';
+        return 'bg-[var(--bubble-bg)] text-[var(--bubble-accent)] border-[var(--bubble-accent)]/70';
       case 'medium':
-        return 'bg-yellow-500 text-black';
+        return 'bg-[var(--bubble-bg)] text-[var(--bubble-accent)]/80 border-[var(--bubble-accent)]/50';
       case 'low':
-        return 'bg-green-500 text-white';
+        return 'bg-[var(--bubble-bg)] text-[var(--bubble-accent)]/60 border-[var(--bubble-accent)]/30';
       default:
-        return 'bg-gray-500 text-white';
+        return 'bg-[var(--bubble-bg)] text-[var(--bubble-accent)]/50 border-[var(--bubble-accent)]/20';
     }
   };
 
@@ -102,7 +102,7 @@ export default function AdminPostCard({ post }: AdminPostCardProps) {
                 <Badge variant="outline" className={getPriorityColor(post.priority)}>
                   {post.priority.toUpperCase()}
                 </Badge>
-                <Badge variant="outline" className="text-gray-300 border-gray-600">
+                <Badge variant="outline" className="text-[var(--bubble-accent)] border-[var(--bubble-accent)]/40 bg-[var(--bubble-bg)]">
                   {formatType(post.type)}
                 </Badge>
                 <span className="text-gray-400 text-sm">

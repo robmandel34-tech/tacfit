@@ -37,7 +37,7 @@ export default function TeamFormation({ competitionId }: TeamFormationProps) {
                     <p className="text-gray-300 text-sm">{team.points} points</p>
                   </div>
                 </div>
-                <Badge variant="outline" className="text-green-400 border-green-400">
+                <Badge variant="outline" className="text-[var(--bubble-accent)] border-[var(--bubble-accent)]/50 bg-[var(--bubble-bg)]">
                   Active
                 </Badge>
               </div>

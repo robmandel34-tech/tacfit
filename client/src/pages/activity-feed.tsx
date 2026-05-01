@@ -168,16 +168,14 @@ export default function ActivityFeed() {
               {/* "All" bubble */}
               <button
                 onClick={() => setSelectedType(null)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${
                   selectedType === null
-                    ? 'bg-military-green text-white shadow-lg shadow-military-green/30'
-                    : 'bg-tactical-gray-light border border-tactical-gray-lighter text-gray-300 hover:border-military-green hover:text-white'
+                    ? 'bg-[var(--bubble-bg)] border-[var(--bubble-accent)] text-[var(--bubble-accent)] shadow-lg shadow-[var(--bubble-accent)]/20'
+                    : 'bg-[var(--bubble-bg)] border-[var(--bubble-accent)]/30 text-[var(--bubble-accent)]/70 hover:border-[var(--bubble-accent)] hover:text-[var(--bubble-accent)]'
                 }`}
               >
                 All
-                <span className={`text-xs rounded-full px-1.5 py-0.5 ${
-                  selectedType === null ? 'bg-white/20' : 'bg-gray-600'
-                }`}>
+                <span className="text-xs rounded-full px-1.5 py-0.5 bg-[var(--bubble-accent)]/15 text-[var(--bubble-accent)]">
                   {Array.isArray(activities) ? (activities as any[]).length : 0}
                 </span>
               </button>
@@ -186,17 +184,15 @@ export default function ActivityFeed() {
                 <button
                   key={type}
                   onClick={() => setSelectedType(selectedType === type ? null : type)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${
                     selectedType === type
-                      ? 'bg-military-green text-white shadow-lg shadow-military-green/30'
-                      : 'bg-tactical-gray-light border border-tactical-gray-lighter text-gray-300 hover:border-military-green hover:text-white'
+                      ? 'bg-[var(--bubble-bg)] border-[var(--bubble-accent)] text-[var(--bubble-accent)] shadow-lg shadow-[var(--bubble-accent)]/20'
+                      : 'bg-[var(--bubble-bg)] border-[var(--bubble-accent)]/30 text-[var(--bubble-accent)]/70 hover:border-[var(--bubble-accent)] hover:text-[var(--bubble-accent)]'
                   }`}
                 >
                   <span>{getActivityIcon(type)}</span>
                   <span>{getActivityTypeDisplayName(type)}</span>
-                  <span className={`text-xs rounded-full px-1.5 py-0.5 ${
-                    selectedType === type ? 'bg-white/20' : 'bg-gray-600'
-                  }`}>
+                  <span className="text-xs rounded-full px-1.5 py-0.5 bg-[var(--bubble-accent)]/15 text-[var(--bubble-accent)]">
                     {count}
                   </span>
                 </button>
@@ -251,7 +247,7 @@ export default function ActivityFeed() {
                   
                   {/* Activity Type Badge */}
                   <div className="mb-4">
-                    <span className="text-xs border border-gray-600 text-gray-300 bg-transparent px-2 py-1 rounded">
+                    <span className="text-xs border border-[var(--bubble-accent)]/40 text-[var(--bubble-accent)] bg-[var(--bubble-bg)] px-2 py-1 rounded-full">
                       {getActivityIcon(activity.type)} {getActivityTypeDisplayName(activity.type)}
                     </span>
                   </div>

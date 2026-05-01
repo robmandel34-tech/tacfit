@@ -49,24 +49,24 @@ export default function CompetitionCard({ competition, userResult, onInvite, onJ
                   </div>
                 )}
                 {userResult.finalRank === 2 && (
-                  <div className="text-xs text-gray-200 font-medium bg-gray-500/20 px-2 py-1 rounded-full inline-flex items-center gap-1 border border-gray-500/30">
+                  <div className="text-xs font-medium bg-[var(--bubble-bg)] text-[var(--bubble-accent)] border border-[var(--bubble-accent)]/40 px-2 py-1 rounded-full inline-flex items-center gap-1">
                     <Medal className="w-3 h-3" />
                     2nd Place
                   </div>
                 )}
                 {userResult.finalRank === 3 && (
-                  <div className="text-xs text-orange-300 font-medium bg-orange-500/20 px-2 py-1 rounded-full inline-flex items-center gap-1 border border-orange-500/30">
+                  <div className="text-xs font-medium bg-[var(--bubble-bg)] text-[var(--bubble-accent)] border border-[var(--bubble-accent)]/40 px-2 py-1 rounded-full inline-flex items-center gap-1">
                     <Medal className="w-3 h-3" />
                     3rd Place
                   </div>
                 )}
                 {userResult.finalRank && userResult.finalRank > 3 && (
-                  <div className="text-xs text-gray-400 font-medium bg-gray-400/10 px-2 py-1 rounded-full inline-block">
+                  <div className="text-xs font-medium bg-[var(--bubble-bg)] text-[var(--bubble-accent)] border border-[var(--bubble-accent)]/30 px-2 py-1 rounded-full inline-block">
                     {userResult.finalRank}th Place
                   </div>
                 )}
                 {userResult.pointsEarned && userResult.pointsEarned > 0 && (
-                  <div className="text-xs text-military-green font-medium bg-military-green/10 px-2 py-1 rounded-full inline-flex items-center gap-1">
+                  <div className="text-xs font-medium bg-[var(--bubble-bg)] text-[var(--bubble-accent)] border border-[var(--bubble-accent)]/40 px-2 py-1 rounded-full inline-flex items-center gap-1">
                     <Star className="w-3 h-3" />
                     +{userResult.pointsEarned} pts
                   </div>
@@ -75,17 +75,17 @@ export default function CompetitionCard({ competition, userResult, onInvite, onJ
             ) : (
               <>
                 {competition.joinWindowStatus === 'open' && (
-                  <div className="text-xs text-military-green font-medium bg-military-green/10 px-2 py-1 rounded-full inline-block mb-2">
+                  <div className="text-xs font-medium bg-[var(--bubble-bg)] text-[var(--bubble-accent)] border border-[var(--bubble-accent)]/40 px-2 py-1 rounded-full inline-block mb-2">
                     🟢 Join Window Open
                   </div>
                 )}
                 {competition.joinWindowStatus === 'closed' && (
-                  <div className="text-xs text-red-400 font-medium bg-red-400/10 px-2 py-1 rounded-full inline-block mb-2">
+                  <div className="text-xs font-medium bg-[var(--bubble-bg)] text-[var(--bubble-accent)]/60 border border-[var(--bubble-accent)]/20 px-2 py-1 rounded-full inline-block mb-2">
                     🔴 Join Window Closed
                   </div>
                 )}
                 {competition.joinWindowStatus === 'not-opened' && (
-                  <div className="text-xs text-yellow-400 font-medium bg-yellow-400/10 px-2 py-1 rounded-full inline-block mb-2">
+                  <div className="text-xs font-medium bg-[var(--bubble-bg)] text-[var(--bubble-accent)]/60 border border-[var(--bubble-accent)]/20 px-2 py-1 rounded-full inline-block mb-2">
                     🟡 Join Window Not Yet Open
                   </div>
                 )}
@@ -95,8 +95,8 @@ export default function CompetitionCard({ competition, userResult, onInvite, onJ
           <Badge 
             variant={competition.canJoin ? "default" : "secondary"}
             className={`${competition.canJoin 
-              ? 'bg-success-green text-white' 
-              : 'bg-surface-overlay text-secondary'} font-medium`}
+              ? 'bg-[var(--bubble-bg)] text-[var(--bubble-accent)] border border-[var(--bubble-accent)]/50' 
+              : 'bg-[var(--bubble-bg)] text-[var(--bubble-accent)]/60 border border-[var(--bubble-accent)]/20'} font-medium`}
           >
             {competition.joinWindowStatus === 'open' ? "Joinable" : 
              competition.joinWindowStatus === 'closed' ? "Closed" : 
@@ -149,7 +149,7 @@ export default function CompetitionCard({ competition, userResult, onInvite, onJ
                     <Badge 
                       key={index} 
                       variant="outline" 
-                      className="text-xs capitalize bg-surface-overlay border-border-subtle text-secondary hover:bg-military-green hover:text-white transition-colors"
+                      className="text-xs capitalize bg-[var(--bubble-bg)] border-[var(--bubble-accent)]/40 text-[var(--bubble-accent)] hover:border-[var(--bubble-accent)] transition-colors"
                     >
                       {activity}
                     </Badge>

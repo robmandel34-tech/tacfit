@@ -102,7 +102,7 @@ export function HelpModal() {
             ) : (
               <>
             {/* Interactive Walkthrough */}
-            <Card className="bg-gradient-to-r from-military-green-dark to-military-green border-military-green/30">
+            <Card className="card-hero-green">
               <CardHeader>
                 <CardTitle className="text-white flex items-center space-x-2">
                   <BookOpen className="h-5 w-5" />

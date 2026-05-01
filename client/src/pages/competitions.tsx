@@ -216,7 +216,7 @@ export default function Competitions() {
       
       <main className="container mx-auto px-4 py-8">
         {/* Header Card */}
-        <Card className="bg-gradient-to-r from-military-green-dark to-military-green border-military-green/30 mb-8 rounded-none">
+        <Card className="card-hero-green mb-8">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">

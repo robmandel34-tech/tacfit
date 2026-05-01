@@ -143,7 +143,7 @@ export default function CompetitionStatus() {
       <main className="container mx-auto px-4 py-6">
         {/* Header Card */}
         {competition && (
-          <Card className="bg-gradient-to-r from-military-green-dark to-military-green border-military-green/30 mb-8 rounded-none">
+          <Card className="card-hero-green mb-8">
             <CardHeader className="pb-4">
               {/* Top Row: Title and Actions */}
               <div className="flex items-start justify-between mb-3">

@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ShieldPlus, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
+import logoPath from "@assets/tacfit-logo-no-bg.png";
 import { useToast } from "@/hooks/use-toast";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string) ?? "";
@@ -93,7 +94,7 @@ export default function Login() {
       <Card className="w-full max-w-md card-modern">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-6">
-            <ShieldPlus className="h-16 w-16 text-military-green" style={{ strokeWidth: 1.5 }} />
+            <img src={logoPath} alt="TacFit Logo" className="h-16 w-16 object-contain" />
           </div>
           <CardTitle className="text-3xl font-bold text-heading tracking-tight">TacFit</CardTitle>
           <CardDescription className="text-body text-lg">

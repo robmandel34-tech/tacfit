@@ -197,22 +197,44 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
   const likeActivity = useMutation({
     mutationFn: async (activityId: number) => {
       if (!user) throw new Error('Must be logged in to like activities');
-      
       const response = await fetch(`${API_BASE}/api/activities/${activityId}/like`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ userId: user.id }),
       });
-      if (!response.ok) {
-        throw new Error('Failed to like activity');
-      }
+      if (!response.ok) throw new Error('Failed to like activity');
       return response.json();
     },
-    onSuccess: (data) => {
-      // Update queries to reflect the new like status
-      queryClient.invalidateQueries({ queryKey: [`/api/activities/${activity.id}/likes`] });
-      // Don't invalidate main activities query to preserve flag state
+    onMutate: async (activityId) => {
+      // Cancel any in-flight refetches so they don't overwrite our optimistic update
+      await queryClient.cancelQueries({ queryKey: [`/api/activities/${activityId}/likes`] });
+
+      // Snapshot the current likes so we can roll back on error
+      const previousLikes = queryClient.getQueryData<any[]>([`/api/activities/${activityId}/likes`]);
+
+      // Immediately update the cache — toggle like on/off
+      queryClient.setQueryData<any[]>([`/api/activities/${activityId}/likes`], (old) => {
+        const current = Array.isArray(old) ? old : [];
+        const alreadyLiked = current.some((like: any) => like.userId === user?.id);
+        if (alreadyLiked) {
+          return current.filter((like: any) => like.userId !== user?.id);
+        } else {
+          return [...current, { id: Date.now(), activityId, userId: user?.id, createdAt: new Date().toISOString() }];
+        }
+      });
+
+      return { previousLikes };
+    },
+    onError: (_err, activityId, context) => {
+      // Roll back to the snapshot if the mutation fails
+      if (context?.previousLikes !== undefined) {
+        queryClient.setQueryData([`/api/activities/${activityId}/likes`], context.previousLikes);
+      }
+    },
+    onSettled: (_data, _error, activityId) => {
+      // Always sync with the server once settled (success or error)
+      queryClient.invalidateQueries({ queryKey: [`/api/activities/${activityId}/likes`] });
     },
   });
 

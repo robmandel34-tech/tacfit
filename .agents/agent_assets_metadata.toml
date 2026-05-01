@@ -30,6 +30,36 @@ uri = "file://attached_assets/appstore_screen5.png"
 type = "image"
 title = "appstore squad chat screen"
 
+[[generated]]
+id = "OVFlYhZHai74u-vjhEKEw"
+uri = "file://attached_assets/appstore_v2_screen1.png"
+type = "image"
+title = "tacfit intel feed screenshot"
+
+[[generated]]
+id = "aN9jAzaal5OAKxdEaIedk"
+uri = "file://attached_assets/appstore_v2_screen2.png"
+type = "image"
+title = "tacfit competition status screenshot"
+
+[[generated]]
+id = "SLrbsYQno7E9irsDuLKA1"
+uri = "file://attached_assets/appstore_v2_screen3.png"
+type = "image"
+title = "tacfit activity submission screenshot"
+
+[[generated]]
+id = "4cxuoiJ9RVOBNKtBakPDp"
+uri = "file://attached_assets/appstore_v2_screen4.png"
+type = "image"
+title = "tacfit team page screenshot"
+
+[[generated]]
+id = "LNQN3G2O9YXN7yheMdblF"
+uri = "file://attached_assets/appstore_v2_screen5.png"
+type = "image"
+title = "tacfit activity filter bubbles screenshot"
+
 [[outputs]]
 id = "kwby-weNC0zktFBX8-KQs"
 uri = "file://attached_assets/appstore_screen1.png"
@@ -59,3 +89,33 @@ id = "HIb7b5hjWsUyDbk0nlGnx"
 uri = "file://attached_assets/appstore_screen5.png"
 type = "image"
 title = "Screen 5 — Coordinate Your Squad (Team Chat)"
+
+[[outputs]]
+id = "gl59RkU5EBEwATo9DV0-U"
+uri = "file://attached_assets/appstore_v2_screen1.png"
+type = "image"
+title = "Screen 1 — Intel Feed"
+
+[[outputs]]
+id = "VjN_AxhYWYnfFVL1BEhME"
+uri = "file://attached_assets/appstore_v2_screen2.png"
+type = "image"
+title = "Screen 2 — Competition + Progress Map"
+
+[[outputs]]
+id = "C4xALCp15GRPzjLcak146"
+uri = "file://attached_assets/appstore_v2_screen3.png"
+type = "image"
+title = "Screen 3 — Log Your Missions"
+
+[[outputs]]
+id = "_9LeMXC72m1eZZCf1jxhb"
+uri = "file://attached_assets/appstore_v2_screen4.png"
+type = "image"
+title = "Screen 4 — Build Your Squad"
+
+[[outputs]]
+id = "upHyLSTkJO-gruuqcMeo2"
+uri = "file://attached_assets/appstore_v2_screen5.png"
+type = "image"
+title = "Screen 5 — Activity Filter Bubbles"

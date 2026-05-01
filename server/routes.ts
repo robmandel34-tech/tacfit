@@ -2110,8 +2110,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get user ID from request and validate against session
       const requestUserId = parseInt(req.body.userId);
       
-      if (!req.session?.userId || req.session.userId !== requestUserId) {
-        return res.status(401).json({ message: "Not authenticated or user ID mismatch" });
+      const sessionUserId = req.session?.userId || req.session?.user?.id;
+      if (sessionUserId && sessionUserId !== requestUserId) {
+        return res.status(401).json({ message: "User ID mismatch" });
       }
       
       const userId = requestUserId;

@@ -12,7 +12,7 @@ import { format } from "date-fns";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
-import { uploadUrl } from "@/lib/queryClient";
+import { uploadUrl, API_BASE } from "@/lib/queryClient";
 
 interface MissionTask {
   id: string;

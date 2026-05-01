@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,7 @@ const API_BASE = (import.meta.env.VITE_API_URL as string) ?? "";
 export default function Login() {
   const { login } = useAuth();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -62,10 +63,10 @@ export default function Login() {
         title: "Mission briefing ready",
         description: "Access granted. Welcome back, operator.",
       });
-      // Use window.location.href for the redirect — this is the most reliable
-      // approach inside Capacitor's WKWebView and avoids a race between wouter's
-      // history push and React's state batching that can leave the screen stuck.
-      window.location.href = "/";
+      // Defer navigation so React has a full render cycle to propagate the auth
+      // state update before wouter switches routes. Without this delay, the
+      // Dashboard's auth guard can see a stale null-user and bounce back to login.
+      setTimeout(() => setLocation("/"), 50);
     } catch (error: any) {
       // Check if email verification is required
       if (error?.requiresEmailVerification) {

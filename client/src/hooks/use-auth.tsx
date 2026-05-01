@@ -35,8 +35,22 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
     const validateUser = async () => {
       const savedUser = localStorage.getItem("user");
       if (savedUser) {
+        // Always restore from localStorage first so the UI is instantly available
         try {
-          // Validate session is still active on the server
+          const userData = JSON.parse(savedUser);
+          setUser(userData);
+        } catch {
+          localStorage.removeItem("user");
+          setIsLoading(false);
+          return;
+        }
+
+        // Then try to sync fresh data from the server.
+        // In Capacitor (capacitor://localhost → https://tacfit.replit.app), cross-origin
+        // cookies may not be forwarded on the first cold load. If the check fails, we
+        // keep the locally-stored user so the app stays functional rather than booting
+        // the user to the login screen unnecessarily.
+        try {
           const sessionResponse = await fetch(`${API_BASE}/api/auth/me`, {
             credentials: "include",
           });
@@ -44,22 +58,12 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
             const currentUser = await sessionResponse.json();
             setUser(currentUser);
             localStorage.setItem("user", JSON.stringify(currentUser));
-          } else {
-            // Session expired or invalid — clear local state and force re-login
-            localStorage.removeItem("user");
-            setUser(null);
-            setLocation("/login");
           }
-        } catch (error) {
-          // Network error — keep local user data to avoid unnecessary logouts
-          try {
-            const userData = JSON.parse(savedUser);
-            setUser(userData);
-          } catch {
-            localStorage.removeItem("user");
-            setUser(null);
-            setLocation("/login");
-          }
+          // If 401/403: session cookie not available (common in Capacitor cold-start).
+          // The user stays logged in via localStorage; protected routes will redirect
+          // to login naturally if a real auth error occurs.
+        } catch {
+          // Network error — keep the localStorage user as-is.
         }
       }
       setIsLoading(false);

@@ -321,7 +321,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
   };
 
   return (
-    <Card className="tile-card">
+    <Card className="tile-card overflow-hidden rounded-2xl">
       <CardContent className="p-0">
         {/* Header with profile info */}
         <div

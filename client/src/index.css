@@ -160,6 +160,35 @@
     position: relative;
     z-index: 1;
   }
+
+  /* Section-level green band — same gradient + shield as card-hero-green
+     but designed to sit inside a Card as the header or footer strip */
+  .card-band-green {
+    background: radial-gradient(ellipse at 70% 50%, hsl(97, 32%, 38%) 0%, hsl(97, 27%, 28%) 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-band-green::before {
+    content: '';
+    position: absolute;
+    right: -6%;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 55%;
+    height: 220%;
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzNDAgMzAwIj48cGF0aCBkPSJNMjEwIDE4IEwxNDAgNDggTDE0MCAxNTIgUTE0MCAyMTAgMjEwIDIzNSBRMjgwIDIxMCAyODAgMTUyIEwyODAgNDggWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIzIiBvcGFjaXR5PSIwLjIwIi8+PHBhdGggZD0iTTE1NSA1IEw4MiAzOCBMODIgMTUwIFE4MiAyMTIgMTU1IDIzOCBRMjI4IDIxMiAyMjggMTUwIEwyMjggMzggWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIzIiBvcGFjaXR5PSIwLjEzIi8+PHBhdGggZD0iTTI3OCAxMiBMMjA1IDQ1IEwyMDUgMTU4IFEyMDUgMjIwIDI3OCAyNDYgUTM1MSAyMjAgMzUxIDE1OCBMMzUxIDQ1IFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMyIgb3BhY2l0eT0iMC4wOCIvPjwvc3ZnPg==");
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center right;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .card-band-green > * {
+    position: relative;
+    z-index: 1;
+  }
   
   .text-heading {
     color: var(--text-primary);
@@ -214,6 +243,7 @@
     @apply rounded-xl border border-tactical-gray-lighter bg-tactical-gray-lighter;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.1);
     transition: all 0.2s ease-in-out;
+    overflow: hidden;
   }
   
   .tile-card:hover {

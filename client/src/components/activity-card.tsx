@@ -324,7 +324,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
     <Card className="tile-card">
       <CardContent className="p-0">
         {/* Header with profile info */}
-        <div className="p-6 pb-4">
+        <div className="card-band-green p-6 pb-4">
           <div className="flex gap-4">
             <div className="flex flex-col items-center gap-1">
               {activity.team && (
@@ -496,7 +496,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
         )}
         
         {/* Full-width action bar */}
-        <div className="px-6 py-4 border-t border-gray-600">
+        <div className="card-band-green px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button

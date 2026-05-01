@@ -324,7 +324,18 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
     <Card className="tile-card">
       <CardContent className="p-0">
         {/* Header with profile info */}
-        <div className="card-band-green p-6 pb-4">
+        <div
+          className="p-6 pb-4 relative overflow-hidden"
+          style={{ background: 'radial-gradient(ellipse at 70% 50%, hsl(97, 32%, 38%) 0%, hsl(97, 27%, 28%) 100%)' }}
+        >
+          {/* Shield watermark */}
+          <div aria-hidden="true" style={{
+            position: 'absolute', right: '-6%', top: '50%', transform: 'translateY(-50%)',
+            width: '55%', height: '220%', pointerEvents: 'none', zIndex: 0,
+            backgroundImage: `url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzNDAgMzAwIj48cGF0aCBkPSJNMjEwIDE4IEwxNDAgNDggTDE0MCAxNTIgUTE0MCAyMTAgMjEwIDIzNSBRMjgwIDIxMCAyODAgMTUyIEwyODAgNDggWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIzIiBvcGFjaXR5PSIwLjIwIi8+PHBhdGggZD0iTTE1NSA1IEw4MiAzOCBMODIgMTUwIFE4MiAyMTIgMTU1IDIzOCBRMjI4IDIxMiAyMjggMTUwIEwyMjggMzggWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIzIiBvcGFjaXR5PSIwLjEzIi8+PHBhdGggZD0iTTI3OCAxMiBMMjA1IDQ1IEwyMDUgMTU4IFEyMDUgMjIwIDI3OCAyNDYgUTM1MSAyMjAgMzUxIDE1OCBMMzUxIDQ1IFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMyIgb3BhY2l0eT0iMC4wOCIvPjwvc3ZnPg==")`,
+            backgroundRepeat: 'no-repeat', backgroundSize: 'contain', backgroundPosition: 'center right',
+          }} />
+          <div className="relative" style={{ zIndex: 1 }}>
           <div className="flex gap-4">
             <div className="flex flex-col items-center gap-1">
               {activity.team && (
@@ -439,6 +450,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
               )}
             </div>
           </div>
+          </div>
         </div>
         
         {/* Full-width media slideshow */}
@@ -496,7 +508,17 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
         )}
         
         {/* Full-width action bar */}
-        <div className="card-band-green px-6 py-3">
+        <div
+          className="px-6 py-3 relative overflow-hidden"
+          style={{ background: 'radial-gradient(ellipse at 70% 50%, hsl(97, 32%, 38%) 0%, hsl(97, 27%, 28%) 100%)' }}
+        >
+          <div aria-hidden="true" style={{
+            position: 'absolute', right: '-6%', top: '50%', transform: 'translateY(-50%)',
+            width: '55%', height: '400%', pointerEvents: 'none', zIndex: 0,
+            backgroundImage: `url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzNDAgMzAwIj48cGF0aCBkPSJNMjEwIDE4IEwxNDAgNDggTDE0MCAxNTIgUTE0MCAyMTAgMjEwIDIzNSBRMjgwIDIxMCAyODAgMTUyIEwyODAgNDggWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIzIiBvcGFjaXR5PSIwLjIwIi8+PHBhdGggZD0iTTE1NSA1IEw4MiAzOCBMODIgMTUwIFE4MiAyMTIgMTU1IDIzOCBRMjI4IDIxMiAyMjggMTUwIEwyMjggMzggWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIzIiBvcGFjaXR5PSIwLjEzIi8+PHBhdGggZD0iTTI3OCAxMiBMMjA1IDQ1IEwyMDUgMTU4IFEyMDUgMjIwIDI3OCAyNDYgUTM1MSAyMjAgMzUxIDE1OCBMMzUxIDQ1IFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMyIgb3BhY2l0eT0iMC4wOCIvPjwvc3ZnPg==")`,
+            backgroundRepeat: 'no-repeat', backgroundSize: 'contain', backgroundPosition: 'center right',
+          }} />
+          <div className="relative" style={{ zIndex: 1 }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
@@ -560,6 +582,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
             <span className="text-gray-400 text-sm">
               {new Date(activity.createdAt).toLocaleDateString()}
             </span>
+          </div>
           </div>
         </div>
       </CardContent>

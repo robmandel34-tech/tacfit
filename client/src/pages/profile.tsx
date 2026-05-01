@@ -343,49 +343,37 @@ export default function Profile() {
                     </div>
                   </div>
                   
-                  {/* Top header section — spacer + name/email/motto — visually extends cover photo area */}
-                  <div className="w-full pb-4 mb-4 border-b border-white/25">
-                    {/* Spacer to push content below profile picture */}
-                    <div className="h-16 mb-1"></div>
+                  {/* Spacer to push content below profile picture */}
+                  <div className="h-16 mb-1"></div>
 
+                  <div className="backdrop-blur-md bg-white/20 border border-white/20 rounded-2xl p-4 mb-4 text-center">
                     {/* User Name */}
                     <div className="mb-0.5">
-                      <h2
-                        className="text-white font-bold text-xl text-center"
-                        style={{ textShadow: '0 1px 6px rgba(0,0,0,0.55)' }}
-                      >{displayUser.username}</h2>
+                      <h2 className="text-white font-bold text-xl text-center">{displayUser.username}</h2>
                     </div>
-                    <p
-                      className="text-white/75 text-sm mb-0.5 text-center"
-                      style={{ textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}
-                    >{displayUser.email}</p>
+                    <p className="text-gray-400 text-sm mb-0.5 text-center">{displayUser.email}</p>
 
                     {/* User Motto */}
-                    <div className="px-6">
-                      <p
-                        className="text-white/65 text-sm italic text-center break-words leading-relaxed max-w-sm mx-auto hyphens-auto"
-                        style={{ textShadow: '0 1px 4px rgba(0,0,0,0.45)' }}
-                      >
+                    <div className="mb-3 px-6">
+                      <p className="text-gray-300 text-sm italic text-center break-words leading-relaxed max-w-sm mx-auto hyphens-auto">
                         {(displayUser as any)?.motto ? `"${(displayUser as any)?.motto}"` : "No motto set"}
                       </p>
                     </div>
-                  </div>
 
-                  <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-4 mb-4 text-center">
                     <div className="flex items-center justify-center space-x-2 mb-4">
                       <Trophy className="h-5 w-5" style={{ color: '#fb923c' }} />
                       <span className="font-bold text-lg" style={{ color: '#fb923c' }}>{displayUser.points}</span>
                     </div>
-                    <p className="text-white/80 text-sm text-center mb-4">Total Points</p>
+                    <p className="text-gray-300 text-sm text-center mb-4">Total Points</p>
                     
                     {/* Stats Grid */}
                     <div className="grid grid-cols-3 gap-3">
                       <Dialog open={isActivitiesModalOpen} onOpenChange={setIsActivitiesModalOpen}>
                         <DialogTrigger asChild>
                           <div className="cursor-pointer hover:bg-white/10 transition-colors rounded-lg p-2">
-                            <Target className="mx-auto h-5 w-5 text-lime-300 mb-1" />
+                            <Target className="mx-auto h-5 w-5 text-military-green mb-1" />
                             <div className="text-lg font-bold text-white">{activities.length}</div>
-                            <div className="text-xs text-white/65">Activities</div>
+                            <div className="text-xs text-gray-400">Activities</div>
                           </div>
                         </DialogTrigger>
                         <DialogContent className="backdrop-blur-md bg-black/80 border border-white/10 max-w-2xl max-h-[80vh]">
@@ -421,9 +409,9 @@ export default function Profile() {
                       <Dialog open={isCompetitionsModalOpen} onOpenChange={setIsCompetitionsModalOpen}>
                         <DialogTrigger asChild>
                           <div className="cursor-pointer hover:bg-white/10 transition-colors rounded-lg p-2">
-                            <Users className="mx-auto h-5 w-5 text-sky-300 mb-1" />
+                            <Users className="mx-auto h-5 w-5 text-steel-blue mb-1" />
                             <div className="text-lg font-bold text-white">{totalCompetitions}</div>
-                            <div className="text-xs text-white/65">Competitions</div>
+                            <div className="text-xs text-gray-400">Competitions</div>
                           </div>
                         </DialogTrigger>
                         <DialogContent className="backdrop-blur-md bg-black/80 border border-white/10 max-w-2xl max-h-[80vh]">
@@ -483,7 +471,7 @@ export default function Profile() {
                           <div className="cursor-pointer hover:bg-white/10 transition-colors rounded-lg p-2">
                             <Trophy className="mx-auto h-5 w-5 text-combat-orange mb-1" />
                             <div className="text-lg font-bold text-white">{wins}</div>
-                            <div className="text-xs text-white/65">Wins</div>
+                            <div className="text-xs text-gray-400">Wins</div>
                           </div>
                         </DialogTrigger>
                         <DialogContent className="backdrop-blur-md bg-black/80 border border-white/10 max-w-2xl max-h-[80vh]">

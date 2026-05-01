@@ -794,7 +794,7 @@ export default function Profile() {
                       )}
                     </div>
                     <Button
-                      onClick={() => window.location.href = "/team"}
+                      onClick={() => setLocation("/team")}
                       className="w-full mt-3 bg-orange-500 hover:bg-orange-600 text-white"
                       size="sm"
                     >
@@ -844,7 +844,7 @@ export default function Profile() {
                     
                     {/* Action Button */}
                     <Button
-                      onClick={() => window.location.href = "/competition-status"}
+                      onClick={() => setLocation("/competition-status")}
                       className="w-full bg-military-green hover:bg-military-green-dark text-white font-medium py-2"
                     >
                       View Details
@@ -861,7 +861,7 @@ export default function Profile() {
                     </p>
                     {isOwnProfile && (
                       <Button
-                        onClick={() => window.location.href = "/competitions"}
+                        onClick={() => setLocation("/competitions")}
                         className="bg-military-green hover:bg-military-green-dark text-white px-6 py-2"
                       >
                         Browse Competitions

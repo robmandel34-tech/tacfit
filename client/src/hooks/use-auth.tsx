@@ -87,11 +87,9 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
       }
 
       const userData = await response.json();
-      console.log("Login response:", userData); // Debug log
       setUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));
-      // Force navigation to dashboard
-      window.location.href = "/";
+      setLocation("/");
     } catch (error) {
       throw error;
     }

@@ -160,11 +160,11 @@ export default function CompetitionStatus() {
                   <Badge 
                     className={`${
                       new Date() < new Date(competition.startDate) 
-                        ? "bg-[var(--bubble-bg)] text-[var(--bubble-accent)]/70 border-[var(--bubble-accent)]/30" 
+                        ? "bg-[var(--bubble-bg)] border-[var(--bubble-accent)]/30" 
                         : new Date() > new Date(competition.endDate)
-                        ? "bg-[var(--bubble-bg)] text-[var(--bubble-accent)]/50 border-[var(--bubble-accent)]/20"
-                        : "bg-[var(--bubble-bg)] text-[var(--bubble-accent)] border-[var(--bubble-accent)]/60"
-                    } text-xs font-medium`}
+                        ? "bg-[var(--bubble-bg)] border-[var(--bubble-accent)]/20"
+                        : "bg-[var(--bubble-bg)] border-[var(--bubble-accent)]/60"
+                    } !text-white text-xs font-medium`}
                   >
                     {new Date() < new Date(competition.startDate) ? (
                       <>

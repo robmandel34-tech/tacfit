@@ -270,9 +270,9 @@ export default function Profile() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Profile Info */}
           <div className="lg:col-span-1">
-            <Card className="backdrop-blur-md bg-white/5 border border-white/10 overflow-hidden rounded-2xl shadow-xl">
+            <Card className="card-hero-green overflow-hidden rounded-2xl shadow-xl">
               {/* Cover Photo Section */}
-              <div className="relative h-40 bg-gradient-to-r from-military-green to-steel-blue">
+              <div className="relative h-40">
                 {displayUser.coverPhoto ? (
                   <img
                     src={uploadUrl(displayUser.coverPhoto)}
@@ -280,7 +280,7 @@ export default function Profile() {
                     className="w-full h-full object-cover object-center"
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-[#1a2e1a] via-[#1e3a2e] to-[#0f1f2e] relative overflow-hidden">
+                  <div className="w-full h-full relative overflow-hidden">
                     {/* Subtle grid overlay */}
                     <div className="absolute inset-0 opacity-10"
                       style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '20px 20px' }}

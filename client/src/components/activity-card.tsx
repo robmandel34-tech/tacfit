@@ -6,7 +6,7 @@ import { ThumbsUp, MessageCircle, Flag, Users, Image, Mountain, Trash2, ChevronD
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { queryClient, apiRequest, uploadUrl } from "@/lib/queryClient";
+import { queryClient, apiRequest, uploadUrl, API_BASE } from "@/lib/queryClient";
 import { useState } from "react";
 import ActivityCommentsModal from "./activity-comments-modal";
 import { useToast } from "@/hooks/use-toast";

@@ -45,8 +45,8 @@
   --border-subtle: hsl(220, 13%, 24%);
   --border-default: hsl(220, 13%, 30%);
   --bubble-bg: hsl(168, 45%, 10%);
-  --bubble-accent: hsl(168, 55%, 38%);
-  --bubble-accent-rgb: 44, 150, 129;
+  --bubble-accent: hsl(168, 65%, 50%);
+  --bubble-accent-rgb: 45, 177, 210;
 }
 
 .dark {
@@ -70,7 +70,9 @@
   --destructive-foreground: hsl(0, 0%, 98%);
   --ring: hsl(0, 0%, 84%);
   --radius: 0.125rem;
-  --bubble-accent-rgb: 44, 150, 129;
+  --bubble-bg: hsl(168, 45%, 10%);
+  --bubble-accent: hsl(168, 65%, 50%);
+  --bubble-accent-rgb: 45, 177, 210;
 }
 
 @layer base {

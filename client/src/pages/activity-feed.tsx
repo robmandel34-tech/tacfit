@@ -94,14 +94,29 @@ export default function ActivityFeed() {
     return username.split(' ').map(word => word[0]).join('').toUpperCase() || username.slice(0, 2).toUpperCase();
   };
 
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case 'cardio': return '🏃';
-      case 'strength': return '🏋️';
-      case 'flexibility': return '🧘';
-      case 'sports': return '⚽';
-      default: return '🏋️';
-    }
+  const getActivityIcon = (type: string): string => {
+    const icons: Record<string, string> = {
+      run: '🏃', trail_run: '🏃', virtual_run: '🏃', cardio: '🏃',
+      walk: '🚶', hike: '🥾',
+      ride: '🚴', gravel_ride: '🚴', e_bike_ride: '🚴', virtual_ride: '🚴', velomobile: '🚴',
+      mountain_bike_ride: '🚵', e_mountain_bike_ride: '🚵',
+      swim: '🏊', rowing: '🚣', kayak: '🛶', canoe: '🛶',
+      stand_up_paddling: '🏄', surf: '🏄', windsurf: '🏄', kitesurf_session: '🪁', sail: '⛵',
+      alpine_ski: '🎿', backcountry_ski: '🎿', nordic_ski: '⛷️',
+      snowboard: '🏂', snowshoe: '🥾', ice_skate: '⛸️', inline_skate: '🛼',
+      strength: '🏋️', weight_training: '🏋️', crossfit: '💪', workout: '💪',
+      elliptical: '🏃', stair_stepper: '🪜', handcycle: '🔄',
+      soccer: '⚽', american_football: '🏈', basketball: '🏀',
+      baseball: '⚾', softball: '⚾', volleyball: '🏐',
+      golf: '⛳', tennis: '🎾', badminton: '🏸', squash: '🏸',
+      racquetball: '🏸', pickleball: '🏓', table_tennis: '🏓',
+      climbing: '🧗', rock_climbing: '🧗',
+      flexibility: '🤸', yoga: '🧘',
+      meditation: '🧘', mindfulness: '🧘', body_scan: '🧘',
+      breathing_exercises: '🫁', loving_kindness: '💚', sleep_meditation: '😴',
+      wheelchair: '♿',
+    };
+    return icons[type] || '🏃';
   };
 
   const getActivityTypeDisplayName = (type: string) => {

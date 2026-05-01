@@ -42,7 +42,7 @@ export default function Navigation() {
                 src={logoPath}
                 alt="TacFit logo"
                 className="h-8 w-8 object-contain"
-                style={{ filter: 'brightness(0) invert(1)' }}
+                style={{ filter: 'saturate(0) brightness(8)' }}
               />
               <span className="text-2xl font-bold text-heading tracking-tight">TacFit</span>
             </div>

@@ -1,17 +1,17 @@
 import { useEffect, Component, ReactNode } from "react";
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "./hooks/use-auth";
 
-// Global error boundary — prevents any single page crash from killing the whole app
-class ErrorBoundary extends Component<
-  { children: ReactNode },
+// Class-based error boundary — must be a class component
+class ErrorBoundaryBase extends Component<
+  { children: ReactNode; onError?: (error: Error) => void },
   { hasError: boolean; error?: Error }
 > {
-  constructor(props: { children: ReactNode }) {
+  constructor(props: { children: ReactNode; onError?: (error: Error) => void }) {
     super(props);
     this.state = { hasError: false };
   }
@@ -19,7 +19,8 @@ class ErrorBoundary extends Component<
     return { hasError: true, error };
   }
   componentDidCatch(error: Error) {
-    console.error("App error boundary caught:", error);
+    console.error("App error boundary caught:", error.message, error.stack);
+    this.props.onError?.(error);
   }
   render() {
     if (this.state.hasError) {
@@ -37,6 +38,34 @@ class ErrorBoundary extends Component<
         </div>
       );
     }
+    return this.props.children;
+  }
+}
+
+// Route-aware wrapper: changing the key destroys/recreates the boundary,
+// automatically resetting hasError whenever the user navigates to a new route.
+function ErrorBoundary({ children }: { children: ReactNode }) {
+  const [location] = useLocation();
+  return <ErrorBoundaryBase key={location}>{children}</ErrorBoundaryBase>;
+}
+
+// Minimal boundary for UI chrome (nav, FAB) — never shows full-page error, just hides the broken widget
+class SilentErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error: Error) {
+    console.error("UI chrome error (silenced):", error.message);
+  }
+  render() {
+    if (this.state.hasError) return null;
     return this.props.children;
   }
 }
@@ -110,8 +139,12 @@ function AppContent() {
       <ErrorBoundary>
         <Router />
       </ErrorBoundary>
-      <BottomNavigation />
-      <FloatingActionButton />
+      <SilentErrorBoundary>
+        <BottomNavigation />
+      </SilentErrorBoundary>
+      <SilentErrorBoundary>
+        <FloatingActionButton />
+      </SilentErrorBoundary>
     </MoodTracker>
   );
 }

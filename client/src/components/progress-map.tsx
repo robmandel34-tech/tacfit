@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, MapPin, Mountain, Flag, Shield, Target, Sword, Crosshair, Flame, Zap, Swords, Users } from "lucide-react";
+import { uploadUrl } from "@/lib/queryClient";
 
 interface Team {
   id: number;

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, Component, ReactNode } from "react";
 import { useAuthRequired } from "@/lib/auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
@@ -12,6 +12,19 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Trophy, Users, Target, Calendar, LogOut, Activity, CheckCircle, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+
+class MapBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(error: Error) { console.error("ProgressMap crash:", error.message); }
+  render() {
+    if (this.state.hasError) return null;
+    return this.props.children;
+  }
+}
 
 export default function CompetitionStatus() {
   const { user, isLoading } = useAuthRequired();
@@ -228,7 +241,9 @@ export default function CompetitionStatus() {
         {/* Progress Map */}
         {competition && teams.length > 0 && (
           <div className="mb-6">
-            <ProgressMap teams={teams} competitionName="" competition={competition} activities={activities} />
+            <MapBoundary>
+              <ProgressMap teams={teams} competitionName="" competition={competition} activities={activities} />
+            </MapBoundary>
           </div>
         )}
 

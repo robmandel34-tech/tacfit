@@ -207,7 +207,7 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
                     </div>
                   ) : (
                     [...messages].reverse().map((msg: any) => {
-                      const avatarUrl = msg.user?.avatar ? `/uploads/${msg.user.avatar}` : undefined;
+                      const avatarUrl = msg.user?.avatar ? `${API_BASE}/uploads/${msg.user.avatar}` : undefined;
                       
                       return (
                         <div key={msg.id} className="flex items-start space-x-3">

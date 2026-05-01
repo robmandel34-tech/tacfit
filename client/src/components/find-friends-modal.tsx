@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, uploadUrl } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -323,7 +323,7 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
                         <div className="flex items-center space-x-3 min-w-0 flex-1">
                           {requester.avatar ? (
                             <img
-                              src={`/uploads/${requester.avatar}`}
+                              src={uploadUrl(requester.avatar)}
                               alt="Profile picture"
                               className="w-10 h-10 rounded-full object-cover flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-military-green transition-all"
                               onClick={() => navigateToProfile(requester.id)}
@@ -403,7 +403,7 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
                         <div className="flex items-start space-x-3 flex-1 min-w-0">
                           {otherUser.avatar ? (
                             <img
-                              src={`/uploads/${otherUser.avatar}`}
+                              src={uploadUrl(otherUser.avatar)}
                               alt="Profile picture"
                               className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-military-green transition-all"
                               onClick={() => navigateToProfile(otherUser.id)}

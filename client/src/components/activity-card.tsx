@@ -6,11 +6,10 @@ import { ThumbsUp, MessageCircle, Flag, Users, Image, Mountain, Trash2, ChevronD
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { queryClient } from "@/lib/queryClient";
+import { queryClient, apiRequest, uploadUrl } from "@/lib/queryClient";
 import { useState } from "react";
 import ActivityCommentsModal from "./activity-comments-modal";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
 
 import { MediaDisplay } from "@/components/media-display";
 
@@ -310,7 +309,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
               >
                 {activity.user?.avatar ? (
                   <img
-                    src={`/uploads/${activity.user.avatar}`}
+                    src={uploadUrl(activity.user.avatar)}
                     alt="Profile picture"
                     className="w-12 h-12 rounded-full object-cover"
                     onError={(e) => {

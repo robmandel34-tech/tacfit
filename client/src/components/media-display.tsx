@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react';
 import * as React from 'react';
 import { X, ChevronLeft, ChevronRight, Images, Maximize2 } from 'lucide-react';
+import { API_BASE } from '@/lib/queryClient';
+
+// Resolve relative /uploads/ paths to absolute URLs for iOS Capacitor
+const resolveMediaUrl = (url: string): string => {
+  if (url && url.startsWith('/uploads/')) return `${API_BASE}${url}`;
+  return url;
+};
 
 function useVideoThumbnail(videoUrl: string | undefined): string | null {
   const [thumbnail, setThumbnail] = useState<string | null>(null);
@@ -225,12 +232,13 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
     setIsWorkoutDetailsOpen(true);
   };
 
-  // Sort images to prioritize workout details first
+  // Sort images to prioritize workout details first, and resolve relative paths
   const sortedImageUrls = React.useMemo(() => {
     if (!imageUrls.length) return [];
     
-    const workoutDetailsUrls = imageUrls.filter(url => isWorkoutDetailsImage(url));
-    const otherUrls = imageUrls.filter(url => !isWorkoutDetailsImage(url));
+    const resolved = imageUrls.map(resolveMediaUrl);
+    const workoutDetailsUrls = resolved.filter(url => isWorkoutDetailsImage(url));
+    const otherUrls = resolved.filter(url => !isWorkoutDetailsImage(url));
     
     // Put workout details first, then other images
     return [...workoutDetailsUrls, ...otherUrls];

@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { UserPlus, Phone, Search, Users, Send, Copy, MessageSquare } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthRequired } from "@/lib/auth";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, uploadUrl } from "@/lib/queryClient";
 
 interface TeamInviteModalProps {
   isOpen: boolean;
@@ -201,7 +201,7 @@ export default function TeamInviteModal({
                     <div key={searchUser.id} className="flex items-center justify-between p-3 bg-tactical-gray-light rounded-lg border border-tactical-gray">
                       <div className="flex items-center space-x-3">
                         <Avatar className="h-10 w-10">
-                          <AvatarImage src={searchUser.avatar ? `/uploads/${searchUser.avatar}` : undefined} />
+                          <AvatarImage src={searchUser.avatar ? uploadUrl(searchUser.avatar) : undefined} />
                           <AvatarFallback className="bg-military-green text-white">
                             {getInitials(searchUser.username)}
                           </AvatarFallback>

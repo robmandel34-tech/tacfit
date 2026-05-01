@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, uploadUrl } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
@@ -180,7 +180,7 @@ export default function TeamSelectionModal({
                   <div className="flex items-center space-x-3">
                     {member.user.avatar ? (
                       <img
-                        src={`/uploads/${member.user.avatar}`}
+                        src={uploadUrl(member.user.avatar)}
                         alt="Profile picture"
                         className="w-8 h-8 rounded-full object-cover"
                       />
@@ -274,7 +274,7 @@ export default function TeamSelectionModal({
                         <div key={member.id} className="relative">
                           {member.user.avatar ? (
                             <img
-                              src={`/uploads/${member.user.avatar}`}
+                              src={uploadUrl(member.user.avatar)}
                               alt="Profile picture"
                               className="w-8 h-8 rounded-full object-cover border-2 border-tactical-gray-light"
                             />

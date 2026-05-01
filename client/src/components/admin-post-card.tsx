@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { API_BASE } from "@/lib/queryClient";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { 
@@ -125,19 +126,12 @@ export default function AdminPostCard({ post }: AdminPostCardProps) {
         {post.postImageUrl && (
           <div className="mt-4">
             <img 
-              src={post.postImageUrl} 
+              src={post.postImageUrl?.startsWith('/') ? `${API_BASE}${post.postImageUrl}` : post.postImageUrl} 
               alt="Admin post image" 
               className="w-full max-w-md rounded-lg border border-tactical-gray"
               onError={(e) => {
                 console.error("Admin post image failed to load:", post.postImageUrl);
-                // Try object storage URL if original fails
-                const originalSrc = e.currentTarget.src;
-                if (originalSrc.startsWith('/uploads/')) {
-                  const fileName = originalSrc.replace('/uploads/', '');
-                  e.currentTarget.src = `/public-objects/${fileName}`;
-                } else {
-                  e.currentTarget.style.display = 'none';
-                }
+                e.currentTarget.style.display = 'none';
               }}
               onLoad={() => {
                 console.log("Admin post image loaded successfully:", post.postImageUrl);

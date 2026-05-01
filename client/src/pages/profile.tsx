@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Target, Users, Calendar, UserPlus, MessageCircle, Send, Clock, Check, X, Bell, Camera, Upload, Search, Edit, Trash2, ShieldOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, uploadUrl } from "@/lib/queryClient";
 import DirectMessageModal from "@/components/direct-message-modal";
 import FindFriendsModal from "@/components/find-friends-modal";
 import MessageInbox from "@/components/message-inbox";
@@ -275,7 +275,7 @@ export default function Profile() {
               <div className="relative h-40 bg-gradient-to-r from-military-green to-steel-blue">
                 {displayUser.coverPhoto ? (
                   <img
-                    src={`/uploads/${displayUser.coverPhoto}`}
+                    src={uploadUrl(displayUser.coverPhoto)}
                     alt="Cover photo"
                     className="w-full h-full object-cover object-center"
                   />
@@ -317,7 +317,7 @@ export default function Profile() {
                     <div className="relative">
                       {displayUser.avatar ? (
                         <img
-                          src={`/uploads/${displayUser.avatar}`}
+                          src={uploadUrl(displayUser.avatar)}
                           alt="Profile picture"
                           className="w-24 h-24 rounded-full border-4 border-white object-cover shadow-lg"
                         />
@@ -621,7 +621,7 @@ export default function Profile() {
                                         <Avatar className="h-10 w-10">
                                           {friendship.friend?.avatar ? (
                                             <img
-                                              src={`/uploads/${friendship.friend.avatar}`}
+                                              src={uploadUrl(friendship.friend.avatar)}
                                               alt="Profile picture"
                                               className="w-10 h-10 rounded-full object-cover"
                                             />

@@ -1,4 +1,5 @@
 import { useAuthRequired } from "@/lib/auth";
+import { uploadUrl } from "@/lib/queryClient";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
 import Navigation from "@/components/navigation";
@@ -119,7 +120,7 @@ export default function TeamPublic() {
                       className="h-12 w-12 cursor-pointer hover:ring-2 hover:ring-military-green transition-all"
                       onClick={() => navigate(`/profile/${member.user?.id}`)}
                     >
-                      <AvatarImage src={member.user?.avatar ? `/uploads/${member.user.avatar}` : undefined} />
+                      <AvatarImage src={member.user?.avatar ? uploadUrl(member.user.avatar) : undefined} />
                       <AvatarFallback className="bg-military-green text-white">
                         {member.user?.username?.charAt(0).toUpperCase()}
                       </AvatarFallback>

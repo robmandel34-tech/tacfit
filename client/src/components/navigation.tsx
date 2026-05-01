@@ -1,4 +1,5 @@
 import { useAuth } from "@/hooks/use-auth";
+import { uploadUrl } from "@/lib/queryClient";
 import { Link, useLocation } from "wouter";
 import { HamburgerMenu } from "@/components/hamburger-menu";
 import { ShieldPlus, Trophy } from "lucide-react";
@@ -89,7 +90,7 @@ export default function Navigation() {
                 <div className="relative">
                   {user.avatar ? (
                     <img
-                      src={`/uploads/${user.avatar}`}
+                      src={uploadUrl(user.avatar)}
                       alt="Profile picture"
                       className="w-10 h-10 rounded-full object-cover"
                       onError={(e) => {

@@ -2,7 +2,11 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
 // In native Capacitor context, API calls must use the absolute backend URL.
 // Set VITE_API_URL in your .env.production to your deployed backend (e.g. https://myapp.replit.app)
-const API_BASE = (import.meta.env.VITE_API_URL as string) ?? "";
+export const API_BASE = (import.meta.env.VITE_API_URL as string) ?? "";
+
+// Helper to build absolute URLs for user-uploaded files stored in /uploads/
+export const uploadUrl = (filename: string | null | undefined): string =>
+  filename ? `${API_BASE}/uploads/${filename}` : "";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {

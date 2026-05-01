@@ -12,6 +12,7 @@ import { format } from "date-fns";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
+import { uploadUrl } from "@/lib/queryClient";
 
 interface MissionTask {
   id: string;
@@ -381,7 +382,7 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
                       </Badge>
                       <div className="flex items-center space-x-2">
                         <Avatar className="h-6 w-6">
-                          <AvatarImage src={teamMembers.find(m => m.user?.id?.toString() === editTask.assignedTo)?.user?.avatar ? `/uploads/${teamMembers.find(m => m.user?.id?.toString() === editTask.assignedTo)?.user?.avatar}` : undefined} />
+                          <AvatarImage src={uploadUrl(teamMembers.find(m => m.user?.id?.toString() === editTask.assignedTo)?.user?.avatar)} />
                           <AvatarFallback className="bg-military-green text-white text-xs">
                             {teamMembers.find(m => m.user?.id?.toString() === editTask.assignedTo)?.user?.username?.charAt(0)?.toUpperCase()}
                           </AvatarFallback>
@@ -472,7 +473,7 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
                     </div>
                     <div className="flex items-center space-x-2">
                       <Avatar className="h-6 w-6">
-                        <AvatarImage src={teamMembers.find(m => m.user?.id?.toString() === task.assignedTo)?.user?.avatar ? `/uploads/${teamMembers.find(m => m.user?.id?.toString() === task.assignedTo)?.user?.avatar}` : undefined} />
+                        <AvatarImage src={uploadUrl(teamMembers.find(m => m.user?.id?.toString() === task.assignedTo)?.user?.avatar)} />
                         <AvatarFallback className="bg-military-green text-white text-xs">
                           {task.assignedToUsername?.charAt(0)?.toUpperCase()}
                         </AvatarFallback>

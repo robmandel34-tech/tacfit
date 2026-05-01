@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Camera, Edit, Save, X } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest, API_BASE, uploadUrl } from '@/lib/queryClient';
 import type { User } from '@shared/schema';
 
 interface ProfileEditModalProps {
@@ -41,9 +41,10 @@ export default function ProfileEditModal({ user, isOpen, onClose }: ProfileEditM
       const formData = new FormData();
       formData.append("avatar", file);
       
-      const response = await fetch(`/api/users/${user.id}/avatar`, {
+      const response = await fetch(`${API_BASE}/api/users/${user.id}/avatar`, {
         method: "POST",
         body: formData,
+        credentials: "include",
       });
       
       if (!response.ok) {
@@ -86,9 +87,10 @@ export default function ProfileEditModal({ user, isOpen, onClose }: ProfileEditM
       const formData = new FormData();
       formData.append("coverPhoto", file);
       
-      const response = await fetch(`/api/users/${user.id}/cover`, {
+      const response = await fetch(`${API_BASE}/api/users/${user.id}/cover`, {
         method: "POST",
         body: formData,
+        credentials: "include",
       });
       
       if (!response.ok) {
@@ -274,7 +276,7 @@ export default function ProfileEditModal({ user, isOpen, onClose }: ProfileEditM
                   />
                 ) : user.coverPhoto ? (
                   <img
-                    src={`/uploads/${user.coverPhoto}`}
+                    src={uploadUrl(user.coverPhoto)}
                     alt="Cover"
                     className="w-full h-full object-cover"
                   />
@@ -318,7 +320,7 @@ export default function ProfileEditModal({ user, isOpen, onClose }: ProfileEditM
                     />
                   ) : user.avatar ? (
                     <img
-                      src={`/uploads/${user.avatar}`}
+                      src={uploadUrl(user.avatar)}
                       alt="Profile"
                       className="w-full h-full object-cover"
                     />

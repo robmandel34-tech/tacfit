@@ -272,7 +272,7 @@ export default function Profile() {
           <div className="lg:col-span-1">
             <Card className="card-hero-green overflow-hidden rounded-2xl shadow-xl">
               {/* Cover Photo Section */}
-              <div className="relative h-40">
+              <div className="relative h-56">
                 {displayUser.coverPhoto ? (
                   <img
                     src={uploadUrl(displayUser.coverPhoto)}
@@ -344,16 +344,16 @@ export default function Profile() {
                   </div>
                   
                   {/* Spacer to push content below profile picture */}
-                  <div className="h-16 mb-4"></div>
+                  <div className="h-16 mb-1"></div>
                   
                   {/* User Name */}
-                  <div className="mb-2">
+                  <div className="mb-0.5">
                     <h2 className="text-white font-bold text-xl text-center">{displayUser.username}</h2>
                   </div>
-                  <p className="text-gray-400 text-sm mb-2 text-center">{displayUser.email}</p>
+                  <p className="text-gray-400 text-sm mb-0.5 text-center">{displayUser.email}</p>
                   
                   {/* User Motto */}
-                  <div className="mb-4 px-6">
+                  <div className="mb-3 px-6">
                     <p className="text-gray-300 text-sm italic text-center break-words leading-relaxed max-w-sm mx-auto hyphens-auto">
                       {(displayUser as any)?.motto ? `"${(displayUser as any)?.motto}"` : "No motto set"}
                     </p>

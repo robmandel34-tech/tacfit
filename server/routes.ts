@@ -3657,13 +3657,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/mood-logs", async (req, res) => {
     try {
       const sessionUserId = req.session?.userId || req.session?.user?.id;
-      if (!sessionUserId) {
+      const bodyUserId = req.body.userId ? parseInt(req.body.userId) : null;
+      const resolvedUserId = sessionUserId || bodyUserId;
+      if (!resolvedUserId) {
         return res.sendStatus(401);
+      }
+      // If session exists, ensure it matches body userId when provided
+      if (sessionUserId && bodyUserId && sessionUserId !== bodyUserId) {
+        return res.sendStatus(403);
       }
 
       const requestData = {
         ...req.body,
-        userId: sessionUserId
+        userId: resolvedUserId
       };
 
       const validationResult = insertMoodLogSchema.safeParse(requestData);
@@ -3743,15 +3749,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Check if user has logged mood today
   app.get("/api/mood-logs/user/:userId/today", async (req, res) => {
     try {
-      const sessionUserId = req.session?.userId || req.session?.user?.id;
-      if (!sessionUserId) {
-        return res.sendStatus(401);
-      }
-
       const userId = parseInt(req.params.userId);
+      if (!userId || isNaN(userId)) return res.sendStatus(400);
 
-      // Users can only check their own mood logs
-      if (sessionUserId !== userId) {
+      const sessionUserId = req.session?.userId || req.session?.user?.id;
+      // If session exists, verify it belongs to this user
+      if (sessionUserId && sessionUserId !== userId) {
         return res.sendStatus(403);
       }
 

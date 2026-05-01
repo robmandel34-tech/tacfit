@@ -47,7 +47,7 @@ export default function MoodTrackingCard({ userId }: MoodTrackingCardProps) {
 
     setIsSubmitting(true);
     try {
-      const response = await apiRequest("POST", "/api/mood-logs", { mood: selectedMood });
+      const response = await apiRequest("POST", "/api/mood-logs", { mood: selectedMood, userId });
       const data = await response.json();
 
       // Invalidate mood-related queries and refresh user context for points update

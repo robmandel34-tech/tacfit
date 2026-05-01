@@ -4,9 +4,14 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 // Set VITE_API_URL in your .env.production to your deployed backend (e.g. https://myapp.replit.app)
 export const API_BASE = (import.meta.env.VITE_API_URL as string) ?? "";
 
-// Helper to build absolute URLs for user-uploaded files stored in /uploads/
-export const uploadUrl = (filename: string | null | undefined): string =>
-  filename ? `${API_BASE}/uploads/${filename}` : "";
+// Helper to build absolute URLs for user-uploaded files.
+// Handles bare filenames ("photo.jpg"), full paths ("/uploads/photo.jpg"), and already-absolute URLs.
+export const uploadUrl = (path: string | null | undefined): string => {
+  if (!path) return "";
+  if (path.startsWith("http")) return path;
+  if (path.startsWith("/")) return `${API_BASE}${path}`;
+  return `${API_BASE}/uploads/${path}`;
+};
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {

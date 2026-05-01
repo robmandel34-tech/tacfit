@@ -510,7 +510,7 @@ export default function Team() {
                     onClick={triggerPhotoUpload}
                   >
                     <img 
-                      src={team.pictureUrl} 
+                      src={uploadUrl(team.pictureUrl)} 
                       alt={`${team.name} team photo`}
                       className="w-full h-48 object-cover rounded-sm"
                     />

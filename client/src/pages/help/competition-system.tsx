@@ -221,16 +221,20 @@ export default function CompetitionSystemHelp() {
               </CardTitle>
             </CardHeader>
             <CardContent className="text-gray-300 space-y-4">
-              <p>
-                TacFit offers both free and paid competition options, each with distinct features and rewards 
-                to accommodate different levels of engagement and commitment.
-              </p>
-              
+              <div className="bg-military-green/20 border border-military-green/40 p-4 rounded-lg">
+                <h4 className="font-semibold text-military-green mb-1">TacFit is completely free right now!</h4>
+                <p className="text-sm">
+                  Every active user can join competitions, earn points, and build fitness habits at zero cost. 
+                  Paid competitions are coming in a future update — and when they arrive, you'll be able to 
+                  use the points you've already earned to enter them instead of paying with money.
+                </p>
+              </div>
+
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <h4 className="font-semibold text-white mb-3 flex items-center">
                     <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
-                    Free Competitions
+                    Free Competitions (Available Now)
                   </h4>
                   <div className="bg-blue-900/20 border border-blue-600/30 p-4 rounded-lg space-y-3">
                     <div className="flex items-start">
@@ -248,16 +252,16 @@ export default function CompetitionSystemHelp() {
                       <div>
                         <span className="font-medium text-white">No Team Completion Bonuses</span>
                         <p className="text-sm text-gray-400 mt-1">
-                          No additional points for team placement, but individual contributions still count
+                          No additional points for team placement, but every individual activity still earns you points
                         </p>
                       </div>
                     </div>
                     <div className="flex items-start">
                       <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-3 flex-shrink-0"></div>
                       <div>
-                        <span className="font-medium text-white">Advertisements Visible</span>
+                        <span className="font-medium text-white">Open to Everyone</span>
                         <p className="text-sm text-gray-400 mt-1">
-                          Support the platform with occasional sponsored content and promotions
+                          No entry fee required — join any free competition and start earning points immediately
                         </p>
                       </div>
                     </div>
@@ -267,15 +271,25 @@ export default function CompetitionSystemHelp() {
                 <div>
                   <h4 className="font-semibold text-white mb-3 flex items-center">
                     <div className="w-3 h-3 rounded-full bg-yellow-500 mr-2"></div>
-                    Paid Competitions
+                    Paid Competitions (Coming Soon)
                   </h4>
                   <div className="bg-yellow-900/20 border border-yellow-600/30 p-4 rounded-lg space-y-3">
                     <div className="flex items-start">
                       <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-3 flex-shrink-0"></div>
                       <div>
+                        <span className="font-medium text-white">Pay with Points or Money</span>
+                        <p className="text-sm text-gray-400 mt-1">
+                          Entry fees can be paid using the points you've already collected — 
+                          no real money needed if you've been active on the platform
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start">
+                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-3 flex-shrink-0"></div>
+                      <div>
                         <span className="font-medium text-white">Individual + Team Rewards</span>
                         <p className="text-sm text-gray-400 mt-1">
-                          Same individual points (15/30 per activity) <span className="text-military-green font-semibold">PLUS</span> massive team completion bonuses
+                          Same individual points (15/30 per activity) <span className="text-military-green font-semibold">PLUS</span> large team completion bonuses
                         </p>
                       </div>
                     </div>
@@ -289,25 +303,16 @@ export default function CompetitionSystemHelp() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-start">
-                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-3 flex-shrink-0"></div>
-                      <div>
-                        <span className="font-medium text-white">Ad-Free Experience</span>
-                        <p className="text-sm text-gray-400 mt-1">
-                          Hide advertisements for a clean, focused fitness experience
-                        </p>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
 
               <div className="bg-military-green/10 border border-military-green/30 p-4 rounded-lg">
-                <h4 className="font-semibold text-military-green mb-2">💡 Pro Tip:</h4>
+                <h4 className="font-semibold text-military-green mb-2">Start earning points now!</h4>
                 <p className="text-sm">
-                  Free competitions are perfect for trying out TacFit and building fitness habits. 
-                  Paid competitions offer serious rewards for teams that perform well, making them ideal 
-                  for motivated groups looking to maximize their point earnings and enjoy an ad-free experience.
+                  The platform is completely free while you build your point bank. When paid competitions 
+                  launch, your accumulated points can be used as your entry fee — so staying active today 
+                  is your best investment for tomorrow's competitions.
                 </p>
               </div>
             </CardContent>

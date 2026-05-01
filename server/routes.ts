@@ -299,7 +299,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      const parsedData = insertUserSchema.parse(userData);
+      let parsedData;
+      try {
+        parsedData = insertUserSchema.parse(userData);
+      } catch (zodError: any) {
+        console.error('Zod validation failed on registration:', JSON.stringify(zodError?.errors || zodError?.issues || zodError, null, 2));
+        const firstIssue = zodError?.errors?.[0] || zodError?.issues?.[0];
+        const fieldName = firstIssue?.path?.join('.') || 'unknown field';
+        const fieldMessage = firstIssue?.message || 'Validation failed';
+        return res.status(400).json({ message: `Validation failed on ${fieldName}: ${fieldMessage}` });
+      }
       
       // Check if user exists
       const existingUser = await storage.getUserByEmail(parsedData.email);

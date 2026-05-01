@@ -3,7 +3,7 @@ import { uploadUrl } from "@/lib/queryClient";
 import { Link, useLocation } from "wouter";
 import { HamburgerMenu } from "@/components/hamburger-menu";
 import { Trophy } from "lucide-react";
-import logoPath from "@assets/Untitled_design-3_1777665891403.png";
+import logoPath from "@assets/tacfit-shield-logo.png";
 import { useQuery } from "@tanstack/react-query";
 
 export default function Navigation() {
@@ -42,7 +42,6 @@ export default function Navigation() {
                 src={logoPath}
                 alt="TacFit logo"
                 className="h-9 w-9 object-contain"
-                style={{ mixBlendMode: 'screen' }}
               />
               <span className="text-2xl font-bold text-heading tracking-tight">TacFit</span>
             </div>

@@ -90,7 +90,7 @@ export default function TeamPublic() {
             {team.pictureUrl ? (
               <div className="mb-4">
                 <img 
-                  src={team.pictureUrl} 
+                  src={uploadUrl(team.pictureUrl)} 
                   alt={`${team.name} team photo`}
                   className="w-full h-48 object-cover rounded-sm"
                 />

@@ -214,9 +214,13 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
   const [isWorkoutDetailsOpen, setIsWorkoutDetailsOpen] = useState(false);
   const [workoutDetailsImageUrl, setWorkoutDetailsImageUrl] = useState('');
 
+  // Resolve relative server paths to absolute URLs for Capacitor compatibility
+  const resolvedVideoUrl = videoUrl ? resolveMediaUrl(videoUrl) : undefined;
+  const resolvedThumbnailUrl = thumbnailUrl ? resolveMediaUrl(thumbnailUrl) : undefined;
+
   // Generate first-frame thumbnail client-side when no server thumbnail exists
-  const generatedThumbnail = useVideoThumbnail(!thumbnailUrl ? videoUrl : undefined);
-  const effectiveThumbnail = thumbnailUrl || generatedThumbnail;
+  const generatedThumbnail = useVideoThumbnail(!resolvedThumbnailUrl ? resolvedVideoUrl : undefined);
+  const effectiveThumbnail = resolvedThumbnailUrl || generatedThumbnail;
   
 
 
@@ -245,7 +249,7 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
   }, [imageUrls]);
 
   // If we have a video, show it as the main content with image overlay
-  if (videoUrl) {
+  if (resolvedVideoUrl) {
     return (
       <div className="relative w-full h-64 bg-tactical-gray-light rounded-lg overflow-hidden">
         {/* Show thumbnail with play button overlay if available and video not playing */}
@@ -276,8 +280,8 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
         ) : (
           /* Main Video Display */
           <video
-            key={`video-${videoUrl}`}
-            src={videoUrl}
+            key={`video-${resolvedVideoUrl}`}
+            src={resolvedVideoUrl}
             className="w-full h-full object-cover"
             controls
             autoPlay={showVideo}
@@ -285,16 +289,11 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
             playsInline
             muted
             onError={(e) => {
-              console.error("Video playback failed for:", videoUrl);
               const videoElement = e.currentTarget as HTMLVideoElement;
-              console.error("Video error code:", videoElement.error?.code);
-              // Hide video and show fallback
               videoElement.style.display = 'none';
               const fallback = videoElement.nextElementSibling as HTMLElement;
               if (fallback) fallback.style.display = 'flex';
             }}
-            onLoadStart={() => console.log("✓ Video load started:", videoUrl)}
-            onCanPlay={() => console.log("✓ Video can play:", videoUrl)}
           />
         )}
         
@@ -312,8 +311,8 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
               onClick={() => {
                 // Create a temporary anchor element to trigger download
                 const link = document.createElement('a');
-                link.href = videoUrl;
-                link.download = videoUrl.split('/').pop() || 'video';
+                link.href = resolvedVideoUrl!;
+                link.download = resolvedVideoUrl!.split('/').pop() || 'video';
                 link.target = '_blank';
                 document.body.appendChild(link);
                 link.click();

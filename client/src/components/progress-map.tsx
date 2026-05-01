@@ -268,17 +268,13 @@ export default function ProgressMap({ teams, competitionName, competition, activ
                       }}>
                         {team.pictureUrl ? (
                           <img 
-                            src={team.pictureUrl} 
+                            src={uploadUrl(team.pictureUrl)} 
                             alt={team.name}
                             className="w-full h-full object-cover"
                             onError={(e) => {
-                              console.error("Team picture failed to load:", team.pictureUrl);
                               e.currentTarget.style.display = 'none';
                               const fallback = e.currentTarget.nextElementSibling as HTMLElement;
                               if (fallback) fallback.style.display = 'flex';
-                            }}
-                            onLoad={() => {
-                              console.log("Team picture loaded successfully:", team.pictureUrl);
                             }}
                           />
                         ) : null}

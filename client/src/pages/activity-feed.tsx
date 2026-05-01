@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import Navigation from "@/components/navigation";
 import { Camera, ThumbsUp, MessageCircle, Flag, Trash2, X } from "lucide-react";
-import { queryClient, apiRequest, API_BASE } from "@/lib/queryClient";
+import { queryClient, apiRequest, API_BASE, uploadUrl } from "@/lib/queryClient";
 import ActivitySubmissionModal from "@/components/activity-submission-modal";
 import { useToast } from "@/hooks/use-toast";
 
@@ -260,7 +260,7 @@ export default function ActivityFeed() {
                       <div className="mb-4">
                         {isVideoFile(activity.evidenceUrl) ? (
                           <video 
-                            src={activity.evidenceUrl} 
+                            src={uploadUrl(activity.evidenceUrl)} 
                             className="w-full max-w-lg h-48 object-cover rounded-lg border border-gray-600"
                             controls
                             preload="metadata"
@@ -269,7 +269,7 @@ export default function ActivityFeed() {
                           </video>
                         ) : (
                           <img 
-                            src={activity.evidenceUrl} 
+                            src={uploadUrl(activity.evidenceUrl)} 
                             alt="Activity evidence" 
                             className="w-full max-w-lg h-48 object-cover rounded-lg border border-gray-600"
                           />

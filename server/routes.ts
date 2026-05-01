@@ -1101,6 +1101,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Competition routes
+  // Ensure competition array fields (requiredActivities, targetGoals) are proper JS arrays.
+  // The Neon serverless driver can return PostgreSQL arrays as raw strings ({a,b,c}).
+  function transformCompetition(competition: any) {
+    if (!competition) return competition;
+    return {
+      ...competition,
+      requiredActivities: transformPgArray(competition.requiredActivities),
+      targetGoals: transformPgArray(competition.targetGoals),
+    };
+  }
+
   app.get("/api/competitions", async (req, res) => {
     try {
       const competitions = await storage.getCompetitions();
@@ -1113,7 +1124,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      res.json(competitions);
+      res.json(competitions.map(transformCompetition));
     } catch (error) {
       res.status(500).json({ message: "Error fetching competitions" });
     }
@@ -1125,7 +1136,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!competition) {
         return res.status(404).json({ message: "Competition not found" });
       }
-      res.json(competition);
+      res.json(transformCompetition(competition));
     } catch (error) {
       res.status(500).json({ message: "Error fetching competition" });
     }
@@ -1164,7 +1175,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...parsedData,
         createdBy: user.id
       });
-      res.json(competition);
+      res.json(transformCompetition(competition));
     } catch (error) {
       console.error("Competition creation error:", error);
       if (error && typeof error === 'object' && 'issues' in error) {
@@ -1193,7 +1204,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Competition not found" });
       }
       
-      res.json(competition);
+      res.json(transformCompetition(competition));
     } catch (error) {
       console.error("Competition update error:", error);
       res.status(500).json({ message: "Error updating competition" });

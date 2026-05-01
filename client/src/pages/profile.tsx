@@ -900,8 +900,8 @@ export default function Profile() {
                         onClick={() => setSelectedActivityType(null)}
                         className={`rounded-full px-3 py-1 text-xs font-medium transition-all border ${
                           selectedActivityType === null
-                            ? "bg-[var(--bubble-bg)] border-[var(--bubble-accent)] text-[var(--bubble-accent)] shadow-md shadow-[var(--bubble-accent)]/20"
-                            : "bg-[var(--bubble-bg)] border-[var(--bubble-accent)]/30 text-[var(--bubble-accent)]/70 hover:border-[var(--bubble-accent)] hover:text-[var(--bubble-accent)]"
+                            ? "bg-[var(--bubble-bg)] border-[var(--bubble-accent)] text-[var(--bubble-accent)] bubble-glow"
+                            : "bg-[var(--bubble-bg)] border-[var(--bubble-accent)]/30 text-[var(--bubble-accent)]/70 hover:border-[var(--bubble-accent)] hover:text-[var(--bubble-accent)] bubble-glow-hover"
                         }`}
                       >
                         All ({activities.length})
@@ -912,8 +912,8 @@ export default function Profile() {
                           onClick={() => setSelectedActivityType(type)}
                           className={`rounded-full px-3 py-1 text-xs font-medium transition-all border ${
                             selectedActivityType === type
-                              ? "bg-[var(--bubble-bg)] border-[var(--bubble-accent)] text-[var(--bubble-accent)] shadow-md shadow-[var(--bubble-accent)]/20"
-                              : "bg-[var(--bubble-bg)] border-[var(--bubble-accent)]/30 text-[var(--bubble-accent)]/70 hover:border-[var(--bubble-accent)] hover:text-[var(--bubble-accent)]"
+                              ? "bg-[var(--bubble-bg)] border-[var(--bubble-accent)] text-[var(--bubble-accent)] bubble-glow"
+                              : "bg-[var(--bubble-bg)] border-[var(--bubble-accent)]/30 text-[var(--bubble-accent)]/70 hover:border-[var(--bubble-accent)] hover:text-[var(--bubble-accent)] bubble-glow-hover"
                           }`}
                         >
                           {data.displayName} ({data.count})

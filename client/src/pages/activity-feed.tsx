@@ -170,8 +170,8 @@ export default function ActivityFeed() {
                 onClick={() => setSelectedType(null)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${
                   selectedType === null
-                    ? 'bg-[var(--bubble-bg)] border-[var(--bubble-accent)] text-[var(--bubble-accent)] shadow-lg shadow-[var(--bubble-accent)]/20'
-                    : 'bg-[var(--bubble-bg)] border-[var(--bubble-accent)]/30 text-[var(--bubble-accent)]/70 hover:border-[var(--bubble-accent)] hover:text-[var(--bubble-accent)]'
+                    ? 'bg-[var(--bubble-bg)] border-[var(--bubble-accent)] text-[var(--bubble-accent)] bubble-glow'
+                    : 'bg-[var(--bubble-bg)] border-[var(--bubble-accent)]/30 text-[var(--bubble-accent)]/70 hover:border-[var(--bubble-accent)] hover:text-[var(--bubble-accent)] bubble-glow-hover'
                 }`}
               >
                 All
@@ -186,8 +186,8 @@ export default function ActivityFeed() {
                   onClick={() => setSelectedType(selectedType === type ? null : type)}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${
                     selectedType === type
-                      ? 'bg-[var(--bubble-bg)] border-[var(--bubble-accent)] text-[var(--bubble-accent)] shadow-lg shadow-[var(--bubble-accent)]/20'
-                      : 'bg-[var(--bubble-bg)] border-[var(--bubble-accent)]/30 text-[var(--bubble-accent)]/70 hover:border-[var(--bubble-accent)] hover:text-[var(--bubble-accent)]'
+                      ? 'bg-[var(--bubble-bg)] border-[var(--bubble-accent)] text-[var(--bubble-accent)] bubble-glow'
+                      : 'bg-[var(--bubble-bg)] border-[var(--bubble-accent)]/30 text-[var(--bubble-accent)]/70 hover:border-[var(--bubble-accent)] hover:text-[var(--bubble-accent)] bubble-glow-hover'
                   }`}
                 >
                   <span>{getActivityIcon(type)}</span>

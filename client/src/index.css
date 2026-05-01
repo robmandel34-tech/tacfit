@@ -44,8 +44,9 @@
   --text-muted: hsl(0, 0%, 65%);
   --border-subtle: hsl(220, 13%, 24%);
   --border-default: hsl(220, 13%, 30%);
-  --bubble-bg: hsl(130, 55%, 15%);
-  --bubble-accent: hsl(130, 85%, 48%);
+  --bubble-bg: hsl(168, 45%, 10%);
+  --bubble-accent: hsl(168, 55%, 38%);
+  --bubble-accent-rgb: 44, 150, 129;
 }
 
 .dark {
@@ -69,6 +70,7 @@
   --destructive-foreground: hsl(0, 0%, 98%);
   --ring: hsl(0, 0%, 84%);
   --radius: 0.125rem;
+  --bubble-accent-rgb: 44, 150, 129;
 }
 
 @layer base {
@@ -451,6 +453,19 @@
   .tactical-focus {
     outline: 2px solid var(--military-green);
     outline-offset: 2px;
+  }
+
+  .bubble-glow {
+    box-shadow: 0 0 8px rgba(var(--bubble-accent-rgb), 0.45), 0 0 2px rgba(var(--bubble-accent-rgb), 0.2);
+    transition: box-shadow 0.2s ease;
+  }
+
+  .bubble-glow-hover {
+    transition: box-shadow 0.2s ease;
+  }
+
+  .bubble-glow-hover:hover {
+    box-shadow: 0 0 8px rgba(var(--bubble-accent-rgb), 0.45), 0 0 2px rgba(var(--bubble-accent-rgb), 0.2);
   }
 }
 

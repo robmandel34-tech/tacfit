@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Users, Trophy, Star, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { API_BASE } from "@/lib/queryClient";
 
 interface PhoneInvitation {
   id: number;
@@ -51,7 +52,7 @@ export default function TeamInvite() {
   useEffect(() => {
     const fetchInvitation = async () => {
       try {
-        const response = await fetch(`/api/team-invitations/${token}`);
+        const response = await fetch(`${API_BASE}/api/team-invitations/${token}`, { credentials: "include" });
         if (response.ok) {
           const inviteData = await response.json();
           setInvitation(inviteData);
@@ -122,9 +123,10 @@ export default function TeamInvite() {
     
     try {
       // Join the team that invited them
-      const response = await fetch(`/api/teams/${invitation.teamId}/join`, {
+      const response = await fetch(`${API_BASE}/api/teams/${invitation.teamId}/join`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ userId: user.id }),
       });
       

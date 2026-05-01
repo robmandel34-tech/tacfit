@@ -198,11 +198,10 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
     mutationFn: async (activityId: number) => {
       if (!user) throw new Error('Must be logged in to like activities');
       
-      const response = await fetch(`/api/activities/${activityId}/like`, {
+      const response = await fetch(`${API_BASE}/api/activities/${activityId}/like`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ userId: user.id }),
       });
       if (!response.ok) {
@@ -221,11 +220,10 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
     mutationFn: async (activityId: number) => {
       if (!user) throw new Error('Must be logged in to flag activities');
       
-      const response = await fetch(`/api/activities/${activityId}/flag`, {
+      const response = await fetch(`${API_BASE}/api/activities/${activityId}/flag`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ userId: user.id }),
       });
       if (!response.ok) {

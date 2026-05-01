@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Send, ImageIcon, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, API_BASE } from "@/lib/queryClient";
 
 interface DirectMessageModalProps {
   isOpen: boolean;
@@ -39,7 +39,7 @@ export default function DirectMessageModal({ isOpen, onClose, friend }: DirectMe
       params.append("userId1", user?.id?.toString() || "");
       params.append("userId2", friend.id.toString());
       
-      const response = await fetch(`/api/chat?${params}`);
+      const response = await fetch(`${API_BASE}/api/chat?${params}`, { credentials: "include" });
       if (!response.ok) throw new Error("Failed to fetch messages");
       return response.json();
     },

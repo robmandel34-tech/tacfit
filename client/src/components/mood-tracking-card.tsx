@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Activity, Smile, Meh, Frown, TrendingDown, Check, Coins } from "lucide-react";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest, queryClient, API_BASE } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -31,7 +31,7 @@ export default function MoodTrackingCard({ userId }: MoodTrackingCardProps) {
   const { data: moodStatus } = useQuery({
     queryKey: ["/api/mood-logs/today", userId],
     queryFn: async () => {
-      const response = await fetch(`/api/mood-logs/user/${userId}/today`, {
+      const response = await fetch(`${API_BASE}/api/mood-logs/user/${userId}/today`, {
         credentials: "include"
       });
       if (!response.ok) throw new Error("Failed to check mood status");

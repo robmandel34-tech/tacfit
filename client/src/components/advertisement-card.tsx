@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { API_BASE } from "@/lib/queryClient";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,7 +30,7 @@ export default function AdvertisementCard({ advertisement }: AdvertisementCardPr
   useEffect(() => {
     const recordImpression = async () => {
       try {
-        await fetch(`/api/advertisements/${advertisement.id}/impression`, {
+        await fetch(`${API_BASE}/api/advertisements/${advertisement.id}/impression`, {
           method: 'POST',
           credentials: 'include'
         });

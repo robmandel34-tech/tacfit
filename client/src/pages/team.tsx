@@ -1,5 +1,5 @@
 import { useAuthRequired } from "@/lib/auth";
-import { uploadUrl } from "@/lib/queryClient";
+import { uploadUrl, API_BASE } from "@/lib/queryClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
@@ -129,8 +129,9 @@ export default function Team() {
       const formData = new FormData();
       formData.append("photo", file);
       
-      const response = await fetch(`/api/teams/${team?.id}/photo`, {
+      const response = await fetch(`${API_BASE}/api/teams/${team?.id}/photo`, {
         method: "POST",
+        credentials: "include",
         body: formData,
       });
 
@@ -171,9 +172,10 @@ export default function Team() {
   // Update team motto mutation
   const updateTeamMotto = useMutation({
     mutationFn: async (motto: string) => {
-      const response = await fetch(`/api/teams/${team?.id}/motto`, {
+      const response = await fetch(`${API_BASE}/api/teams/${team?.id}/motto`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ motto }),
       });
 
@@ -209,9 +211,10 @@ export default function Team() {
   // Update team name mutation
   const updateTeamName = useMutation({
     mutationFn: async (name: string) => {
-      const response = await fetch(`/api/teams/${team?.id}/name`, {
+      const response = await fetch(`${API_BASE}/api/teams/${team?.id}/name`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ name }),
       });
 

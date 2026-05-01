@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { useAuthRequired } from "@/lib/auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, API_BASE } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/navigation";
 import CompetitionCard from "@/components/competition-card";
@@ -109,7 +109,7 @@ export default function Competitions() {
   // Fetch pending team invitations for this user
   const { data: teamInvitations = [] } = useQuery<any[]>({
     queryKey: ["/api/users", user?.id, "team-invitations"],
-    queryFn: () => fetch(`/api/users/${user?.id}/team-invitations`, { credentials: "include" }).then(r => r.json()),
+    queryFn: () => fetch(`${API_BASE}/api/users/${user?.id}/team-invitations`, { credentials: "include" }).then(r => r.json()),
     enabled: !!user?.id,
   });
 

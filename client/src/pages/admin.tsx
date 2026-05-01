@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { Plus, Edit2, Trash2, Users, Trophy, Calendar, Settings, X, Activity, AlertTriangle, MessageSquare, BarChart3, Target } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, API_BASE } from "@/lib/queryClient";
 import { format } from "date-fns";
 
 interface Competition {
@@ -701,7 +701,7 @@ export default function AdminPage() {
       formData.append('image', advertisementImage);
       
       try {
-        const response = await fetch('/api/advertisements/upload-image', {
+        const response = await fetch(`${API_BASE}/api/advertisements/upload-image`, {
           method: 'POST',
           body: formData,
           credentials: 'include'
@@ -783,7 +783,7 @@ export default function AdminPage() {
       formData.append('image', adminPostImage);
       
       try {
-        const response = await fetch('/api/admin-posts/upload-image', {
+        const response = await fetch(`${API_BASE}/api/admin-posts/upload-image`, {
           method: 'POST',
           body: formData,
           credentials: 'include'
@@ -812,7 +812,7 @@ export default function AdminPage() {
       formData.append('video', adminPostVideo);
       
       try {
-        const response = await fetch('/api/admin-posts/upload-video', {
+        const response = await fetch(`${API_BASE}/api/admin-posts/upload-video`, {
           method: 'POST',
           body: formData,
           credentials: 'include'

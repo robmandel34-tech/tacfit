@@ -151,7 +151,7 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
   const refreshUser = async () => {
     if (user) {
       try {
-        const response = await fetch(`/api/users/${user.id}`, {
+        const response = await fetch(`${API_BASE}/api/users/${user.id}`, {
           credentials: "include",
         });
         if (response.ok) {

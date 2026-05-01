@@ -53,7 +53,7 @@ export default function TeamSelectionModal({
   const { data: teams = [], isLoading } = useQuery({
     queryKey: [`/api/competitions/${competitionId}/teams-with-members`],
     queryFn: async () => {
-      const response = await fetch(`/api/competitions/${competitionId}/teams-with-members`);
+      const response = await fetch(`${API_BASE}/api/competitions/${competitionId}/teams-with-members`, { credentials: "include" });
       return response.json();
     },
     enabled: isOpen && !!competitionId,

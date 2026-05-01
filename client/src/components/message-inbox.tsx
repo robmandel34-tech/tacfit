@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { MessageCircle, Send, Clock, ChevronDown, ChevronUp } from 'lucide-react';
 import DirectMessageModal from '@/components/direct-message-modal';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest, API_BASE } from '@/lib/queryClient';
 import { formatDistanceToNow } from 'date-fns';
 
 interface Conversation {
@@ -34,7 +34,7 @@ export default function MessageInbox({ userId }: MessageInboxProps) {
   const { data: conversations = [], isLoading } = useQuery<Conversation[]>({
     queryKey: ["/api/conversations", userId],
     queryFn: async () => {
-      const response = await fetch(`/api/conversations/${userId}`);
+      const response = await fetch(`${API_BASE}/api/conversations/${userId}`, { credentials: "include" });
       if (!response.ok) throw new Error("Failed to fetch conversations");
       return response.json();
     },

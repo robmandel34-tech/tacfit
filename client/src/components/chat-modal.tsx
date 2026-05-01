@@ -38,7 +38,7 @@ export default function ChatModal({ isOpen, onClose, teamId, competitionId }: Ch
       if (teamId) params.append("teamId", teamId.toString());
       if (competitionId) params.append("competitionId", competitionId.toString());
       
-      const response = await fetch(`/api/chat?${params}`);
+      const response = await fetch(`${API_BASE}/api/chat?${params}`, { credentials: "include" });
       if (!response.ok) throw new Error("Failed to fetch messages");
       return response.json();
     },

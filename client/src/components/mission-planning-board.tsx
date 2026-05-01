@@ -73,9 +73,10 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
   // Create task mutation
   const createTaskMutation = useMutation({
     mutationFn: async (taskData: Omit<MissionTask, 'id'>) => {
-      const response = await fetch('/api/mission-tasks', {
+      const response = await fetch(`${API_BASE}/api/mission-tasks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(taskData),
       });
       if (!response.ok) throw new Error('Failed to create task');
@@ -106,9 +107,10 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
   // Update task mutation
   const updateTaskMutation = useMutation({
     mutationFn: async ({ id, ...updates }: { id: string; title?: string; description?: string; assignedTo?: string; status?: string }) => {
-      const response = await fetch(`/api/mission-tasks/${id}`, {
+      const response = await fetch(`${API_BASE}/api/mission-tasks/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(updates),
       });
       if (!response.ok) throw new Error('Failed to update task');
@@ -140,8 +142,9 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
   // Delete task mutation
   const deleteTaskMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await fetch(`/api/mission-tasks/${id}`, {
+      const response = await fetch(`${API_BASE}/api/mission-tasks/${id}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
       if (!response.ok) throw new Error('Failed to delete task');
       return response.json();
@@ -171,9 +174,10 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
   // Toggle completion mutation
   const toggleCompletionMutation = useMutation({
     mutationFn: async ({ id, completed }: { id: string; completed: boolean }) => {
-      const response = await fetch(`/api/mission-tasks/${id}`, {
+      const response = await fetch(`${API_BASE}/api/mission-tasks/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ completed, status: completed ? 'completed' : 'pending' }),
       });
       if (!response.ok) throw new Error('Failed to update task completion');

@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Target, Users, Calendar, UserPlus, MessageCircle, Send, Clock, Check, X, Bell, Camera, Upload, Search, Edit, Trash2, ShieldOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest, uploadUrl } from "@/lib/queryClient";
+import { apiRequest, uploadUrl, API_BASE } from "@/lib/queryClient";
 import DirectMessageModal from "@/components/direct-message-modal";
 import FindFriendsModal from "@/components/find-friends-modal";
 import MessageInbox from "@/components/message-inbox";
@@ -64,7 +64,7 @@ export default function Profile() {
 
   const { data: activities = [] } = useQuery<Activity[]>({
     queryKey: ["/api/activities", "user", targetUserId],
-    queryFn: () => fetch(`/api/activities?userId=${targetUserId}`).then(res => res.json()),
+    queryFn: () => fetch(`${API_BASE}/api/activities?userId=${targetUserId}`, { credentials: "include" }).then(res => res.json()),
     enabled: !!targetUserId,
     select: (data: any[]) => {
       // Sort activities by creation date (newest first) and ensure proper structure
@@ -230,7 +230,7 @@ export default function Profile() {
   // Block status query
   const { data: blockStatus } = useQuery<{ blocked: boolean }>({
     queryKey: ["/api/users", targetUserId, "block"],
-    queryFn: () => fetch(`/api/users/${targetUserId}/block`, { credentials: "include" }).then(r => r.json()),
+    queryFn: () => fetch(`${API_BASE}/api/users/${targetUserId}/block`, { credentials: "include" }).then(r => r.json()),
     enabled: !!targetUserId && !isOwnProfile && !!user?.id,
   });
 

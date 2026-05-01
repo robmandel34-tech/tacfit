@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Camera, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
+import { API_BASE } from "@/lib/queryClient";
 
 interface ActivitySubmissionModalProps {
   isOpen: boolean;
@@ -124,7 +124,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     mutationFn: (data: FormData) =>
       new Promise<any>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        xhr.open("POST", "/api/activities");
+        xhr.open("POST", `${API_BASE}/api/activities`);
         xhr.withCredentials = true;
 
         // Simulate progress since proxied environments don't fire reliable progress events

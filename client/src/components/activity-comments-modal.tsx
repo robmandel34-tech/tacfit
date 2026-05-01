@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
-import { queryClient } from "@/lib/queryClient";
+import { queryClient, API_BASE } from "@/lib/queryClient";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,11 +32,10 @@ export default function ActivityCommentsModal({
     mutationFn: async (content: string) => {
       if (!user) throw new Error("Must be logged in to comment");
       
-      const response = await fetch(`/api/activities/${activityId}/comments`, {
+      const response = await fetch(`${API_BASE}/api/activities/${activityId}/comments`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ content, userId: user.id }),
       });
       

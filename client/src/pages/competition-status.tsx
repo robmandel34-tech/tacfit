@@ -1,3 +1,4 @@
+import { useState, useMemo } from "react";
 import { useAuthRequired } from "@/lib/auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
@@ -17,6 +18,7 @@ export default function CompetitionStatus() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [selectedType, setSelectedType] = useState<string | null>(null);
 
   // Get user's current team membership
   const { data: userTeamMember } = useQuery({
@@ -41,6 +43,25 @@ export default function CompetitionStatus() {
     queryKey: [`/api/activities/competition/${userTeamMember?.[0]?.team?.competitionId}`],
     enabled: !!userTeamMember?.[0]?.team?.competitionId,
   });
+
+  // Group activities by type and count them
+  const activityTypeCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    if (Array.isArray(activities)) {
+      activities.forEach((activity: any) => {
+        const type = activity.type || "other";
+        counts[type] = (counts[type] || 0) + 1;
+      });
+    }
+    return counts;
+  }, [activities]);
+
+  // Filter activities based on selected type
+  const filteredActivities = useMemo(() => {
+    if (!Array.isArray(activities)) return [];
+    if (!selectedType) return activities;
+    return activities.filter((activity: any) => activity.type === selectedType);
+  }, [activities, selectedType]);
 
   // Leave competition mutation
   const leaveCompetitionMutation = useMutation({
@@ -91,6 +112,16 @@ export default function CompetitionStatus() {
       </div>
     );
   }
+
+  const typeLabels: Record<string, string> = {
+    cardio: "Cardio",
+    strength: "Strength",
+    flexibility: "Flexibility",
+    mobility: "Mobility",
+    meditation: "Meditation",
+    sports: "Sports",
+    other: "Other",
+  };
 
   return (
     <div className="min-h-screen backdrop-blur-md bg-white/5 pb-20">
@@ -183,7 +214,7 @@ export default function CompetitionStatus() {
                   <Users className="h-4 w-4 text-gray-300" />
                   <span>{teams.length} teams competing</span>
                 </div>
-                {competition.requiredActivities && competition.requiredActivities.length > 0 && (
+                {Array.isArray(competition.requiredActivities) && competition.requiredActivities.length > 0 && (
                   <div className="flex items-center space-x-2">
                     <Target className="h-4 w-4 text-gray-300" />
                     <span>{competition.requiredActivities.join(", ")}</span>
@@ -194,8 +225,6 @@ export default function CompetitionStatus() {
           </Card>
         )}
 
-
-
         {/* Progress Map */}
         {competition && teams.length > 0 && (
           <div className="mb-6">
@@ -203,22 +232,66 @@ export default function CompetitionStatus() {
           </div>
         )}
 
-
-
         {/* Activity Feed */}
         <Card className="bg-tactical-gray-light border-tactical-gray rounded-lg">
-          <CardHeader>
+          <CardHeader className="pb-3">
             <CardTitle className="text-white">All Competition Activities</CardTitle>
+
+            {/* Activity Type Filter Bubbles */}
+            {Object.keys(activityTypeCounts).length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {/* All bubble */}
+                <button
+                  onClick={() => setSelectedType(null)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${
+                    selectedType === null
+                      ? "bg-military-green text-white border-military-green shadow-md"
+                      : "bg-white/10 text-gray-300 border-white/20 hover:bg-white/20 hover:text-white"
+                  }`}
+                >
+                  All
+                  <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${
+                    selectedType === null ? "bg-white/20" : "bg-white/10"
+                  }`}>
+                    {Array.isArray(activities) ? activities.length : 0}
+                  </span>
+                </button>
+
+                {/* Per-type bubbles */}
+                {Object.entries(activityTypeCounts).map(([type, count]) => (
+                  <button
+                    key={type}
+                    onClick={() => setSelectedType(selectedType === type ? null : type)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${
+                      selectedType === type
+                        ? "bg-military-green text-white border-military-green shadow-md"
+                        : "bg-white/10 text-gray-300 border-white/20 hover:bg-white/20 hover:text-white"
+                    }`}
+                  >
+                    {typeLabels[type] || type.charAt(0).toUpperCase() + type.slice(1)}
+                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${
+                      selectedType === type ? "bg-white/20" : "bg-white/10"
+                    }`}>
+                      {count}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {activities.length === 0 ? (
+              {filteredActivities.length === 0 ? (
                 <div className="text-center py-8">
                   <Target className="mx-auto h-12 w-12 text-gray-500 mb-4" />
-                  <p className="text-gray-400">No activities submitted yet</p>
+                  <p className="text-gray-400">
+                    {selectedType
+                      ? `No ${typeLabels[selectedType] || selectedType} activities yet`
+                      : "No activities submitted yet"}
+                  </p>
                 </div>
               ) : (
-                activities.map((activity: any) => (
+                filteredActivities.map((activity: any) => (
                   <ActivityCard key={activity.id} activity={activity} />
                 ))
               )}

@@ -167,32 +167,65 @@ export class DatabaseStorage implements IStorage {
 
   async deleteCompetition(id: number): Promise<boolean> {
     try {
-      // Use a transaction to ensure all related data is deleted consistently
       await db.transaction(async (tx) => {
-        // 1. Delete all activities associated with this competition
-        await tx.delete(activities).where(eq(activities.competitionId, id));
-        
-        // 2. Get all teams for this competition
+        // 1. Get all team IDs for this competition (needed for cascading deletes)
         const competitionTeams = await tx.select().from(teams).where(eq(teams.competitionId, id));
-        
-        // 3. Delete all team members for teams in this competition
-        for (const team of competitionTeams) {
-          await tx.delete(teamMembers).where(eq(teamMembers.teamId, team.id));
+        const teamIds = competitionTeams.map(t => t.id);
+
+        // 2. Delete activity child records first (likes, comments, flags)
+        const competitionActivityIds = await tx
+          .select({ id: activities.id })
+          .from(activities)
+          .where(eq(activities.competitionId, id));
+        const activityIds = competitionActivityIds.map(a => a.id);
+        if (activityIds.length > 0) {
+          await tx.delete(activityLikes).where(inArray(activityLikes.activityId, activityIds));
+          await tx.delete(activityComments).where(inArray(activityComments.activityId, activityIds));
+          await tx.delete(activityFlags).where(inArray(activityFlags.activityId, activityIds));
         }
-        
-        // 4. Delete all teams associated with this competition
-        await tx.delete(teams).where(eq(teams.competitionId, id));
-        
-        // 5. Delete any competition entries
+
+        // 3. Delete activities for this competition
+        await tx.delete(activities).where(eq(activities.competitionId, id));
+
+        if (teamIds.length > 0) {
+          // 4. Delete team members
+          await tx.delete(teamMembers).where(inArray(teamMembers.teamId, teamIds));
+
+          // 5. Delete chat messages referencing these teams
+          await tx.delete(chatMessages).where(inArray(chatMessages.teamId, teamIds));
+
+          // 6. Delete mission tasks referencing these teams
+          await tx.delete(missionTasks).where(inArray(missionTasks.teamId, teamIds));
+
+          // 7. Delete whiteboard items referencing these teams
+          await tx.delete(whiteboardItems).where(inArray(whiteboardItems.teamId, teamIds));
+
+          // 8. Delete phone invitations referencing these teams
+          await tx.delete(phoneInvitations).where(inArray(phoneInvitations.teamId, teamIds));
+
+          // 9. Delete user invitations referencing these teams
+          await tx.delete(userInvitations).where(inArray(userInvitations.teamId, teamIds));
+        }
+
+        // 10. Delete chat messages referencing this competition directly (competition-wide chat)
+        await tx.delete(chatMessages).where(eq(chatMessages.competitionId, id));
+
+        // 11. Delete phone/user invitations referencing this competition directly
+        await tx.delete(phoneInvitations).where(eq(phoneInvitations.competitionId, id));
+        await tx.delete(userInvitations).where(eq(userInvitations.competitionId, id));
+        await tx.delete(competitionInvitations).where(eq(competitionInvitations.competitionId, id));
+
+        // 12. Delete competition entries and history
         await tx.delete(competitionEntries).where(eq(competitionEntries.competitionId, id));
-        
-        // 6. Delete any competition history entries
         await tx.delete(competitionHistory).where(eq(competitionHistory.competitionId, id));
-        
-        // 7. Finally, delete the competition itself
+
+        // 13. Delete the teams themselves
+        await tx.delete(teams).where(eq(teams.competitionId, id));
+
+        // 14. Finally delete the competition
         await tx.delete(competitions).where(eq(competitions.id, id));
       });
-      
+
       return true;
     } catch (error) {
       console.error('Error deleting competition:', error);

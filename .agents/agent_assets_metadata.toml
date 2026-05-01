@@ -1,0 +1,61 @@
+uploads = []
+
+[[generated]]
+id = "b3qkQaDlk8dwexNl59LoP"
+uri = "file://attached_assets/appstore_screen1.png"
+type = "image"
+title = "appstore competition screen"
+
+[[generated]]
+id = "k9Uac69z32hJ3RMXP8nis"
+uri = "file://attached_assets/appstore_screen2.png"
+type = "image"
+title = "appstore activity logging screen"
+
+[[generated]]
+id = "4NB8lI04C3eFPWxSF0QDI"
+uri = "file://attached_assets/appstore_screen3.png"
+type = "image"
+title = "appstore intel feed screen"
+
+[[generated]]
+id = "4n36ckJvGuaA4gKb83rQC"
+uri = "file://attached_assets/appstore_screen4.png"
+type = "image"
+title = "appstore progress map screen"
+
+[[generated]]
+id = "TfFv1liR8-VCfXclV9RCh"
+uri = "file://attached_assets/appstore_screen5.png"
+type = "image"
+title = "appstore squad chat screen"
+
+[[outputs]]
+id = "kwby-weNC0zktFBX8-KQs"
+uri = "file://attached_assets/appstore_screen1.png"
+type = "image"
+title = "Screen 1 — Lead Your Team to Victory (Competition)"
+
+[[outputs]]
+id = "p1nkXfp34spFA5iJO6d-h"
+uri = "file://attached_assets/appstore_screen2.png"
+type = "image"
+title = "Screen 2 — Log Your Missions (Activity Submission)"
+
+[[outputs]]
+id = "TM4FWSjCgkqs0xQPOIYvs"
+uri = "file://attached_assets/appstore_screen3.png"
+type = "image"
+title = "Screen 3 — Intelligence Feed (Activity Feed)"
+
+[[outputs]]
+id = "7xtdmgVdyHfNLiNnsh4sg"
+uri = "file://attached_assets/appstore_screen4.png"
+type = "image"
+title = "Screen 4 — Chart Your Advance (Progress Map)"
+
+[[outputs]]
+id = "HIb7b5hjWsUyDbk0nlGnx"
+uri = "file://attached_assets/appstore_screen5.png"
+type = "image"
+title = "Screen 5 — Coordinate Your Squad (Team Chat)"

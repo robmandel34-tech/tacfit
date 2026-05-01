@@ -136,7 +136,7 @@ export default function CompetitionCard({ competition, userResult, onInvite, onJ
             <span className="font-medium">Max {competition.maxTeams} squads</span>
           </div>
 
-          {competition.requiredActivities && competition.requiredActivities.length > 0 && (
+          {Array.isArray(competition.requiredActivities) && competition.requiredActivities.length > 0 && (
             <>
               <Separator className="bg-border-subtle my-4" />
               <div className="space-y-3">
@@ -159,7 +159,7 @@ export default function CompetitionCard({ competition, userResult, onInvite, onJ
             </>
           )}
           
-          {competition.targetGoals && competition.targetGoals.length > 0 && (
+          {Array.isArray(competition.targetGoals) && competition.targetGoals.length > 0 && (
             <>
               <Separator className="bg-border-subtle my-4" />
               <div className="space-y-3">

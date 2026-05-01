@@ -1,10 +1,45 @@
-import { useEffect } from "react";
+import { useEffect, Component, ReactNode } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "./hooks/use-auth";
+
+// Global error boundary — prevents any single page crash from killing the whole app
+class ErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean; error?: Error }
+> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error: Error) {
+    console.error("App error boundary caught:", error);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-tactical-dark flex flex-col items-center justify-center p-6 text-center">
+          <div className="text-4xl mb-4">⚠️</div>
+          <h2 className="text-white text-xl font-bold mb-2">Something went wrong</h2>
+          <p className="text-gray-400 text-sm mb-6">An unexpected error occurred on this page.</p>
+          <button
+            className="bg-military-green text-white px-6 py-2 rounded-lg font-semibold"
+            onClick={() => { this.setState({ hasError: false }); window.location.href = "/"; }}
+          >
+            Return to Home
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 import { MoodTracker } from "@/components/mood-tracker";
 import Dashboard from "@/pages/dashboard";
 import Login from "@/pages/login";
@@ -72,7 +107,9 @@ function AppContent() {
   return (
     <MoodTracker>
       <Toaster />
-      <Router />
+      <ErrorBoundary>
+        <Router />
+      </ErrorBoundary>
       <BottomNavigation />
       <FloatingActionButton />
     </MoodTracker>

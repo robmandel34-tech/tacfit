@@ -3691,7 +3691,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Award 5 points for mood logging
       await updateUserPointsWithWebhook(
-        sessionUserId, 
+        resolvedUserId, 
         5, 
         'Daily mood log'
       );

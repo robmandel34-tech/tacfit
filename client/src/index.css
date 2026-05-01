@@ -164,7 +164,7 @@
   /* Section-level green band — same gradient + shield as card-hero-green
      but designed to sit inside a Card as the header or footer strip */
   .card-band-green {
-    background: radial-gradient(ellipse at 70% 50%, hsl(97, 32%, 38%) 0%, hsl(97, 27%, 28%) 100%);
+    background: radial-gradient(ellipse at 70% 50%, hsl(97, 32%, 38%) 0%, hsl(97, 27%, 28%) 100%) !important;
     position: relative;
     overflow: hidden;
   }

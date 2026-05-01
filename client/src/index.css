@@ -126,9 +126,9 @@
   }
 
   .card-hero-green {
-    background: radial-gradient(ellipse at 65% 48%, hsl(97, 32%, 40%) 0%, hsl(97, 27%, 30%) 100%);
+    background: radial-gradient(ellipse at 65% 48%, hsl(97, 32%, 40%) 0%, hsl(97, 27%, 30%) 100%) !important;
     border: none !important;
-    border-radius: 0.875rem;
+    border-radius: 0.875rem !important;
     overflow: hidden;
     position: relative;
     box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);

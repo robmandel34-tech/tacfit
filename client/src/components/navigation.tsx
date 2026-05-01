@@ -41,7 +41,8 @@ export default function Navigation() {
               <img
                 src={logoPath}
                 alt="TacFit logo"
-                className="h-9 w-9 object-contain rounded-lg"
+                className="h-9 w-9 object-contain"
+                style={{ mixBlendMode: 'screen' }}
               />
               <span className="text-2xl font-bold text-heading tracking-tight">TacFit</span>
             </div>

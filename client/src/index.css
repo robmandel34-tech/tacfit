@@ -37,8 +37,8 @@
   --success-green: hsl(142, 76%, 36%);
   --warning-amber: hsl(43, 96%, 56%);
   --danger-red: hsl(0, 84%, 60%);
-  --surface-elevated: hsl(220, 13%, 12%);
-  --surface-overlay: hsl(220, 13%, 18%);
+  --surface-elevated: hsl(220, 18%, 12%);
+  --surface-overlay: hsl(220, 18%, 18%);
   --text-primary: hsl(0, 0%, 98%);
   --text-secondary: hsl(0, 0%, 78%);
   --text-muted: hsl(0, 0%, 65%);

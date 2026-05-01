@@ -272,7 +272,7 @@ export default function Profile() {
           <div className="lg:col-span-1">
             <Card className="card-hero-green overflow-hidden rounded-2xl shadow-xl">
               {/* Cover Photo Section */}
-              <div className="relative h-56">
+              <div className="relative h-48">
                 {displayUser.coverPhoto ? (
                   <img
                     src={uploadUrl(displayUser.coverPhoto)}

@@ -1150,13 +1150,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Only administrators can create competitions" });
       }
 
-      // Convert date strings to Date objects
+      // Convert date strings to Date objects (empty strings become null)
       const processedData = {
         ...competitionData,
         startDate: new Date(competitionData.startDate),
         endDate: new Date(competitionData.endDate),
-        ...(competitionData.joinStartDate && { joinStartDate: new Date(competitionData.joinStartDate) }),
-        ...(competitionData.joinEndDate && { joinEndDate: new Date(competitionData.joinEndDate) })
+        joinStartDate: competitionData.joinStartDate ? new Date(competitionData.joinStartDate) : null,
+        joinEndDate: competitionData.joinEndDate ? new Date(competitionData.joinEndDate) : null,
       };
 
       const parsedData = insertCompetitionSchema.parse(processedData);
@@ -1179,13 +1179,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const competitionId = parseInt(req.params.id);
       const updates = req.body;
       
-      // Convert date strings to Date objects if they exist
+      // Convert date strings to Date objects if they exist (empty strings become null)
       const processedUpdates = {
         ...updates,
-        ...(updates.startDate && { startDate: new Date(updates.startDate) }),
-        ...(updates.endDate && { endDate: new Date(updates.endDate) }),
-        ...(updates.joinStartDate && { joinStartDate: new Date(updates.joinStartDate) }),
-        ...(updates.joinEndDate && { joinEndDate: new Date(updates.joinEndDate) })
+        ...(updates.startDate !== undefined && { startDate: updates.startDate ? new Date(updates.startDate) : null }),
+        ...(updates.endDate !== undefined && { endDate: updates.endDate ? new Date(updates.endDate) : null }),
+        ...(updates.joinStartDate !== undefined && { joinStartDate: updates.joinStartDate ? new Date(updates.joinStartDate) : null }),
+        ...(updates.joinEndDate !== undefined && { joinEndDate: updates.joinEndDate ? new Date(updates.joinEndDate) : null }),
       };
       
       const competition = await storage.updateCompetition(competitionId, processedUpdates);

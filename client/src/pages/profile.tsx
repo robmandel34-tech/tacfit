@@ -371,7 +371,7 @@ export default function Profile() {
                       <Dialog open={isActivitiesModalOpen} onOpenChange={setIsActivitiesModalOpen}>
                         <DialogTrigger asChild>
                           <div className="cursor-pointer hover:bg-white/10 transition-colors rounded-lg p-2">
-                            <Target className="mx-auto h-5 w-5 text-green-400 mb-1" />
+                            <Target className="mx-auto h-5 w-5 text-military-green mb-1" style={{ filter: 'brightness(2)' }} />
                             <div className="text-lg font-bold text-white">{activities.length}</div>
                             <div className="text-xs text-white">Activities</div>
                           </div>
@@ -409,7 +409,7 @@ export default function Profile() {
                       <Dialog open={isCompetitionsModalOpen} onOpenChange={setIsCompetitionsModalOpen}>
                         <DialogTrigger asChild>
                           <div className="cursor-pointer hover:bg-white/10 transition-colors rounded-lg p-2">
-                            <Users className="mx-auto h-5 w-5 text-sky-400 mb-1" />
+                            <Users className="mx-auto h-5 w-5 text-steel-blue mb-1" style={{ filter: 'brightness(2)' }} />
                             <div className="text-lg font-bold text-white">{totalCompetitions}</div>
                             <div className="text-xs text-white">Competitions</div>
                           </div>
@@ -469,7 +469,7 @@ export default function Profile() {
                       <Dialog open={isWinsModalOpen} onOpenChange={setIsWinsModalOpen}>
                         <DialogTrigger asChild>
                           <div className="cursor-pointer hover:bg-white/10 transition-colors rounded-lg p-2">
-                            <Trophy className="mx-auto h-5 w-5 text-amber-400 mb-1" />
+                            <Trophy className="mx-auto h-5 w-5 text-combat-orange mb-1" style={{ filter: 'brightness(1.6)' }} />
                             <div className="text-lg font-bold text-white">{wins}</div>
                             <div className="text-xs text-white">Wins</div>
                           </div>

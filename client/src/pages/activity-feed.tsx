@@ -40,6 +40,7 @@ export default function ActivityFeed() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
+        body: JSON.stringify({ userId: user?.id }),
       });
       if (!response.ok) throw new Error('Failed to approve activity');
       return response.json();
@@ -55,6 +56,7 @@ export default function ActivityFeed() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
+        body: JSON.stringify({ userId: user?.id }),
       });
       if (!response.ok) throw new Error('Failed to report activity');
       return response.json();

@@ -2356,7 +2356,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/activities/:id/like", async (req, res) => {
     try {
-      const { userId } = req.body;
+      const sessionUserId = (req.session as any)?.userId || (req.session as any)?.user?.id;
+      const userId = req.body.userId ? parseInt(req.body.userId) : sessionUserId;
+      if (!userId) return res.status(401).json({ message: "Not authenticated" });
       const liked = await storage.toggleActivityLike(parseInt(req.params.id), userId);
       res.json({ liked });
     } catch (error) {
@@ -2376,7 +2378,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/activities/:id/flag", async (req, res) => {
     try {
-      const { userId } = req.body;
+      const sessionUserId = (req.session as any)?.userId || (req.session as any)?.user?.id;
+      const userId = req.body.userId ? parseInt(req.body.userId) : sessionUserId;
+      if (!userId) return res.status(401).json({ message: "Not authenticated" });
       const flagged = await storage.toggleActivityFlag(parseInt(req.params.id), userId);
       res.json({ flagged });
     } catch (error) {

@@ -17,13 +17,24 @@ self.addEventListener('install', function(event) {
 });
 
 self.addEventListener('fetch', function(event) {
+  const url = event.request.url;
+
+  // Never intercept API calls — let them go directly to the network.
+  // This covers both same-origin /api/ paths and the absolute production URL.
+  if (
+    url.includes('/api/') ||
+    url.includes('tacfit.replit.app') ||
+    event.request.method !== 'GET'
+  ) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then(function(response) {
         // Return cached version or fetch from network
         return response || fetch(event.request);
-      }
-    )
+      })
   );
 });
 

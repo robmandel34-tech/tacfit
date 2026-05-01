@@ -103,7 +103,9 @@ Thumbs.db
 # Custom uploads and backups
 uploads/
 uploads-backup/
-attached_assets/
+attached_assets/*
+!attached_assets/tacfit-logo-no-bg.png
+!attached_assets/Untitled_design-3_1777665891403.png
 
 # Source maps
 *.map

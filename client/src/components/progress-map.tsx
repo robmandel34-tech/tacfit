@@ -261,15 +261,38 @@ export default function ProgressMap({ teams, competitionName, competition, activ
                       transform: 'translate(-50%, -50%)'
                     }}
                   >
-                    {/* Team marker */}
+                    {/* Shield-shaped team marker */}
                     <div className="relative group cursor-pointer" onClick={() => navigate(`/team/${team.id}`)}>
-                      {/* Team picture or default icon */}
-                      <div className="w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-tactical-gray hover:ring-2 hover:ring-military-green transition-all" style={{
-                        boxShadow: '0 4px 8px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.2), 0 1px 0 rgba(255,255,255,0.3)'
-                      }}>
+                      {/* Outer shield border — slightly larger, rank-coloured */}
+                      <div
+                        className="absolute"
+                        style={{
+                          width: 46,
+                          height: 52,
+                          top: '50%',
+                          left: '50%',
+                          transform: 'translate(-50%, -50%)',
+                          clipPath: 'polygon(15% 0%, 85% 0%, 100% 22%, 100% 68%, 50% 100%, 0% 68%, 0% 22%)',
+                          background: index === 0 ? 'linear-gradient(160deg, #34d399 0%, #059669 60%, #065f46 100%)' :
+                                     index === 1 ? 'linear-gradient(160deg, #e5e7eb 0%, #9ca3af 60%, #4b5563 100%)' :
+                                     index === 2 ? 'linear-gradient(160deg, #fbbf24 0%, #d97706 60%, #92400e 100%)' :
+                                     'linear-gradient(160deg, #86efac 0%, #4ade80 60%, #16a34a 100%)',
+                          filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.5))',
+                        }}
+                      />
+                      {/* Inner shield — team photo or icon */}
+                      <div
+                        style={{
+                          width: 40,
+                          height: 46,
+                          clipPath: 'polygon(15% 0%, 85% 0%, 100% 22%, 100% 68%, 50% 100%, 0% 68%, 0% 22%)',
+                          overflow: 'hidden',
+                          position: 'relative',
+                        }}
+                      >
                         {team.pictureUrl ? (
-                          <img 
-                            src={uploadUrl(team.pictureUrl)} 
+                          <img
+                            src={uploadUrl(team.pictureUrl)}
                             alt={team.name}
                             className="w-full h-full object-cover"
                             onError={(e) => {
@@ -279,40 +302,35 @@ export default function ProgressMap({ teams, competitionName, competition, activ
                             }}
                           />
                         ) : null}
-                        <div className={`w-full h-full flex items-center justify-center ${
-                          index === 0 ? 'bg-emerald-600' : 
-                          index === 1 ? 'bg-gray-400' : 
-                          index === 2 ? 'bg-amber-600' : 
-                          'bg-military-green'
-                        }`} style={{
-                          display: team.pictureUrl ? 'none' : 'flex',
-                          background: index === 0 ? 'linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%)' :
-                                     index === 1 ? 'linear-gradient(135deg, #9ca3af 0%, #6b7280 50%, #4b5563 100%)' :
-                                     index === 2 ? 'linear-gradient(135deg, #d97706 0%, #b45309 50%, #92400e 100%)' :
-                                     'linear-gradient(135deg, #6b8e6b 0%, #5a7a5a 50%, #4a6a4a 100%)'
-                        }}>
+                        <div
+                          className="w-full h-full flex items-center justify-center"
+                          style={{
+                            display: team.pictureUrl ? 'none' : 'flex',
+                            background: index === 0 ? 'linear-gradient(160deg, #059669 0%, #065f46 100%)' :
+                                       index === 1 ? 'linear-gradient(160deg, #9ca3af 0%, #4b5563 100%)' :
+                                       index === 2 ? 'linear-gradient(160deg, #d97706 0%, #92400e 100%)' :
+                                       'linear-gradient(160deg, #4a6b28 0%, #2d4a18 100%)',
+                          }}
+                        >
                           {(() => {
                             const IconComponent = getDefaultIcon(team.id);
-                            return <IconComponent className="h-4 w-4 text-white" style={{
-                              filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.3))'
-                            }} />;
+                            return <IconComponent className="h-4 w-4 text-white" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }} />;
                           })()}
                         </div>
                       </div>
-                      
-                      {/* Rank indicator */}
-                      <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-full border border-white flex items-center justify-center text-xs font-bold ${
-                        index === 0 ? 'bg-emerald-600 text-white' : 
-                        index === 1 ? 'bg-gray-400 text-black' : 
-                        index === 2 ? 'bg-amber-600 text-black' : 
-                        'bg-military-green text-white'
-                      }`} style={{
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2)',
-                        background: index === 0 ? 'linear-gradient(135deg, #059669 0%, #047857 100%)' :
-                                   index === 1 ? 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)' :
-                                   index === 2 ? 'linear-gradient(135deg, #d97706 0%, #b45309 100%)' :
-                                   'linear-gradient(135deg, #6b8e6b 0%, #5a7a5a 100%)'
-                      }}>
+
+                      {/* Rank badge */}
+                      <div
+                        className="absolute -top-1 -right-1 w-4 h-4 rounded-full border border-white flex items-center justify-center text-xs font-bold"
+                        style={{
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.4)',
+                          background: index === 0 ? 'linear-gradient(135deg, #059669 0%, #047857 100%)' :
+                                     index === 1 ? 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)' :
+                                     index === 2 ? 'linear-gradient(135deg, #d97706 0%, #b45309 100%)' :
+                                     'linear-gradient(135deg, #6b8e6b 0%, #5a7a5a 100%)',
+                          color: index === 1 || index === 2 ? '#000' : '#fff',
+                        }}
+                      >
                         {team.rank}
                       </div>
                       

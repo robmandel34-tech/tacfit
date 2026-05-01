@@ -2,7 +2,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { uploadUrl } from "@/lib/queryClient";
 import { Link, useLocation } from "wouter";
 import { HamburgerMenu } from "@/components/hamburger-menu";
-import { ShieldPlus, Trophy } from "lucide-react";
+import { Trophy } from "lucide-react";
+import logoPath from "@assets/Untitled_design-2_1777654256479.png";
 import { useQuery } from "@tanstack/react-query";
 
 export default function Navigation() {
@@ -37,11 +38,10 @@ export default function Navigation() {
         <div className="flex items-center justify-between min-w-0">
           <div className="flex items-center space-x-3 md:space-x-6 min-w-0 flex-shrink">
             <div className="flex items-center space-x-3 flex-shrink-0">
-              <ShieldPlus 
-                className="h-6 w-6 text-military-green" 
-                style={{ display: 'inline-block', strokeWidth: 1.5 }}
-                onLoad={() => console.log("ShieldPlus icon loaded")}
-                onError={() => console.log("ShieldPlus icon error")}
+              <img
+                src={logoPath}
+                alt="TacFit logo"
+                className="h-8 w-8 object-contain"
               />
               <span className="text-2xl font-bold text-heading tracking-tight">TacFit</span>
             </div>

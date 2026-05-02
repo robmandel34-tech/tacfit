@@ -60,6 +60,12 @@ uri = "file://attached_assets/appstore_v2_screen5.png"
 type = "image"
 title = "tacfit activity filter bubbles screenshot"
 
+[[generated]]
+id = "81XmKJqUKEFaa_HaMGBCS"
+uri = "file://attached_assets/generated_images/tacfit-team-marketing-screenshot.png"
+type = "image"
+title = "tacfit team marketing screenshot"
+
 [[outputs]]
 id = "kwby-weNC0zktFBX8-KQs"
 uri = "file://attached_assets/appstore_screen1.png"
@@ -119,3 +125,9 @@ id = "upHyLSTkJO-gruuqcMeo2"
 uri = "file://attached_assets/appstore_v2_screen5.png"
 type = "image"
 title = "Screen 5 — Activity Filter Bubbles"
+
+[[outputs]]
+id = "5pnbCTa17GU98KGwf_V7Y"
+uri = "file://attached_assets/generated_images/tacfit-team-marketing-screenshot.png"
+type = "image"
+title = "TacFit — Team Screen Marketing Screenshot"

@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Coins, Trophy, Star, Target } from "lucide-react";
+import { ArrowLeft, Coins, Trophy, Star, Target, Zap } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 export default function PointSystemHelp() {
@@ -12,6 +12,22 @@ export default function PointSystemHelp() {
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-white mb-2">Point System</h1>
           <p className="text-gray-400">Complete guide to earning, using, and maximizing your tactical points</p>
+        </div>
+
+        {/* Early Adopter callout */}
+        <div className="mb-6 p-4 rounded-xl border border-amber-500/40 bg-amber-500/10">
+          <div className="flex items-start gap-3">
+            <Zap className="h-5 w-5 text-amber-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-amber-300 font-semibold mb-1">Early Adopter Advantage</p>
+              <p className="text-gray-300 text-sm">
+                All competitions on TacFit are <strong className="text-white">currently free</strong> to enter. 
+                In the future, premium paid competitions will be available — and they can be entered using 
+                your accumulated points. The more points you earn now as an early user, the longer you'll 
+                be able to compete completely free. Start stacking points today.
+              </p>
+            </div>
+          </div>
         </div>
 
         <div className="space-y-6">

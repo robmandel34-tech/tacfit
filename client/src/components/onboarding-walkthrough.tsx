@@ -21,6 +21,7 @@ import {
   Shield,
   AlertTriangle,
   UserCheck,
+  Zap,
 } from 'lucide-react';
 import { Link } from 'wouter';
 
@@ -70,6 +71,22 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
               <p className="text-sm text-gray-300">Goal-oriented</p>
             </div>
           </div>
+
+          {/* Early Adopter callout */}
+          <div className="mt-4 p-4 rounded-xl border border-amber-500/40 bg-amber-500/10">
+            <div className="flex items-start gap-3">
+              <Zap className="h-5 w-5 text-amber-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-amber-300 font-semibold text-sm mb-1">Early Adopter Advantage</p>
+                <p className="text-gray-300 text-sm">
+                  All competitions are <strong className="text-white">currently free</strong> to enter. 
+                  Future paid competitions can be unlocked using your earned points — so joining now 
+                  and stacking points is your best chance to keep competing for free long-term.
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="flex justify-center mt-6">
             <Link href="/help/navigation">
               <Button 

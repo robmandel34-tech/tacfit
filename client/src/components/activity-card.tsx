@@ -326,7 +326,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
         {/* Header with profile info */}
         <div
           className="p-6 pb-4 relative overflow-hidden"
-          style={{ background: 'radial-gradient(ellipse at 70% 50%, hsl(97, 32%, 38%) 0%, hsl(97, 27%, 28%) 100%)' }}
+          style={{ background: 'radial-gradient(ellipse at 70% 50%, hsl(97, 32%, 31%) 0%, hsl(97, 27%, 21%) 100%)' }}
         >
           {/* Shield watermark */}
           <div aria-hidden="true" style={{
@@ -510,7 +510,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
         {/* Full-width action bar */}
         <div
           className="px-6 py-3 relative overflow-hidden"
-          style={{ background: 'radial-gradient(ellipse at 70% 50%, hsl(97, 32%, 38%) 0%, hsl(97, 27%, 28%) 100%)' }}
+          style={{ background: 'radial-gradient(ellipse at 70% 50%, hsl(97, 32%, 31%) 0%, hsl(97, 27%, 21%) 100%)' }}
         >
           <div aria-hidden="true" style={{
             position: 'absolute', right: '-6%', top: '50%', transform: 'translateY(-50%)',

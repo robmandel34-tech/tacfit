@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tacfit-v3';
+const CACHE_NAME = 'tacfit-v4';
 const urlsToCache = [
   '/',
   '/static/js/bundle.js',

@@ -197,29 +197,21 @@ export default function ProgressMap({ teams, competitionName, competition, activ
                           strokeWidth="3"
                           fill="none"
                           strokeLinecap="round"
-                          strokeDasharray="5,4" />
+                          strokeDasharray="2.5,3" />
                     {/* Core bright dash line */}
                     <path d="M12,80 Q18,72 27,76 Q36,82 46,66 Q56,50 66,55 Q76,60 85,10"
                           stroke="rgba(255,255,255,0.92)"
                           strokeWidth="1.2"
                           fill="none"
                           strokeLinecap="round"
-                          strokeDasharray="5,4"
+                          strokeDasharray="2.5,3"
                           filter="url(#lineGlow)" />
 
-                    {/* 4 evenly spaced checkpoint markers along the route */}
-                    {/* Checkpoint 1 — ~25% along path (27, 76) */}
-                    <circle cx="27" cy="76" r="2.8" fill="rgba(0,0,0,0.7)" stroke="rgba(134,239,172,0.9)" strokeWidth="1.2" filter="url(#cpGlow)" />
-                    <circle cx="27" cy="76" r="1.2" fill="rgba(180,255,200,1)" />
-                    {/* Checkpoint 2 — ~50% along path (46, 66) */}
-                    <circle cx="46" cy="66" r="2.8" fill="rgba(0,0,0,0.7)" stroke="rgba(134,239,172,0.9)" strokeWidth="1.2" filter="url(#cpGlow)" />
-                    <circle cx="46" cy="66" r="1.2" fill="rgba(180,255,200,1)" />
-                    {/* Checkpoint 3 — ~75% along path (66, 55) */}
-                    <circle cx="66" cy="55" r="2.8" fill="rgba(0,0,0,0.7)" stroke="rgba(134,239,172,0.9)" strokeWidth="1.2" filter="url(#cpGlow)" />
-                    <circle cx="66" cy="55" r="1.2" fill="rgba(180,255,200,1)" />
-                    {/* Checkpoint 4 — ~90% along path (80, 22) */}
-                    <circle cx="80" cy="22" r="2.8" fill="rgba(0,0,0,0.7)" stroke="rgba(134,239,172,0.9)" strokeWidth="1.2" filter="url(#cpGlow)" />
-                    <circle cx="80" cy="22" r="1.2" fill="rgba(180,255,200,1)" />
+                    {/* 4 evenly spaced checkpoint markers — same white glow style as dashes */}
+                    <circle cx="27" cy="76" r="1.8" fill="rgba(255,255,255,0.95)" filter="url(#lineGlow)" />
+                    <circle cx="46" cy="66" r="1.8" fill="rgba(255,255,255,0.95)" filter="url(#lineGlow)" />
+                    <circle cx="66" cy="55" r="1.8" fill="rgba(255,255,255,0.95)" filter="url(#lineGlow)" />
+                    <circle cx="80" cy="22" r="1.8" fill="rgba(255,255,255,0.95)" filter="url(#lineGlow)" />
                   </svg>
 
                   {/* Topographical features */}

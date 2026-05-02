@@ -131,3 +131,9 @@ id = "5pnbCTa17GU98KGwf_V7Y"
 uri = "file://attached_assets/generated_images/tacfit-team-marketing-screenshot.png"
 type = "image"
 title = "TacFit — Team Screen Marketing Screenshot"
+
+[[outputs]]
+id = "YM1afEEB1zvggzMZ1WmfB"
+uri = "file://attached_assets/generated_images/tacfit-team-marketing-real.jpg"
+type = "image"
+title = "TacFit — Team Screen Marketing Screenshot"

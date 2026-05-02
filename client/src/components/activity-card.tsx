@@ -323,7 +323,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
   return (
     <Card
       className="tile-card overflow-hidden rounded-2xl"
-      style={{ border: '2px solid hsla(97, 45%, 50%, 0.30)' }}
+      style={{ border: '2px solid hsla(97, 45%, 50%, 0.30)', background: 'transparent' }}
     >
       <CardContent className="p-0">
         {/* Header with profile info */}
@@ -483,7 +483,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
         
         {/* Full-width text input section - hide for HealthKit activities since stats are shown above */}
         {activity.textInput && !isHealthKitActivity() && (
-          <div className="px-6 py-4 border-t border-gray-600">
+          <div className="px-6 py-4 border-t border-gray-600 bg-tactical-gray-lighter">
             <div className="p-3 bg-tactical-gray-lighter rounded-lg border border-gray-600">
               <p className="text-gray-300 text-sm leading-relaxed">
                 {isTextExpanded 

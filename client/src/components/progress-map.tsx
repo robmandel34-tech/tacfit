@@ -175,36 +175,51 @@ export default function ProgressMap({ teams, competitionName, competition, activ
                   {/* Weaving diagonal route path from bottom left to top right */}
                   <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" style={{ overflow: 'visible' }}>
                     <defs>
-                      <filter id="dotGlow" x="-50%" y="-50%" width="200%" height="200%">
-                        <feGaussianBlur stdDeviation="1.2" result="blur" />
+                      <filter id="lineGlow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur stdDeviation="0.8" result="blur" />
+                        <feMerge>
+                          <feMergeNode in="blur" />
+                          <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                      </filter>
+                      <filter id="cpGlow" x="-100%" y="-100%" width="300%" height="300%">
+                        <feGaussianBlur stdDeviation="1.5" result="blur" />
                         <feMerge>
                           <feMergeNode in="blur" />
                           <feMergeNode in="SourceGraphic" />
                         </feMerge>
                       </filter>
                     </defs>
-                    {/* Outermost wide glow halo */}
+
+                    {/* Outer glow on dash line */}
                     <path d="M12,80 Q18,72 27,76 Q36,82 46,66 Q56,50 66,55 Q76,60 85,10"
-                          stroke="rgba(134,239,172,0.18)"
-                          strokeWidth="5"
-                          fill="none"
-                          strokeLinecap="round"
-                          strokeDasharray="0.1,5.5" />
-                    {/* Mid glow ring */}
-                    <path d="M12,80 Q18,72 27,76 Q36,82 46,66 Q56,50 66,55 Q76,60 85,10"
-                          stroke="rgba(180,255,200,0.35)"
+                          stroke="rgba(134,239,172,0.25)"
                           strokeWidth="3"
                           fill="none"
                           strokeLinecap="round"
-                          strokeDasharray="0.1,5.5" />
-                    {/* Bright core dots */}
+                          strokeDasharray="5,4" />
+                    {/* Core bright dash line */}
                     <path d="M12,80 Q18,72 27,76 Q36,82 46,66 Q56,50 66,55 Q76,60 85,10"
-                          stroke="rgba(255,255,255,0.97)"
-                          strokeWidth="1.8"
+                          stroke="rgba(255,255,255,0.92)"
+                          strokeWidth="1.2"
                           fill="none"
                           strokeLinecap="round"
-                          strokeDasharray="0.1,5.5"
-                          filter="url(#dotGlow)" />
+                          strokeDasharray="5,4"
+                          filter="url(#lineGlow)" />
+
+                    {/* 4 evenly spaced checkpoint markers along the route */}
+                    {/* Checkpoint 1 — ~25% along path (27, 76) */}
+                    <circle cx="27" cy="76" r="2.8" fill="rgba(0,0,0,0.7)" stroke="rgba(134,239,172,0.9)" strokeWidth="1.2" filter="url(#cpGlow)" />
+                    <circle cx="27" cy="76" r="1.2" fill="rgba(180,255,200,1)" />
+                    {/* Checkpoint 2 — ~50% along path (46, 66) */}
+                    <circle cx="46" cy="66" r="2.8" fill="rgba(0,0,0,0.7)" stroke="rgba(134,239,172,0.9)" strokeWidth="1.2" filter="url(#cpGlow)" />
+                    <circle cx="46" cy="66" r="1.2" fill="rgba(180,255,200,1)" />
+                    {/* Checkpoint 3 — ~75% along path (66, 55) */}
+                    <circle cx="66" cy="55" r="2.8" fill="rgba(0,0,0,0.7)" stroke="rgba(134,239,172,0.9)" strokeWidth="1.2" filter="url(#cpGlow)" />
+                    <circle cx="66" cy="55" r="1.2" fill="rgba(180,255,200,1)" />
+                    {/* Checkpoint 4 — ~90% along path (80, 22) */}
+                    <circle cx="80" cy="22" r="2.8" fill="rgba(0,0,0,0.7)" stroke="rgba(134,239,172,0.9)" strokeWidth="1.2" filter="url(#cpGlow)" />
+                    <circle cx="80" cy="22" r="1.2" fill="rgba(180,255,200,1)" />
                   </svg>
 
                   {/* Topographical features */}

@@ -173,24 +173,38 @@ export default function ProgressMap({ teams, competitionName, competition, activ
                   <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/50" />
 
                   {/* Weaving diagonal route path from bottom left to top right */}
-                  <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
-                    {/* Background stroke for better visibility */}
-                    <path d="M12,80 Q18,72 27,76 Q36,82 46,66 Q56,50 66,55 Q76,60 85,10" 
-                          stroke="rgba(0,0,0,0.6)" 
-                          strokeWidth="2" 
-                          fill="none" />
-                    {/* Main route path - thin with dashes */}
-                    <path d="M12,80 Q18,72 27,76 Q36,82 46,66 Q56,50 66,55 Q76,60 85,10" 
-                          stroke="rgba(255,255,255,0.95)" 
-                          strokeWidth="1" 
+                  <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" style={{ overflow: 'visible' }}>
+                    <defs>
+                      <filter id="dotGlow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur stdDeviation="1.2" result="blur" />
+                        <feMerge>
+                          <feMergeNode in="blur" />
+                          <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                      </filter>
+                    </defs>
+                    {/* Outermost wide glow halo */}
+                    <path d="M12,80 Q18,72 27,76 Q36,82 46,66 Q56,50 66,55 Q76,60 85,10"
+                          stroke="rgba(134,239,172,0.18)"
+                          strokeWidth="5"
                           fill="none"
-                          strokeDasharray="6,3" />
-                    {/* Inner glowing effect */}
-                    <path d="M12,80 Q18,72 27,76 Q36,82 46,66 Q56,50 66,55 Q76,60 85,10" 
-                          stroke="rgba(134,239,172,0.8)" 
-                          strokeWidth="0.5" 
+                          strokeLinecap="round"
+                          strokeDasharray="0.1,5.5" />
+                    {/* Mid glow ring */}
+                    <path d="M12,80 Q18,72 27,76 Q36,82 46,66 Q56,50 66,55 Q76,60 85,10"
+                          stroke="rgba(180,255,200,0.35)"
+                          strokeWidth="3"
                           fill="none"
-                          strokeDasharray="6,3" />
+                          strokeLinecap="round"
+                          strokeDasharray="0.1,5.5" />
+                    {/* Bright core dots */}
+                    <path d="M12,80 Q18,72 27,76 Q36,82 46,66 Q56,50 66,55 Q76,60 85,10"
+                          stroke="rgba(255,255,255,0.97)"
+                          strokeWidth="1.8"
+                          fill="none"
+                          strokeLinecap="round"
+                          strokeDasharray="0.1,5.5"
+                          filter="url(#dotGlow)" />
                   </svg>
 
                   {/* Topographical features */}

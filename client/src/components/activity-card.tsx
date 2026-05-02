@@ -323,7 +323,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
   return (
     <Card
       className="tile-card overflow-hidden rounded-2xl"
-      style={{ border: '2px solid hsla(97, 45%, 50%, 0.30)', background: 'transparent' }}
+      style={{ border: '1px solid hsla(97, 45%, 50%, 0.30)', background: 'transparent' }}
     >
       <CardContent className="p-0">
         {/* Header with profile info */}

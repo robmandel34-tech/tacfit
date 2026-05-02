@@ -211,7 +211,7 @@ export default function ProgressMap({ teams, competitionName, competition, activ
                     <circle cx="27" cy="76" r="1.8" fill="rgba(255,255,255,0.95)" filter="url(#lineGlow)" />
                     <circle cx="46" cy="66" r="1.8" fill="rgba(255,255,255,0.95)" filter="url(#lineGlow)" />
                     <circle cx="66" cy="55" r="1.8" fill="rgba(255,255,255,0.95)" filter="url(#lineGlow)" />
-                    <circle cx="80" cy="22" r="1.8" fill="rgba(255,255,255,0.95)" filter="url(#lineGlow)" />
+                    <circle cx="83" cy="22" r="1.8" fill="rgba(255,255,255,0.95)" filter="url(#lineGlow)" />
                   </svg>
 
                   {/* Topographical features */}

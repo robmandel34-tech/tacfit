@@ -176,8 +176,7 @@ async function completeCompetition(competitionId: number) {
       return;
     }
     
-    const isFreeCompetition = competition.paymentType === 'free';
-    console.log(`Competition type: ${competition.paymentType} ${isFreeCompetition ? '(no completion rewards)' : '(with completion rewards)'}`);
+    console.log(`Competition type: ${competition.paymentType}`);
     
     // Mark competition as completed
     await storage.updateCompetition(competitionId, {
@@ -197,23 +196,15 @@ async function completeCompetition(competitionId: number) {
       // Get team members
       const teamMembers = await storage.getTeamMembers(team.id);
       
+      // Determine points based on placement
       let captainPoints = 0;
       let memberPoints = 0;
-      
-      // Only award completion points for paid competitions
-      if (!isFreeCompetition) {
-        // Determine points based on placement
-        if (placement === 1) {
-          captainPoints = 1000;
-          memberPoints = 500;
-        } else if (placement === 2) {
-          captainPoints = 500;
-          memberPoints = 250;
-        } else {
-          // Still record participation for 3rd place and below
-          captainPoints = 0;
-          memberPoints = 0;
-        }
+      if (placement === 1) {
+        captainPoints = 1000;
+        memberPoints = 500;
+      } else if (placement === 2) {
+        captainPoints = 500;
+        memberPoints = 250;
       }
       
       // Award points to team members and record history
@@ -240,11 +231,7 @@ async function completeCompetition(competitionId: number) {
           completedAt: new Date()
         });
         
-        if (isFreeCompetition) {
-          console.log(`Recorded participation for ${user.username} (${member.role}) from team ${team.name} (${placement === 1 ? '1st' : placement === 2 ? '2nd' : placement === 3 ? '3rd' : `${placement}th`} place) - Free competition, no completion rewards`);
-        } else {
-          console.log(`${pointsToAward > 0 ? `Awarded ${pointsToAward} points to` : 'Recorded participation for'} ${user.username} (${member.role}) from team ${team.name} (${placement === 1 ? '1st' : placement === 2 ? '2nd' : placement === 3 ? '3rd' : `${placement}th`} place)`);
-        }
+        console.log(`${pointsToAward > 0 ? `Awarded ${pointsToAward} points to` : 'Recorded participation for'} ${user.username} (${member.role}) from team ${team.name} (${placement === 1 ? '1st' : placement === 2 ? '2nd' : placement === 3 ? '3rd' : `${placement}th`} place)`);
       }
     }
     

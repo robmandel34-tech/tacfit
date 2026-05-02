@@ -321,13 +321,16 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
   };
 
   return (
-    <Card className="tile-card overflow-hidden rounded-2xl">
+    <Card
+      className="tile-card overflow-hidden rounded-2xl"
+      style={{ border: '2px solid hsla(97, 45%, 50%, 0.30)' }}
+    >
       <CardContent className="p-0">
         {/* Header with profile info */}
         <div
           className="p-6 pb-4 relative overflow-hidden"
           style={{
-            background: 'hsla(97, 40%, 32%, 0.12)',
+            background: 'hsla(97, 45%, 38%, 0.06)',
             backdropFilter: 'blur(10px)',
             WebkitBackdropFilter: 'blur(10px)',
             borderBottom: '1px solid hsla(97, 40%, 50%, 0.18)',
@@ -516,7 +519,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
         <div
           className="px-6 py-3 relative overflow-hidden"
           style={{
-            background: 'hsla(97, 40%, 32%, 0.12)',
+            background: 'hsla(97, 45%, 38%, 0.06)',
             backdropFilter: 'blur(10px)',
             WebkitBackdropFilter: 'blur(10px)',
             borderTop: '1px solid hsla(97, 40%, 50%, 0.18)',

@@ -824,10 +824,10 @@ export default function Profile() {
                     
                     {/* Team and Role Info */}
                     <div className="flex flex-wrap gap-3">
-                      <Badge className="bg-[var(--bubble-bg)] text-[var(--bubble-accent)] border border-[var(--bubble-accent)]/40 px-3 py-1">
+                      <Badge className="bg-[var(--bubble-bg)] !text-[var(--bubble-accent)] border border-[var(--bubble-accent)]/40 px-3 py-1">
                         Team: {currentTeam.name}
                       </Badge>
-                      <Badge className="bg-[var(--bubble-bg)] text-[var(--bubble-accent)]/80 border border-[var(--bubble-accent)]/30 px-3 py-1">
+                      <Badge className="bg-[var(--bubble-bg)] !text-[var(--bubble-accent)] border border-[var(--bubble-accent)]/30 px-3 py-1">
                         Role: {currentTeamMembership[0]?.role}
                       </Badge>
                     </div>

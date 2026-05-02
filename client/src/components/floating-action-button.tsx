@@ -50,7 +50,7 @@ export default function FloatingActionButton() {
         disabled={!canSubmitActivity}
         className={`fixed bottom-28 right-6 w-14 h-14 rounded-full shadow-2xl z-50 border-2 border-white/50 transition-all duration-300 ${
           canSubmitActivity 
-            ? 'bg-military-green/90 hover:bg-military-green-light/90 hover:scale-110 backdrop-blur-sm cursor-pointer' 
+            ? 'bg-military-green/90 hover:bg-military-green hover:scale-110 hover:shadow-[0_0_20px_rgba(74,222,74,0.6)] backdrop-blur-sm cursor-pointer' 
             : 'bg-gray-500/60 cursor-not-allowed opacity-50'
         }`}
         size="icon"

@@ -23,6 +23,29 @@ import ActivityCard from "@/components/activity-card";
 
 import type { User, CompetitionHistory, Activity, TeamMember, Team, Competition, Friendship, MissionTask } from "@shared/schema";
 
+const CARD_THEMES: Record<string, { gradient: string; svgBase64: string }> = {
+  green: {
+    gradient: 'radial-gradient(ellipse at 65% 48%, hsl(97, 32%, 40%) 0%, hsl(97, 27%, 30%) 100%)',
+    svgBase64: 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzNDAgMzAwIj48cGF0aCBkPSJNMjEwIDE4IEwxNDAgNDggTDE0MCAxNTIgUTE0MCAyMTAgMjEwIDIzNSBRMjgwIDIxMCAyODAgMTUyIEwyODAgNDggWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIzIiBvcGFjaXR5PSIwLjIwIi8+PHBhdGggZD0iTTE1NSA1IEw4MiAzOCBMODIgMTUwIFE4MiAyMTIgMTU1IDIzOCBRMjI4IDIxMiAyMjggMTUwIEwyMjggMzggWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIzIiBvcGFjaXR5PSIwLjEzIi8+PHBhdGggZD0iTTI3OCAxMiBMMjA1IDQ1IEwyMDUgMTU4IFEyMDUgMjIwIDI3OCAyNDYgUTM1MSAyMjAgMzUxIDE1OCBMMzUxIDQ1IFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMyIgb3BhY2l0eT0iMC4wOCIvPjwvc3ZnPg==',
+  },
+  terrain: {
+    gradient: 'radial-gradient(ellipse at 60% 50%, hsl(80, 12%, 22%) 0%, hsl(80, 8%, 13%) 100%)',
+    svgBase64: 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgMzAwIj48ZWxsaXBzZSBjeD0iMjkwIiBjeT0iMTUwIiByeD0iMTg1IiByeT0iOTUiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMS41IiBvcGFjaXR5PSIwLjE4Ii8+PGVsbGlwc2UgY3g9IjI5MCIgY3k9IjE1MCIgcng9IjE0OCIgcnk9IjcyIiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEuNSIgb3BhY2l0eT0iMC4xMyIvPjxlbGxpcHNlIGN4PSIyOTAiIGN5PSIxNTAiIHJ4PSIxMTAiIHJ5PSI1MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxLjUiIG9wYWNpdHk9IjAuMTAiLz48ZWxsaXBzZSBjeD0iMjkwIiBjeT0iMTUwIiByeD0iNzIiIHJ5PSIzMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxLjUiIG9wYWNpdHk9IjAuMDciLz48ZWxsaXBzZSBjeD0iMjkwIiBjeT0iMTUwIiByeD0iMzYiIHJ5PSIxNiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxLjUiIG9wYWNpdHk9IjAuMDUiLz48L3N2Zz4=',
+  },
+  carbon: {
+    gradient: 'radial-gradient(ellipse at 60% 50%, hsl(0, 0%, 14%) 0%, hsl(0, 0%, 7%) 100%)',
+    svgBase64: 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgMzAwIj48bGluZSB4MT0iMCIgeTE9IjAiIHgyPSI0MDAiIHkyPSIzMDAiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC4xMCIvPjxsaW5lIHgxPSI4MCIgeTE9IjAiIHgyPSI0MDAiIHkyPSIyNDAiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC4wOCIvPjxsaW5lIHgxPSIxNjAiIHkxPSIwIiB4Mj0iNDAwIiB5Mj0iMTgwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuMDYiLz48bGluZSB4MT0iMjQwIiB5MT0iMCIgeDI9IjQwMCIgeTI9IjEyMCIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxIiBvcGFjaXR5PSIwLjA2Ii8+PGxpbmUgeDE9IjMyMCIgeTE9IjAiIHgyPSI0MDAiIHkyPSI2MCIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxIiBvcGFjaXR5PSIwLjA1Ii8+PGxpbmUgeDE9IjQwMCIgeTE9IjAiIHgyPSI0MDAiIHkyPSIwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuMDQiLz48bGluZSB4MT0iMCIgeTE9IjYwIiB4Mj0iMzIwIiB5Mj0iMzAwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuMDgiLz48bGluZSB4MT0iMCIgeTE9IjEyMCIgeDI9IjI0MCIgeTI9IjMwMCIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxIiBvcGFjaXR5PSIwLjA2Ii8+PGxpbmUgeDE9IjAiIHkxPSIxODAiIHgyPSIxNjAiIHkyPSIzMDAiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC4wNSIvPjxsaW5lIHgxPSIwIiB5MT0iMzAwIiB4Mj0iNDAwIiB5Mj0iMCIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxIiBvcGFjaXR5PSIwLjEwIi8+PGxpbmUgeDE9IjgwIiB5MT0iMzAwIiB4Mj0iNDAwIiB5Mj0iNjAiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC4wOCIvPjxsaW5lIHgxPSIxNjAiIHkxPSIzMDAiIHgyPSI0MDAiIHkyPSIxMjAiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC4wNiIvPjxsaW5lIHgxPSIwIiB5MT0iMjQwIiB4Mj0iMzIwIiB5Mj0iMCIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxIiBvcGFjaXR5PSIwLjA2Ii8+PGxpbmUgeDE9IjAiIHkxPSIxODAiIHgyPSIyNDAiIHkyPSIwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuMDUiLz48bGluZSB4MT0iMCIgeTE9IjEyMCIgeDI9IjE2MCIgeTI9IjAiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC4wNCIvPjwvc3ZnPg==',
+  },
+  midnight: {
+    gradient: 'radial-gradient(ellipse at 60% 50%, hsl(225, 35%, 20%) 0%, hsl(225, 30%, 11%) 100%)',
+    svgBase64: 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MjAgMzAwIj48cG9seWdvbiBwb2ludHM9IjcwLDMwIDEwNSw1MiAxMDUsOTcgNzAsMTE4IDM1LDk3IDM1LDUyIiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEuNSIgb3BhY2l0eT0iMC4xOCIvPjxwb2x5Z29uIHBvaW50cz0iMTc1LDMwIDIxMCw1MiAyMTAsOTcgMTc1LDExOCAxNDAsOTcgMTQwLDUyIiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEuNSIgb3BhY2l0eT0iMC4xMyIvPjxwb2x5Z29uIHBvaW50cz0iMjgwLDMwIDMxNSw1MiAzMTUsOTcgMjgwLDExOCAyNDUsOTcgMjQ1LDUyIiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEuNSIgb3BhY2l0eT0iMC4xMCIvPjxwb2x5Z29uIHBvaW50cz0iMTIyLDExOCAxNTcsMTQwIDE1NywxODUgMTIyLDIwNyA4NywxODUgODcsMTQwIiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEuNSIgb3BhY2l0eT0iMC4xMyIvPjxwb2x5Z29uIHBvaW50cz0iMjI3LDExOCAyNjIsMTQwIDI2MiwxODUgMjI3LDIwNyAxOTIsMTg1IDE5MiwxNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMS41IiBvcGFjaXR5PSIwLjEwIi8+PHBvbHlnb24gcG9pbnRzPSIzMzIsMTE4IDM2NywxNDAgMzY3LDE4NSAzMzIsMjA3IDI5NywxODUgMjk3LDE0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxLjUiIG9wYWNpdHk9IjAuMDgiLz48cG9seWdvbiBwb2ludHM9IjE3NSwyMDcgMjEwLDIyOCAyMTAsMjc0IDE3NSwyOTUgMTQwLDI3NCAxNDAsMjI4IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEuNSIgb3BhY2l0eT0iMC4wOCIvPjxwb2x5Z29uIHBvaW50cz0iMjgwLDIwNyAzMTUsMjI4IDMxNSwyNzQgMjgwLDI5NSAyNDUsMjc0IDI0NSwyMjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMS41IiBvcGFjaXR5PSIwLjA2Ii8+PC9zdmc+',
+  },
+  iron: {
+    gradient: 'radial-gradient(ellipse at 60% 50%, hsl(200, 10%, 20%) 0%, hsl(200, 8%, 10%) 100%)',
+    svgBase64: 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgMzAwIj48Y2lyY2xlIGN4PSIzMDAiIGN5PSIxNTAiIHI9IjExMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxLjUiIG9wYWNpdHk9IjAuMTYiLz48Y2lyY2xlIGN4PSIzMDAiIGN5PSIxNTAiIHI9Ijc1IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEuNSIgb3BhY2l0eT0iMC4xMiIvPjxjaXJjbGUgY3g9IjMwMCIgY3k9IjE1MCIgcj0iNDIiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMS41IiBvcGFjaXR5PSIwLjA5Ii8+PGNpcmNsZSBjeD0iMzAwIiBjeT0iMTUwIiByPSIxNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxLjUiIG9wYWNpdHk9IjAuMDciLz48bGluZSB4MT0iMzAwIiB5MT0iMjUiIHgyPSIzMDAiIHkyPSI2NSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxLjUiIG9wYWNpdHk9IjAuMTYiLz48bGluZSB4MT0iMzAwIiB5MT0iMjM1IiB4Mj0iMzAwIiB5Mj0iMjc1IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEuNSIgb3BhY2l0eT0iMC4xNiIvPjxsaW5lIHgxPSIxNzUiIHkxPSIxNTAiIHgyPSIyMTUiIHkyPSIxNTAiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMS41IiBvcGFjaXR5PSIwLjE2Ii8+PGxpbmUgeDE9IjM4NSIgeTE9IjE1MCIgeDI9IjQyNSIgeTI9IjE1MCIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxLjUiIG9wYWNpdHk9IjAuMTIiLz48bGluZSB4MT0iMzAwIiB5MT0iMTAwIiB4Mj0iMzAwIiB5Mj0iMTA4IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuMTAiLz48bGluZSB4MT0iMzAwIiB5MT0iMTkyIiB4Mj0iMzAwIiB5Mj0iMjAwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuMTAiLz48bGluZSB4MT0iMjUyIiB5MT0iMTUwIiB4Mj0iMjYwIiB5Mj0iMTUwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuMTAiLz48bGluZSB4MT0iMzQwIiB5MT0iMTUwIiB4Mj0iMzQ4IiB5Mj0iMTUwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuMTAiLz48L3N2Zz4=',
+  },
+};
+
 export default function Profile() {
   const { user, isLoading } = useAuthRequired();
   const { updateUser } = useAuth();
@@ -270,7 +293,20 @@ export default function Profile() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Profile Info */}
           <div className="lg:col-span-1">
-            <Card className={`card-hero-${['green','terrain','carbon','midnight','iron'].includes((displayUser as any).profileBackground) ? (displayUser as any).profileBackground : 'green'} overflow-hidden rounded-2xl shadow-xl`}>
+            <Card
+              className="relative overflow-hidden rounded-2xl border-0"
+              style={{
+                background: (CARD_THEMES[(displayUser as any).profileBackground] ?? CARD_THEMES.green).gradient,
+                boxShadow: '0 6px 24px rgba(0,0,0,0.35)',
+              }}
+            >
+              {/* Theme watermark */}
+              <div aria-hidden="true" style={{
+                position: 'absolute', right: '-8%', top: '50%', transform: 'translateY(-50%)',
+                width: '90%', height: '140%', pointerEvents: 'none', zIndex: 0,
+                backgroundImage: `url("data:image/svg+xml;base64,${(CARD_THEMES[(displayUser as any).profileBackground] ?? CARD_THEMES.green).svgBase64}")`,
+                backgroundRepeat: 'no-repeat', backgroundSize: 'contain', backgroundPosition: 'center right',
+              }} />
               {/* Cover Photo Section */}
               <div className="relative h-48">
                 {displayUser.coverPhoto ? (

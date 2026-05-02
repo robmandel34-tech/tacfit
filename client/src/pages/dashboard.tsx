@@ -191,7 +191,7 @@ export default function Dashboard() {
                 <Activity className="h-6 w-6 text-white" />
                 <CardTitle className="text-white text-2xl">Intel Feed</CardTitle>
               </div>
-              <div className="text-gray-200 text-sm">
+              <div className="text-gray-200 text-sm ml-8">
                 Live updates from all competitions
               </div>
             </div>

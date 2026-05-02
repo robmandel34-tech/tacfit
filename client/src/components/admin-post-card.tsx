@@ -105,18 +105,9 @@ export default function AdminPostCard({ post }: AdminPostCardProps) {
                 <Badge variant="outline" className="text-[var(--bubble-accent)] border-[var(--bubble-accent)]/40 bg-[var(--bubble-bg)]">
                   {formatType(post.type)}
                 </Badge>
-                <span className="text-gray-400 text-sm">
-                  {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
-                </span>
               </div>
             </div>
           </div>
-          {post.expiresAt && (
-            <div className="flex items-center space-x-1 text-gray-400 text-sm">
-              <Clock className="h-3 w-3" />
-              <span>Expires {formatDistanceToNow(new Date(post.expiresAt), { addSuffix: true })}</span>
-            </div>
-          )}
         </div>
       </CardHeader>
       <CardContent>

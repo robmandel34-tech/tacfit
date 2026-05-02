@@ -25,9 +25,9 @@
   --radius: 0.125rem;
   
   /* Professional Military Theme Colors */
-  --military-green: hsl(97, 45%, 45%);
-  --military-green-light: hsl(97, 45%, 55%);
-  --military-green-dark: hsl(97, 45%, 35%);
+  --military-green: hsl(118, 72%, 54%);
+  --military-green-light: hsl(118, 72%, 63%);
+  --military-green-dark: hsl(118, 72%, 43%);
   --tactical-gray: hsl(220, 18%, 5%);
   --tactical-gray-light: hsl(220, 18%, 16%);
   --tactical-gray-lighter: hsl(220, 18%, 22%);
@@ -132,7 +132,7 @@
   }
 
   .card-hero-green {
-    background: radial-gradient(ellipse at 65% 48%, hsl(97, 32%, 40%) 0%, hsl(97, 27%, 30%) 100%) !important;
+    background: radial-gradient(ellipse at 65% 48%, hsl(118, 50%, 32%) 0%, hsl(118, 45%, 22%) 100%) !important;
     border: none !important;
     border-radius: 0.875rem !important;
     overflow: hidden;
@@ -270,7 +270,7 @@
   /* Section-level green band — same gradient + shield as card-hero-green
      but designed to sit inside a Card as the header or footer strip */
   .card-band-green {
-    background: radial-gradient(ellipse at 70% 50%, hsl(97, 32%, 38%) 0%, hsl(97, 27%, 28%) 100%) !important;
+    background: radial-gradient(ellipse at 70% 50%, hsl(118, 50%, 30%) 0%, hsl(118, 45%, 20%) 100%) !important;
     position: relative;
     overflow: hidden;
   }

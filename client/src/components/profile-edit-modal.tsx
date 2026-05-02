@@ -5,11 +5,21 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Camera, Edit, Save, X } from 'lucide-react';
+import { Camera, Edit, Save, X, Check } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, API_BASE, uploadUrl } from '@/lib/queryClient';
 import type { User } from '@shared/schema';
+
+const BACKGROUNDS = [
+  { key: 'green',    label: 'Shields',   desc: 'Tactical green'  },
+  { key: 'terrain',  label: 'Terrain',   desc: 'Contour map'     },
+  { key: 'carbon',   label: 'Carbon',    desc: 'Blackout grid'   },
+  { key: 'midnight', label: 'Midnight',  desc: 'Hex lattice'     },
+  { key: 'iron',     label: 'Iron',      desc: 'Target reticle'  },
+] as const;
+
+type BackgroundKey = typeof BACKGROUNDS[number]['key'];
 
 interface ProfileEditModalProps {
   user: User;
@@ -25,6 +35,9 @@ export default function ProfileEditModal({ user, isOpen, onClose }: ProfileEditM
   // Form state
   const [username, setUsername] = useState(user.username);
   const [motto, setMotto] = useState((user as any)?.motto || '');
+  const [profileBackground, setProfileBackground] = useState<BackgroundKey>(
+    ((user as any)?.profileBackground as BackgroundKey) || 'green'
+  );
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isUploadingCover, setIsUploadingCover] = useState(false);
   
@@ -176,6 +189,20 @@ export default function ProfileEditModal({ user, isOpen, onClose }: ProfileEditM
     },
   });
 
+  // Update profile background mutation
+  const updateBackgroundMutation = useMutation({
+    mutationFn: async (bg: BackgroundKey) => {
+      return apiRequest("PUT", `/api/users/${user.id}`, { profileBackground: bg });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/users", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+    },
+    onError: () => {
+      toast({ title: "Update Failed", description: "Failed to save background.", variant: "destructive" });
+    },
+  });
+
   // File upload handlers
   const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -225,6 +252,12 @@ export default function ProfileEditModal({ user, isOpen, onClose }: ProfileEditM
       if (motto.trim() !== ((user as any)?.motto || '')) {
         updates.push(updateMottoMutation.mutateAsync(motto.trim()));
       }
+
+      // Update background if changed
+      const originalBg = ((user as any)?.profileBackground as BackgroundKey) || 'green';
+      if (profileBackground !== originalBg) {
+        updates.push(updateBackgroundMutation.mutateAsync(profileBackground));
+      }
       
       if (updates.length > 0) {
         await Promise.all(updates);
@@ -245,6 +278,7 @@ export default function ProfileEditModal({ user, isOpen, onClose }: ProfileEditM
     // Reset form to original values
     setUsername(user.username);
     setMotto((user as any)?.motto || '');
+    setProfileBackground(((user as any)?.profileBackground as BackgroundKey) || 'green');
     setAvatarFile(null);
     setCoverFile(null);
     setAvatarPreview(null);
@@ -252,8 +286,9 @@ export default function ProfileEditModal({ user, isOpen, onClose }: ProfileEditM
     onClose();
   };
 
-  const isLoading = updateUsername.isPending || updateMottoMutation.isPending || isUploadingAvatar || isUploadingCover;
-  const hasChanges = username.trim() !== user.username || motto.trim() !== ((user as any)?.motto || '') || avatarFile || coverFile;
+  const originalBg = ((user as any)?.profileBackground as BackgroundKey) || 'green';
+  const isLoading = updateUsername.isPending || updateMottoMutation.isPending || updateBackgroundMutation.isPending || isUploadingAvatar || isUploadingCover;
+  const hasChanges = username.trim() !== user.username || motto.trim() !== ((user as any)?.motto || '') || profileBackground !== originalBg || avatarFile || coverFile;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -380,6 +415,37 @@ export default function ProfileEditModal({ user, isOpen, onClose }: ProfileEditM
               maxLength={100}
               rows={3}
             />
+          </div>
+
+          {/* Profile Card Background */}
+          <div className="space-y-3">
+            <Label className="text-sm font-medium text-gray-300">Profile Card Background</Label>
+            <div className="grid grid-cols-5 gap-2">
+              {BACKGROUNDS.map((bg) => {
+                const isSelected = profileBackground === bg.key;
+                return (
+                  <button
+                    key={bg.key}
+                    type="button"
+                    onClick={() => setProfileBackground(bg.key)}
+                    className={`relative rounded-lg overflow-hidden transition-all ${
+                      isSelected ? 'ring-2 ring-white ring-offset-1 ring-offset-transparent scale-105' : 'opacity-70 hover:opacity-100'
+                    }`}
+                    title={`${bg.label} — ${bg.desc}`}
+                  >
+                    <div className={`card-hero-${bg.key} h-14 w-full`} />
+                    <div className="absolute inset-0 flex flex-col items-center justify-end pb-1">
+                      {isSelected && (
+                        <div className="absolute top-1 right-1 bg-white rounded-full p-0.5">
+                          <Check className="w-2.5 h-2.5 text-black" />
+                        </div>
+                      )}
+                      <span className="text-white text-[9px] font-semibold drop-shadow-md leading-tight">{bg.label}</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Action Buttons */}

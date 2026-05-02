@@ -38,6 +38,9 @@ export const users = pgTable("users", {
   profilePublic: boolean("profile_public").default(true),
   pushNotificationsEnabled: boolean("push_notifications_enabled").default(true),
 
+  // Profile card background theme
+  profileBackground: text("profile_background").default("green"),
+
   createdAt: timestamp("created_at").defaultNow(),
 });
 

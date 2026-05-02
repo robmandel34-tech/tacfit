@@ -327,7 +327,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
         <div
           className="p-6 pb-4 relative overflow-hidden"
           style={{
-            background: 'hsla(97, 40%, 28%, 0.22)',
+            background: 'hsla(97, 40%, 32%, 0.12)',
             backdropFilter: 'blur(10px)',
             WebkitBackdropFilter: 'blur(10px)',
             borderBottom: '1px solid hsla(97, 40%, 50%, 0.18)',
@@ -516,7 +516,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
         <div
           className="px-6 py-3 relative overflow-hidden"
           style={{
-            background: 'hsla(97, 40%, 28%, 0.22)',
+            background: 'hsla(97, 40%, 32%, 0.12)',
             backdropFilter: 'blur(10px)',
             WebkitBackdropFilter: 'blur(10px)',
             borderTop: '1px solid hsla(97, 40%, 50%, 0.18)',

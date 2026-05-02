@@ -12,11 +12,11 @@ import { apiRequest, API_BASE, uploadUrl } from '@/lib/queryClient';
 import type { User } from '@shared/schema';
 
 const BACKGROUNDS = [
-  { key: 'green',    label: 'Shields',   desc: 'Tactical green'  },
-  { key: 'terrain',  label: 'Terrain',   desc: 'Contour map'     },
-  { key: 'carbon',   label: 'Carbon',    desc: 'Blackout grid'   },
-  { key: 'midnight', label: 'Midnight',  desc: 'Hex lattice'     },
-  { key: 'iron',     label: 'Iron',      desc: 'Target reticle'  },
+  { key: 'green',    label: 'Shields',  gradient: 'radial-gradient(ellipse at 65% 48%, hsl(97, 32%, 40%) 0%, hsl(97, 27%, 30%) 100%)' },
+  { key: 'terrain',  label: 'Terrain',  gradient: 'radial-gradient(ellipse at 60% 50%, hsl(80, 12%, 22%) 0%, hsl(80, 8%, 13%) 100%)'  },
+  { key: 'carbon',   label: 'Carbon',   gradient: 'radial-gradient(ellipse at 60% 50%, hsl(0, 0%, 14%) 0%, hsl(0, 0%, 7%) 100%)'      },
+  { key: 'midnight', label: 'Midnight', gradient: 'radial-gradient(ellipse at 60% 50%, hsl(225, 35%, 20%) 0%, hsl(225, 30%, 11%) 100%)'},
+  { key: 'iron',     label: 'Iron',     gradient: 'radial-gradient(ellipse at 60% 50%, hsl(200, 10%, 20%) 0%, hsl(200, 8%, 10%) 100%)' },
 ] as const;
 
 type BackgroundKey = typeof BACKGROUNDS[number]['key'];
@@ -35,8 +35,9 @@ export default function ProfileEditModal({ user, isOpen, onClose }: ProfileEditM
   // Form state
   const [username, setUsername] = useState(user.username);
   const [motto, setMotto] = useState((user as any)?.motto || '');
+  const validKeys = BACKGROUNDS.map(b => b.key) as string[];
   const [profileBackground, setProfileBackground] = useState<BackgroundKey>(
-    ((user as any)?.profileBackground as BackgroundKey) || 'green'
+    validKeys.includes((user as any)?.profileBackground) ? ((user as any)?.profileBackground as BackgroundKey) : 'green'
   );
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isUploadingCover, setIsUploadingCover] = useState(false);
@@ -254,8 +255,9 @@ export default function ProfileEditModal({ user, isOpen, onClose }: ProfileEditM
       }
 
       // Update background if changed
-      const originalBg = ((user as any)?.profileBackground as BackgroundKey) || 'green';
-      if (profileBackground !== originalBg) {
+      const savedBg: BackgroundKey = validKeys.includes((user as any)?.profileBackground)
+        ? ((user as any)?.profileBackground as BackgroundKey) : 'green';
+      if (profileBackground !== savedBg) {
         updates.push(updateBackgroundMutation.mutateAsync(profileBackground));
       }
       
@@ -278,7 +280,9 @@ export default function ProfileEditModal({ user, isOpen, onClose }: ProfileEditM
     // Reset form to original values
     setUsername(user.username);
     setMotto((user as any)?.motto || '');
-    setProfileBackground(((user as any)?.profileBackground as BackgroundKey) || 'green');
+    setProfileBackground(
+      validKeys.includes((user as any)?.profileBackground) ? ((user as any)?.profileBackground as BackgroundKey) : 'green'
+    );
     setAvatarFile(null);
     setCoverFile(null);
     setAvatarPreview(null);
@@ -286,9 +290,10 @@ export default function ProfileEditModal({ user, isOpen, onClose }: ProfileEditM
     onClose();
   };
 
-  const originalBg = ((user as any)?.profileBackground as BackgroundKey) || 'green';
+  const originalBg: BackgroundKey = validKeys.includes((user as any)?.profileBackground)
+    ? ((user as any)?.profileBackground as BackgroundKey) : 'green';
   const isLoading = updateUsername.isPending || updateMottoMutation.isPending || updateBackgroundMutation.isPending || isUploadingAvatar || isUploadingCover;
-  const hasChanges = username.trim() !== user.username || motto.trim() !== ((user as any)?.motto || '') || profileBackground !== originalBg || avatarFile || coverFile;
+  const hasChanges = username.trim() !== user.username || motto.trim() !== ((user as any)?.motto || '') || profileBackground !== originalBg || !!avatarFile || !!coverFile;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -429,11 +434,14 @@ export default function ProfileEditModal({ user, isOpen, onClose }: ProfileEditM
                     type="button"
                     onClick={() => setProfileBackground(bg.key)}
                     className={`relative rounded-lg overflow-hidden transition-all ${
-                      isSelected ? 'ring-2 ring-white ring-offset-1 ring-offset-transparent scale-105' : 'opacity-70 hover:opacity-100'
+                      isSelected ? 'ring-2 ring-white scale-105' : 'opacity-60 hover:opacity-90'
                     }`}
-                    title={`${bg.label} — ${bg.desc}`}
+                    title={bg.label}
                   >
-                    <div className={`card-hero-${bg.key} h-14 w-full`} />
+                    <div
+                      className="h-14 w-full"
+                      style={{ background: bg.gradient }}
+                    />
                     <div className="absolute inset-0 flex flex-col items-center justify-end pb-1">
                       {isSelected && (
                         <div className="absolute top-1 right-1 bg-white rounded-full p-0.5">

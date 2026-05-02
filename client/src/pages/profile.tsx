@@ -270,7 +270,7 @@ export default function Profile() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Profile Info */}
           <div className="lg:col-span-1">
-            <Card className={`card-hero-${(displayUser as any).profileBackground || 'green'} overflow-hidden rounded-2xl shadow-xl`}>
+            <Card className={`card-hero-${['green','terrain','carbon','midnight','iron'].includes((displayUser as any).profileBackground) ? (displayUser as any).profileBackground : 'green'} overflow-hidden rounded-2xl shadow-xl`}>
               {/* Cover Photo Section */}
               <div className="relative h-48">
                 {displayUser.coverPhoto ? (

@@ -1624,10 +1624,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Handle file upload
       const fileExtension = path.extname(req.file.originalname);
       const fileName = `team_${teamId}_${Date.now()}${fileExtension}`;
-      const filePath = path.join('uploads', fileName);
-      
-      fs.renameSync(req.file.path, filePath);
-      const pictureUrl = `/uploads/${fileName}`;
+      const objStorage = new ObjectStorageService();
+      const pictureUrl = await objStorage.uploadFile(req.file.path, fileName, req.file.mimetype);
       
       // Update team with new photo URL
       const updatedTeam = await storage.updateTeam(teamId, { pictureUrl });
@@ -2174,23 +2172,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Handle video file (primary evidence) first
       let evidenceUrl = '';
       let thumbnailUrl = '';
+      const actObjStorage = new ObjectStorageService();
       if (videoFiles.length > 0) {
         const videoFile = videoFiles[0];
         const originalExtension = path.extname(videoFile.originalname).toLowerCase() || '.mp4';
         const timestamp = Date.now();
         const fileName = `${timestamp}${originalExtension}`;
-        const filePath = path.join('uploads', fileName);
 
-        fs.renameSync(videoFile.path, filePath);
+        evidenceUrl = await actObjStorage.uploadFile(videoFile.path, fileName, videoFile.mimetype);
 
         if (videoFile.mimetype.startsWith('video/') || ['mov', 'mp4', 'webm', 'avi', 'hevc', 'm4v'].includes(originalExtension.replace('.', ''))) {
           evidenceType = 'video';
-          evidenceUrl = `/uploads/${fileName}`;
-          console.log(`Video saved: ${fileName} (${videoFile.mimetype}, ${videoFile.size} bytes)`);
+          console.log(`Video saved to object storage: ${fileName} (${videoFile.mimetype}, ${videoFile.size} bytes)`);
         } else {
-          // Fallback: treat as photo
           evidenceType = 'photo';
-          evidenceUrl = `/uploads/${fileName}`;
         }
       }
       
@@ -2201,10 +2196,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const imageFile = imageFiles[i];
           const fileExtension = path.extname(imageFile.originalname);
           const fileName = `${Date.now()}_img${i}${fileExtension}`;
-          const filePath = path.join('uploads', fileName);
-          
-          fs.renameSync(imageFile.path, filePath);
-          imageUrls.push(`/uploads/${fileName}`);
+          const url = await actObjStorage.uploadFile(imageFile.path, fileName, imageFile.mimetype);
+          imageUrls.push(url);
         }
       }
       
@@ -2963,14 +2956,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(400).json({ message: "Only image files are allowed" });
         }
         
-        // Move file to permanent location with proper extension
+        // Upload to object storage
         const fileExtension = path.extname(file.originalname);
         const fileName = `avatar_${userId}_${Date.now()}${fileExtension}`;
-        const filePath = path.join('uploads', fileName);
+        const avatarObjStorage = new ObjectStorageService();
+        const avatarUrl = await avatarObjStorage.uploadFile(file.path, fileName, file.mimetype);
         
-        fs.renameSync(file.path, filePath);
-        
-        // Update user with avatar URL
+        // Update user with avatar URL (store bare filename for backwards compat)
         const user = await storage.updateUser(userId, {
           avatar: fileName
         });
@@ -3013,12 +3005,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(400).json({ message: "Only image files are allowed" });
         }
         
-        // Move file to permanent location with proper extension
+        // Upload to object storage
         const fileExtension = path.extname(file.originalname);
         const fileName = `cover_${userId}_${Date.now()}${fileExtension}`;
-        const filePath = path.join('uploads', fileName);
-        
-        fs.renameSync(file.path, filePath);
+        const coverObjStorage = new ObjectStorageService();
+        await coverObjStorage.uploadFile(file.path, fileName, file.mimetype);
         
         // Update user with cover photo URL
         const user = await storage.updateUser(userId, {

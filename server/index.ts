@@ -3,6 +3,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { seedDatabase } from "./seed-data";
+import { ObjectStorageService } from "./objectStorage";
 import path from "path";
 
 const app = express();
@@ -33,77 +34,29 @@ app.use((req, res, next) => {
   }
 });
 
-// Enhanced static file serving for both images and videos
-app.use('/uploads', (req, res, next) => {
-  const filePath = path.join(process.cwd(), 'uploads', req.path);
-  const ext = path.extname(req.path).toLowerCase();
-  
-  // Set proper headers for all media files
+// Serve uploaded media — object storage first, local disk as fallback (dev)
+app.use('/uploads', async (req, res, next) => {
+  const fileName = req.path.replace(/^\//, '');
+  if (!fileName) return next();
+
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
   res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-  
-  // Handle video files
-  if (['.mov', '.mp4', '.webm', '.avi'].includes(ext)) {
-    res.setHeader('Accept-Ranges', 'bytes');
-    res.setHeader('Cache-Control', 'public, max-age=31536000'); // 1 year cache
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    
-    // Set proper MIME types for videos
-    switch (ext) {
-      case '.mov':
-        res.setHeader('Content-Type', 'video/quicktime');
-        break;
-      case '.mp4':
-        res.setHeader('Content-Type', 'video/mp4');
-        break;
-      case '.webm':
-        res.setHeader('Content-Type', 'video/webm');
-        break;
-      case '.avi':
-        res.setHeader('Content-Type', 'video/x-msvideo');
-        break;
-    }
+
+  // Try object storage first (used in production)
+  if (process.env.PRIVATE_OBJECT_DIR) {
+    try {
+      const svc = new ObjectStorageService();
+      const file = await svc.getUploadedFile(fileName);
+      if (file) {
+        return svc.downloadObject(file, res, 86400);
+      }
+    } catch (_) {}
   }
-  
-  // Handle image files
-  if (['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'].includes(ext)) {
-    res.setHeader('Cache-Control', 'public, max-age=86400'); // 1 day cache for images
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    
-    // Set proper MIME types for images
-    switch (ext) {
-      case '.jpg':
-      case '.jpeg':
-        res.setHeader('Content-Type', 'image/jpeg');
-        break;
-      case '.png':
-        res.setHeader('Content-Type', 'image/png');
-        break;
-      case '.gif':
-        res.setHeader('Content-Type', 'image/gif');
-        break;
-      case '.webp':
-        res.setHeader('Content-Type', 'image/webp');
-        break;
-      case '.svg':
-        res.setHeader('Content-Type', 'image/svg+xml');
-        break;
-    }
-  }
-  
+
+  // Fallback: serve from local uploads/ directory (dev only)
   next();
-}, express.static('uploads', {
-  // Additional static file options for better media serving
-  setHeaders: (res, path, stat) => {
-    const ext = path.split('.').pop()?.toLowerCase();
-    if (['mp4', 'webm', 'mov', 'avi'].includes(ext || '')) {
-      res.setHeader('Accept-Ranges', 'bytes');
-    }
-    // Set ETag for better caching
-    res.setHeader('ETag', `"${stat.size}-${stat.mtime.getTime()}"`);
-  }
-}));
+}, express.static('uploads'));
 
 
 app.use((req, res, next) => {

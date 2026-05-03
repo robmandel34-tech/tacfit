@@ -1,6 +1,7 @@
 import { Storage, File } from "@google-cloud/storage";
 import { Response } from "express";
 import { randomUUID } from "crypto";
+import fs from "fs";
 import {
   ObjectAclPolicy,
   ObjectPermission,
@@ -128,6 +129,29 @@ export class ObjectStorageService {
         res.status(500).json({ error: "Error downloading file" });
       }
     }
+  }
+
+  // Upload a local file to object storage and return the /uploads/<fileName> path.
+  async uploadFile(localPath: string, fileName: string, contentType: string): Promise<string> {
+    const privateObjectDir = this.getPrivateObjectDir();
+    const fullPath = `${privateObjectDir}/uploads/${fileName}`;
+    const { bucketName, objectName } = parseObjectPath(fullPath);
+    const bucket = objectStorageClient.bucket(bucketName);
+    const buffer = fs.readFileSync(localPath);
+    await bucket.file(objectName).save(buffer, { contentType, metadata: { contentType } });
+    try { fs.unlinkSync(localPath); } catch (_) {}
+    return `/uploads/${fileName}`;
+  }
+
+  // Retrieve a previously uploaded file by its bare filename.
+  async getUploadedFile(fileName: string): Promise<File | null> {
+    const privateObjectDir = this.getPrivateObjectDir();
+    const fullPath = `${privateObjectDir}/uploads/${fileName}`;
+    const { bucketName, objectName } = parseObjectPath(fullPath);
+    const bucket = objectStorageClient.bucket(bucketName);
+    const file = bucket.file(objectName);
+    const [exists] = await file.exists();
+    return exists ? file : null;
   }
 
   // Gets the upload URL for an object entity.

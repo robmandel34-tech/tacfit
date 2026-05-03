@@ -50,6 +50,38 @@ interface ActivityCardProps {
   onDelete?: () => void; // Callback to trigger parent refresh after deletion
 }
 
+const DESCRIPTION_LIMIT = 120;
+
+function DescriptionBlock({ quantity, measurement, description }: {
+  quantity?: string | number | null;
+  measurement?: string;
+  description?: string | null;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const fullText = description || '';
+  const prefix = quantity ? `${quantity}${measurement ? ' ' + measurement : ''}${fullText ? ' - ' : ''}` : '';
+  const isLong = fullText.length > DESCRIPTION_LIMIT;
+  const displayText = isLong && !expanded ? fullText.slice(0, DESCRIPTION_LIMIT).trimEnd() + '…' : fullText;
+
+  return (
+    <p className="text-gray-300 text-sm">
+      {quantity && (
+        <span className="font-medium text-white">{quantity} {measurement}</span>
+      )}
+      {quantity && fullText && ' - '}
+      {displayText}
+      {isLong && (
+        <button
+          onClick={(e) => { e.stopPropagation(); setExpanded(v => !v); }}
+          className="ml-1 text-military-green font-medium hover:underline focus:outline-none"
+        >
+          {expanded ? 'see less' : 'see more'}
+        </button>
+      )}
+    </p>
+  );
+}
+
 export default function ActivityCard({ activity, onLike, onFlag, showFlagButton = true, onDelete }: ActivityCardProps) {
   const [, navigate] = useLocation();
   const { user } = useAuth();
@@ -440,15 +472,11 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
                   }
                 </div>
               ) : (
-                <p className="text-gray-300 text-sm">
-                  {activity.quantity && (
-                    <span className="font-medium text-white">
-                      {activity.quantity} {getActivityMeasurement(activity.type)}
-                    </span>
-                  )}
-                  {activity.quantity && activity.description && ' - '}
-                  {activity.description}
-                </p>
+                <DescriptionBlock
+                  quantity={activity.quantity}
+                  measurement={getActivityMeasurement(activity.type)}
+                  description={activity.description}
+                />
               )}
               {activity.competition && (
                 <p className="text-xs text-military-green mt-1 flex items-center gap-1">

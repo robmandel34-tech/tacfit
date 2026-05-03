@@ -132,13 +132,27 @@ export class ObjectStorageService {
   }
 
   // Upload a local file to object storage and return the /uploads/<fileName> path.
+  // Uses streaming so large video files don't blow out memory.
   async uploadFile(localPath: string, fileName: string, contentType: string): Promise<string> {
     const privateObjectDir = this.getPrivateObjectDir();
     const fullPath = `${privateObjectDir}/uploads/${fileName}`;
     const { bucketName, objectName } = parseObjectPath(fullPath);
     const bucket = objectStorageClient.bucket(bucketName);
-    const buffer = fs.readFileSync(localPath);
-    await bucket.file(objectName).save(buffer, { contentType, metadata: { contentType } });
+    const gcsFile = bucket.file(objectName);
+
+    await new Promise<void>((resolve, reject) => {
+      const readStream = fs.createReadStream(localPath);
+      const writeStream = gcsFile.createWriteStream({
+        contentType,
+        metadata: { contentType },
+        resumable: false,
+      });
+      readStream.on("error", reject);
+      writeStream.on("error", reject);
+      writeStream.on("finish", resolve);
+      readStream.pipe(writeStream);
+    });
+
     try { fs.unlinkSync(localPath); } catch (_) {}
     return `/uploads/${fileName}`;
   }

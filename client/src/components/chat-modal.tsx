@@ -182,7 +182,7 @@ export default function ChatModal({ isOpen, onClose, teamId, competitionId }: Ch
                         src={avatarUrl}
                         alt={msg.user?.username || "User"}
                       />
-                      <AvatarFallback className="bg-military-green text-white text-xs">
+                      <AvatarFallback className="bg-military-green text-forest-green text-xs">
                         {getInitials(msg.user?.username || "U")}
                       </AvatarFallback>
                     </Avatar>

@@ -28,6 +28,7 @@
   --military-green: hsl(118, 72%, 54%);
   --military-green-light: hsl(118, 72%, 63%);
   --military-green-dark: hsl(118, 72%, 43%);
+  --forest-green: hsl(118, 65%, 18%);
   --tactical-gray: hsl(220, 18%, 5%);
   --tactical-gray-light: hsl(220, 18%, 16%);
   --tactical-gray-lighter: hsl(220, 18%, 22%);
@@ -461,7 +462,7 @@
   
   /* Modern Button Styles */
   .btn-primary {
-    @apply bg-military-green hover:bg-military-green-light text-white font-medium px-6 py-3 rounded-lg transition-all duration-200 shadow-medium hover:shadow-strong;
+    @apply bg-military-green hover:bg-military-green-light text-forest-green font-medium px-6 py-3 rounded-lg transition-all duration-200 shadow-medium hover:shadow-strong;
   }
   
   .btn-secondary {

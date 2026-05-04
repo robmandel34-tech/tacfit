@@ -79,15 +79,15 @@ export function InstallAppButton() {
               
               <div className="space-y-2 text-sm text-text-primary">
                 <div className="flex items-start gap-3">
-                  <div className="bg-military-green text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">1</div>
+                  <div className="bg-military-green text-forest-green rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">1</div>
                   <p>Tap the Share button <span className="text-lg">📤</span> at the bottom of your browser</p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="bg-military-green text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">2</div>
+                  <div className="bg-military-green text-forest-green rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">2</div>
                   <p>Scroll down and tap <strong className="text-heading">"Add to Home Screen"</strong></p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="bg-military-green text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">3</div>
+                  <div className="bg-military-green text-forest-green rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">3</div>
                   <p>Tap <strong className="text-heading">"Add"</strong> to confirm</p>
                 </div>
               </div>

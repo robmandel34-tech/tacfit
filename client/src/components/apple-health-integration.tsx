@@ -296,28 +296,28 @@ export function AppleHealthIntegration({ userId, competitionId, teamId }: { user
               <h4 className="font-semibold text-blue-300 mb-3">Setup Instructions:</h4>
               <div className="space-y-4 text-sm text-gray-300">
                 <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-black">1</div>
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-forest-green">1</div>
                   <div>
                     <p className="font-medium">Open iPhone Shortcuts app</p>
                     <p className="text-gray-400">Download from App Store if not installed</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-black">2</div>
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-forest-green">2</div>
                   <div>
                     <p className="font-medium">Create a new shortcut</p>
                     <p className="text-gray-400">Tap the "+" icon to create a new automation</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-black">3</div>
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-forest-green">3</div>
                   <div>
                     <p className="font-medium">Add Health Sample actions</p>
                     <p className="text-gray-400">Search for "Find Health Samples" and add for Steps, Heart Rate, Workouts</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-black">4</div>
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-forest-green">4</div>
                   <div>
                     <p className="font-medium">Add "Get Contents of URL" action</p>
                     <div className="bg-gray-800 p-2 rounded mt-1 font-mono text-xs">
@@ -327,7 +327,7 @@ export function AppleHealthIntegration({ userId, competitionId, teamId }: { user
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-black">5</div>
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-forest-green">5</div>
                   <div>
                     <p className="font-medium">Set up automation trigger</p>
                     <p className="text-gray-400">Run daily or after workouts for automatic syncing</p>

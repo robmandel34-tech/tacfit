@@ -56,35 +56,35 @@ export default function ActivityTrackingHelp() {
                 <h4 className="font-semibold text-white mb-3">Step-by-Step Submission:</h4>
                 <div className="space-y-3">
                   <div className="flex items-start">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-black mr-3">1</div>
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-forest-green mr-3">1</div>
                     <div>
                       <p className="text-sm font-medium text-white">Click the Floating Action Button</p>
                       <p className="text-xs text-gray-400">Look for the crosshair target button in the bottom right</p>
                     </div>
                   </div>
                   <div className="flex items-start">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-black mr-3">2</div>
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-forest-green mr-3">2</div>
                     <div>
                       <p className="text-sm font-medium text-white">Select Activity Type</p>
                       <p className="text-xs text-gray-400">Choose from your competition's required activities</p>
                     </div>
                   </div>
                   <div className="flex items-start">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-black mr-3">3</div>
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-forest-green mr-3">3</div>
                     <div>
                       <p className="text-sm font-medium text-white">Enter Quantity</p>
                       <p className="text-xs text-gray-400">Input the quantity based on the measurement unit</p>
                     </div>
                   </div>
                   <div className="flex items-start">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-black mr-3">4</div>
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-forest-green mr-3">4</div>
                     <div>
                       <p className="text-sm font-medium text-white">Add Evidence (Optional but Recommended)</p>
                       <p className="text-xs text-gray-400">Upload photos and videos for bonus points</p>
                     </div>
                   </div>
                   <div className="flex items-start">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-black mr-3">5</div>
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-forest-green mr-3">5</div>
                     <div>
                       <p className="text-sm font-medium text-white">Submit Activity</p>
                       <p className="text-xs text-gray-400">Points are automatically awarded to your team</p>

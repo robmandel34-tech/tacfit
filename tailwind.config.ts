@@ -65,6 +65,7 @@ export default {
         "military-green": "var(--military-green)",
         "military-green-light": "var(--military-green-light)",
         "military-green-dark": "var(--military-green-dark)",
+        "forest-green": "var(--forest-green)",
         "tactical-gray": "var(--tactical-gray)",
         "tactical-gray-light": "var(--tactical-gray-light)",
         "tactical-gray-lighter": "var(--tactical-gray-lighter)",

@@ -733,7 +733,7 @@ export default function Profile() {
                                     <div key={request.id} className="flex items-center justify-between p-3 bg-tactical-gray rounded-lg">
                                       <div className="flex items-center space-x-3">
                                         <Avatar className="h-10 w-10">
-                                          <AvatarFallback className="bg-military-green text-white">
+                                          <AvatarFallback className="bg-military-green text-forest-green">
                                             {request.requester?.username?.charAt(0).toUpperCase()}
                                           </AvatarFallback>
                                         </Avatar>

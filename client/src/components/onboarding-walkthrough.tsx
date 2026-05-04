@@ -92,7 +92,7 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
               <Button 
                 variant="default" 
                 size="sm"
-                className="bg-military-green hover:bg-military-green/80 text-black font-medium"
+                className="bg-military-green hover:bg-military-green/80 text-forest-green font-medium"
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
                 Learn More About Navigation
@@ -113,21 +113,21 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
             <h4 className="font-semibold text-white mb-3">Competition Structure</h4>
             <div className="space-y-3">
               <div className="flex items-start space-x-3">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-black">1</div>
+                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-forest-green">1</div>
                 <div>
                   <p className="text-sm font-medium text-white">Join Window</p>
                   <p className="text-xs text-gray-400">Limited time to join and form teams</p>
                 </div>
               </div>
               <div className="flex items-start space-x-3">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-black">2</div>
+                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-forest-green">2</div>
                 <div>
                   <p className="text-sm font-medium text-white">Competition Period</p>
                   <p className="text-xs text-gray-400">2-4 weeks of tactical training challenges</p>
                 </div>
               </div>
               <div className="flex items-start space-x-3">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-black">3</div>
+                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-forest-green">3</div>
                 <div>
                   <p className="text-sm font-medium text-white">Victory & Rewards</p>
                   <p className="text-xs text-gray-400">Points awarded based on team performance</p>
@@ -146,7 +146,7 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
               <Button 
                 variant="default" 
                 size="sm"
-                className="bg-military-green hover:bg-military-green/80 text-black font-medium"
+                className="bg-military-green hover:bg-military-green/80 text-forest-green font-medium"
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
                 Learn More About Competitions
@@ -201,7 +201,7 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
               <Button 
                 variant="default" 
                 size="sm"
-                className="bg-military-green hover:bg-military-green/80 text-black font-medium"
+                className="bg-military-green hover:bg-military-green/80 text-forest-green font-medium"
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
                 Learn More About Teams
@@ -267,7 +267,7 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
               <Button 
                 variant="default" 
                 size="sm"
-                className="bg-military-green hover:bg-military-green/80 text-black font-medium"
+                className="bg-military-green hover:bg-military-green/80 text-forest-green font-medium"
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
                 Learn More About Activities
@@ -326,7 +326,7 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
               <Button 
                 variant="default" 
                 size="sm"
-                className="bg-military-green hover:bg-military-green/80 text-black font-medium"
+                className="bg-military-green hover:bg-military-green/80 text-forest-green font-medium"
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
                 Learn More About Navigation
@@ -474,7 +474,7 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
               <Button 
                 variant="default" 
                 size="sm"
-                className="bg-military-green hover:bg-military-green/80 text-black font-medium"
+                className="bg-military-green hover:bg-military-green/80 text-forest-green font-medium"
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
                 Learn More About Points
@@ -571,7 +571,7 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
           {currentStep === steps.length - 1 ? (
             <Button
               onClick={handleComplete}
-              className="bg-military-green hover:bg-military-green/80 text-black font-semibold"
+              className="bg-military-green hover:bg-military-green/80 text-forest-green font-semibold"
             >
               Start Mission
               <Play className="h-4 w-4 ml-2" />
@@ -579,7 +579,7 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
           ) : (
             <Button
               onClick={handleNext}
-              className="bg-military-green hover:bg-military-green/80 text-black font-semibold"
+              className="bg-military-green hover:bg-military-green/80 text-forest-green font-semibold"
             >
               Next
               <ChevronRight className="h-4 w-4 ml-2" />

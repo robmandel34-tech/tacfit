@@ -387,7 +387,7 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
                       <div className="flex items-center space-x-2">
                         <Avatar className="h-6 w-6">
                           <AvatarImage src={uploadUrl(teamMembers.find(m => m.user?.id?.toString() === editTask.assignedTo)?.user?.avatar)} />
-                          <AvatarFallback className="bg-military-green text-white text-xs">
+                          <AvatarFallback className="bg-military-green text-forest-green text-xs">
                             {teamMembers.find(m => m.user?.id?.toString() === editTask.assignedTo)?.user?.username?.charAt(0)?.toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
@@ -478,7 +478,7 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
                     <div className="flex items-center space-x-2">
                       <Avatar className="h-6 w-6">
                         <AvatarImage src={uploadUrl(teamMembers.find(m => m.user?.id?.toString() === task.assignedTo)?.user?.avatar)} />
-                        <AvatarFallback className="bg-military-green text-white text-xs">
+                        <AvatarFallback className="bg-military-green text-forest-green text-xs">
                           {task.assignedToUsername?.charAt(0)?.toUpperCase()}
                         </AvatarFallback>
                       </Avatar>

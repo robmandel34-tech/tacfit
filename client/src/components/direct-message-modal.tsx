@@ -171,7 +171,7 @@ export default function DirectMessageModal({ isOpen, onClose, friend }: DirectMe
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
             <Avatar className="h-8 w-8">
-              <AvatarFallback className="bg-military-green text-white text-sm">
+              <AvatarFallback className="bg-military-green text-forest-green text-sm">
                 {friend.username.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -195,7 +195,7 @@ export default function DirectMessageModal({ isOpen, onClose, friend }: DirectMe
                     <div
                       className={`max-w-xs px-3 py-2 rounded-lg text-sm ${
                         msg.senderId === user?.id
-                          ? "bg-military-green text-white"
+                          ? "bg-military-green text-forest-green"
                           : "bg-tactical-gray text-gray-200"
                       }`}
                     >

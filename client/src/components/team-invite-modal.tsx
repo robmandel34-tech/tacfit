@@ -165,11 +165,11 @@ export default function TeamInviteModal({
 
         <Tabs defaultValue="app-users" className="space-y-4">
           <TabsList className="grid w-full grid-cols-2 bg-tactical-gray-light">
-            <TabsTrigger value="app-users" className="text-gray-300 data-[state=active]:text-white data-[state=active]:bg-military-green">
+            <TabsTrigger value="app-users" className="text-gray-300 data-[state=active]:text-forest-green data-[state=active]:bg-military-green">
               <Search className="h-4 w-4 mr-2" />
               Search Users
             </TabsTrigger>
-            <TabsTrigger value="phone" className="text-gray-300 data-[state=active]:text-white data-[state=active]:bg-military-green">
+            <TabsTrigger value="phone" className="text-gray-300 data-[state=active]:text-forest-green data-[state=active]:bg-military-green">
               <Phone className="h-4 w-4 mr-2" />
               Phone Number
             </TabsTrigger>
@@ -202,14 +202,14 @@ export default function TeamInviteModal({
                       <div className="flex items-center space-x-3">
                         <Avatar className="h-10 w-10">
                           <AvatarImage src={searchUser.avatar ? uploadUrl(searchUser.avatar) : undefined} />
-                          <AvatarFallback className="bg-military-green text-white">
+                          <AvatarFallback className="bg-military-green text-forest-green">
                             {getInitials(searchUser.username)}
                           </AvatarFallback>
                         </Avatar>
                         <div>
                           <h4 className="text-white font-medium">{searchUser.username}</h4>
                           <div className="flex items-center space-x-2">
-                            <Badge variant="secondary" className="bg-military-green text-white">
+                            <Badge variant="secondary" className="bg-military-green text-forest-green">
                               {searchUser.points || 0} points
                             </Badge>
                             {searchUser.motto && (

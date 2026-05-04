@@ -173,7 +173,7 @@ export default function Invitation() {
               </div>
 
               <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="bg-military-green text-white">
+                <Badge variant="secondary" className="bg-military-green text-forest-green">
                   {invitation.status}
                 </Badge>
                 {isExpired && (

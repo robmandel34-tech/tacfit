@@ -364,7 +364,7 @@ export default function Team() {
                       <Button
                         type="submit"
                         size="sm"
-                        className="bg-military-green hover:bg-military-green-light text-white"
+                        className="bg-military-green hover:bg-military-green-light text-forest-green"
                         disabled={updateTeamName.isPending || !nameText.trim()}
                       >
                         {updateTeamName.isPending ? (
@@ -463,7 +463,7 @@ export default function Team() {
                     <Button
                       type="submit"
                       size="sm"
-                      className="bg-military-green hover:bg-military-green-light text-white"
+                      className="bg-military-green hover:bg-military-green-light text-forest-green"
                       disabled={updateTeamMotto.isPending || !mottoText.trim()}
                     >
                       {updateTeamMotto.isPending ? (
@@ -618,8 +618,8 @@ export default function Team() {
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
-                        <Target className="mr-2 h-4 w-4 text-black" />
-                        <h3 className="text-black font-semibold">Activity Progress</h3>
+                        <Target className="mr-2 h-4 w-4 text-forest-green" />
+                        <h3 className="text-forest-green font-semibold">Activity Progress</h3>
                         {(() => {
                           // Check if competition has started
                           const competitionHasStarted = new Date() >= new Date(competition.startDate);
@@ -653,9 +653,9 @@ export default function Team() {
                         })()}
                       </div>
                       {isProgressExpanded ? (
-                        <ChevronUp className="h-4 w-4 text-black" />
+                        <ChevronUp className="h-4 w-4 text-forest-green" />
                       ) : (
-                        <ChevronDown className="h-4 w-4 text-black" />
+                        <ChevronDown className="h-4 w-4 text-forest-green" />
                       )}
                     </div>
                     
@@ -769,7 +769,7 @@ export default function Team() {
                 <Button
                   size="sm"
                   onClick={() => setIsInviteModalOpen(true)}
-                  className="bg-military-green hover:bg-military-green-light text-white"
+                  className="bg-military-green hover:bg-military-green-light text-forest-green"
                 >
                   <UserPlus className="h-4 w-4 mr-2" />
                   Invite
@@ -788,7 +788,7 @@ export default function Team() {
                       onClick={() => navigate(`/profile/${member.user?.id}`)}
                     >
                       <AvatarImage src={member.user?.avatar ? uploadUrl(member.user.avatar) : undefined} />
-                      <AvatarFallback className="bg-military-green text-white">
+                      <AvatarFallback className="bg-military-green text-forest-green">
                         {member.user?.username?.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>

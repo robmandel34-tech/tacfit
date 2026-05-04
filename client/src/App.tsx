@@ -30,7 +30,7 @@ class ErrorBoundaryBase extends Component<
           <h2 className="text-white text-xl font-bold mb-2">Something went wrong</h2>
           <p className="text-gray-400 text-sm mb-6">An unexpected error occurred on this page.</p>
           <button
-            className="bg-military-green text-white px-6 py-2 rounded-lg font-semibold"
+            className="bg-military-green text-forest-green px-6 py-2 rounded-lg font-semibold"
             onClick={() => { this.setState({ hasError: false }); window.location.href = "/"; }}
           >
             Return to Home

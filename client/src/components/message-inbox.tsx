@@ -200,7 +200,7 @@ export default function MessageInbox({ userId }: MessageInboxProps) {
             >
               <div className="relative">
                 <Avatar className="h-10 w-10">
-                  <AvatarFallback className="bg-military-green text-white text-sm">
+                  <AvatarFallback className="bg-military-green text-forest-green text-sm">
                     {getInitials(conversation.friend.username)}
                   </AvatarFallback>
                 </Avatar>

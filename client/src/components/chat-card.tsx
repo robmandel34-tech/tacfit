@@ -185,7 +185,7 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
                 <Radio className="w-5 h-5" />
                 <span>{title || (teamId ? "Team Comms" : "Competition Chat")}</span>
                 {unreadCount > 0 && (
-                  <span className="bg-military-green text-white text-xs px-2 py-1 rounded-full">
+                  <span className="bg-military-green text-forest-green text-xs px-2 py-1 rounded-full">
                     {unreadCount}
                   </span>
                 )}
@@ -216,7 +216,7 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
                               src={avatarUrl}
                               alt={msg.user?.username || "User"}
                             />
-                            <AvatarFallback className="bg-military-green text-white text-xs">
+                            <AvatarFallback className="bg-military-green text-forest-green text-xs">
                               {getInitials(msg.user?.username || "U")}
                             </AvatarFallback>
                           </Avatar>

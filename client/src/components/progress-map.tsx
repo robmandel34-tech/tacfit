@@ -381,7 +381,7 @@ export default function ProgressMap({ teams, competitionName, competition, activ
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="bg-military-green text-white border-military-green">
+                        <Badge variant="outline" className="bg-military-green text-forest-green border-military-green">
                           #{team.rank}
                         </Badge>
                         <h3 className="font-semibold text-white">{team.name}</h3>

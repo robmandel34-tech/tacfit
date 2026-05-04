@@ -121,7 +121,7 @@ export default function TeamPublic() {
                       onClick={() => navigate(`/profile/${member.user?.id}`)}
                     >
                       <AvatarImage src={member.user?.avatar ? uploadUrl(member.user.avatar) : undefined} />
-                      <AvatarFallback className="bg-military-green text-white">
+                      <AvatarFallback className="bg-military-green text-forest-green">
                         {member.user?.username?.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>

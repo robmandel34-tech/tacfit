@@ -512,7 +512,7 @@ export default function Team() {
                     <img 
                       src={uploadUrl(team.pictureUrl)} 
                       alt={`${team.name} team photo`}
-                      className="w-full h-48 object-cover rounded-sm"
+                      className="w-full h-64 object-cover rounded-2xl"
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                       <div className="text-center">
@@ -523,7 +523,7 @@ export default function Team() {
                   </div>
                 ) : (
                   <div 
-                    className="w-full h-48 bg-tactical-gray rounded-sm flex items-center justify-center cursor-pointer hover:bg-tactical-gray-lighter transition-colors"
+                    className="w-full h-64 bg-tactical-gray rounded-2xl flex items-center justify-center cursor-pointer hover:bg-tactical-gray-lighter transition-colors"
                     onClick={triggerPhotoUpload}
                   >
                     <div className="text-center">
@@ -613,13 +613,13 @@ export default function Team() {
                   })()}
                   
                   <div 
-                    className="p-4 bg-tactical-gray rounded-lg border border-tactical-gray cursor-pointer hover:bg-tactical-gray-light transition-colors"
+                    className="p-4 bg-military-green rounded-2xl border-0 cursor-pointer hover:brightness-105 transition-all"
                     onClick={handleProgressExpand}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
-                        <Target className="mr-2 h-4 w-4 text-military-green" />
-                        <h3 className="text-white font-semibold">Activity Progress</h3>
+                        <Target className="mr-2 h-4 w-4 text-black" />
+                        <h3 className="text-black font-semibold">Activity Progress</h3>
                         {(() => {
                           // Check if competition has started
                           const competitionHasStarted = new Date() >= new Date(competition.startDate);
@@ -653,9 +653,9 @@ export default function Team() {
                         })()}
                       </div>
                       {isProgressExpanded ? (
-                        <ChevronUp className="h-4 w-4 text-gray-400" />
+                        <ChevronUp className="h-4 w-4 text-black" />
                       ) : (
-                        <ChevronDown className="h-4 w-4 text-gray-400" />
+                        <ChevronDown className="h-4 w-4 text-black" />
                       )}
                     </div>
                     

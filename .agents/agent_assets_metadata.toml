@@ -72,6 +72,12 @@ uri = "file://attached_assets/generated_images/tacfit-intel-marketing-screenshot
 type = "image"
 title = "tacfit intel feed marketing"
 
+[[generated]]
+id = "1c3bZzwAm267loESDgRmJ"
+uri = "file://attached_assets/generated_images/intel-tactical-bg.png"
+type = "image"
+title = "dark tactical background"
+
 [[outputs]]
 id = "kwby-weNC0zktFBX8-KQs"
 uri = "file://attached_assets/appstore_screen1.png"
@@ -149,3 +155,9 @@ id = "X-OMI9iv6_KgNa2YLMdmj"
 uri = "file://attached_assets/generated_images/tacfit-intel-marketing-screenshot.png"
 type = "image"
 title = "TacFit — Intel Feed Marketing Screenshot"
+
+[[outputs]]
+id = "VmpfEtHiRg4DaBWk7d87B"
+uri = "file://attached_assets/generated_images/tacfit-intel-marketing-v2.png"
+type = "image"
+title = "TacFit — Intel Feed Marketing (Real Screenshot)"

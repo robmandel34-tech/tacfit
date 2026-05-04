@@ -131,18 +131,19 @@ declare module 'express-session' {
   }
 }
 
-const ALLOWED_MIME_TYPES = new Set([
-  'image/jpeg', 'image/png', 'image/gif', 'image/webp',
-  'video/mp4', 'video/quicktime', 'video/webm', 'video/x-msvideo',
+const ALLOWED_IMAGE_TYPES = new Set([
+  'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/heic', 'image/heif',
 ]);
 
 const upload = multer({ 
   dest: 'uploads/',
   limits: { fileSize: 200 * 1024 * 1024 }, // 200MB limit per file
   fileFilter: (_req, file, cb) => {
-    if (ALLOWED_MIME_TYPES.has(file.mimetype)) {
+    // Accept any video/* MIME type (covers mp4, quicktime, hevc, x-m4v, 3gpp, etc.)
+    if (file.mimetype.startsWith('video/') || ALLOWED_IMAGE_TYPES.has(file.mimetype)) {
       cb(null, true);
     } else {
+      console.warn(`Rejected file with MIME type: ${file.mimetype} (${file.originalname})`);
       cb(new Error(`File type not allowed: ${file.mimetype}`));
     }
   },
@@ -2091,6 +2092,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/activities", (req, res, next) => {
     console.log("POST /api/activities received — starting multer");
+    // Log raw content-type so we can debug iOS MIME issues
+    console.log("Content-Type:", req.headers['content-type']?.substring(0, 100));
     upload.any()(req, res, (err) => {
       if (err) {
         console.error("Multer upload error:", err);
@@ -2150,6 +2153,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Handle file uploads - upload.any() returns an array
       const files = req.files as Express.Multer.File[] || [];
       
+      // Log every uploaded file so we can debug iOS MIME type issues
+      files.forEach(f => console.log(`Uploaded file: field=${f.fieldname} mime=${f.mimetype} size=${f.size} name=${f.originalname}`));
+
       // Separate files by type
       const videoFiles = files.filter(file => file.fieldname === 'video');
       const imageFiles = files.filter(file => file.fieldname === 'images');

@@ -167,6 +167,15 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
           reject(new Error("Upload was cancelled."));
         });
 
+        xhr.addEventListener("timeout", () => {
+          clearInterval(ticker);
+          setUploadProgress(0);
+          reject(new Error("Upload timed out — your video may be too large or your connection too slow. Try a shorter clip."));
+        });
+
+        // 10 minute timeout for large video files
+        xhr.timeout = 10 * 60 * 1000;
+
         xhr.send(data);
       }),
     onSuccess: () => {

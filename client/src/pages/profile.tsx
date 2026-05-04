@@ -387,7 +387,6 @@ export default function Profile() {
                     <div className="mb-0.5">
                       <h2 className="text-white font-bold text-xl text-center">{displayUser.username}</h2>
                     </div>
-                    <p className="text-white text-sm mb-0.5 text-center">{displayUser.email}</p>
 
                     {/* User Motto */}
                     <div className="mb-3 px-6">

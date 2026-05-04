@@ -66,6 +66,12 @@ uri = "file://attached_assets/generated_images/tacfit-team-marketing-screenshot.
 type = "image"
 title = "tacfit team marketing screenshot"
 
+[[generated]]
+id = "2YqYCpftIh04xaEUwSQ4p"
+uri = "file://attached_assets/generated_images/tacfit-intel-marketing-screenshot.png"
+type = "image"
+title = "tacfit intel feed marketing"
+
 [[outputs]]
 id = "kwby-weNC0zktFBX8-KQs"
 uri = "file://attached_assets/appstore_screen1.png"
@@ -137,3 +143,9 @@ id = "YM1afEEB1zvggzMZ1WmfB"
 uri = "file://attached_assets/generated_images/tacfit-team-marketing-real.jpg"
 type = "image"
 title = "TacFit — Team Screen in iPhone Frame"
+
+[[outputs]]
+id = "X-OMI9iv6_KgNa2YLMdmj"
+uri = "file://attached_assets/generated_images/tacfit-intel-marketing-screenshot.png"
+type = "image"
+title = "TacFit — Intel Feed Marketing Screenshot"

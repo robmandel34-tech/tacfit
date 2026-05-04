@@ -258,7 +258,7 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
             <img
               src={effectiveThumbnail}
               alt="Video thumbnail"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover object-top"
               onError={(e) => {
                 // Fall back to video element
                 setShowVideo(true);
@@ -364,7 +364,7 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
         <img
           src={sortedImageUrls[0]}
           alt="Activity evidence"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover object-top"
           onError={(e) => {
             console.error("Evidence image failed to load:", sortedImageUrls[0]);
             // Try object storage URL if original fails

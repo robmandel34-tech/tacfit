@@ -32,7 +32,7 @@ export default function MediaSlideshow({ images, videoUrl }: MediaSlideshowProps
           <img
             src={media.url}
             alt="Activity evidence"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover object-top"
             onError={(e) => {
               console.error("Evidence image failed to load:", media.url);
               e.currentTarget.style.display = 'none';
@@ -117,7 +117,7 @@ export default function MediaSlideshow({ images, videoUrl }: MediaSlideshowProps
         <img
           src={currentMedia.url}
           alt={`Activity evidence ${currentIndex + 1}`}
-          className="w-full h-full object-cover transition-opacity duration-300"
+          className="w-full h-full object-cover object-top transition-opacity duration-300"
           onError={(e) => {
             console.error("Evidence image failed to load:", currentMedia.url);
             e.currentTarget.style.display = 'none';

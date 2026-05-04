@@ -284,7 +284,7 @@ export default function ActivityFeed() {
                           <img 
                             src={uploadUrl(activity.evidenceUrl)} 
                             alt="Activity evidence" 
-                            className="w-full max-w-lg h-48 object-cover rounded-lg border border-gray-600"
+                            className="w-full max-w-lg h-48 object-cover object-top rounded-lg border border-gray-600"
                           />
                         )}
                       </div>

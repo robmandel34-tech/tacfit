@@ -196,7 +196,7 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
         <Button
           onClick={() => handleSendFriendRequest(otherUser.id)}
           disabled={sendFriendRequestMutation.isPending}
-          className="bg-military-green hover:bg-military-green-light text-white w-full sm:w-auto"
+          className="bg-military-green hover:bg-military-green-light text-forest-green w-full sm:w-auto"
           size="sm"
         >
           <UserPlus className="w-4 h-4 mr-1 sm:mr-2" />
@@ -255,7 +255,7 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
           <Button
             onClick={() => handleSendFriendRequest(otherUser.id)}
             disabled={sendFriendRequestMutation.isPending}
-            className="bg-military-green hover:bg-military-green-light text-white w-full sm:w-auto"
+            className="bg-military-green hover:bg-military-green-light text-forest-green w-full sm:w-auto"
             size="sm"
           >
             <UserPlus className="w-4 h-4 mr-1 sm:mr-2" />
@@ -339,7 +339,7 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
                             />
                           ) : null}
                           <div 
-                            className="w-10 h-10 bg-military-green rounded-full flex items-center justify-center flex-shrink-0 cursor-pointer hover:bg-military-green-light transition-colors" 
+                            className="w-10 h-10 bg-military-green rounded-full flex items-center justify-center flex-shrink-0 cursor-pointer hover:bg-military-green-light transition-colors text-forest-green" 
                             style={{ display: requester.avatar ? 'none' : 'flex' }}
                             onClick={() => navigateToProfile(requester.id)}
                           >
@@ -410,7 +410,7 @@ export default function FindFriendsModal({ isOpen, onClose }: FindFriendsModalPr
                             />
                           ) : (
                             <div 
-                              className="w-10 h-10 sm:w-12 sm:h-12 bg-military-green rounded-full flex items-center justify-center flex-shrink-0 cursor-pointer hover:bg-military-green-light transition-colors"
+                              className="w-10 h-10 sm:w-12 sm:h-12 bg-military-green rounded-full flex items-center justify-center flex-shrink-0 cursor-pointer hover:bg-military-green-light transition-colors text-forest-green"
                               onClick={() => navigateToProfile(otherUser.id)}
                             >
                               <span className="text-white font-bold text-xs sm:text-sm">

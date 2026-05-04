@@ -287,7 +287,7 @@ export default function DirectMessageModal({ isOpen, onClose, friend }: DirectMe
             <Button
               type="submit"
               size="icon"
-              className="bg-military-green hover:bg-military-green-light"
+              className="bg-military-green hover:bg-military-green-light text-forest-green"
               disabled={sendMessage.isPending || !message.trim()}
             >
               <Send className="h-4 w-4" />

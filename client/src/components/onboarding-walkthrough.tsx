@@ -175,7 +175,7 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
               </div>
               <div className="flex items-center justify-between p-2 bg-gray-700/50 rounded">
                 <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 rounded-full bg-military-green"></div>
+                  <div className="w-3 h-3 rounded-full bg-military-green text-forest-green"></div>
                   <span className="text-sm text-white">Team Members</span>
                 </div>
                 <Badge variant="outline" className="text-xs border-gray-600 text-gray-300">Support role</Badge>
@@ -222,7 +222,7 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
             <h4 className="font-semibold text-white mb-3">How to Submit Activities</h4>
             <div className="space-y-3">
               <div className="flex items-center space-x-3 p-2 bg-gray-700/30 rounded">
-                <div className="w-8 h-8 rounded-full bg-military-green flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-military-green flex items-center justify-center text-forest-green">
                   <span className="text-xs text-black font-bold">⊕</span>
                 </div>
                 <div>
@@ -358,19 +358,19 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
             <h4 className="font-semibold text-military-green mb-3">What's Encouraged</h4>
             <div className="space-y-2">
               <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 rounded-full bg-military-green"></div>
+                <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
                 <span className="text-sm text-gray-300">Friendly competitive banter</span>
               </div>
               <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 rounded-full bg-military-green"></div>
+                <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
                 <span className="text-sm text-gray-300">Team motivation and support</span>
               </div>
               <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 rounded-full bg-military-green"></div>
+                <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
                 <span className="text-sm text-gray-300">Sharing fitness tips and advice</span>
               </div>
               <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 rounded-full bg-military-green"></div>
+                <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
                 <span className="text-sm text-gray-300">Celebrating team victories</span>
               </div>
             </div>
@@ -452,19 +452,19 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
             <h4 className="font-semibold text-white mb-3">Next Steps:</h4>
             <div className="space-y-2 text-left">
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 rounded-full bg-military-green"></div>
+                <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
                 <span className="text-sm text-gray-300">Browse available competitions</span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 rounded-full bg-military-green"></div>
+                <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
                 <span className="text-sm text-gray-300">Join or create a team</span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 rounded-full bg-military-green"></div>
+                <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
                 <span className="text-sm text-gray-300">Start submitting activities</span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 rounded-full bg-military-green"></div>
+                <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
                 <span className="text-sm text-gray-300">Communicate with your team</span>
               </div>
             </div>

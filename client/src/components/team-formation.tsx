@@ -29,7 +29,7 @@ export default function TeamFormation({ competitionId }: TeamFormationProps) {
             <div key={team.id} className="bg-tactical-gray-lighter rounded-lg p-4">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-military-green rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 bg-military-green rounded-lg flex items-center justify-center text-forest-green">
                     <Users className="text-white" />
                   </div>
                   <div>
@@ -45,7 +45,7 @@ export default function TeamFormation({ competitionId }: TeamFormationProps) {
               <div className="grid grid-cols-5 gap-3">
                 {/* Team members would be rendered here */}
                 <div className="bg-tactical-gray-lighter rounded-lg p-3 text-center">
-                  <div className="w-12 h-12 bg-military-green rounded-full flex items-center justify-center mx-auto mb-2">
+                  <div className="w-12 h-12 bg-military-green rounded-full flex items-center justify-center mx-auto mb-2 text-forest-green">
                     <span className="text-white font-bold text-sm">JS</span>
                   </div>
                   <div className="text-white font-medium text-sm">Captain</div>
@@ -66,7 +66,7 @@ export default function TeamFormation({ competitionId }: TeamFormationProps) {
               
               <div className="mt-4 flex justify-between items-center">
                 <span className="text-gray-400 text-sm">2/5 members</span>
-                <Button size="sm" className="bg-military-green hover:bg-military-green-light text-white">
+                <Button size="sm" className="bg-military-green hover:bg-military-green-light text-forest-green">
                   Join Team
                 </Button>
               </div>

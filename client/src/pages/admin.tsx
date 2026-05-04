@@ -968,7 +968,7 @@ export default function AdminPage() {
             <Button 
               onClick={() => refreshSession.mutate()}
               disabled={refreshSession.isPending}
-              className="w-full bg-military-green hover:bg-military-green-light"
+              className="w-full bg-military-green hover:bg-military-green-light text-forest-green"
             >
               {refreshSession.isPending ? 'Refreshing...' : 'Refresh Admin Status'}
             </Button>
@@ -1051,7 +1051,7 @@ export default function AdminPage() {
               <Dialog open={isCreateCompetitionOpen} onOpenChange={setIsCreateCompetitionOpen}>
                 <DialogTrigger asChild>
                   <Button 
-                    className="bg-military-green hover:bg-military-green-light"
+                    className="bg-military-green hover:bg-military-green-light text-forest-green"
                     onClick={() => {
                       setEditingCompetition(null);
                       resetCompetitionForm();
@@ -1279,7 +1279,7 @@ export default function AdminPage() {
                       <Button 
                         type="submit" 
                         disabled={createCompetition.isPending || updateCompetition.isPending}
-                        className="flex-1 bg-military-green hover:bg-military-green-light"
+                        className="flex-1 bg-military-green hover:bg-military-green-light text-forest-green"
                       >
                         {editingCompetition ? 'Update' : 'Create'}
                       </Button>
@@ -1505,7 +1505,7 @@ export default function AdminPage() {
                   <div className="flex space-x-2 pt-4">
                     <Button
                       type="submit"
-                      className="bg-military-green hover:bg-military-green-light flex-1"
+                      className="bg-military-green hover:bg-military-green-light flex-1 text-forest-green"
                       disabled={adjustUserPoints.isPending}
                     >
                       {pointsForm.operation === 'add' ? 'Add Points' : 'Set Points'}
@@ -1715,7 +1715,7 @@ export default function AdminPage() {
                   <div className="flex justify-end pt-4">
                     <Button
                       onClick={() => setViewCheckInsUser(null)}
-                      className="bg-military-green hover:bg-military-green-light"
+                      className="bg-military-green hover:bg-military-green-light text-forest-green"
                     >
                       Close
                     </Button>
@@ -1734,7 +1734,7 @@ export default function AdminPage() {
               <Dialog open={isCreateActivityTypeOpen} onOpenChange={setIsCreateActivityTypeOpen}>
                 <DialogTrigger asChild>
                   <Button 
-                    className="bg-military-green hover:bg-military-green-light"
+                    className="bg-military-green hover:bg-military-green-light text-forest-green"
                     onClick={() => {
                       setEditingActivityType(null);
                       resetActivityTypeForm();
@@ -1886,7 +1886,7 @@ export default function AdminPage() {
                     <div className="flex space-x-2 pt-4">
                       <Button
                         type="submit"
-                        className="bg-military-green hover:bg-military-green-light flex-1"
+                        className="bg-military-green hover:bg-military-green-light flex-1 text-forest-green"
                         disabled={createActivityType.isPending || updateActivityType.isPending}
                       >
                         {editingActivityType ? 'Update' : 'Create'}
@@ -1995,7 +1995,7 @@ export default function AdminPage() {
               <Dialog open={isCreateAdminPostOpen} onOpenChange={setIsCreateAdminPostOpen}>
                 <DialogTrigger asChild>
                   <Button 
-                    className="bg-military-green hover:bg-military-green-light"
+                    className="bg-military-green hover:bg-military-green-light text-forest-green"
                     onClick={() => {
                       setEditingAdminPost(null);
                       resetAdminPostForm();
@@ -2058,7 +2058,7 @@ export default function AdminPage() {
                               reader.readAsDataURL(file);
                             }
                           }}
-                          className="bg-tactical-gray-lighter border-tactical-gray text-white file:bg-military-green file:text-white file:border-0 file:rounded-md file:px-3 file:py-1"
+                          className="bg-tactical-gray-lighter border-tactical-gray text-forest-green file:bg-military-green file:text-white file:border-0 file:rounded-md file:px-3 file:py-1"
                         />
                         {adminPostImagePreview && (
                           <div className="relative">
@@ -2103,7 +2103,7 @@ export default function AdminPage() {
                               reader.readAsDataURL(file);
                             }
                           }}
-                          className="bg-tactical-gray-lighter border-tactical-gray text-white file:bg-military-green file:text-white file:border-0 file:rounded-md file:px-3 file:py-1"
+                          className="bg-tactical-gray-lighter border-tactical-gray text-forest-green file:bg-military-green file:text-white file:border-0 file:rounded-md file:px-3 file:py-1"
                         />
                         {adminPostVideoPreview && (
                           <div className="relative">
@@ -2197,7 +2197,7 @@ export default function AdminPage() {
                       <Button 
                         type="submit" 
                         disabled={createAdminPost.isPending || updateAdminPost.isPending}
-                        className="flex-1 bg-military-green hover:bg-military-green-light"
+                        className="flex-1 bg-military-green hover:bg-military-green-light text-forest-green"
                       >
                         {createAdminPost.isPending || updateAdminPost.isPending ? 'Saving...' : (editingAdminPost ? 'Update Post' : 'Create Post')}
                       </Button>
@@ -2305,7 +2305,7 @@ export default function AdminPage() {
               <Dialog open={isCreateAdvertisementOpen} onOpenChange={setIsCreateAdvertisementOpen}>
                 <DialogTrigger asChild>
                   <Button 
-                    className="bg-military-green hover:bg-military-green-light"
+                    className="bg-military-green hover:bg-military-green-light text-forest-green"
                     onClick={() => {
                       setEditingAdvertisement(null);
                       resetAdvertisementForm();
@@ -2379,7 +2379,7 @@ export default function AdminPage() {
                               reader.readAsDataURL(file);
                             }
                           }}
-                          className="bg-tactical-gray-lighter border-tactical-gray text-white file:bg-military-green file:text-white file:border-0 file:rounded-md file:px-3 file:py-1"
+                          className="bg-tactical-gray-lighter border-tactical-gray text-forest-green file:bg-military-green file:text-white file:border-0 file:rounded-md file:px-3 file:py-1"
                         />
                         {advertisementImagePreview && (
                           <div className="relative">
@@ -2462,7 +2462,7 @@ export default function AdminPage() {
                       <Button
                         type="submit"
                         disabled={createAdvertisement.isPending || updateAdvertisement.isPending}
-                        className="bg-military-green hover:bg-military-green-light"
+                        className="bg-military-green hover:bg-military-green-light text-forest-green"
                       >
                         {editingAdvertisement ? 'Update' : 'Create'}
                       </Button>

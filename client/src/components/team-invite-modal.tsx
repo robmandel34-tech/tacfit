@@ -222,7 +222,7 @@ export default function TeamInviteModal({
                         size="sm"
                         onClick={() => handleUserInvite(searchUser.id)}
                         disabled={sendUserInvitation.isPending}
-                        className="bg-military-green hover:bg-military-green-light text-white"
+                        className="bg-military-green hover:bg-military-green-light text-forest-green"
                       >
                         {sendUserInvitation.isPending ? "Sending..." : "Invite"}
                       </Button>
@@ -260,7 +260,7 @@ export default function TeamInviteModal({
                 <Button
                   type="submit"
                   disabled={createPhoneInvitation.isPending}
-                  className="w-full bg-military-green hover:bg-military-green-light text-white"
+                  className="w-full bg-military-green hover:bg-military-green-light text-forest-green"
                 >
                   {createPhoneInvitation.isPending ? "Creating..." : "Create Invitation"}
                 </Button>
@@ -289,7 +289,7 @@ export default function TeamInviteModal({
                 <div className="flex space-x-2">
                   <Button
                     onClick={shareViaSMS}
-                    className="flex-1 bg-military-green hover:bg-military-green-light text-white"
+                    className="flex-1 bg-military-green hover:bg-military-green-light text-forest-green"
                   >
                     <MessageSquare className="h-4 w-4 mr-2" />
                     Send SMS

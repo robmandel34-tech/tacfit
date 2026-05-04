@@ -170,7 +170,7 @@ export default function TeamInvite() {
             </p>
             <Button 
               onClick={() => setLocation("/")}
-              className="sharp-button bg-military-green hover:bg-military-green-dark"
+              className="sharp-button bg-military-green hover:bg-military-green-dark text-forest-green"
             >
               Go to TacFit
             </Button>
@@ -196,7 +196,7 @@ export default function TeamInvite() {
             </p>
             <Button 
               onClick={() => setLocation("/")}
-              className="sharp-button bg-military-green hover:bg-military-green-dark"
+              className="sharp-button bg-military-green hover:bg-military-green-dark text-forest-green"
             >
               Go to TacFit
             </Button>
@@ -237,7 +237,7 @@ export default function TeamInvite() {
               
               <Button 
                 onClick={handleJoinTeam}
-                className="w-full sharp-button bg-military-green hover:bg-military-green-dark"
+                className="w-full sharp-button bg-military-green hover:bg-military-green-dark text-forest-green"
               >
                 <CheckCircle className="h-4 w-4 mr-2" />
                 Join Team
@@ -336,7 +336,7 @@ export default function TeamInvite() {
 
             <Button 
               type="submit" 
-              className="w-full sharp-button bg-military-green hover:bg-military-green-dark"
+              className="w-full sharp-button bg-military-green hover:bg-military-green-dark text-forest-green"
               disabled={registering}
             >
               {registering ? "Creating Account..." : "Join the Force"}

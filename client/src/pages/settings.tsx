@@ -190,7 +190,7 @@ export default function SettingsPage() {
               <Button
                 onClick={handleChangePassword}
                 disabled={changePassword.isPending}
-                className="w-full bg-military-green hover:bg-military-green/80 text-white mt-1"
+                className="w-full bg-military-green hover:bg-military-green/80 text-forest-green mt-1"
               >
                 {changePassword.isPending ? "Updating..." : "Update Password"}
               </Button>
@@ -214,7 +214,7 @@ export default function SettingsPage() {
                   checked={notificationsOn}
                   onCheckedChange={val => toggleNotifications.mutate(val)}
                   disabled={toggleNotifications.isPending}
-                  className="data-[state=checked]:bg-military-green"
+                  className="data-[state=checked]:bg-military-green text-forest-green"
                 />
               </div>
             </CardContent>
@@ -239,7 +239,7 @@ export default function SettingsPage() {
                   checked={isPublic}
                   onCheckedChange={val => togglePrivacy.mutate(val)}
                   disabled={togglePrivacy.isPending}
-                  className="data-[state=checked]:bg-military-green"
+                  className="data-[state=checked]:bg-military-green text-forest-green"
                 />
               </div>
             </CardContent>

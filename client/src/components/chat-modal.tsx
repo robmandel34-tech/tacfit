@@ -275,7 +275,7 @@ export default function ChatModal({ isOpen, onClose, teamId, competitionId }: Ch
             <Button
               type="submit"
               disabled={sendMessage.isPending || !message.trim()}
-              className="bg-military-green hover:bg-military-green-light text-white"
+              className="bg-military-green hover:bg-military-green-light text-forest-green"
             >
               <Send className="h-4 w-4" />
             </Button>

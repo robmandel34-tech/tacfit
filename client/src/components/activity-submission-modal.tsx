@@ -370,7 +370,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                       <SelectItem 
                         key={activityType.name} 
                         value={activityType.name}
-                        className="text-white hover:bg-military-green focus:bg-military-green data-[highlighted]:bg-military-green data-[highlighted]:text-white cursor-pointer"
+                        className="text-forest-green hover:bg-military-green focus:bg-military-green data-[highlighted]:bg-military-green data-[highlighted]:text-white cursor-pointer"
                       >
                         <div className="flex items-center justify-between w-full">
                           <span>{activityType.displayName}</span>
@@ -564,7 +564,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
               </div>
               <div className="w-full bg-white/10 rounded-full h-2">
                 <div
-                  className="bg-military-green h-2 rounded-full transition-all duration-300"
+                  className="bg-military-green h-2 rounded-full transition-all duration-300 text-forest-green"
                   style={{ width: `${uploadProgress || 5}%` }}
                 />
               </div>
@@ -577,7 +577,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
           {/* Submit Button */}
           <Button
             type="submit"
-            className="w-full bg-military-green hover:bg-military-green-dark text-white font-medium py-3"
+            className="w-full bg-military-green hover:bg-military-green-dark text-forest-green font-medium py-3"
             disabled={submitActivity.isPending || !type || !description || !quantity || imageFiles.length === 0}
           >
             {submitActivity.isPending

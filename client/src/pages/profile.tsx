@@ -593,7 +593,7 @@ export default function Profile() {
                               <Button 
                                 onClick={() => sendFriendRequest.mutate()}
                                 disabled={sendFriendRequest.isPending}
-                                className="w-full bg-military-green hover:bg-military-green-light"
+                                className="w-full bg-military-green hover:bg-military-green-light text-forest-green"
                               >
                                 <UserPlus className="mr-2 h-4 w-4" />
                                 {sendFriendRequest.isPending ? "Sending..." : "Add Buddy"}
@@ -628,7 +628,7 @@ export default function Profile() {
                           
                           <Button 
                             onClick={() => setIsFindFriendsModalOpen(true)}
-                            className="flex-1 bg-military-green hover:bg-military-green-light"
+                            className="flex-1 bg-military-green hover:bg-military-green-light text-forest-green"
                           >
                             <Search className="mr-2 h-4 w-4" />
                             Find Buddies
@@ -745,7 +745,7 @@ export default function Profile() {
                                       <div className="flex space-x-2">
                                         <Button
                                           size="sm"
-                                          className="bg-military-green hover:bg-military-green-light"
+                                          className="bg-military-green hover:bg-military-green-light text-forest-green"
                                           onClick={() => handleFriendRequest.mutate({ 
                                             requestId: request.id, 
                                             status: "accepted" 
@@ -881,7 +881,7 @@ export default function Profile() {
                     {/* Action Button */}
                     <Button
                       onClick={() => setLocation("/competition-status")}
-                      className="w-full bg-military-green hover:bg-military-green-dark text-white font-medium py-2"
+                      className="w-full bg-military-green hover:bg-military-green-dark text-forest-green font-medium py-2"
                     >
                       View Details
                     </Button>
@@ -898,7 +898,7 @@ export default function Profile() {
                     {isOwnProfile && (
                       <Button
                         onClick={() => setLocation("/competitions")}
-                        className="bg-military-green hover:bg-military-green-dark text-white px-6 py-2"
+                        className="bg-military-green hover:bg-military-green-dark text-forest-green px-6 py-2"
                       >
                         Browse Competitions
                       </Button>

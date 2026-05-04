@@ -63,7 +63,7 @@ export default function Invitation() {
             <p className="text-gray-300">The invitation link is invalid or missing.</p>
             <Button 
               onClick={() => setLocation("/")}
-              className="mt-4 sharp-button bg-military-green hover:bg-military-green-dark"
+              className="mt-4 sharp-button bg-military-green hover:bg-military-green-dark text-forest-green"
             >
               Go to Dashboard
             </Button>
@@ -91,7 +91,7 @@ export default function Invitation() {
             <p className="text-gray-300">This invitation may have expired or been removed.</p>
             <Button 
               onClick={() => setLocation("/")}
-              className="mt-4 sharp-button bg-military-green hover:bg-military-green-dark"
+              className="mt-4 sharp-button bg-military-green hover:bg-military-green-dark text-forest-green"
             >
               Go to Dashboard
             </Button>
@@ -116,7 +116,7 @@ export default function Invitation() {
             <div className="space-y-2">
               <Button 
                 onClick={() => setLocation("/register")}
-                className="w-full sharp-button bg-military-green hover:bg-military-green-dark"
+                className="w-full sharp-button bg-military-green hover:bg-military-green-dark text-forest-green"
               >
                 Create Account
               </Button>
@@ -211,7 +211,7 @@ export default function Invitation() {
                 <p className="text-gray-300 mb-4">This invitation has expired.</p>
                 <Button 
                   onClick={() => setLocation("/")}
-                  className="sharp-button bg-military-green hover:bg-military-green-dark"
+                  className="sharp-button bg-military-green hover:bg-military-green-dark text-forest-green"
                 >
                   Go to Dashboard
                 </Button>
@@ -222,7 +222,7 @@ export default function Invitation() {
                 <p className="text-gray-300 mb-4">You've already accepted this invitation!</p>
                 <Button 
                   onClick={() => setLocation("/competitions")}
-                  className="sharp-button bg-military-green hover:bg-military-green-dark"
+                  className="sharp-button bg-military-green hover:bg-military-green-dark text-forest-green"
                 >
                   View Competitions
                 </Button>
@@ -241,7 +241,7 @@ export default function Invitation() {
                 <Button
                   onClick={() => acceptInvitation.mutate()}
                   disabled={acceptInvitation.isPending}
-                  className="w-full sharp-button bg-military-green hover:bg-military-green-dark text-lg py-3"
+                  className="w-full sharp-button bg-military-green hover:bg-military-green-dark text-lg py-3 text-forest-green"
                 >
                   {acceptInvitation.isPending ? "Accepting..." : "Accept Mission"}
                 </Button>

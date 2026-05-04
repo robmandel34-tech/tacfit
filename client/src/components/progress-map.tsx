@@ -394,7 +394,7 @@ export default function ProgressMap({ teams, competitionName, competition, activ
                     {/* Progress bar */}
                     <div className="w-full bg-gray-700 rounded-full h-2 mb-2">
                       <div 
-                        className="bg-military-green h-2 rounded-full transition-all duration-1000"
+                        className="bg-military-green h-2 rounded-full transition-all duration-1000 text-forest-green"
                         style={{ width: `${Math.min(team.progress, 100)}%` }}
                       />
                     </div>

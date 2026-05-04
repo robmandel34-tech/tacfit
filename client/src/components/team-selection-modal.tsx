@@ -185,7 +185,7 @@ export default function TeamSelectionModal({
                         className="w-8 h-8 rounded-full object-cover"
                       />
                     ) : (
-                      <div className="w-8 h-8 bg-military-green rounded-full flex items-center justify-center">
+                      <div className="w-8 h-8 bg-military-green rounded-full flex items-center justify-center text-forest-green">
                         <span className="text-white font-bold text-xs">
                           {getInitials(member.user.username)}
                         </span>
@@ -211,7 +211,7 @@ export default function TeamSelectionModal({
                   <Button
                     onClick={() => handleJoinTeam(selectedTeam.id)}
                     disabled={joinTeamMutation.isPending}
-                    className="bg-military-green hover:bg-military-green-light text-white px-4 py-2"
+                    className="bg-military-green hover:bg-military-green-light text-forest-green px-4 py-2"
                   >
                     {joinTeamMutation.isPending ? "Joining..." : "Join Here"}
                   </Button>
@@ -279,7 +279,7 @@ export default function TeamSelectionModal({
                               className="w-8 h-8 rounded-full object-cover border-2 border-tactical-gray-light"
                             />
                           ) : (
-                            <div className="w-8 h-8 bg-military-green rounded-full flex items-center justify-center border-2 border-tactical-gray-light">
+                            <div className="w-8 h-8 bg-military-green rounded-full flex items-center justify-center border-2 border-tactical-gray-light text-forest-green">
                               <span className="text-white font-bold text-xs">
                                 {getInitials(member.user.username)}
                               </span>
@@ -316,7 +316,7 @@ export default function TeamSelectionModal({
                   <Button
                     onClick={handleCreateNewTeam}
                     disabled={createNewTeamMutation.isPending}
-                    className="bg-military-green hover:bg-military-green-light text-white"
+                    className="bg-military-green hover:bg-military-green-light text-forest-green"
                   >
                     {createNewTeamMutation.isPending ? "Creating..." : "Create New Team"}
                   </Button>

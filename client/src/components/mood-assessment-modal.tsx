@@ -42,7 +42,7 @@ export function MoodAssessmentModal({ isOpen, onClose, userId }: MoodAssessmentM
       toast({
         title: "Mood logged successfully",
         description: `Your daily mood has been recorded. You earned ${data.pointsAwarded || 5} points!`,
-        className: "bg-military-green border-military-green text-white"
+        className: "bg-military-green border-military-green text-forest-green"
       });
 
       onClose();
@@ -137,7 +137,7 @@ export function MoodAssessmentModal({ isOpen, onClose, userId }: MoodAssessmentM
           <Button
             onClick={handleMoodSubmit}
             disabled={!selectedMood || isSubmitting}
-            className="flex-1 bg-military-green hover:bg-military-green-light text-white sharp-button font-bold shadow-lg hover:shadow-xl transition-all duration-300"
+            className="flex-1 bg-military-green hover:bg-military-green-light text-forest-green sharp-button font-bold shadow-lg hover:shadow-xl transition-all duration-300"
           >
             {isSubmitting ? (
               <div className="flex items-center space-x-2">

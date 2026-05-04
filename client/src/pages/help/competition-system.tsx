@@ -117,19 +117,19 @@ export default function CompetitionSystemHelp() {
                   <div className="bg-yellow-900/20 border border-yellow-600/30 p-3 rounded-lg">
                     <ul className="text-sm space-y-2">
                       <li className="flex items-start">
-                        <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
+                        <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0 text-forest-green"></div>
                         <span>Edit team name and motto</span>
                       </li>
                       <li className="flex items-start">
-                        <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
+                        <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0 text-forest-green"></div>
                         <span>Manage mission planning tasks</span>
                       </li>
                       <li className="flex items-start">
-                        <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
+                        <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0 text-forest-green"></div>
                         <span>Lead team strategy and coordination</span>
                       </li>
                       <li className="flex items-start">
-                        <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
+                        <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0 text-forest-green"></div>
                         <span>Receive bonus points for team performance</span>
                       </li>
                     </ul>
@@ -141,19 +141,19 @@ export default function CompetitionSystemHelp() {
                   <div className="bg-gray-700/50 border border-gray-600/30 p-3 rounded-lg">
                     <ul className="text-sm space-y-2">
                       <li className="flex items-start">
-                        <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
+                        <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0 text-forest-green"></div>
                         <span>Submit fitness activities with evidence</span>
                       </li>
                       <li className="flex items-start">
-                        <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
+                        <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0 text-forest-green"></div>
                         <span>Participate in team chat communications</span>
                       </li>
                       <li className="flex items-start">
-                        <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
+                        <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0 text-forest-green"></div>
                         <span>Complete assigned mission tasks</span>
                       </li>
                       <li className="flex items-start">
-                        <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
+                        <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0 text-forest-green"></div>
                         <span>Support team goals and objectives</span>
                       </li>
                     </ul>
@@ -238,7 +238,7 @@ export default function CompetitionSystemHelp() {
                   </h4>
                   <div className="bg-blue-900/20 border border-blue-600/30 p-4 rounded-lg space-y-3">
                     <div className="flex items-start">
-                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-3 flex-shrink-0"></div>
+                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-3 flex-shrink-0 text-forest-green"></div>
                       <div>
                         <span className="font-medium text-white">Individual Activity Rewards</span>
                         <p className="text-sm text-gray-400 mt-1">
@@ -248,7 +248,7 @@ export default function CompetitionSystemHelp() {
                       </div>
                     </div>
                     <div className="flex items-start">
-                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-3 flex-shrink-0"></div>
+                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-3 flex-shrink-0 text-forest-green"></div>
                       <div>
                         <span className="font-medium text-white">No Team Completion Bonuses</span>
                         <p className="text-sm text-gray-400 mt-1">
@@ -257,7 +257,7 @@ export default function CompetitionSystemHelp() {
                       </div>
                     </div>
                     <div className="flex items-start">
-                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-3 flex-shrink-0"></div>
+                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-3 flex-shrink-0 text-forest-green"></div>
                       <div>
                         <span className="font-medium text-white">Open to Everyone</span>
                         <p className="text-sm text-gray-400 mt-1">
@@ -275,7 +275,7 @@ export default function CompetitionSystemHelp() {
                   </h4>
                   <div className="bg-yellow-900/20 border border-yellow-600/30 p-4 rounded-lg space-y-3">
                     <div className="flex items-start">
-                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-3 flex-shrink-0"></div>
+                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-3 flex-shrink-0 text-forest-green"></div>
                       <div>
                         <span className="font-medium text-white">Pay with Points or Money</span>
                         <p className="text-sm text-gray-400 mt-1">
@@ -285,7 +285,7 @@ export default function CompetitionSystemHelp() {
                       </div>
                     </div>
                     <div className="flex items-start">
-                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-3 flex-shrink-0"></div>
+                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-3 flex-shrink-0 text-forest-green"></div>
                       <div>
                         <span className="font-medium text-white">Individual + Team Rewards</span>
                         <p className="text-sm text-gray-400 mt-1">
@@ -294,7 +294,7 @@ export default function CompetitionSystemHelp() {
                       </div>
                     </div>
                     <div className="flex items-start">
-                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-3 flex-shrink-0"></div>
+                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-3 flex-shrink-0 text-forest-green"></div>
                       <div>
                         <span className="font-medium text-white">Large Team Placement Bonuses</span>
                         <div className="text-sm text-gray-400 mt-1 space-y-1">

@@ -613,7 +613,7 @@ export default function Team() {
                   })()}
                   
                   <div 
-                    className="p-4 bg-military-green rounded-2xl border-0 cursor-pointer hover:brightness-105 transition-all"
+                    className="p-4 bg-military-green rounded-2xl border-0 cursor-pointer hover:brightness-105 transition-all text-forest-green"
                     onClick={handleProgressExpand}
                   >
                     <div className="flex items-center justify-between">
@@ -648,7 +648,7 @@ export default function Team() {
                           });
 
                           return hasNewProgress ? (
-                            <div className="ml-2 w-2 h-2 bg-military-green rounded-full animate-pulse" />
+                            <div className="ml-2 w-2 h-2 bg-military-green rounded-full animate-pulse text-forest-green" />
                           ) : null;
                         })()}
                       </div>
@@ -712,7 +712,7 @@ export default function Team() {
                                     })()}
                                   </span>
                                   {hasNewProgressForType && (
-                                    <div className="ml-2 w-1.5 h-1.5 bg-military-green rounded-full animate-pulse" />
+                                    <div className="ml-2 w-1.5 h-1.5 bg-military-green rounded-full animate-pulse text-forest-green" />
                                   )}
                                 </div>
                                 <span className="text-sm text-gray-400">
@@ -721,7 +721,7 @@ export default function Team() {
                               </div>
                               <div className="w-full bg-tactical-gray-light rounded-full h-2">
                                 <div 
-                                  className="bg-military-green h-2 rounded-full transition-all duration-300"
+                                  className="bg-military-green h-2 rounded-full transition-all duration-300 text-forest-green"
                                   style={{ width: `${percentage}%` }}
                                 ></div>
                               </div>

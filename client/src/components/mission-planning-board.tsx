@@ -287,7 +287,7 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
               <div className="flex justify-start">
                 <Button
                   onClick={() => setIsAddingTask(true)}
-                  className="bg-military-green hover:bg-military-green-dark text-white"
+                  className="bg-military-green hover:bg-military-green-dark text-forest-green"
                   size="sm"
                 >
                   <Plus className="h-4 w-4 mr-2" />
@@ -342,7 +342,7 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
                 <div className="flex space-x-2">
                   <Button
                     onClick={handleCreateTask}
-                    className="bg-military-green hover:bg-military-green-dark text-white"
+                    className="bg-military-green hover:bg-military-green-dark text-forest-green"
                     size="sm"
                     disabled={createTaskMutation.isPending}
                   >
@@ -412,7 +412,7 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
                       <Button
                         onClick={() => handleUpdateTask(task.id)}
                         size="sm"
-                        className="bg-military-green hover:bg-military-green-dark text-white"
+                        className="bg-military-green hover:bg-military-green-dark text-forest-green"
                         disabled={updateTaskMutation.isPending}
                       >
                         <Check className="h-4 w-4" />
@@ -459,7 +459,7 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
                         onCheckedChange={(checked) => 
                           toggleCompletionMutation.mutate({ id: task.id, completed: !!checked })
                         }
-                        className="data-[state=checked]:bg-military-green data-[state=checked]:border-military-green disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="data-[state=checked]:bg-military-green data-[state=checked]:border-military-green disabled:opacity-50 disabled:cursor-not-allowed text-forest-green"
                       />
                       <div className="flex items-center space-x-0.5">
                         <Badge variant="outline" className="text-[var(--bubble-accent)] border-[var(--bubble-accent)]/40 bg-[var(--bubble-bg)]">

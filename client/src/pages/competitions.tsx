@@ -256,7 +256,7 @@ export default function Competitions() {
                     size="sm"
                     onClick={() => acceptInvitation.mutate(inv.id)}
                     disabled={acceptInvitation.isPending}
-                    className="bg-military-green hover:bg-military-green-light text-white h-8 px-3"
+                    className="bg-military-green hover:bg-military-green-light text-forest-green h-8 px-3"
                   >
                     <Check className="w-4 h-4 mr-1" /> Accept
                   </Button>

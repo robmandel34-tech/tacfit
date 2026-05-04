@@ -299,7 +299,7 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
                 <Button 
                   type="submit" 
                   disabled={!message.trim() || sendMessage.isPending}
-                  className="bg-military-green hover:bg-military-green-dark text-white"
+                  className="bg-military-green hover:bg-military-green-dark text-forest-green"
                 >
                   <Send className="w-4 h-4" />
                 </Button>

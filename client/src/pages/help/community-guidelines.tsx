@@ -54,15 +54,15 @@ export default function CommunityGuidelinesHelp() {
                   <h4 className="font-semibold text-white">Team Spirit</h4>
                   <div className="space-y-2">
                     <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 rounded-full bg-military-green"></div>
+                      <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
                       <span className="text-sm text-gray-300">Friendly competitive banter</span>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 rounded-full bg-military-green"></div>
+                      <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
                       <span className="text-sm text-gray-300">Team motivation and support</span>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 rounded-full bg-military-green"></div>
+                      <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
                       <span className="text-sm text-gray-300">Celebrating team victories</span>
                     </div>
                   </div>
@@ -71,15 +71,15 @@ export default function CommunityGuidelinesHelp() {
                   <h4 className="font-semibold text-white">Knowledge Sharing</h4>
                   <div className="space-y-2">
                     <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 rounded-full bg-military-green"></div>
+                      <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
                       <span className="text-sm text-gray-300">Sharing fitness tips and advice</span>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 rounded-full bg-military-green"></div>
+                      <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
                       <span className="text-sm text-gray-300">Encouraging struggling teammates</span>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 rounded-full bg-military-green"></div>
+                      <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
                       <span className="text-sm text-gray-300">Sharing success stories</span>
                     </div>
                   </div>
@@ -221,19 +221,19 @@ export default function CommunityGuidelinesHelp() {
                 <h4 className="font-semibold text-military-green mb-3">How to Report:</h4>
                 <div className="space-y-2 text-sm text-gray-300">
                   <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 rounded-full bg-military-green"></div>
+                    <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
                     <span>Use the report button on activities, chat messages, or profiles</span>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 rounded-full bg-military-green"></div>
+                    <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
                     <span>Contact team captains for team-related issues</span>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 rounded-full bg-military-green"></div>
+                    <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
                     <span>Email support for serious violations or appeals</span>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 rounded-full bg-military-green"></div>
+                    <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
                     <span>Provide screenshots or evidence when possible</span>
                   </div>
                 </div>

@@ -58,7 +58,7 @@ export default function MoodTrackingCard({ userId }: MoodTrackingCardProps) {
       toast({
         title: "Mood logged successfully",
         description: `Your daily mood has been recorded. You earned ${data.pointsAwarded || 5} points!`,
-        className: "bg-military-green border-military-green text-white"
+        className: "bg-military-green border-military-green text-forest-green"
       });
 
       setIsModalOpen(false);
@@ -173,7 +173,7 @@ export default function MoodTrackingCard({ userId }: MoodTrackingCardProps) {
                 <Button
                   onClick={handleMoodSubmit}
                   disabled={!selectedMood || isSubmitting}
-                  className="flex-1 bg-military-green hover:bg-military-green-light"
+                  className="flex-1 bg-military-green hover:bg-military-green-light text-forest-green"
                 >
                   {isSubmitting ? "Submitting..." : "Submit Check-In"}
                 </Button>

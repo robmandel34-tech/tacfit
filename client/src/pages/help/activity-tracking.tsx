@@ -179,19 +179,19 @@ export default function ActivityTrackingHelp() {
                   <h4 className="font-semibold text-white mb-3">Maximize Your Points:</h4>
                   <div className="space-y-2">
                     <div className="flex items-start p-2 bg-gray-700/30 rounded">
-                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
+                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0 text-forest-green"></div>
                       <span className="text-sm">Always include both photo and video evidence</span>
                     </div>
                     <div className="flex items-start p-2 bg-gray-700/30 rounded">
-                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
+                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0 text-forest-green"></div>
                       <span className="text-sm">Submit activities immediately after completion</span>
                     </div>
                     <div className="flex items-start p-2 bg-gray-700/30 rounded">
-                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
+                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0 text-forest-green"></div>
                       <span className="text-sm">Be accurate with quantity measurements</span>
                     </div>
                     <div className="flex items-start p-2 bg-gray-700/30 rounded">
-                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
+                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0 text-forest-green"></div>
                       <span className="text-sm">Focus on your competition's required activities</span>
                     </div>
                   </div>
@@ -201,19 +201,19 @@ export default function ActivityTrackingHelp() {
                   <h4 className="font-semibold text-white mb-3">Team Contribution Tips:</h4>
                   <div className="space-y-2">
                     <div className="flex items-start p-2 bg-gray-700/30 rounded">
-                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
+                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0 text-forest-green"></div>
                       <span className="text-sm">Check team progress regularly</span>
                     </div>
                     <div className="flex items-start p-2 bg-gray-700/30 rounded">
-                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
+                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0 text-forest-green"></div>
                       <span className="text-sm">Coordinate with teammates on activity types</span>
                     </div>
                     <div className="flex items-start p-2 bg-gray-700/30 rounded">
-                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
+                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0 text-forest-green"></div>
                       <span className="text-sm">Share your achievements in team chat</span>
                     </div>
                     <div className="flex items-start p-2 bg-gray-700/30 rounded">
-                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
+                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0 text-forest-green"></div>
                       <span className="text-sm">Help teammates reach their goals</span>
                     </div>
                   </div>

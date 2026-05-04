@@ -191,7 +191,7 @@ function ResendVerificationForm({
         <Button
           onClick={onResend}
           disabled={isResending}
-          className="w-full bg-military-green hover:bg-military-green/90"
+          className="w-full bg-military-green hover:bg-military-green/90 text-forest-green"
         >
           {isResending ? "Sending..." : "Resend Verification Email"}
         </Button>

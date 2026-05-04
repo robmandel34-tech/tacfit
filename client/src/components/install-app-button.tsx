@@ -59,7 +59,7 @@ export function InstallAppButton() {
               </div>
               <Button 
                 onClick={handleInstall} 
-                className="w-full bg-military-green hover:bg-military-green/90"
+                className="w-full bg-military-green hover:bg-military-green/90 text-forest-green"
               >
                 <Download className="h-4 w-4 mr-2" />
                 Install TacFit App

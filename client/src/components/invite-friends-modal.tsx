@@ -129,7 +129,7 @@ export default function InviteFriendsModal({
               <Button
                 type="submit"
                 disabled={createInvitation.isPending}
-                className="w-full sharp-button bg-military-green hover:bg-military-green-dark"
+                className="w-full sharp-button bg-military-green hover:bg-military-green-dark text-forest-green"
               >
                 {createInvitation.isPending ? "Creating..." : "Create Invitation"}
               </Button>
@@ -155,7 +155,7 @@ export default function InviteFriendsModal({
                     <Button
                       size="sm"
                       onClick={() => copyToClipboard(inviteUrl)}
-                      className="sharp-button bg-military-green hover:bg-military-green-dark"
+                      className="sharp-button bg-military-green hover:bg-military-green-dark text-forest-green"
                     >
                       <Copy className="h-4 w-4" />
                     </Button>
@@ -165,7 +165,7 @@ export default function InviteFriendsModal({
                 <div className="flex gap-2">
                   <Button
                     onClick={shareViaSMS}
-                    className="flex-1 sharp-button bg-military-green hover:bg-military-green-dark"
+                    className="flex-1 sharp-button bg-military-green hover:bg-military-green-dark text-forest-green"
                     size="sm"
                   >
                     <MessageCircle className="h-4 w-4 mr-2" />

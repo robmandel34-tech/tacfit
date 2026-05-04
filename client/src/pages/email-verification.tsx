@@ -109,7 +109,7 @@ export default function EmailVerification() {
                   </p>
                   <Button
                     onClick={() => setLocation("/login")}
-                    className="w-full bg-military-green hover:bg-military-green/90 text-white font-semibold"
+                    className="w-full bg-military-green hover:bg-military-green/90 text-forest-green font-semibold"
                   >
                     Go to Login
                   </Button>
@@ -118,7 +118,7 @@ export default function EmailVerification() {
                 <div className="space-y-4">
                   <Button
                     onClick={() => setLocation("/login")}
-                    className="w-full bg-military-green hover:bg-military-green/90 text-white font-semibold"
+                    className="w-full bg-military-green hover:bg-military-green/90 text-forest-green font-semibold"
                   >
                     Back to Login
                   </Button>

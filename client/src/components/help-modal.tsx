@@ -158,19 +158,19 @@ export function HelpModal() {
               <CardContent>
                 <div className="space-y-3 text-sm">
                   <div className="flex items-start space-x-2">
-                    <div className="w-2 h-2 rounded-full bg-military-green mt-2 flex-shrink-0"></div>
+                    <div className="w-2 h-2 rounded-full bg-military-green mt-2 flex-shrink-0 text-forest-green"></div>
                     <p className="text-gray-300">Submit activities with both photo and video evidence to earn maximum points (30 vs 15)</p>
                   </div>
                   <div className="flex items-start space-x-2">
-                    <div className="w-2 h-2 rounded-full bg-military-green mt-2 flex-shrink-0"></div>
+                    <div className="w-2 h-2 rounded-full bg-military-green mt-2 flex-shrink-0 text-forest-green"></div>
                     <p className="text-gray-300">Team captains can edit team names, mottos, and manage mission planning tasks</p>
                   </div>
                   <div className="flex items-start space-x-2">
-                    <div className="w-2 h-2 rounded-full bg-military-green mt-2 flex-shrink-0"></div>
+                    <div className="w-2 h-2 rounded-full bg-military-green mt-2 flex-shrink-0 text-forest-green"></div>
                     <p className="text-gray-300">Use team chat and mission planning to coordinate with your team effectively</p>
                   </div>
                   <div className="flex items-start space-x-2">
-                    <div className="w-2 h-2 rounded-full bg-military-green mt-2 flex-shrink-0"></div>
+                    <div className="w-2 h-2 rounded-full bg-military-green mt-2 flex-shrink-0 text-forest-green"></div>
                     <p className="text-gray-300">Check the progress map on competition status page to see your team's position</p>
                   </div>
                 </div>

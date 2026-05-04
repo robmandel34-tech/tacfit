@@ -213,7 +213,7 @@ export function AppleHealthIntegration({ userId, competitionId, teamId }: { user
 
               <Button 
                 onClick={() => setupMutation.mutate()}
-                className="w-full bg-military-green hover:bg-military-green/80"
+                className="w-full bg-military-green hover:bg-military-green/80 text-forest-green"
                 disabled={setupMutation.isPending}
               >
                 {setupMutation.isPending ? (
@@ -359,7 +359,7 @@ export function AppleHealthIntegration({ userId, competitionId, teamId }: { user
               </Button>
               <Button
                 onClick={() => setShowSetupDialog(false)}
-                className="flex-1 bg-military-green hover:bg-military-green/80"
+                className="flex-1 bg-military-green hover:bg-military-green/80 text-forest-green"
               >
                 Done
               </Button>
@@ -487,7 +487,7 @@ function WorkoutCard({
                 size="sm"
                 onClick={() => selectedActivityType && onConvert(selectedActivityType)}
                 disabled={!selectedActivityType || isConverting}
-                className="bg-military-green hover:bg-military-green/80"
+                className="bg-military-green hover:bg-military-green/80 text-forest-green"
               >
                 {isConverting ? (
                   <div className="animate-spin w-3 h-3 border-2 border-white border-t-transparent rounded-full" />

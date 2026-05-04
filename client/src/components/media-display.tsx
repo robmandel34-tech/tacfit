@@ -382,7 +382,7 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
         {isWorkoutDetailsImage(sortedImageUrls[0]) && (
           <button
             onClick={() => openWorkoutDetails(sortedImageUrls[0])}
-            className="absolute top-3 right-3 bg-military-green/80 text-white p-2 rounded-full hover:bg-military-green transition-colors backdrop-blur-sm"
+            className="absolute top-3 right-3 bg-military-green/80 text-white p-2 rounded-full hover:bg-military-green hover:text-forest-green transition-colors backdrop-blur-sm"
             title="View full workout details"
           >
             <Maximize2 className="w-5 h-5" />

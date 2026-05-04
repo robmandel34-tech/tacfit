@@ -91,7 +91,7 @@ export default function ActivityCommentsModal({
             ) : (
               comments.map((comment: any) => (
                 <div key={comment.id} className="flex gap-3 p-3 bg-tactical-gray rounded-lg">
-                  <div className="w-8 h-8 bg-military-green rounded-full flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 bg-military-green rounded-full flex items-center justify-center shrink-0 text-forest-green">
                     <span className="text-white font-bold text-xs">
                       {getInitials(comment.user?.username || "U")}
                     </span>
@@ -126,7 +126,7 @@ export default function ActivityCommentsModal({
                 <Button
                   type="submit"
                   disabled={!newComment.trim() || addComment.isPending}
-                  className="bg-military-green hover:bg-military-green-light text-white"
+                  className="bg-military-green hover:bg-military-green-light text-forest-green"
                 >
                   {addComment.isPending ? (
                     "Posting..."

@@ -170,7 +170,7 @@ export function HelpPopupModal({ isOpen, onClose }: HelpPopupModalProps) {
                         setShowOnboarding(true);
                         onClose();
                       }}
-                      className="w-full bg-military-green hover:bg-military-green-light text-white"
+                      className="w-full bg-military-green hover:bg-military-green-light text-forest-green"
                     >
                       Start Walkthrough
                     </Button>

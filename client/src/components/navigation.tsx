@@ -104,7 +104,7 @@ export default function Navigation() {
                       }}
                     />
                   ) : null}
-                  <div className="w-10 h-10 bg-military-green rounded-full flex items-center justify-center fallback-avatar" style={{ display: user.avatar ? 'none' : 'flex' }}>
+                  <div className="w-10 h-10 bg-military-green rounded-full flex items-center justify-center fallback-avatar text-forest-green" style={{ display: user.avatar ? 'none' : 'flex' }}>
                     <span className="text-white font-bold text-sm">{getInitials(user.username)}</span>
                   </div>
                   {/* Notification indicator for tasks and messages */}

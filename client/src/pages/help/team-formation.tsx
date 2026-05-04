@@ -263,19 +263,19 @@ export default function TeamFormationHelp() {
                   <h4 className="font-semibold text-white mb-3">For Team Captains:</h4>
                   <div className="space-y-2">
                     <div className="flex items-start p-2 bg-gray-700/30 rounded">
-                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
+                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0 text-forest-green"></div>
                       <span className="text-sm">Set clear team expectations and goals</span>
                     </div>
                     <div className="flex items-start p-2 bg-gray-700/30 rounded">
-                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
+                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0 text-forest-green"></div>
                       <span className="text-sm">Regularly check in with team members</span>
                     </div>
                     <div className="flex items-start p-2 bg-gray-700/30 rounded">
-                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
+                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0 text-forest-green"></div>
                       <span className="text-sm">Create motivating team motto and identity</span>
                     </div>
                     <div className="flex items-start p-2 bg-gray-700/30 rounded">
-                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
+                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0 text-forest-green"></div>
                       <span className="text-sm">Lead by example with consistent activity</span>
                     </div>
                   </div>
@@ -285,19 +285,19 @@ export default function TeamFormationHelp() {
                   <h4 className="font-semibold text-white mb-3">For All Team Members:</h4>
                   <div className="space-y-2">
                     <div className="flex items-start p-2 bg-gray-700/30 rounded">
-                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
+                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0 text-forest-green"></div>
                       <span className="text-sm">Communicate openly about challenges</span>
                     </div>
                     <div className="flex items-start p-2 bg-gray-700/30 rounded">
-                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
+                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0 text-forest-green"></div>
                       <span className="text-sm">Celebrate each other's achievements</span>
                     </div>
                     <div className="flex items-start p-2 bg-gray-700/30 rounded">
-                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
+                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0 text-forest-green"></div>
                       <span className="text-sm">Submit activities with quality evidence</span>
                     </div>
                     <div className="flex items-start p-2 bg-gray-700/30 rounded">
-                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0"></div>
+                      <div className="w-2 h-2 rounded-full bg-military-green mt-2 mr-2 flex-shrink-0 text-forest-green"></div>
                       <span className="text-sm">Stay active in team chat and planning</span>
                     </div>
                   </div>

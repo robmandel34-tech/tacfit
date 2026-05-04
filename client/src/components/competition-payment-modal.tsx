@@ -112,7 +112,7 @@ export default function CompetitionPaymentModal({
             <Button
               onClick={() => pointsPaymentMutation.mutate()}
               disabled={!hasEnoughPoints || pointsPaymentMutation.isPending}
-              className="flex-1 bg-military-green hover:bg-military-green-light text-white disabled:opacity-50"
+              className="flex-1 bg-military-green hover:bg-military-green-light text-forest-green disabled:opacity-50"
             >
               {pointsPaymentMutation.isPending ? "Processing…" : "Confirm Entry"}
             </Button>

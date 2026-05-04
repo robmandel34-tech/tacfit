@@ -351,7 +351,7 @@ export default function ProfileEditModal({ user, isOpen, onClose }: ProfileEditM
             <Label className="text-sm font-medium text-gray-300">Profile Picture</Label>
             <div className="flex justify-center">
               <div className="relative">
-                <div className="w-20 h-20 rounded-full bg-military-green flex items-center justify-center overflow-hidden">
+                <div className="w-20 h-20 rounded-full bg-military-green flex items-center justify-center overflow-hidden text-forest-green">
                   {avatarPreview ? (
                     <img
                       src={avatarPreview}
@@ -469,7 +469,7 @@ export default function ProfileEditModal({ user, isOpen, onClose }: ProfileEditM
             <Button
               onClick={handleSave}
               disabled={isLoading || !hasChanges}
-              className="flex-1 bg-military-green hover:bg-military-green/80 text-white"
+              className="flex-1 bg-military-green hover:bg-military-green/80 text-forest-green"
             >
               {isLoading ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>

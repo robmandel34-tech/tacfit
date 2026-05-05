@@ -95,33 +95,58 @@ export class ObjectStorageService {
     return null;
   }
 
-  // Downloads an object to the response.
+  // Downloads an object to the response, with HTTP Range support so videos
+  // can be seeked and played in iOS Safari / WKWebView (which require it).
   async downloadObject(file: File, res: Response, cacheTtlSec: number = 3600) {
     try {
-      // Get file metadata
       const [metadata] = await file.getMetadata();
-      // Get the ACL policy for the object.
       const aclPolicy = await getObjectAclPolicy(file);
       const isPublic = aclPolicy?.visibility === "public";
-      // Set appropriate headers
-      res.set({
-        "Content-Type": metadata.contentType || "application/octet-stream",
-        "Content-Length": metadata.size,
-        "Cache-Control": `${
-          isPublic ? "public" : "private"
-        }, max-age=${cacheTtlSec}`,
-      });
+      const fileSize = parseInt(String(metadata.size || "0"), 10);
+      const contentType = metadata.contentType || "application/octet-stream";
+      const rangeHeader = (res.req?.headers?.range as string | undefined) || "";
 
-      // Stream the file to the response
+      // Always advertise that we support range requests (critical for <video> on iOS)
+      res.setHeader("Accept-Ranges", "bytes");
+      res.setHeader("Content-Type", contentType);
+      res.setHeader(
+        "Cache-Control",
+        `${isPublic ? "public" : "private"}, max-age=${cacheTtlSec}`,
+      );
+
+      // Handle a Range request — respond with 206 Partial Content
+      const rangeMatch = rangeHeader.match(/bytes=(\d*)-(\d*)/);
+      if (rangeMatch && fileSize > 0) {
+        const start = rangeMatch[1] ? parseInt(rangeMatch[1], 10) : 0;
+        const end = rangeMatch[2] ? Math.min(parseInt(rangeMatch[2], 10), fileSize - 1) : fileSize - 1;
+
+        if (isNaN(start) || isNaN(end) || start > end || start >= fileSize) {
+          res.status(416).setHeader("Content-Range", `bytes */${fileSize}`);
+          return res.end();
+        }
+
+        const chunkSize = end - start + 1;
+        res.status(206);
+        res.setHeader("Content-Range", `bytes ${start}-${end}/${fileSize}`);
+        res.setHeader("Content-Length", String(chunkSize));
+
+        const rangeStream = file.createReadStream({ start, end });
+        rangeStream.on("error", (err) => {
+          console.error("Range stream error:", err);
+          if (!res.headersSent) res.status(500).end();
+        });
+        return rangeStream.pipe(res);
+      }
+
+      // Full download
+      if (fileSize > 0) res.setHeader("Content-Length", String(fileSize));
       const stream = file.createReadStream();
-
       stream.on("error", (err) => {
         console.error("Stream error:", err);
         if (!res.headersSent) {
           res.status(500).json({ error: "Error streaming file" });
         }
       });
-
       stream.pipe(res);
     } catch (error) {
       console.error("Error downloading file:", error);

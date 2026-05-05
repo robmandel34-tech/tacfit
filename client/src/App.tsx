@@ -150,6 +150,16 @@ function AppContent() {
 }
 
 function App() {
+  // Dismiss splash screen after React mounts
+  useEffect(() => {
+    const splash = document.getElementById('tacfit-splash');
+    if (splash) {
+      splash.style.opacity = '0';
+      const timer = setTimeout(() => splash.remove(), 380);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
   // Register service worker
   useEffect(() => {
     if ('serviceWorker' in navigator) {

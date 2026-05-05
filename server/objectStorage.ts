@@ -140,15 +140,17 @@ export class ObjectStorageService {
     const bucket = objectStorageClient.bucket(bucketName);
     const gcsFile = bucket.file(objectName);
 
+    const fileSize = fs.statSync(localPath).size;
     await new Promise<void>((resolve, reject) => {
       const readStream = fs.createReadStream(localPath);
       const writeStream = gcsFile.createWriteStream({
         contentType,
         metadata: { contentType },
-        resumable: false,
+        // Use resumable uploads for files > 5 MB — much more reliable for video
+        resumable: fileSize > 5 * 1024 * 1024,
       });
-      readStream.on("error", reject);
-      writeStream.on("error", reject);
+      readStream.on("error", (err) => { console.error("Read stream error:", err); reject(err); });
+      writeStream.on("error", (err) => { console.error("GCS write stream error:", err); reject(err); });
       writeStream.on("finish", resolve);
       readStream.pipe(writeStream);
     });

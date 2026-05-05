@@ -25,6 +25,7 @@ import { webhookService } from "./webhook-service";
 import Stripe from "stripe";
 import bcrypt from "bcrypt";
 import rateLimit from "express-rate-limit";
+import os from "os";
 
 const execAsync = promisify(exec);
 
@@ -136,7 +137,7 @@ const ALLOWED_IMAGE_TYPES = new Set([
 ]);
 
 const upload = multer({ 
-  dest: 'uploads/',
+  dest: os.tmpdir(),  // Use OS temp dir — always writable, auto-cleaned by OS
   limits: { fileSize: 200 * 1024 * 1024 }, // 200MB limit per file
   fileFilter: (_req, file, cb) => {
     // Accept any video/* MIME type (covers mp4, quicktime, hevc, x-m4v, 3gpp, etc.)
@@ -269,11 +270,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       domain: undefined // Let browser determine domain
     }
   }));
-
-  // Create uploads directory if it doesn't exist
-  if (!fs.existsSync('uploads')) {
-    fs.mkdirSync('uploads');
-  }
 
   // Auth routes
   app.post("/api/auth/register", authRateLimit, async (req, res) => {
@@ -4238,6 +4234,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  // Allow up to 20 minutes for large video uploads before timing out
+  httpServer.requestTimeout = 20 * 60 * 1000;
+  httpServer.headersTimeout = 20 * 60 * 1000 + 1000;
+  httpServer.keepAliveTimeout = 20 * 60 * 1000;
   return httpServer;
 }
 

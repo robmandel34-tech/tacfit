@@ -360,11 +360,11 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
   // If no video but we have images, show the first image with gallery button
   if (sortedImageUrls.length > 0) {
     return (
-      <div className="relative w-full h-64 bg-tactical-gray-light rounded-lg overflow-hidden">
+      <div className="relative w-full bg-black rounded-lg overflow-hidden flex items-center justify-center">
         <img
           src={sortedImageUrls[0]}
           alt="Activity evidence"
-          className="w-full h-full object-cover object-[center_30%]"
+          className="w-full h-auto max-h-[32rem] object-contain"
           onError={(e) => {
             console.error("Evidence image failed to load:", sortedImageUrls[0]);
             // Try object storage URL if original fails

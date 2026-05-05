@@ -27,12 +27,12 @@ export default function MediaSlideshow({ images, videoUrl }: MediaSlideshowProps
   if (totalMedia === 1) {
     const media = allMedia[0];
     return (
-      <div className="relative w-full h-64 bg-tactical-gray-light rounded-lg overflow-hidden">
+      <div className="relative w-full bg-black rounded-lg overflow-hidden flex items-center justify-center min-h-[16rem]">
         {media.type === 'image' ? (
           <img
             src={media.url}
             alt="Activity evidence"
-            className="w-full h-full object-cover object-[center_30%]"
+            className="w-full h-auto max-h-[32rem] object-contain"
             onError={(e) => {
               console.error("Evidence image failed to load:", media.url);
               e.currentTarget.style.display = 'none';
@@ -111,13 +111,13 @@ export default function MediaSlideshow({ images, videoUrl }: MediaSlideshowProps
   const currentMedia = allMedia[currentIndex];
 
   return (
-    <div className="relative w-full h-64 bg-tactical-gray-light rounded-lg overflow-hidden group">
+    <div className="relative w-full bg-black rounded-lg overflow-hidden group flex items-center justify-center min-h-[16rem] max-h-[32rem]">
       {/* Main Media Display */}
       {currentMedia.type === 'image' ? (
         <img
           src={currentMedia.url}
           alt={`Activity evidence ${currentIndex + 1}`}
-          className="w-full h-full object-cover object-[center_30%] transition-opacity duration-300"
+          className="w-full h-auto max-h-[32rem] object-contain transition-opacity duration-300"
           onError={(e) => {
             console.error("Evidence image failed to load:", currentMedia.url);
             e.currentTarget.style.display = 'none';

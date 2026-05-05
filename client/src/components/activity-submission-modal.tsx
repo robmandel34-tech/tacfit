@@ -120,6 +120,56 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   const currentWordCount = countWords(textInput);
   const isTextInputValid = !requiresTextInput || (currentWordCount >= minWords && currentWordCount <= maxWords);
 
+  // Step 1: upload a video file directly to Google Cloud Storage via a signed URL.
+  // This bypasses the Replit deployment proxy (which has a small body-size limit).
+  // Returns the /uploads/<file> path the server should use as evidenceUrl.
+  const uploadVideoDirect = (file: File): Promise<string> =>
+    new Promise(async (resolve, reject) => {
+      try {
+        // Pull the file extension so the resulting URL keeps a recognizable suffix
+        const dot = file.name.lastIndexOf('.');
+        const extension = dot >= 0 ? file.name.slice(dot) : '';
+
+        // Ask the server for a signed PUT URL
+        const urlRes = await fetch(`${API_BASE}/api/upload-url`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ extension }),
+        });
+        if (!urlRes.ok) {
+          throw new Error('Could not prepare video upload — please try again.');
+        }
+        const { uploadUrl, uploadedPath } = await urlRes.json();
+
+        // PUT the file straight to GCS with progress tracking
+        const xhr = new XMLHttpRequest();
+        xhr.open('PUT', uploadUrl);
+        xhr.setRequestHeader('Content-Type', file.type || 'video/mp4');
+
+        xhr.upload.addEventListener('progress', (e) => {
+          if (e.lengthComputable) {
+            // Reserve the last 10% for the activity submit step
+            setUploadProgress(Math.round((e.loaded / e.total) * 90));
+          }
+        });
+        xhr.addEventListener('load', () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve(uploadedPath);
+          } else {
+            reject(new Error(`Video upload failed (${xhr.status}). Please try again.`));
+          }
+        });
+        xhr.addEventListener('error', () => reject(new Error('Network error during video upload — check your connection and try again.')));
+        xhr.addEventListener('abort', () => reject(new Error('Video upload was cancelled.')));
+        xhr.addEventListener('timeout', () => reject(new Error('Video upload timed out. Try a shorter clip or a stronger connection.')));
+        xhr.timeout = 15 * 60 * 1000; // 15 min for very large videos
+        xhr.send(file);
+      } catch (err: any) {
+        reject(err instanceof Error ? err : new Error(String(err)));
+      }
+    });
+
   const submitActivity = useMutation({
     mutationFn: (data: FormData) =>
       new Promise<any>((resolve, reject) => {
@@ -128,17 +178,18 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
         xhr.withCredentials = true;
 
         // Simulate progress since proxied environments don't fire reliable progress events
-        let simulated = 5;
-        setUploadProgress(5);
+        let simulated = 90;
+        setUploadProgress(90);
         const ticker = setInterval(() => {
-          simulated = Math.min(simulated + (Math.random() * 3), 90);
+          simulated = Math.min(simulated + (Math.random() * 1), 98);
           setUploadProgress(Math.round(simulated));
         }, 1500);
 
         xhr.upload.addEventListener("progress", (e) => {
-          if (e.lengthComputable) {
+          if (e.lengthComputable && e.total > 1024 * 1024) {
+            // Only override simulated progress if there's a non-trivial body size
             clearInterval(ticker);
-            setUploadProgress(Math.round((e.loaded / e.total) * 90));
+            setUploadProgress(90 + Math.round((e.loaded / e.total) * 8));
           }
         });
 
@@ -170,10 +221,10 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
         xhr.addEventListener("timeout", () => {
           clearInterval(ticker);
           setUploadProgress(0);
-          reject(new Error("Upload timed out — your video may be too large or your connection too slow. Try a shorter clip."));
+          reject(new Error("Upload timed out — please try again."));
         });
 
-        // 10 minute timeout for large video files
+        // 10 minute timeout (request body is small now, but be generous)
         xhr.timeout = 10 * 60 * 1000;
 
         xhr.send(data);
@@ -278,9 +329,22 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
       formData.append(`images`, file);
     });
 
-    // Add video file
+    // For videos, upload directly to cloud storage first (bypasses proxy size limits),
+    // then send the resulting path along with the rest of the form.
     if (videoFile) {
-      formData.append("video", videoFile);
+      try {
+        setUploadProgress(1);
+        const videoPath = await uploadVideoDirect(videoFile);
+        formData.append("videoUrl", videoPath);
+      } catch (err: any) {
+        toast({
+          title: "Video upload failed",
+          description: err?.message || "Could not upload your video. Please try again.",
+          variant: "destructive",
+        });
+        setUploadProgress(0);
+        return;
+      }
     }
 
     submitActivity.mutate(formData);

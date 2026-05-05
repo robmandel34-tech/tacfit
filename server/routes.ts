@@ -2086,6 +2086,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Generate a signed URL for direct browser-to-GCS upload.
+  // Used for large video files that exceed the deployment proxy's body-size limit.
+  app.post("/api/upload-url", async (req, res) => {
+    try {
+      const { extension } = req.body || {};
+      const safeExt = typeof extension === 'string' && /^\.[a-zA-Z0-9]{1,8}$/.test(extension)
+        ? extension.toLowerCase()
+        : '';
+      const svc = new ObjectStorageService();
+      const { uploadUrl, uploadedPath } = await svc.getDirectUploadUrl(safeExt);
+      res.json({ uploadUrl, uploadedPath });
+    } catch (err) {
+      console.error("Failed to generate upload URL:", err);
+      res.status(500).json({ message: "Failed to generate upload URL" });
+    }
+  });
+
   app.post("/api/activities", (req, res, next) => {
     console.log("POST /api/activities received — starting multer");
     // Log raw content-type so we can debug iOS MIME issues
@@ -2158,9 +2175,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Calculate base points
       let basePoints = 15;
-      
-      // Check if both video and image evidence are provided for bonus (30 total)
-      const hasVideoEvidence = videoFiles.length > 0;
+
+      // Check if both video and image evidence are provided for bonus (30 total).
+      // Video may either come through multer OR via a pre-signed direct upload (req.body.videoUrl).
+      const preUploadedVideoCheck = typeof req.body.videoUrl === 'string' && req.body.videoUrl.trim().startsWith('/uploads/');
+      const hasVideoEvidence = videoFiles.length > 0 || preUploadedVideoCheck;
       const hasImageEvidence = imageFiles.length > 0;
       const hasBothEvidenceTypes = hasVideoEvidence && hasImageEvidence;
       
@@ -2175,7 +2194,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let evidenceUrl = '';
       let thumbnailUrl = '';
       const actObjStorage = new ObjectStorageService();
-      if (videoFiles.length > 0) {
+
+      // Direct-upload path: client uploaded video to GCS via signed URL
+      // and is sending us just the resulting /uploads/<file> path.
+      const preUploadedVideoUrl = typeof req.body.videoUrl === 'string' ? req.body.videoUrl.trim() : '';
+      const hasPreUploadedVideo = preUploadedVideoUrl.startsWith('/uploads/');
+
+      if (hasPreUploadedVideo) {
+        evidenceUrl = preUploadedVideoUrl;
+        evidenceType = 'video';
+        console.log(`Video already uploaded directly to GCS: ${preUploadedVideoUrl}`);
+      } else if (videoFiles.length > 0) {
+        // Legacy path: video came through multer (small files / dev)
         const videoFile = videoFiles[0];
         const originalExtension = path.extname(videoFile.originalname).toLowerCase() || '.mp4';
         const timestamp = Date.now();

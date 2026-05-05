@@ -170,6 +170,24 @@ export class ObjectStorageService {
     return exists ? file : null;
   }
 
+  // Generates a signed PUT URL for direct browser-to-GCS upload, plus the
+  // /uploads/<fileName> path the server will serve it from afterwards.
+  // Used to bypass Replit's deployment proxy body-size limit for large videos.
+  async getDirectUploadUrl(extension?: string): Promise<{ uploadUrl: string; uploadedPath: string }> {
+    const privateObjectDir = this.getPrivateObjectDir();
+    const objectId = randomUUID();
+    const fileName = extension ? `${objectId}${extension}` : objectId;
+    const fullPath = `${privateObjectDir}/uploads/${fileName}`;
+    const { bucketName, objectName } = parseObjectPath(fullPath);
+    const uploadUrl = await signObjectURL({
+      bucketName,
+      objectName,
+      method: "PUT",
+      ttlSec: 900,
+    });
+    return { uploadUrl, uploadedPath: `/uploads/${fileName}` };
+  }
+
   // Gets the upload URL for an object entity.
   async getObjectEntityUploadURL(): Promise<string> {
     const privateObjectDir = this.getPrivateObjectDir();

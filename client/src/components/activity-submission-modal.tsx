@@ -142,10 +142,13 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
         }
         const { uploadUrl, uploadedPath } = await urlRes.json();
 
-        // PUT the file straight to GCS with progress tracking
+        // PUT the file straight to GCS with progress tracking.
+        // Always send `video/mp4` (even for iPhone .mov files) — iOS WKWebView
+        // refuses to play files labeled `video/quicktime`, but plays the same
+        // bytes labeled as `video/mp4` just fine.
         const xhr = new XMLHttpRequest();
         xhr.open('PUT', uploadUrl);
-        xhr.setRequestHeader('Content-Type', file.type || 'video/mp4');
+        xhr.setRequestHeader('Content-Type', 'video/mp4');
 
         xhr.upload.addEventListener('progress', (e) => {
           if (e.lengthComputable) {

@@ -103,7 +103,20 @@ export class ObjectStorageService {
       const aclPolicy = await getObjectAclPolicy(file);
       const isPublic = aclPolicy?.visibility === "public";
       const fileSize = parseInt(String(metadata.size || "0"), 10);
-      const contentType = metadata.contentType || "application/octet-stream";
+      let contentType = metadata.contentType || "application/octet-stream";
+
+      // iOS WKWebView's <video> element refuses to play files served as
+      // `video/quicktime` even when the codec is fully supported. Remap
+      // common video extensions to `video/mp4` so iOS can play them inline.
+      const lowerName = (file.name || "").toLowerCase();
+      if (lowerName.endsWith(".mov") || lowerName.endsWith(".mp4") || lowerName.endsWith(".m4v")) {
+        contentType = "video/mp4";
+      } else if (lowerName.endsWith(".webm")) {
+        contentType = "video/webm";
+      } else if (contentType === "video/quicktime") {
+        contentType = "video/mp4";
+      }
+
       const rangeHeader = (res.req?.headers?.range as string | undefined) || "";
 
       // Always advertise that we support range requests (critical for <video> on iOS)

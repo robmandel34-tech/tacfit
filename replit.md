@@ -77,6 +77,11 @@ The platform follows a military/tactical theme across its UI/UX, language, and i
 4. Open in Xcode: `npx cap open ios`
 5. Set your Team + Bundle ID, then Archive → Distribute
 
+### iOS splash screen
+- Master splash lives at `scripts/assets/ios-splash-master.png` (2732×2732, TacFit shield centered on `#0a0f0a`).
+- `scripts/cap-build.sh` copies it into `ios/App/App/Assets.xcassets/Splash.imageset/` (all three @1x/@2x/@3x slots) before `npx cap sync`, so every native build picks it up automatically.
+- To change the splash: replace `scripts/assets/ios-splash-master.png` with a new 2732×2732 PNG, then rebuild and re-upload to TestFlight. Splash updates only take effect with a new native build — reinstalling the same TestFlight build will keep showing the old splash.
+
 ## Recent Optimizations (2025-08-21)
 
 ### Deployment Optimization

@@ -660,7 +660,7 @@ export default function Team() {
                     </div>
                     
                     {isProgressExpanded && (
-                      <div className="mt-4 space-y-3">
+                      <div className="mt-4 space-y-3 bg-tactical-gray rounded-xl p-4 border border-tactical-gray-lighter">
                         {competition.requiredActivities.map((activityType: string, index: number) => {
                           // Check if competition has started
                           const competitionHasStarted = new Date() >= new Date(competition.startDate);
@@ -719,7 +719,7 @@ export default function Team() {
                                   {totalQuantity.toLocaleString()}/{targetNumber.toLocaleString()} {unit}
                                 </span>
                               </div>
-                              <div className="w-full bg-tactical-gray-light rounded-full h-2">
+                              <div className="w-full bg-tactical-gray-lighter rounded-full h-2">
                                 <div 
                                   className="bg-military-green h-2 rounded-full transition-all duration-300 text-forest-green"
                                   style={{ width: `${percentage}%` }}

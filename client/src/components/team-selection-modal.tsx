@@ -149,14 +149,14 @@ export default function TeamSelectionModal({
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-tactical-gray-light border-tactical-gray">
           <DialogHeader>
-            <DialogTitle className="text-white">{selectedTeam.name}</DialogTitle>
             <Button 
               variant="ghost" 
               onClick={() => setSelectedTeam(null)}
-              className="absolute right-12 top-4 text-gray-400 hover:text-white"
+              className="absolute left-2 top-3 text-gray-400 hover:text-white px-2 h-8"
             >
               ← Back to Teams
             </Button>
+            <DialogTitle className="text-white text-center pt-8">{selectedTeam.name}</DialogTitle>
           </DialogHeader>
           
           <div className="space-y-4">
@@ -263,7 +263,7 @@ export default function TeamSelectionModal({
                       </div>
                       <Badge 
                         variant={team.memberCount < 5 ? "default" : "secondary"}
-                        className={team.memberCount < 5 ? "bg-green-600" : "bg-gray-600"}
+                        className={team.memberCount < 5 ? "bg-green-600 text-black hover:bg-green-600" : "bg-gray-600"}
                       >
                         {team.memberCount < 5 ? `${5 - team.memberCount} Open` : "Full"}
                       </Badge>

@@ -2088,14 +2088,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Generate a signed URL for direct browser-to-GCS upload.
   // Used for large video files that exceed the deployment proxy's body-size limit.
+  // Per-user rate limit so a compromised account can't generate unlimited
+  // signed URLs and dump endless data into the bucket. Sliding 60s window.
+  const uploadUrlRate = new Map<number, number[]>();
+  const UPLOAD_URL_RATE_MAX = 30;       // max 30 signed URLs
+  const UPLOAD_URL_RATE_WINDOW_MS = 60_000;
+
+  // Only allow signed PUT URLs for known media extensions — blocks anyone
+  // trying to use the bucket as generic file hosting (.exe, .html, etc.).
+  const ALLOWED_UPLOAD_EXTENSIONS = new Set([
+    '.mp4', '.mov', '.m4v', '.webm',
+    '.jpg', '.jpeg', '.png', '.gif', '.heic', '.heif', '.webp',
+  ]);
+
   app.post("/api/upload-url", async (req, res) => {
     try {
+      // 1. Require an authenticated session — no anonymous signed URLs.
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      // 2. Per-user rate limit.
+      const now = Date.now();
+      const recent = (uploadUrlRate.get(userId) || []).filter(
+        (t) => now - t < UPLOAD_URL_RATE_WINDOW_MS
+      );
+      if (recent.length >= UPLOAD_URL_RATE_MAX) {
+        return res.status(429).json({ message: "Too many upload requests. Please wait a moment and try again." });
+      }
+      recent.push(now);
+      uploadUrlRate.set(userId, recent);
+
+      // 3. Validate extension and restrict to known media types only.
       const { extension } = req.body || {};
-      const safeExt = typeof extension === 'string' && /^\.[a-zA-Z0-9]{1,8}$/.test(extension)
+      const candidate = typeof extension === 'string' && /^\.[a-zA-Z0-9]{1,8}$/.test(extension)
         ? extension.toLowerCase()
         : '';
+      if (!candidate || !ALLOWED_UPLOAD_EXTENSIONS.has(candidate)) {
+        return res.status(400).json({ message: "Unsupported file type." });
+      }
+
       const svc = new ObjectStorageService();
-      const { uploadUrl, uploadedPath } = await svc.getDirectUploadUrl(safeExt);
+      const { uploadUrl, uploadedPath } = await svc.getDirectUploadUrl(candidate);
       res.json({ uploadUrl, uploadedPath });
     } catch (err) {
       console.error("Failed to generate upload URL:", err);

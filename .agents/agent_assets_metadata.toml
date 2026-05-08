@@ -161,21 +161,3 @@ id = "VmpfEtHiRg4DaBWk7d87B"
 uri = "file://attached_assets/generated_images/tacfit-intel-marketing-v2.png"
 type = "image"
 title = "TacFit — Intel Feed Marketing (Real Screenshot)"
-
-[[outputs]]
-id = "Nb--BfiO1hPJv1yvtSPXA"
-uri = "file://exports/tacfit-app-preview-6.5.mp4"
-type = "video"
-title = "TacFit App Store Preview (6.5\" — 886×1920)"
-
-[[outputs]]
-id = "sEXBdLpFnef3xXDaYNzL8"
-uri = "file://exports/tacfit-app-preview-1080x1920.mp4"
-type = "video"
-title = "TacFit App Store Preview (6.5\" — 1080×1920)"
-
-[[outputs]]
-id = "6sKtsufyV_HcfSD204zyE"
-uri = "file://exports/tacfit-app-preview-1080x1920-trimmed.mp4"
-type = "video"
-title = "TacFit App Store Preview — 1080×1920, person trimmed"

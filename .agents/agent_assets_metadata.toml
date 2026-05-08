@@ -161,3 +161,9 @@ id = "VmpfEtHiRg4DaBWk7d87B"
 uri = "file://attached_assets/generated_images/tacfit-intel-marketing-v2.png"
 type = "image"
 title = "TacFit — Intel Feed Marketing (Real Screenshot)"
+
+[[outputs]]
+id = "nObh1zuSG_cjZ2-06JgX_"
+uri = "file://exports/tacfit-privacy-policy.txt"
+type = "text"
+title = "TacFit Privacy Policy (HTML — paste into Webflow Embed)"

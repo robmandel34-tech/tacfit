@@ -173,3 +173,9 @@ id = "sEXBdLpFnef3xXDaYNzL8"
 uri = "file://exports/tacfit-app-preview-1080x1920.mp4"
 type = "video"
 title = "TacFit App Store Preview (6.5\" — 1080×1920)"
+
+[[outputs]]
+id = "6sKtsufyV_HcfSD204zyE"
+uri = "file://exports/tacfit-app-preview-1080x1920-trimmed.mp4"
+type = "video"
+title = "TacFit App Store Preview — 1080×1920, person trimmed"

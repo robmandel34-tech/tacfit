@@ -191,8 +191,7 @@ function EmailVerificationNotice({ userEmail, onBackToRegister }: {
         <Button
           onClick={handleResendVerification}
           disabled={isResending}
-          variant="outline"
-          className="w-full"
+          className="w-full bg-military-green hover:bg-military-green/90 text-black font-medium"
         >
           {isResending ? "Sending..." : "Resend Verification Email"}
         </Button>

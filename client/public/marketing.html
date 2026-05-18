@@ -139,7 +139,11 @@
   @media (max-width: 720px) { .nav-links { display: none; } }
 
   /* HERO — split layout with promo video */
-  .hero { position: relative; display: flex; align-items: center; overflow: hidden; padding: 120px 0 80px; background: var(--bg); }
+  .hero { position: relative; display: flex; align-items: center; overflow: hidden; padding: 120px 0 80px; background: var(--bg); z-index: 1; }
+  /* Ambient background topo — scattered subtle accents drifting behind everything */
+  #bgTopoCanvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; opacity: 0.55; }
+  nav, footer, .block, .diptych, section { position: relative; z-index: 1; }
+  @media (prefers-reduced-motion: reduce) { #bgTopoCanvas { display: none; } }
   @media (min-width: 921px) { .hero { min-height: 100vh; min-height: 100dvh; } }
   .hero::before {
     content: ''; position: absolute; inset: 0; z-index: 0;
@@ -453,6 +457,9 @@
 </style>
 </head>
 <body>
+
+<!-- Subtle ambient topo accent — scattered drifting patches behind the page content -->
+<canvas id="bgTopoCanvas" aria-hidden="true"></canvas>
 
 <nav id="nav">
   <div class="container nav-row">

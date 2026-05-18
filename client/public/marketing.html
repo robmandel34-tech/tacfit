@@ -141,7 +141,7 @@
   /* HERO — split layout with promo video */
   .hero { position: relative; display: flex; align-items: center; overflow: hidden; padding: 120px 0 80px; background: var(--bg); z-index: 1; }
   /* Ambient background topo — scattered subtle accents drifting behind everything */
-  #bgTopoCanvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; opacity: 0.55; }
+  #bgTopoCanvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; opacity: 0.22; }
   nav, footer, .block, .diptych, section { position: relative; z-index: 1; }
   @media (prefers-reduced-motion: reduce) { #bgTopoCanvas { display: none; } }
   @media (min-width: 921px) { .hero { min-height: 100vh; min-height: 100dvh; } }
@@ -945,6 +945,123 @@
       const hero = canvas.parentElement;
       if (hero) ro.observe(hero);
     }
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) stop(); else start();
+    });
+  })();
+
+  // ===== Ambient wireframe terrain — scattered low-poly mesh patches drifting behind page =====
+  (function bgMesh() {
+    const canvas = document.getElementById('bgTopoCanvas');
+    if (!canvas) return;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const ctx = canvas.getContext('2d');
+    const GREEN = '59,222,53';
+    const STEP = 70;                  // mesh cell size (CSS px)
+    let w = 0, h = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let cols = 0, rows = 0;
+    let t = 0;
+
+    function resize() {
+      w = window.innerWidth;
+      h = window.innerHeight;
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      cols = Math.ceil(w / STEP) + 2;
+      rows = Math.ceil(h / STEP) + 2;
+    }
+
+    // Pseudo-noise for vertex jitter — gives the mesh an organic, mountain-like feel.
+    function noise(i, j, k) {
+      return Math.sin(i * 0.7 + k) * Math.cos(j * 0.9 - k * 0.6)
+           + Math.sin((i + j) * 0.4 + k * 0.3) * 0.5;
+    }
+
+    // Patch centers — a few scattered zones that drift slowly. Triangles only
+    // render strongly inside these zones, fading at the edges.
+    const PATCHES = [
+      { x: 0.18, y: 0.40, r: 0.22, vx:  0.012, vy:  0.008 },
+      { x: 0.78, y: 0.55, r: 0.26, vx: -0.010, vy:  0.011 },
+      { x: 0.50, y: 0.82, r: 0.20, vx:  0.014, vy: -0.009 },
+      { x: 0.30, y: 0.15, r: 0.18, vx: -0.008, vy:  0.013 },
+    ];
+
+    function patchAlpha(px, py) {
+      // Sum the soft falloff from each patch; cap at 1.
+      let a = 0;
+      for (const p of PATCHES) {
+        const cx = p.x * w, cy = p.y * h, r = p.r * Math.min(w, h) * 1.6;
+        const dx = px - cx, dy = py - cy;
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d < r) {
+          const k = 1 - d / r;
+          a += k * k;     // squared falloff for soft edge
+        }
+      }
+      return Math.min(a, 1);
+    }
+
+    function frame() {
+      ctx.clearRect(0, 0, w, h);
+
+      // Drift the patches.
+      const dt = 0.016;
+      for (const p of PATCHES) {
+        p.x += p.vx * dt; p.y += p.vy * dt;
+        if (p.x < -0.2) p.x = 1.2; if (p.x > 1.2) p.x = -0.2;
+        if (p.y < -0.2) p.y = 1.2; if (p.y > 1.2) p.y = -0.2;
+      }
+
+      // Precompute vertex positions (perturbed grid).
+      const k = t * 0.45;
+      const verts = new Float32Array(cols * rows * 2);
+      for (let j = 0; j < rows; j++) {
+        for (let i = 0; i < cols; i++) {
+          const baseX = (i - 1) * STEP;
+          const baseY = (j - 1) * STEP;
+          const n = noise(i, j, k);
+          verts[(j * cols + i) * 2]     = baseX + n * 14;
+          verts[(j * cols + i) * 2 + 1] = baseY + n * 10;
+        }
+      }
+
+      // Stroke each triangle, alpha = patch coverage at its centroid.
+      ctx.lineWidth = 1;
+      for (let j = 0; j < rows - 1; j++) {
+        for (let i = 0; i < cols - 1; i++) {
+          const ax = verts[(j * cols + i) * 2],         ay = verts[(j * cols + i) * 2 + 1];
+          const bx = verts[(j * cols + (i + 1)) * 2],   by = verts[(j * cols + (i + 1)) * 2 + 1];
+          const cx = verts[((j + 1) * cols + i) * 2],   cy = verts[((j + 1) * cols + i) * 2 + 1];
+          const dx = verts[((j + 1) * cols + (i + 1)) * 2], dy = verts[((j + 1) * cols + (i + 1)) * 2 + 1];
+
+          // Two triangles per cell.
+          for (const tri of [[ax,ay,bx,by,cx,cy],[bx,by,dx,dy,cx,cy]]) {
+            const mx = (tri[0] + tri[2] + tri[4]) / 3;
+            const my = (tri[1] + tri[3] + tri[5]) / 3;
+            const a = patchAlpha(mx, my);
+            if (a < 0.04) continue;
+            ctx.strokeStyle = 'rgba(' + GREEN + ',' + (a * 0.85).toFixed(3) + ')';
+            ctx.beginPath();
+            ctx.moveTo(tri[0], tri[1]);
+            ctx.lineTo(tri[2], tri[3]);
+            ctx.lineTo(tri[4], tri[5]);
+            ctx.closePath();
+            ctx.stroke();
+          }
+        }
+      }
+
+      t += 0.006;
+      raf = requestAnimationFrame(frame);
+    }
+
+    let raf = 0;
+    function start() { if (!raf) raf = requestAnimationFrame(frame); }
+    function stop() { cancelAnimationFrame(raf); raf = 0; }
+
+    resize();
+    start();
+    window.addEventListener('resize', () => { stop(); resize(); start(); });
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) stop(); else start();
     });

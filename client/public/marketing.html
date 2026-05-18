@@ -129,25 +129,45 @@
       radial-gradient(circle at 20% 80%, rgba(18,76,16,0.25) 0%, transparent 50%);
     pointer-events: none;
   }
-  /* Constellation network canvas — drifting dots connected by faint green lines */
-  .hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: 0.85; display: block; }
-  /* Faint silhouettes drifting across the hero behind the content */
-  .hero-silhouettes { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
-  .hero-silhouettes img {
-    position: absolute; bottom: 0; height: 78%; width: auto; opacity: 0.07;
-    filter: brightness(0) saturate(100%) invert(78%) sepia(48%) saturate(2200%) hue-rotate(70deg) brightness(105%) contrast(105%);
-    will-change: transform;
+  /* Topographic contour map — animated tactical terrain readout */
+  .hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: 0.55; display: block; }
+  /* Floating app screen thumbnails drifting across the hero */
+  .hero-floaters { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
+  .hero-floater {
+    position: absolute; width: 110px; aspect-ratio: 9 / 19.5;
+    border-radius: 18px; overflow: hidden;
+    background: #000;
+    box-shadow:
+      0 0 0 1.5px rgba(59,222,53,0.45),
+      0 18px 50px rgba(0,0,0,0.6),
+      0 0 35px rgba(59,222,53,0.25);
+    opacity: 0; will-change: transform, opacity;
   }
-  .hero-silhouettes .s1 { left: -10%; animation: drift1 38s linear infinite; }
-  .hero-silhouettes .s2 { left: 20%; height: 62%; opacity: 0.05; animation: drift2 52s linear infinite; animation-delay: -14s; }
-  .hero-silhouettes .s3 { left: 55%; height: 70%; opacity: 0.06; animation: drift1 44s linear infinite; animation-delay: -28s; }
-  @keyframes drift1 { from { transform: translateX(0); } to { transform: translateX(120vw); } }
-  @keyframes drift2 { from { transform: translateX(0); } to { transform: translateX(95vw); } }
+  .hero-floater img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .hero-floater.f1 { top: 12%; animation: float1 28s linear infinite; }
+  .hero-floater.f2 { top: 58%; width: 92px; animation: float2 34s linear infinite; animation-delay: -8s; }
+  .hero-floater.f3 { top: 30%; width: 100px; animation: float1 32s linear infinite; animation-delay: -18s; }
+  .hero-floater.f4 { top: 70%; width: 88px; animation: float2 40s linear infinite; animation-delay: -26s; }
+  @keyframes float1 {
+    0%   { left: -15%; transform: rotate(-6deg) translateY(0); opacity: 0; }
+    8%   { opacity: 0.55; }
+    50%  { transform: rotate(-3deg) translateY(-18px); }
+    92%  { opacity: 0.55; }
+    100% { left: 115%; transform: rotate(-6deg) translateY(0); opacity: 0; }
+  }
+  @keyframes float2 {
+    0%   { left: 115%; transform: rotate(8deg) translateY(0); opacity: 0; }
+    8%   { opacity: 0.5; }
+    50%  { transform: rotate(4deg) translateY(20px); }
+    92%  { opacity: 0.5; }
+    100% { left: -15%; transform: rotate(8deg) translateY(0); opacity: 0; }
+  }
   @media (max-width: 920px) {
-    .hero-silhouettes img { opacity: 0.04; height: 55%; }
+    .hero-floater { width: 70px; }
+    .hero-floater.f2, .hero-floater.f3, .hero-floater.f4 { width: 60px; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .hero-canvas, .hero-silhouettes { display: none; }
+    .hero-canvas, .hero-floaters { display: none; }
   }
   .hero-grid { position: relative; z-index: 2; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 80px; align-items: center; width: 100%; }
   @media (max-width: 920px) { .hero-grid { grid-template-columns: 1fr; gap: 48px; text-align: center; } }
@@ -440,10 +460,11 @@
 <!-- HERO — split layout with promo video -->
 <header class="hero">
   <canvas class="hero-canvas" id="heroCanvas" aria-hidden="true"></canvas>
-  <div class="hero-silhouettes" aria-hidden="true">
-    <img class="s1" src="/marketing/hero-silhouette.png" alt="" />
-    <img class="s2" src="/marketing/hero-silhouette.png" alt="" />
-    <img class="s3" src="/marketing/hero-silhouette.png" alt="" />
+  <div class="hero-floaters" aria-hidden="true">
+    <div class="hero-floater f1"><img src="/marketing/screen-intel.png" alt="" /></div>
+    <div class="hero-floater f2"><img src="/marketing/screen-team.png" alt="" /></div>
+    <div class="hero-floater f3"><img src="/marketing/screen-map.png" alt="" /></div>
+    <div class="hero-floater f4"><img src="/marketing/screen-profile.png" alt="" /></div>
   </div>
   <div class="container hero-grid">
     <div class="hero-content">
@@ -732,58 +753,46 @@
   }, { passive: true });
   applyParallax();
 
-  // ===== Hero constellation network =====
-  (function heroConstellation() {
+  // ===== Hero topographic contour map =====
+  (function heroTopo() {
     const canvas = document.getElementById('heroCanvas');
     if (!canvas) return;
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const ctx = canvas.getContext('2d');
     let w = 0, h = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
-    let particles = [];
     const GREEN = '59,222,53';
+    let t = 0;
 
     function resize() {
       const rect = canvas.getBoundingClientRect();
       w = rect.width; h = rect.height;
       canvas.width = w * dpr; canvas.height = h * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const target = Math.round((w * h) / 14000);
-      const count = Math.max(40, Math.min(140, target));
-      particles = new Array(count).fill(0).map(() => ({
-        x: Math.random() * w,
-        y: Math.random() * h,
-        vx: (Math.random() - 0.5) * 0.25,
-        vy: (Math.random() - 0.5) * 0.25,
-        r: Math.random() * 1.4 + 0.6,
-      }));
     }
 
-    const MAX_DIST = 130;
+    // Stacked sinusoidal "contour lines" that slowly flow.
+    // Multiple layers with different amplitudes / phases give a topo map feel.
     function frame() {
       ctx.clearRect(0, 0, w, h);
-      for (const p of particles) {
-        p.x += p.vx; p.y += p.vy;
-        if (p.x < 0 || p.x > w) p.vx *= -1;
-        if (p.y < 0 || p.y > h) p.vy *= -1;
-      }
-      for (let i = 0; i < particles.length; i++) {
-        const a = particles[i];
-        for (let j = i + 1; j < particles.length; j++) {
-          const b = particles[j];
-          const dx = a.x - b.x, dy = a.y - b.y;
-          const d2 = dx * dx + dy * dy;
-          if (d2 < MAX_DIST * MAX_DIST) {
-            const alpha = (1 - Math.sqrt(d2) / MAX_DIST) * 0.35;
-            ctx.strokeStyle = 'rgba(' + GREEN + ',' + alpha.toFixed(3) + ')';
-            ctx.lineWidth = 1;
-            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-          }
+      const spacing = Math.max(22, Math.min(34, h / 22));
+      const step = 6;
+      ctx.lineWidth = 1;
+      for (let y0 = -40; y0 < h + 80; y0 += spacing) {
+        // Alternate brighter "index" contours every 5th line
+        const isIndex = (Math.round(y0 / spacing) % 5) === 0;
+        ctx.strokeStyle = 'rgba(' + GREEN + ',' + (isIndex ? 0.55 : 0.22) + ')';
+        ctx.beginPath();
+        for (let x = -20; x <= w + 20; x += step) {
+          const k = y0 * 0.011;
+          const y = y0
+            + Math.sin(x * 0.0055 + t * 0.0006 + k) * 22
+            + Math.cos(x * 0.013 + t * 0.0009 - k * 0.6) * 11
+            + Math.sin(x * 0.024 + t * 0.0013) * 5;
+          if (x === -20) ctx.moveTo(x, y); else ctx.lineTo(x, y);
         }
+        ctx.stroke();
       }
-      ctx.fillStyle = 'rgba(' + GREEN + ',0.75)';
-      for (const p of particles) {
-        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
-      }
+      t += 16;
       raf = requestAnimationFrame(frame);
     }
 

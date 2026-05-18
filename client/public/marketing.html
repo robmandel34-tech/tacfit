@@ -141,9 +141,8 @@
   /* HERO — split layout with promo video */
   .hero { position: relative; display: flex; align-items: center; overflow: hidden; padding: 120px 0 80px; background: var(--bg); z-index: 1; }
   /* Ambient background topo — scattered subtle accents drifting behind everything */
-  #bgTopoCanvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; opacity: 0.22; }
+  #bgTopoCanvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; opacity: 0.28; }
   nav, footer, .block, .diptych, section { position: relative; z-index: 1; }
-  @media (prefers-reduced-motion: reduce) { #bgTopoCanvas { display: none; } }
   @media (min-width: 921px) { .hero { min-height: 100vh; min-height: 100dvh; } }
   .hero::before {
     content: ''; position: absolute; inset: 0; z-index: 0;
@@ -950,120 +949,110 @@
     });
   })();
 
-  // ===== Ambient wireframe terrain — scattered low-poly mesh patches drifting behind page =====
-  (function bgMesh() {
+  // ===== Ambient low-poly mountain ranges — static wireframe accents scattered behind the page =====
+  (function bgMountains() {
     const canvas = document.getElementById('bgTopoCanvas');
     if (!canvas) return;
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const ctx = canvas.getContext('2d');
     const GREEN = '59,222,53';
-    const STEP = 70;                  // mesh cell size (CSS px)
-    let w = 0, h = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
-    let cols = 0, rows = 0;
-    let t = 0;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-    function resize() {
-      w = window.innerWidth;
-      h = window.innerHeight;
-      canvas.width = w * dpr; canvas.height = h * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      cols = Math.ceil(w / STEP) + 2;
-      rows = Math.ceil(h / STEP) + 2;
+    // Deterministic RNG so the ranges look identical each load.
+    function mulberry32(a) {
+      return function () {
+        a |= 0; a = a + 0x6D2B79F5 | 0;
+        let t = a;
+        t = Math.imul(t ^ t >>> 15, t | 1);
+        t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+      };
     }
 
-    // Pseudo-noise for vertex jitter — gives the mesh an organic, mountain-like feel.
-    function noise(i, j, k) {
-      return Math.sin(i * 0.7 + k) * Math.cos(j * 0.9 - k * 0.6)
-           + Math.sin((i + j) * 0.4 + k * 0.3) * 0.5;
+    // Draws a single low-poly mountain range centered at (cx, baselineY).
+    // `width`/`height` set range size; `peaks` is number of major summits.
+    function drawRange(cx, baselineY, width, height, peaks, seed) {
+      const rng = mulberry32(seed);
+      const left = cx - width / 2;
+      const segs = peaks * 2;                  // alternating baseline/peak verts
+      const dx = width / segs;
+      const verts = [];                        // ridge polyline verts
+      for (let i = 0; i <= segs; i++) {
+        const x = left + i * dx + (rng() - 0.5) * dx * 0.35;
+        const isPeak = i % 2 === 1;
+        const y = isPeak
+          ? baselineY - height * (0.55 + rng() * 0.45)         // tall summit
+          : baselineY - height * (0.05 + rng() * 0.18);        // valley dip
+        verts.push({ x, y });
+      }
+
+      ctx.lineWidth = 1;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = 'rgba(' + GREEN + ',0.95)';
+
+      // Outline silhouette closed against the baseline.
+      ctx.beginPath();
+      ctx.moveTo(verts[0].x, baselineY);
+      for (const v of verts) ctx.lineTo(v.x, v.y);
+      ctx.lineTo(verts[verts.length - 1].x, baselineY);
+      ctx.stroke();
+
+      // Internal facet lines from each peak straight down to baseline,
+      // and slanted toward adjacent baseline vertices — gives the
+      // origami "low-poly" faceted look.
+      ctx.strokeStyle = 'rgba(' + GREEN + ',0.55)';
+      for (let i = 1; i < verts.length - 1; i += 2) {
+        const peak = verts[i];
+        const baseX = peak.x + (rng() - 0.5) * dx * 0.4;
+        ctx.beginPath();
+        ctx.moveTo(peak.x, peak.y);
+        ctx.lineTo(baseX, baselineY);
+        ctx.stroke();
+      }
+
+      // A few "back ridge" hints behind the front silhouette for depth.
+      ctx.strokeStyle = 'rgba(' + GREEN + ',0.45)';
+      ctx.beginPath();
+      const backOffsetY = -height * 0.25;
+      ctx.moveTo(verts[0].x, baselineY + backOffsetY * 0.4);
+      for (let i = 0; i < verts.length; i++) {
+        const v = verts[i];
+        const y = v.y + backOffsetY * (i % 2 === 1 ? 0.65 : 0.25) + (rng() - 0.5) * 6;
+        ctx.lineTo(v.x + (rng() - 0.5) * 10, y);
+      }
+      ctx.stroke();
     }
 
-    // Patch centers — a few scattered zones that drift slowly. Triangles only
-    // render strongly inside these zones, fading at the edges.
-    const PATCHES = [
-      { x: 0.18, y: 0.40, r: 0.22, vx:  0.012, vy:  0.008 },
-      { x: 0.78, y: 0.55, r: 0.26, vx: -0.010, vy:  0.011 },
-      { x: 0.50, y: 0.82, r: 0.20, vx:  0.014, vy: -0.009 },
-      { x: 0.30, y: 0.15, r: 0.18, vx: -0.008, vy:  0.013 },
+    // Scattered placement of ranges across the viewport (fractional coords).
+    // Each entry has its own seed so peaks aren't identical.
+    const RANGES = [
+      { x: 0.12, y: 0.42, w: 300, h: 95,  peaks: 3, seed: 11 },
+      { x: 0.84, y: 0.34, w: 260, h: 85,  peaks: 3, seed: 27 },
+      { x: 0.50, y: 0.78, w: 360, h: 115, peaks: 4, seed: 43 },
+      { x: 0.22, y: 0.88, w: 220, h: 75,  peaks: 3, seed: 58 },
+      { x: 0.78, y: 0.92, w: 280, h: 90,  peaks: 3, seed: 71 },
+      { x: 0.08, y: 0.18, w: 200, h: 70,  peaks: 3, seed: 89 },
+      { x: 0.92, y: 0.65, w: 180, h: 60,  peaks: 2, seed: 103 },
     ];
 
-    function patchAlpha(px, py) {
-      // Sum the soft falloff from each patch; cap at 1.
-      let a = 0;
-      for (const p of PATCHES) {
-        const cx = p.x * w, cy = p.y * h, r = p.r * Math.min(w, h) * 1.6;
-        const dx = px - cx, dy = py - cy;
-        const d = Math.sqrt(dx * dx + dy * dy);
-        if (d < r) {
-          const k = 1 - d / r;
-          a += k * k;     // squared falloff for soft edge
-        }
-      }
-      return Math.min(a, 1);
-    }
-
-    function frame() {
+    function render() {
+      const w = window.innerWidth, h = window.innerHeight;
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, w, h);
 
-      // Drift the patches.
-      const dt = 0.016;
-      for (const p of PATCHES) {
-        p.x += p.vx * dt; p.y += p.vy * dt;
-        if (p.x < -0.2) p.x = 1.2; if (p.x > 1.2) p.x = -0.2;
-        if (p.y < -0.2) p.y = 1.2; if (p.y > 1.2) p.y = -0.2;
+      // On very narrow viewports, scale ranges down a bit.
+      const scale = w < 720 ? 0.6 : (w < 1100 ? 0.8 : 1);
+      for (const r of RANGES) {
+        drawRange(r.x * w, r.y * h, r.w * scale, r.h * scale, r.peaks, r.seed);
       }
-
-      // Precompute vertex positions (perturbed grid).
-      const k = t * 0.45;
-      const verts = new Float32Array(cols * rows * 2);
-      for (let j = 0; j < rows; j++) {
-        for (let i = 0; i < cols; i++) {
-          const baseX = (i - 1) * STEP;
-          const baseY = (j - 1) * STEP;
-          const n = noise(i, j, k);
-          verts[(j * cols + i) * 2]     = baseX + n * 14;
-          verts[(j * cols + i) * 2 + 1] = baseY + n * 10;
-        }
-      }
-
-      // Stroke each triangle, alpha = patch coverage at its centroid.
-      ctx.lineWidth = 1;
-      for (let j = 0; j < rows - 1; j++) {
-        for (let i = 0; i < cols - 1; i++) {
-          const ax = verts[(j * cols + i) * 2],         ay = verts[(j * cols + i) * 2 + 1];
-          const bx = verts[(j * cols + (i + 1)) * 2],   by = verts[(j * cols + (i + 1)) * 2 + 1];
-          const cx = verts[((j + 1) * cols + i) * 2],   cy = verts[((j + 1) * cols + i) * 2 + 1];
-          const dx = verts[((j + 1) * cols + (i + 1)) * 2], dy = verts[((j + 1) * cols + (i + 1)) * 2 + 1];
-
-          // Two triangles per cell.
-          for (const tri of [[ax,ay,bx,by,cx,cy],[bx,by,dx,dy,cx,cy]]) {
-            const mx = (tri[0] + tri[2] + tri[4]) / 3;
-            const my = (tri[1] + tri[3] + tri[5]) / 3;
-            const a = patchAlpha(mx, my);
-            if (a < 0.04) continue;
-            ctx.strokeStyle = 'rgba(' + GREEN + ',' + (a * 0.85).toFixed(3) + ')';
-            ctx.beginPath();
-            ctx.moveTo(tri[0], tri[1]);
-            ctx.lineTo(tri[2], tri[3]);
-            ctx.lineTo(tri[4], tri[5]);
-            ctx.closePath();
-            ctx.stroke();
-          }
-        }
-      }
-
-      t += 0.006;
-      raf = requestAnimationFrame(frame);
     }
 
-    let raf = 0;
-    function start() { if (!raf) raf = requestAnimationFrame(frame); }
-    function stop() { cancelAnimationFrame(raf); raf = 0; }
-
-    resize();
-    start();
-    window.addEventListener('resize', () => { stop(); resize(); start(); });
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) stop(); else start();
+    render();
+    let resizeT;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeT);
+      resizeT = setTimeout(render, 150);
     });
   })();
 

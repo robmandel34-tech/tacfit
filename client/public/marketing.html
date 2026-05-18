@@ -12,7 +12,13 @@
   // pin the document to (0,0). Lock scroll until window 'load' so late layout
   // shifts (video poster, fonts) cannot push us past the hero.
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-  if (!location.hash) {
+  // Always start at the top on initial load. Strip any leftover #hash from the
+  // URL (e.g. a stale "#showcase" from a previous click) so the browser doesn't
+  // auto-jump to that section.
+  if (location.hash) {
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+  }
+  {
     window.scrollTo(0, 0);
     let userScrolled = false;
     const mark = () => { userScrolled = true; };

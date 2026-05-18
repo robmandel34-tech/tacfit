@@ -37,14 +37,16 @@
       document.body.style.width = '100%';
       return true;
     }
+    let unlocked = false;
     function unlockBody() {
-      if (!document.body) return;
+      if (unlocked || !document.body) return;
+      unlocked = true;
       document.body.style.position = '';
       document.body.style.top = '';
       document.body.style.left = '';
       document.body.style.right = '';
       document.body.style.width = '';
-      window.scrollTo(0, 0);
+      if (!userScrolled) window.scrollTo(0, 0);
     }
     if (!lockBody()) {
       // Body not yet parsed — try every frame until it exists.
@@ -65,11 +67,13 @@
     addEventListener('load', () => {
       pin();
       // Release the physical lock after layout has settled.
-      setTimeout(() => { if (!userScrolled) unlockBody(); }, 400);
+      setTimeout(unlockBody, 400);
     });
     // Failsafe — always release after 2s so the page is usable even if 'load'
     // never fires for some reason.
-    setTimeout(() => { if (!userScrolled) unlockBody(); }, 2200);
+    setTimeout(unlockBody, 2200);
+    // If the user touches the screen, release immediately so they can scroll.
+    addEventListener('touchstart', unlockBody, { passive: true, once: true });
 
     addEventListener('pageshow', () => { if (!userScrolled) { pin(); setTimeout(pin, 50); } });
   }

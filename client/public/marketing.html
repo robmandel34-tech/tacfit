@@ -96,36 +96,85 @@
   .feature-copy .step { color: var(--green); font-size: 13px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 14px; display: block; }
 
   /* Sleek phone treatment with radial glow backdrop */
-  .feature-shot { position: relative; display: flex; justify-content: center; align-items: center; padding: 40px 0; perspective: 1200px; }
+  .feature-shot { position: relative; display: flex; justify-content: center; align-items: center; padding: 60px 20px; perspective: 1400px; min-height: 540px; }
   .feature-shot::before {
     content: ''; position: absolute; inset: 0;
-    background: radial-gradient(circle at center, rgba(59,222,53,0.22) 0%, rgba(59,222,53,0.08) 30%, transparent 65%);
-    filter: blur(40px);
+    background: radial-gradient(circle at center, rgba(59,222,53,0.28) 0%, rgba(59,222,53,0.10) 30%, transparent 65%);
+    filter: blur(50px);
     z-index: 0;
-    transition: transform .8s ease;
+    opacity: 0; transition: opacity 1s ease .2s;
   }
+  .feature-row.in .feature-shot::before { opacity: 1; }
   .feature-shot::after {
-    content: ''; position: absolute; left: 50%; bottom: 10%; transform: translateX(-50%);
-    width: 70%; height: 30%;
-    background: radial-gradient(ellipse at center, rgba(59,222,53,0.35), transparent 70%);
-    filter: blur(30px);
+    content: ''; position: absolute; left: 50%; bottom: 8%; transform: translateX(-50%);
+    width: 70%; height: 25%;
+    background: radial-gradient(ellipse at center, rgba(59,222,53,0.45), transparent 70%);
+    filter: blur(35px);
     z-index: 0;
   }
-  .feature-shot img {
+  /* Gradient ring wrapping the phone */
+  .phone-frame {
     position: relative; z-index: 1;
-    width: 100%; max-width: 340px; height: auto;
-    filter:
-      drop-shadow(0 25px 50px rgba(0,0,0,0.7))
-      drop-shadow(0 0 30px rgba(59,222,53,0.18));
-    transition: transform .9s cubic-bezier(.22,.61,.36,1);
-    transform: translateY(40px) rotateX(8deg) rotateY(-4deg) scale(0.94);
+    width: 100%; max-width: 360px;
+    padding: 14px;
+    border-radius: 56px;
+    background:
+      conic-gradient(from 220deg at 50% 50%,
+        rgba(59,222,53,0.6) 0deg,
+        rgba(59,222,53,0.08) 90deg,
+        rgba(59,222,53,0.0) 180deg,
+        rgba(59,222,53,0.25) 270deg,
+        rgba(59,222,53,0.6) 360deg);
+    transition: transform 1.1s cubic-bezier(.22,.61,.36,1), opacity 1s ease;
+    transform: translateY(120px) rotateX(14deg) rotateY(-8deg) scale(0.88);
+    opacity: 0;
+    will-change: transform;
   }
-  .feature-row.reverse .feature-shot img { transform: translateY(40px) rotateX(8deg) rotateY(4deg) scale(0.94); }
-  .feature-row.in .feature-shot img { transform: translateY(0) rotateX(0) rotateY(0) scale(1); }
+  .feature-row.reverse .phone-frame { transform: translateY(120px) rotateX(14deg) rotateY(8deg) scale(0.88); }
+  .feature-row.in .phone-frame { transform: translateY(0) rotateX(0) rotateY(0) scale(1); opacity: 1; }
+  .phone-frame::before {
+    content: ''; position: absolute; inset: 4px; border-radius: 50px;
+    background: var(--bg);
+    z-index: 0;
+  }
+  .phone-frame img {
+    position: relative; z-index: 1;
+    width: 100%; height: auto; display: block;
+    border-radius: 42px;
+    filter:
+      drop-shadow(0 30px 60px rgba(0,0,0,0.8))
+      drop-shadow(0 0 40px rgba(59,222,53,0.22));
+  }
+
+  /* Floating feature pills */
+  .feature-pill {
+    position: absolute; z-index: 2;
+    background: rgba(20,24,31,0.85);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(59,222,53,0.4);
+    padding: 10px 16px;
+    border-radius: 14px;
+    display: inline-flex; align-items: center; gap: 10px;
+    font-size: 13px; font-weight: 600; color: var(--text);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    opacity: 0; transform: translateY(20px) scale(0.92);
+    transition: opacity .7s ease .5s, transform .7s cubic-bezier(.22,.61,.36,1) .5s;
+    white-space: nowrap;
+  }
+  .feature-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 12px var(--green); animation: pulse 2s infinite; }
+  .feature-pill.top-left { top: 6%; left: -8%; }
+  .feature-pill.bottom-right { bottom: 8%; right: -8%; }
+  .feature-row.in .feature-pill { opacity: 1; transform: translateY(0) scale(1); }
+  @media (max-width: 920px) {
+    .feature-pill.top-left { left: 0; }
+    .feature-pill.bottom-right { right: 0; }
+  }
 
   /* Copy slide-in animation */
-  .feature-copy { opacity: 0; transform: translateY(40px); transition: opacity .8s ease .15s, transform .8s cubic-bezier(.22,.61,.36,1) .15s; }
+  .feature-copy { opacity: 0; transform: translateY(50px); transition: opacity .9s ease .15s, transform .9s cubic-bezier(.22,.61,.36,1) .15s; }
   .feature-row.in .feature-copy { opacity: 1; transform: translateY(0); }
+  .feature-row.reverse .feature-copy { transform: translateY(50px); }
+  .feature-row.reverse.in .feature-copy { transform: translateY(0); }
 
   /* VIDEO WALL — This Was Major style */
   .wall { position: relative; padding: 0; }
@@ -255,7 +304,11 @@
         <h3>The whole community, <span class="accent">in one feed.</span></h3>
         <p>The Intel Feed is a live stream of every workout, every win, and every shared moment from the entire TacFit community. See what everyone is doing, cheer each other on, stay in the energy.</p>
       </div>
-      <div class="feature-shot"><img src="/marketing/screen-intel.png" alt="Intel Feed" /></div>
+      <div class="feature-shot">
+        <div class="feature-pill top-left"><span class="dot"></span> +12 buddies cheered</div>
+        <div class="phone-frame"><img src="/marketing/screen-intel.png" alt="Intel Feed" /></div>
+        <div class="feature-pill bottom-right">Live · community feed</div>
+      </div>
     </div>
 
     <div class="feature-row reverse reveal">
@@ -264,7 +317,11 @@
         <h3>Pick a challenge. <span class="accent">Commit.</span></h3>
         <p>Browse active competitions, see the rules, the goals, the join window. One tap and you and your team are in — chasing the same goal together.</p>
       </div>
-      <div class="feature-shot"><img src="/marketing/screen-competition.png" alt="Competition details" /></div>
+      <div class="feature-shot">
+        <div class="feature-pill top-left"><span class="dot"></span> Join window open</div>
+        <div class="phone-frame"><img src="/marketing/screen-competition.png" alt="Competition details" /></div>
+        <div class="feature-pill bottom-right">Max 5 squads</div>
+      </div>
     </div>
 
     <div class="feature-row reveal">
@@ -273,7 +330,11 @@
         <h3>Your squad. <span class="accent">Your tribe.</span></h3>
         <p>Form your team, set your name, set your motto. Track progress as a unit. Win as a unit. This is the part that makes you actually show up.</p>
       </div>
-      <div class="feature-shot"><img src="/marketing/screen-team.png" alt="Team page" /></div>
+      <div class="feature-shot">
+        <div class="feature-pill top-left">Rank #2 this week</div>
+        <div class="phone-frame"><img src="/marketing/screen-team.png" alt="Team page" /></div>
+        <div class="feature-pill bottom-right"><span class="dot"></span> 5 teammates online</div>
+      </div>
     </div>
 
     <div class="feature-row reverse reveal">
@@ -282,7 +343,11 @@
         <h3>Stay in the <span class="accent">conversation.</span></h3>
         <p>Team comms keep the energy flowing between workouts. Drop a meme, plan a meetup, assign mission tasks. Real chat for real teams.</p>
       </div>
-      <div class="feature-shot"><img src="/marketing/screen-comms.png" alt="Team Comms and Mission Board" /></div>
+      <div class="feature-shot">
+        <div class="feature-pill top-left"><span class="dot"></span> New mission task</div>
+        <div class="phone-frame"><img src="/marketing/screen-comms.png" alt="Team Comms and Mission Board" /></div>
+        <div class="feature-pill bottom-right">Group + DM chat</div>
+      </div>
     </div>
 
     <div class="feature-row reveal">
@@ -291,7 +356,11 @@
         <h3>Race to <span class="accent">victory.</span></h3>
         <p>Watch your team climb the mountain. The progress map turns weeks of workouts into a journey you can see — base camp to summit.</p>
       </div>
-      <div class="feature-shot"><img src="/marketing/screen-map.png" alt="Team Progress Map" /></div>
+      <div class="feature-shot">
+        <div class="feature-pill top-left">Summit incoming</div>
+        <div class="phone-frame"><img src="/marketing/screen-map.png" alt="Team Progress Map" /></div>
+        <div class="feature-pill bottom-right"><span class="dot"></span> 73% complete</div>
+      </div>
     </div>
   </div>
 </section>
@@ -417,11 +486,39 @@
     nav.classList.toggle('scrolled', window.scrollY > 40);
   });
 
-  // Scroll reveals
+  // Scroll reveals — generic
   const io = new IntersectionObserver((entries) => {
     entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
   }, { threshold: 0.12 });
-  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  document.querySelectorAll('.reveal:not(.feature-row)').forEach(el => io.observe(el));
+
+  // Feature rows — trigger when row is meaningfully on screen
+  const rowIO = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); rowIO.unobserve(e.target); } });
+  }, { threshold: 0.25, rootMargin: '0px 0px -15% 0px' });
+  document.querySelectorAll('.feature-row').forEach(el => rowIO.observe(el));
+
+  // Parallax — phone moves slightly faster than copy on scroll
+  const shots = Array.from(document.querySelectorAll('.feature-shot'));
+  let ticking = false;
+  function applyParallax() {
+    const vh = window.innerHeight;
+    shots.forEach(shot => {
+      const rect = shot.getBoundingClientRect();
+      if (rect.bottom < 0 || rect.top > vh) return;
+      const center = rect.top + rect.height / 2;
+      const offset = (vh / 2 - center) * 0.08;
+      const frame = shot.querySelector('.phone-frame');
+      if (frame && shot.closest('.feature-row').classList.contains('in')) {
+        frame.style.translate = `0 ${offset}px`;
+      }
+    });
+    ticking = false;
+  }
+  window.addEventListener('scroll', () => {
+    if (!ticking) { requestAnimationFrame(applyParallax); ticking = true; }
+  }, { passive: true });
+  applyParallax();
 
 </script>
 

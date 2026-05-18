@@ -82,26 +82,20 @@
   h2 { font-size: clamp(36px, 4.8vw, 56px); line-height: 1.05; letter-spacing: -0.03em; font-weight: 800; margin: 16px 0 18px; }
   .lede { color: var(--text-2); font-size: 18px; line-height: 1.6; }
 
-  /* SHOWCASE — Bevel sticky scroll */
-  .showcase-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
-  .showcase-copy { display: flex; flex-direction: column; gap: 120px; padding-top: 80px; padding-bottom: 80px; }
-  .copy-item { transition: opacity .4s; }
-  .copy-item.dim { opacity: 0.25; }
-  .copy-item h3 { font-size: clamp(28px, 3vw, 40px); letter-spacing: -0.02em; font-weight: 800; margin-bottom: 14px; line-height: 1.12; }
-  .copy-item h3 .accent { color: var(--green); }
-  .copy-item p { color: var(--text-2); font-size: 16.5px; line-height: 1.65; max-width: 440px; }
-  .showcase-phone-wrap { position: sticky; top: 100px; height: calc(100vh - 140px); max-height: 720px; display: flex; align-items: center; justify-content: center; }
-  .phone-stack { position: relative; width: 100%; max-width: 380px; aspect-ratio: 9 / 19; }
+  /* SHOWCASE — simple alternating rows */
+  .feature-row { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; margin-bottom: 140px; }
+  .feature-row:last-child { margin-bottom: 0; }
+  .feature-row.reverse .feature-copy { order: 2; }
   @media (max-width: 920px) {
-    .showcase-grid { grid-template-columns: 1fr; gap: 0; }
-    /* On mobile: phone pinned at top of viewport, copy scrolls underneath */
-    .showcase-phone-wrap { order: -1; position: sticky; top: 72px; height: 52vh; max-height: 460px; z-index: 5; background: linear-gradient(180deg, var(--bg) 70%, rgba(10,12,15,0)); padding-bottom: 8px; margin-bottom: -20px; }
-    .phone-stack { max-width: 200px; }
-    .showcase-copy { padding-top: 32px; padding-bottom: 40px; gap: 70vh; }
-    .copy-item { min-height: 30vh; }
+    .feature-row { grid-template-columns: 1fr; gap: 36px; margin-bottom: 90px; }
+    .feature-row.reverse .feature-copy { order: 0; }
   }
-  .phone-stack img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity .6s ease, transform .6s ease; transform: scale(0.96); }
-  .phone-stack img.active { opacity: 1; transform: scale(1); }
+  .feature-copy h3 { font-size: clamp(28px, 3vw, 40px); letter-spacing: -0.02em; font-weight: 800; margin-bottom: 16px; line-height: 1.12; }
+  .feature-copy h3 .accent { color: var(--green); }
+  .feature-copy p { color: var(--text-2); font-size: 17px; line-height: 1.65; max-width: 460px; }
+  .feature-copy .step { color: var(--green); font-size: 13px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 14px; display: block; }
+  .feature-shot { display: flex; justify-content: center; align-items: center; }
+  .feature-shot img { width: 100%; max-width: 340px; height: auto; filter: drop-shadow(0 30px 60px rgba(0,0,0,0.6)); }
 
   /* VIDEO WALL — This Was Major style */
   .wall { position: relative; padding: 0; }
@@ -225,39 +219,49 @@
       <p class="lede">Not just another workout tracker. TacFit is built around the people who keep you going.</p>
     </div>
 
-    <div class="showcase-grid">
-      <div class="showcase-copy">
-        <div class="copy-item" data-step="0">
-          <h3>The whole community, <span class="accent">in one feed.</span></h3>
-          <p>The Intel Feed is a live stream of every workout, every win, and every shared moment from the entire TacFit community. See what everyone is doing, cheer each other on, stay in the energy.</p>
-        </div>
-        <div class="copy-item dim" data-step="1">
-          <h3>Pick a challenge. <span class="accent">Commit.</span></h3>
-          <p>Browse active competitions, see the rules, the goals, the join window. One tap and you and your team are in — chasing the same goal together.</p>
-        </div>
-        <div class="copy-item dim" data-step="2">
-          <h3>Your squad. <span class="accent">Your tribe.</span></h3>
-          <p>Form your team, set your name, set your motto. Track progress as a unit. Win as a unit. This is the part that makes you actually show up.</p>
-        </div>
-        <div class="copy-item dim" data-step="3">
-          <h3>Stay in the <span class="accent">conversation.</span></h3>
-          <p>Team comms keep the energy flowing between workouts. Drop a meme, plan a meetup, assign mission tasks. Real chat for real teams.</p>
-        </div>
-        <div class="copy-item dim" data-step="4">
-          <h3>Race to <span class="accent">victory.</span></h3>
-          <p>Watch your team climb the mountain. The progress map turns weeks of workouts into a journey you can see — base camp to summit.</p>
-        </div>
+    <div class="feature-row reveal">
+      <div class="feature-copy">
+        <span class="step">01 — Intel Feed</span>
+        <h3>The whole community, <span class="accent">in one feed.</span></h3>
+        <p>The Intel Feed is a live stream of every workout, every win, and every shared moment from the entire TacFit community. See what everyone is doing, cheer each other on, stay in the energy.</p>
       </div>
+      <div class="feature-shot"><img src="/marketing/screen-intel.png" alt="Intel Feed" /></div>
+    </div>
 
-      <div class="showcase-phone-wrap">
-        <div class="phone-stack">
-          <img class="active" src="/marketing/screen-intel.png" alt="Intel Feed" data-step="0" />
-          <img src="/marketing/screen-competition.png" alt="Competition details" data-step="1" />
-          <img src="/marketing/screen-team.png" alt="Team page" data-step="2" />
-          <img src="/marketing/screen-comms.png" alt="Team Comms and Mission Board" data-step="3" />
-          <img src="/marketing/screen-map.png" alt="Team Progress Map" data-step="4" />
-        </div>
+    <div class="feature-row reverse reveal">
+      <div class="feature-copy">
+        <span class="step">02 — Competitions</span>
+        <h3>Pick a challenge. <span class="accent">Commit.</span></h3>
+        <p>Browse active competitions, see the rules, the goals, the join window. One tap and you and your team are in — chasing the same goal together.</p>
       </div>
+      <div class="feature-shot"><img src="/marketing/screen-competition.png" alt="Competition details" /></div>
+    </div>
+
+    <div class="feature-row reveal">
+      <div class="feature-copy">
+        <span class="step">03 — Your Squad</span>
+        <h3>Your squad. <span class="accent">Your tribe.</span></h3>
+        <p>Form your team, set your name, set your motto. Track progress as a unit. Win as a unit. This is the part that makes you actually show up.</p>
+      </div>
+      <div class="feature-shot"><img src="/marketing/screen-team.png" alt="Team page" /></div>
+    </div>
+
+    <div class="feature-row reverse reveal">
+      <div class="feature-copy">
+        <span class="step">04 — Team Comms</span>
+        <h3>Stay in the <span class="accent">conversation.</span></h3>
+        <p>Team comms keep the energy flowing between workouts. Drop a meme, plan a meetup, assign mission tasks. Real chat for real teams.</p>
+      </div>
+      <div class="feature-shot"><img src="/marketing/screen-comms.png" alt="Team Comms and Mission Board" /></div>
+    </div>
+
+    <div class="feature-row reveal">
+      <div class="feature-copy">
+        <span class="step">05 — Progress Map</span>
+        <h3>Race to <span class="accent">victory.</span></h3>
+        <p>Watch your team climb the mountain. The progress map turns weeks of workouts into a journey you can see — base camp to summit.</p>
+      </div>
+      <div class="feature-shot"><img src="/marketing/screen-map.png" alt="Team Progress Map" /></div>
     </div>
   </div>
 </section>
@@ -389,19 +393,6 @@
   }, { threshold: 0.12 });
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 
-  // Bevel-style sticky scroll
-  const copyItems = document.querySelectorAll('.copy-item');
-  const phoneImgs = document.querySelectorAll('.phone-stack img');
-  const showcaseIO = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        const step = e.target.dataset.step;
-        copyItems.forEach(c => c.classList.toggle('dim', c.dataset.step !== step));
-        phoneImgs.forEach(img => img.classList.toggle('active', img.dataset.step === step));
-      }
-    });
-  }, { threshold: 0.6, rootMargin: '-20% 0px -20% 0px' });
-  copyItems.forEach(c => showcaseIO.observe(c));
 </script>
 
 </body>

@@ -554,9 +554,13 @@
 </footer>
 
 <script>
-  // Force fresh load to start at top (prevents browser restoring mid-page scroll)
+  // Force fresh load to start at top (prevents browser restoring mid-page scroll
+  // and prevents auto-scroll once images/videos/fonts finish loading)
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-  if (!window.location.hash) window.scrollTo(0, 0);
+  function pinToTop() { if (!window.location.hash) window.scrollTo(0, 0); }
+  pinToTop();
+  document.addEventListener('DOMContentLoaded', pinToTop);
+  window.addEventListener('load', () => { pinToTop(); requestAnimationFrame(pinToTop); });
 
   // Nav scroll
   const nav = document.getElementById('nav');

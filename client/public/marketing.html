@@ -260,7 +260,7 @@
 
 <!-- HERO with full-bleed video -->
 <header class="hero">
-  <video class="hero-video" autoplay muted loop playsinline poster="/marketing/hero-silhouette.png">
+  <video class="hero-video" autoplay muted loop playsinline preload="auto" poster="/marketing/video/hero-poster.jpg">
     <source src="/marketing/video/hero.mp4" type="video/mp4">
   </video>
   <div class="hero-overlay"></div>
@@ -480,6 +480,10 @@
 </footer>
 
 <script>
+  // Force fresh load to start at top (prevents browser restoring mid-page scroll)
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  if (!window.location.hash) window.scrollTo(0, 0);
+
   // Nav scroll
   const nav = document.getElementById('nav');
   window.addEventListener('scroll', () => {

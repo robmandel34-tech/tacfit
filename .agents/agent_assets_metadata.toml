@@ -167,3 +167,9 @@ id = "nObh1zuSG_cjZ2-06JgX_"
 uri = "file://exports/tacfit-privacy-policy.txt"
 type = "text"
 title = "TacFit Privacy Policy (HTML — paste into Webflow Embed)"
+
+[[outputs]]
+id = "pmql5xlj18p6J0ovyyZVJ"
+uri = "file://client/public/marketing/video/promo-poster.jpg"
+type = "image"
+title = "New video poster (last frame)"

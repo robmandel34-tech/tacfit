@@ -176,6 +176,37 @@
   .feature-row.reverse .feature-copy { transform: translateY(50px); }
   .feature-row.reverse.in .feature-copy { transform: translateY(0); }
 
+  /* PROMO — watch the story */
+  .promo { padding: 120px 0; position: relative; }
+  .promo .head { text-align: center; max-width: 720px; margin: 0 auto 56px; }
+  .promo-wrap { position: relative; display: flex; justify-content: center; align-items: center; perspective: 1400px; padding: 30px 0; }
+  .promo-wrap::before {
+    content:''; position: absolute; inset: 0;
+    background: radial-gradient(circle at center, rgba(59,222,53,0.25) 0%, rgba(59,222,53,0.08) 35%, transparent 65%);
+    filter: blur(60px); z-index: 0;
+  }
+  .promo-frame {
+    position: relative; z-index: 1;
+    width: 100%; max-width: 380px;
+    padding: 12px;
+    border-radius: 48px;
+    background:
+      conic-gradient(from 220deg at 50% 50%,
+        rgba(59,222,53,0.7) 0deg,
+        rgba(59,222,53,0.1) 90deg,
+        rgba(59,222,53,0.0) 180deg,
+        rgba(59,222,53,0.3) 270deg,
+        rgba(59,222,53,0.7) 360deg);
+    box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 50px rgba(59,222,53,0.2);
+  }
+  .promo-frame video {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 38px;
+    background: #000;
+  }
+
   /* IMAGE WALL — cinematic stills */
   .wall { position: relative; padding: 0; }
   .wall-block { position: relative; height: 85vh; min-height: 600px; overflow: hidden; display: flex; align-items: center; background-size: cover; background-position: center; }
@@ -287,6 +318,24 @@
     <span>Body · Mind · Spirit</span>
   </div>
 </div>
+
+<!-- PROMO — watch the story -->
+<section class="promo">
+  <div class="container">
+    <div class="head reveal">
+      <span class="section-eyebrow">Watch the Story</span>
+      <h2>This is TacFit.</h2>
+      <p class="lede">Forty-five seconds on what we're building and why.</p>
+    </div>
+    <div class="promo-wrap reveal">
+      <div class="promo-frame">
+        <video controls preload="metadata" playsinline poster="/marketing/video/promo-poster.jpg">
+          <source src="/marketing/video/promo.mp4" type="video/mp4">
+        </video>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- APP SHOWCASE — Bevel sticky scroll -->
 <section class="block" id="showcase">

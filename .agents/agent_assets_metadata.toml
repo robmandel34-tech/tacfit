@@ -178,4 +178,10 @@ title = "New video poster (last frame)"
 id = "Q-kxlFUhQsVTA5-DM0jQq"
 uri = "file://marketing-site.zip"
 type = "unspecified"
-title = "TacFit Marketing Site (with Sign In)"
+title = "TacFit Marketing Site (with link preview image)"
+
+[[outputs]]
+id = "_Qra6OVbNx8P75XemL4R9"
+uri = "file://client/public/marketing/og-image.jpg"
+type = "image"
+title = "Preview: new link share image"

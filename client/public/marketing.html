@@ -14,31 +14,58 @@
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   if (!location.hash) {
     window.scrollTo(0, 0);
-    try { document.documentElement.style.overflow = 'hidden'; } catch (e) {}
     let userScrolled = false;
     const mark = () => { userScrolled = true; };
     addEventListener('wheel', mark, { passive: true, once: true });
     addEventListener('touchmove', mark, { passive: true, once: true });
+
+    // Physical scroll lock — body becomes position:fixed for the first ~1.5s
+    // of page life. iOS Safari cannot scroll a fixed body, so no media element
+    // can drag the viewport into itself. Applied as soon as <body> exists.
+    function lockBody() {
+      if (!document.body) return false;
+      document.body.style.position = 'fixed';
+      document.body.style.top = '0';
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.width = '100%';
+      return true;
+    }
+    function unlockBody() {
+      if (!document.body) return;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.width = '';
+      window.scrollTo(0, 0);
+    }
+    if (!lockBody()) {
+      // Body not yet parsed — try every frame until it exists.
+      const waitForBody = () => { if (!lockBody()) requestAnimationFrame(waitForBody); };
+      requestAnimationFrame(waitForBody);
+    }
+
     const pin = () => { if (!userScrolled) window.scrollTo(0, 0); };
-    // Pin on every frame for the first ~3 seconds, then taper off. iOS Safari
-    // sometimes scrolls media into view well after initial render.
     let frames = 0;
     function pinFrame() {
       pin();
-      if (++frames < 180 && !userScrolled) requestAnimationFrame(pinFrame);
+      if (++frames < 120 && !userScrolled) requestAnimationFrame(pinFrame);
     }
     requestAnimationFrame(pinFrame);
-    [0, 50, 100, 200, 400, 700, 1000, 1500, 2000, 2500, 3000].forEach(t => setTimeout(pin, t));
+    [0, 50, 100, 200, 400, 700, 1000, 1500, 2000].forEach(t => setTimeout(pin, t));
+
     addEventListener('DOMContentLoaded', pin);
     addEventListener('load', () => {
       pin();
-      requestAnimationFrame(() => {
-        try { document.documentElement.style.overflow = ''; } catch (e) {}
-      });
+      // Release the physical lock after layout has settled.
+      setTimeout(() => { if (!userScrolled) unlockBody(); }, 400);
     });
-    // Safari/Firefox bfcache restore — happens after my script runs on
-    // back/forward nav and can leave you mid-page. Pin again.
-    addEventListener('pageshow', (e) => { if (!userScrolled) { pin(); setTimeout(pin, 50); } });
+    // Failsafe — always release after 2s so the page is usable even if 'load'
+    // never fires for some reason.
+    setTimeout(() => { if (!userScrolled) unlockBody(); }, 2200);
+
+    addEventListener('pageshow', () => { if (!userScrolled) { pin(); setTimeout(pin, 50); } });
   }
 </script>
 <meta name="description" content="TacFit turns fitness into a team sport. Form a squad, join a competition, log workouts together, and grow stronger in body, mind, and spirit." />
@@ -83,8 +110,8 @@
   @media (max-width: 720px) { .nav-links { display: none; } }
 
   /* HERO — split layout with promo video */
-  .hero { position: relative; min-height: 100svh; min-height: 100dvh; display: flex; align-items: center; overflow: hidden; padding: 120px 0 80px; background: var(--bg); }
-  @supports not (height: 100dvh) { .hero { min-height: 100vh; } }
+  .hero { position: relative; display: flex; align-items: center; overflow: hidden; padding: 120px 0 80px; background: var(--bg); }
+  @media (min-width: 921px) { .hero { min-height: 100vh; min-height: 100dvh; } }
   .hero::before {
     content: ''; position: absolute; inset: 0; z-index: 0;
     background:

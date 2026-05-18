@@ -3,7 +3,33 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
 <title>TacFit — Fitness, Together.</title>
+<script>
+  // Run BEFORE anything else paints. Disable browser scroll restoration and
+  // pin the document to (0,0). Lock scroll until window 'load' so late layout
+  // shifts (video poster, fonts) cannot push us past the hero.
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  if (!location.hash) {
+    window.scrollTo(0, 0);
+    try { document.documentElement.style.overflow = 'hidden'; } catch (e) {}
+    let userScrolled = false;
+    const mark = () => { userScrolled = true; };
+    addEventListener('wheel', mark, { passive: true, once: true });
+    addEventListener('touchmove', mark, { passive: true, once: true });
+    const pin = () => { if (!userScrolled) window.scrollTo(0, 0); };
+    [0, 50, 100, 200, 400, 700, 1000, 1500].forEach(t => setTimeout(pin, t));
+    addEventListener('DOMContentLoaded', pin);
+    addEventListener('load', () => {
+      pin();
+      requestAnimationFrame(() => {
+        try { document.documentElement.style.overflow = ''; } catch (e) {}
+      });
+    });
+  }
+</script>
 <meta name="description" content="TacFit turns fitness into a team sport. Form a squad, join a competition, log workouts together, and grow stronger in body, mind, and spirit." />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -554,26 +580,7 @@
 </footer>
 
 <script>
-  // Force fresh load to start at top. Some elements (hero video, late-loading
-  // fonts/images) can push the scroll position after initial render, so we
-  // aggressively pin to the top for the first 1.5s of the page life unless
-  // the user has actually scrolled themselves.
-  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-  if (!window.location.hash) {
-    let userScrolled = false;
-    const onUserScroll = () => { userScrolled = true; };
-    window.addEventListener('wheel',     onUserScroll, { passive: true, once: true });
-    window.addEventListener('touchmove', onUserScroll, { passive: true, once: true });
-    window.addEventListener('keydown',   (e) => {
-      if (['ArrowDown','ArrowUp','PageDown','PageUp','Home','End',' '].includes(e.key)) userScrolled = true;
-    }, { once: true });
-    const pin = () => { if (!userScrolled) window.scrollTo(0, 0); };
-    pin();
-    const stamps = [0, 50, 100, 200, 400, 700, 1000, 1500];
-    stamps.forEach(t => setTimeout(pin, t));
-    document.addEventListener('DOMContentLoaded', pin);
-    window.addEventListener('load', () => { pin(); requestAnimationFrame(pin); });
-  }
+  // (Initial scroll-pinning lives in the early <script> block in <head>.)
 
   // Nav scroll
   const nav = document.getElementById('nav');

@@ -241,28 +241,27 @@
   .pillar-card {
     position: relative; overflow: hidden;
     border-radius: 32px;
-    aspect-ratio: 4 / 5; min-height: 560px;
-    background-size: cover; background-position: center;
-    display: flex; flex-direction: column; justify-content: flex-end;
-    padding: 44px;
+    background: #0a0c0f;
     border: 1px solid var(--border);
     transition: transform .55s cubic-bezier(.22,.61,.36,1), border-color .4s ease, box-shadow .5s ease;
     opacity: 0; transform: translateY(36px);
   }
   .pillar-card.in { opacity: 1; transform: translateY(0); }
   .pillar-card:hover { transform: translateY(-6px); border-color: rgba(59,222,53,0.5); box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 60px rgba(59,222,53,0.12); }
-  .pillar-card::before {
-    content:''; position: absolute; inset: 0; z-index: 1;
-    background: linear-gradient(180deg, rgba(10,12,15,0) 0%, rgba(10,12,15,0.25) 45%, rgba(10,12,15,0.92) 100%);
+  .pillar-card > img { display: block; width: 100%; height: auto; }
+  .pillar-overlay {
+    position: absolute; inset: 0; z-index: 2;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 44px;
+    background: linear-gradient(180deg, rgba(10,12,15,0) 0%, rgba(10,12,15,0.25) 50%, rgba(10,12,15,0.92) 100%);
   }
-  .pillar-card > * { position: relative; z-index: 2; }
-  .pillar-card .label { color: var(--green); font-size: 12px; font-weight: 700; letter-spacing: 0.28em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-  .pillar-card .label::before { content:''; width: 24px; height: 1px; background: var(--green); }
-  .pillar-card h3 { font-size: clamp(48px, 6vw, 80px); line-height: 0.95; letter-spacing: -0.04em; font-weight: 900; margin: 0 0 14px; text-shadow: 0 2px 20px rgba(0,0,0,0.6); }
-  .pillar-card p { color: var(--text); font-size: 16px; line-height: 1.55; max-width: 380px; margin: 0; text-shadow: 0 1px 12px rgba(0,0,0,0.7); }
+  .pillar-overlay .label { color: var(--green); font-size: 12px; font-weight: 700; letter-spacing: 0.28em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .pillar-overlay .label::before { content:''; width: 24px; height: 1px; background: var(--green); }
+  .pillar-overlay h3 { font-size: clamp(48px, 6vw, 80px); line-height: 0.95; letter-spacing: -0.04em; font-weight: 900; margin: 0 0 14px; text-shadow: 0 2px 20px rgba(0,0,0,0.7); }
+  .pillar-overlay p { color: var(--text); font-size: 16px; line-height: 1.55; max-width: 380px; margin: 0; text-shadow: 0 1px 12px rgba(0,0,0,0.8); }
   @media (max-width: 820px) {
-    .pillar-card { aspect-ratio: auto; min-height: 480px; padding: 36px; }
     .pillars { padding: 90px 0; }
+    .pillar-overlay { padding: 32px; }
   }
 
   /* MANIFESTO — long emotional video */
@@ -445,15 +444,21 @@
 <!-- PILLARS — Compete / Conquer diptych -->
 <section class="pillars">
   <div class="container pillars-grid">
-    <div class="pillar-card reveal" style="background-image:url('/marketing/hero-silhouette.png');">
-      <span class="label">Show Up</span>
-      <h3>Compete.</h3>
-      <p>Live leaderboards. Real evidence. Real points. Real teams, all chasing the same goal.</p>
+    <div class="pillar-card reveal">
+      <img src="/marketing/hero-silhouette.png" alt="" />
+      <div class="pillar-overlay">
+        <span class="label">Show Up</span>
+        <h3>Compete.</h3>
+        <p>Live leaderboards. Real evidence. Real points. Real teams, all chasing the same goal.</p>
+      </div>
     </div>
-    <div class="pillar-card reveal" style="background-image:url('/marketing/manifesto-stars.png');">
-      <span class="label">Together</span>
-      <h3>Conquer.</h3>
-      <p>Body. Mind. Spirit. The kind of wellness that sticks — because your people are right there with you.</p>
+    <div class="pillar-card reveal">
+      <img src="/marketing/manifesto-stars.png" alt="" />
+      <div class="pillar-overlay">
+        <span class="label">Together</span>
+        <h3>Conquer.</h3>
+        <p>Body. Mind. Spirit. The kind of wellness that sticks — because your people are right there with you.</p>
+      </div>
     </div>
   </div>
 </section>

@@ -173,3 +173,9 @@ id = "pmql5xlj18p6J0ovyyZVJ"
 uri = "file://client/public/marketing/video/promo-poster.jpg"
 type = "image"
 title = "New video poster (last frame)"
+
+[[outputs]]
+id = "Q-kxlFUhQsVTA5-DM0jQq"
+uri = "file://marketing-site.zip"
+type = "unspecified"
+title = "TacFit Marketing Site (drag into Netlify)"

@@ -109,99 +109,56 @@
   h2 { font-size: clamp(36px, 4.8vw, 56px); line-height: 1.05; letter-spacing: -0.03em; font-weight: 800; margin: 16px 0 18px; }
   .lede { color: var(--text-2); font-size: 18px; line-height: 1.6; }
 
-  /* SHOWCASE — alternating rows with scroll-pull animation */
-  .feature-row { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; margin-bottom: 160px; }
-  .feature-row:last-child { margin-bottom: 0; }
-  .feature-row.reverse .feature-copy { order: 2; }
+  /* SHOWCASE — bento grid */
+  .bento { display: grid; grid-template-columns: repeat(12, 1fr); gap: 22px; }
+  .bento-card {
+    position: relative; overflow: hidden;
+    background: linear-gradient(180deg, rgba(20,24,31,0.9), rgba(14,17,22,0.95));
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    padding: 36px 36px 0;
+    min-height: 460px;
+    display: flex; flex-direction: column;
+    transition: transform .5s cubic-bezier(.22,.61,.36,1), border-color .4s ease, box-shadow .5s ease;
+    opacity: 0; transform: translateY(40px);
+  }
+  .bento-card.in { opacity: 1; transform: translateY(0); }
+  .bento-card:hover { transform: translateY(-6px); border-color: rgba(59,222,53,0.45); box-shadow: 0 30px 70px rgba(0,0,0,0.45), 0 0 60px rgba(59,222,53,0.10); }
+  .bento-card::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background: radial-gradient(circle at 80% 0%, rgba(59,222,53,0.15) 0%, transparent 50%);
+    opacity: 0; transition: opacity .6s ease;
+  }
+  .bento-card:hover::before { opacity: 1; }
+  .bento-card .step { color: var(--green); font-size: 12px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; position: relative; z-index: 2; }
+  .bento-card h3 { font-size: clamp(24px, 2.4vw, 32px); letter-spacing: -0.02em; font-weight: 800; line-height: 1.12; margin: 12px 0 12px; position: relative; z-index: 2; }
+  .bento-card h3 .accent { color: var(--green); }
+  .bento-card p { color: var(--text-2); font-size: 15px; line-height: 1.6; max-width: 420px; position: relative; z-index: 2; }
+  .bento-shot { position: relative; z-index: 1; flex: 1; display: flex; align-items: flex-end; justify-content: center; margin-top: 24px; }
+  .bento-shot img {
+    display: block; max-width: 100%; height: auto;
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -20px 60px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04);
+  }
+  /* Card size variants */
+  .bento-card.col-7 { grid-column: span 7; }
+  .bento-card.col-5 { grid-column: span 5; }
+  .bento-card.col-12 { grid-column: span 12; padding-bottom: 0; }
+  /* Wide cards: text top, screenshot floats to right side */
+  .bento-card.wide .bento-shot { justify-content: flex-end; padding-right: 4%; }
+  .bento-card.wide .bento-shot img { max-width: 62%; transform: translateY(10px); }
+  /* Narrow cards: screenshot centered + peeking from bottom */
+  .bento-card.narrow .bento-shot img { max-width: 75%; }
+  /* Full-width card: text left, screenshot strip right */
+  .bento-card.col-12 { min-height: 360px; }
+  .bento-card.col-12 .bento-shot { justify-content: flex-end; padding-right: 6%; }
+  .bento-card.col-12 .bento-shot img { max-width: 46%; transform: translateY(12px); }
   @media (max-width: 920px) {
-    .feature-row { grid-template-columns: 1fr; gap: 36px; margin-bottom: 110px; }
-    .feature-row.reverse .feature-copy { order: 0; }
+    .bento { gap: 18px; }
+    .bento-card { grid-column: span 12 !important; padding: 28px 28px 0; min-height: 380px; }
+    .bento-card .bento-shot { justify-content: center !important; padding-right: 0 !important; }
+    .bento-card .bento-shot img { max-width: 80% !important; transform: none !important; }
   }
-  .feature-copy h3 { font-size: clamp(28px, 3vw, 40px); letter-spacing: -0.02em; font-weight: 800; margin-bottom: 16px; line-height: 1.12; }
-  .feature-copy h3 .accent { color: var(--green); }
-  .feature-copy p { color: var(--text-2); font-size: 17px; line-height: 1.65; max-width: 460px; }
-  .feature-copy .step { color: var(--green); font-size: 13px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 14px; display: block; }
-
-  /* Sleek phone treatment with radial glow backdrop */
-  .feature-shot { position: relative; display: flex; justify-content: center; align-items: center; padding: 60px 20px; perspective: 1400px; min-height: 540px; }
-  .feature-shot::before {
-    content: ''; position: absolute; inset: 0;
-    background: radial-gradient(circle at center, rgba(59,222,53,0.28) 0%, rgba(59,222,53,0.10) 30%, transparent 65%);
-    filter: blur(50px);
-    z-index: 0;
-    opacity: 0; transition: opacity 1s ease .2s;
-  }
-  .feature-row.in .feature-shot::before { opacity: 1; }
-  .feature-shot::after {
-    content: ''; position: absolute; left: 50%; bottom: 8%; transform: translateX(-50%);
-    width: 70%; height: 25%;
-    background: radial-gradient(ellipse at center, rgba(59,222,53,0.45), transparent 70%);
-    filter: blur(35px);
-    z-index: 0;
-  }
-  /* Gradient ring wrapping the phone */
-  .phone-frame {
-    position: relative; z-index: 1;
-    width: 100%; max-width: 360px;
-    padding: 14px;
-    border-radius: 56px;
-    background:
-      conic-gradient(from 220deg at 50% 50%,
-        rgba(59,222,53,0.6) 0deg,
-        rgba(59,222,53,0.08) 90deg,
-        rgba(59,222,53,0.0) 180deg,
-        rgba(59,222,53,0.25) 270deg,
-        rgba(59,222,53,0.6) 360deg);
-    transition: transform 1.1s cubic-bezier(.22,.61,.36,1), opacity 1s ease;
-    transform: translateY(120px) rotateX(14deg) rotateY(-8deg) scale(0.88);
-    opacity: 0;
-    will-change: transform;
-  }
-  .feature-row.reverse .phone-frame { transform: translateY(120px) rotateX(14deg) rotateY(8deg) scale(0.88); }
-  .feature-row.in .phone-frame { transform: translateY(0) rotateX(0) rotateY(0) scale(1); opacity: 1; }
-  .phone-frame::before {
-    content: ''; position: absolute; inset: 4px; border-radius: 50px;
-    background: var(--bg);
-    z-index: 0;
-  }
-  .phone-frame img {
-    position: relative; z-index: 1;
-    width: 100%; height: auto; display: block;
-    border-radius: 42px;
-    filter:
-      drop-shadow(0 30px 60px rgba(0,0,0,0.8))
-      drop-shadow(0 0 40px rgba(59,222,53,0.22));
-  }
-
-  /* Floating feature pills */
-  .feature-pill {
-    position: absolute; z-index: 2;
-    background: rgba(20,24,31,0.85);
-    backdrop-filter: blur(14px);
-    border: 1px solid rgba(59,222,53,0.4);
-    padding: 10px 16px;
-    border-radius: 14px;
-    display: inline-flex; align-items: center; gap: 10px;
-    font-size: 13px; font-weight: 600; color: var(--text);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-    opacity: 0; transform: translateY(20px) scale(0.92);
-    transition: opacity .7s ease .5s, transform .7s cubic-bezier(.22,.61,.36,1) .5s;
-    white-space: nowrap;
-  }
-  .feature-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 12px var(--green); animation: pulse 2s infinite; }
-  .feature-pill.top-left { top: 6%; left: -8%; }
-  .feature-pill.bottom-right { bottom: 8%; right: -8%; }
-  .feature-row.in .feature-pill { opacity: 1; transform: translateY(0) scale(1); }
-  @media (max-width: 920px) {
-    .feature-pill.top-left { left: 0; }
-    .feature-pill.bottom-right { right: 0; }
-  }
-
-  /* Copy slide-in animation */
-  .feature-copy { opacity: 0; transform: translateY(50px); transition: opacity .9s ease .15s, transform .9s cubic-bezier(.22,.61,.36,1) .15s; }
-  .feature-row.in .feature-copy { opacity: 1; transform: translateY(0); }
-  .feature-row.reverse .feature-copy { transform: translateY(50px); }
-  .feature-row.reverse.in .feature-copy { transform: translateY(0); }
 
   /* PROMO — watch the story */
   .promo { padding: 120px 0; position: relative; }
@@ -360,69 +317,41 @@
       <p class="lede">Not just another workout tracker. TacFit is built around the people who keep you going.</p>
     </div>
 
-    <div class="feature-row reveal">
-      <div class="feature-copy">
+    <div class="bento">
+      <article class="bento-card col-7 wide reveal-bento">
         <span class="step">01 — Intel Feed</span>
         <h3>The whole community, <span class="accent">in one feed.</span></h3>
-        <p>The Intel Feed is a live stream of every workout, every win, and every shared moment from the entire TacFit community. See what everyone is doing, cheer each other on, stay in the energy.</p>
-      </div>
-      <div class="feature-shot">
-        <div class="feature-pill top-left"><span class="dot"></span> +12 buddies cheered</div>
-        <div class="phone-frame"><img src="/marketing/screen-intel.png" alt="Intel Feed" /></div>
-        <div class="feature-pill bottom-right">Live · community feed</div>
-      </div>
-    </div>
+        <p>A live stream of every workout, every win, every shared moment. See what everyone is doing and stay in the energy.</p>
+        <div class="bento-shot"><img src="/marketing/screen-intel.png" alt="Intel Feed" /></div>
+      </article>
 
-    <div class="feature-row reverse reveal">
-      <div class="feature-copy">
+      <article class="bento-card col-5 narrow reveal-bento">
         <span class="step">02 — Competitions</span>
         <h3>Pick a challenge. <span class="accent">Commit.</span></h3>
-        <p>Browse active competitions, see the rules, the goals, the join window. One tap and you and your team are in — chasing the same goal together.</p>
-      </div>
-      <div class="feature-shot">
-        <div class="feature-pill top-left"><span class="dot"></span> Join window open</div>
-        <div class="phone-frame"><img src="/marketing/screen-competition.png" alt="Competition details" /></div>
-        <div class="feature-pill bottom-right">Max 5 squads</div>
-      </div>
-    </div>
+        <p>Browse active competitions. One tap and you're in — chasing the same goal together.</p>
+        <div class="bento-shot"><img src="/marketing/screen-competition.png" alt="Competition details" /></div>
+      </article>
 
-    <div class="feature-row reveal">
-      <div class="feature-copy">
+      <article class="bento-card col-5 narrow reveal-bento">
         <span class="step">03 — Your Squad</span>
         <h3>Your squad. <span class="accent">Your tribe.</span></h3>
-        <p>Form your team, set your name, set your motto. Track progress as a unit. Win as a unit. This is the part that makes you actually show up.</p>
-      </div>
-      <div class="feature-shot">
-        <div class="feature-pill top-left">Rank #2 this week</div>
-        <div class="phone-frame"><img src="/marketing/screen-team.png" alt="Team page" /></div>
-        <div class="feature-pill bottom-right"><span class="dot"></span> 5 teammates online</div>
-      </div>
-    </div>
+        <p>Form your team, set your motto, track progress as a unit. This is the part that makes you actually show up.</p>
+        <div class="bento-shot"><img src="/marketing/screen-team.png" alt="Team page" /></div>
+      </article>
 
-    <div class="feature-row reverse reveal">
-      <div class="feature-copy">
+      <article class="bento-card col-7 wide reveal-bento">
         <span class="step">04 — Team Comms</span>
         <h3>Stay in the <span class="accent">conversation.</span></h3>
-        <p>Team comms keep the energy flowing between workouts. Drop a meme, plan a meetup, assign mission tasks. Real chat for real teams.</p>
-      </div>
-      <div class="feature-shot">
-        <div class="feature-pill top-left"><span class="dot"></span> New mission task</div>
-        <div class="phone-frame"><img src="/marketing/screen-comms.png" alt="Team Comms and Mission Board" /></div>
-        <div class="feature-pill bottom-right">Group + DM chat</div>
-      </div>
-    </div>
+        <p>Team comms keep the energy flowing between workouts. Drop a meme, plan a meetup, assign mission tasks.</p>
+        <div class="bento-shot"><img src="/marketing/screen-comms.png" alt="Team Comms" /></div>
+      </article>
 
-    <div class="feature-row reveal">
-      <div class="feature-copy">
+      <article class="bento-card col-12 reveal-bento">
         <span class="step">05 — Progress Map</span>
         <h3>Race to <span class="accent">victory.</span></h3>
         <p>Watch your team climb the mountain. The progress map turns weeks of workouts into a journey you can see — base camp to summit.</p>
-      </div>
-      <div class="feature-shot">
-        <div class="feature-pill top-left">Summit incoming</div>
-        <div class="phone-frame"><img src="/marketing/screen-map.png" alt="Team Progress Map" /></div>
-        <div class="feature-pill bottom-right"><span class="dot"></span> 73% complete</div>
-      </div>
+        <div class="bento-shot"><img src="/marketing/screen-map.png" alt="Team Progress Map" /></div>
+      </article>
     </div>
   </div>
 </section>
@@ -543,35 +472,21 @@
   const io = new IntersectionObserver((entries) => {
     entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
   }, { threshold: 0.12 });
-  document.querySelectorAll('.reveal:not(.feature-row)').forEach(el => io.observe(el));
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 
-  // Feature rows — trigger when row is meaningfully on screen
-  const rowIO = new IntersectionObserver((entries) => {
-    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); rowIO.unobserve(e.target); } });
-  }, { threshold: 0.25, rootMargin: '0px 0px -15% 0px' });
-  document.querySelectorAll('.feature-row').forEach(el => rowIO.observe(el));
-
-  // Parallax — phone moves slightly faster than copy on scroll
-  const shots = Array.from(document.querySelectorAll('.feature-shot'));
-  let ticking = false;
-  function applyParallax() {
-    const vh = window.innerHeight;
-    shots.forEach(shot => {
-      const rect = shot.getBoundingClientRect();
-      if (rect.bottom < 0 || rect.top > vh) return;
-      const center = rect.top + rect.height / 2;
-      const offset = (vh / 2 - center) * 0.08;
-      const frame = shot.querySelector('.phone-frame');
-      if (frame && shot.closest('.feature-row').classList.contains('in')) {
-        frame.style.translate = `0 ${offset}px`;
+  // Bento cards — staggered reveal
+  const bentoIO = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        const cards = Array.from(e.target.parentElement.querySelectorAll('.reveal-bento'));
+        const idx = cards.indexOf(e.target);
+        e.target.style.transitionDelay = (idx % 2) * 0.08 + 's';
+        e.target.classList.add('in');
+        bentoIO.unobserve(e.target);
       }
     });
-    ticking = false;
-  }
-  window.addEventListener('scroll', () => {
-    if (!ticking) { requestAnimationFrame(applyParallax); ticking = true; }
-  }, { passive: true });
-  applyParallax();
+  }, { threshold: 0.15, rootMargin: '0px 0px -10% 0px' });
+  document.querySelectorAll('.reveal-bento').forEach(el => bentoIO.observe(el));
 
 </script>
 

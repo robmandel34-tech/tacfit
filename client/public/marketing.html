@@ -176,13 +176,12 @@
   .feature-row.reverse .feature-copy { transform: translateY(50px); }
   .feature-row.reverse.in .feature-copy { transform: translateY(0); }
 
-  /* VIDEO WALL — This Was Major style */
+  /* IMAGE WALL — cinematic stills */
   .wall { position: relative; padding: 0; }
-  .wall-block { position: relative; height: 80vh; min-height: 560px; overflow: hidden; display: flex; align-items: center; }
-  .wall-block video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
+  .wall-block { position: relative; height: 85vh; min-height: 600px; overflow: hidden; display: flex; align-items: center; background-size: cover; background-position: center; }
   .wall-block::before {
     content:''; position: absolute; inset: 0; z-index: 1;
-    background: linear-gradient(135deg, rgba(10,12,15,0.7) 0%, rgba(10,12,15,0.35) 60%, rgba(18,76,16,0.4) 100%);
+    background: linear-gradient(135deg, rgba(10,12,15,0.78) 0%, rgba(10,12,15,0.35) 55%, rgba(18,76,16,0.45) 100%);
   }
   .wall-block .container { position: relative; z-index: 2; }
   .wall-text { max-width: 720px; }
@@ -365,37 +364,24 @@
   </div>
 </section>
 
-<!-- VIDEO WALL — This Was Major style -->
+<!-- IMAGE WALL — cinematic stills -->
 <section class="wall">
-  <div class="wall-block">
-    <video autoplay muted loop playsinline><source src="/marketing/video/wall-1.mp4" type="video/mp4"></video>
+  <div class="wall-block" style="background-image:url('/marketing/hero-silhouette.png');">
     <div class="container">
       <div class="wall-text reveal">
         <span class="label">— Show Up —</span>
         <h2 class="big">Compete.</h2>
-        <p>Live leaderboards. Real evidence. Real points. Real teams chasing the same goal.</p>
+        <p>Live leaderboards. Real evidence. Real points. Real teams, all chasing the same goal.</p>
       </div>
     </div>
   </div>
 
-  <div class="wall-block right">
-    <video autoplay muted loop playsinline><source src="/marketing/video/wall-2.mp4" type="video/mp4"></video>
+  <div class="wall-block right" style="background-image:url('/marketing/manifesto-stars.png');">
     <div class="container">
       <div class="wall-text reveal" style="text-align:right;">
-        <span class="label">— Stay Close —</span>
-        <h2 class="big">Connect.</h2>
-        <p style="margin-left:auto;">Team chat, the Intel Feed, buddy requests. Stay in each other's corner between workouts.</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="wall-block">
-    <video autoplay muted loop playsinline><source src="/marketing/video/wall-3.mp4" type="video/mp4"></video>
-    <div class="container">
-      <div class="wall-text reveal">
         <span class="label">— Together —</span>
         <h2 class="big">Conquer.</h2>
-        <p>Body. Mind. Spirit. The kind of wellness that sticks — because your people are right there with you.</p>
+        <p style="margin-left:auto;">Body. Mind. Spirit. The kind of wellness that sticks — because your people are right there with you.</p>
       </div>
     </div>
   </div>

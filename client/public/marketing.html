@@ -82,20 +82,50 @@
   h2 { font-size: clamp(36px, 4.8vw, 56px); line-height: 1.05; letter-spacing: -0.03em; font-weight: 800; margin: 16px 0 18px; }
   .lede { color: var(--text-2); font-size: 18px; line-height: 1.6; }
 
-  /* SHOWCASE — simple alternating rows */
-  .feature-row { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; margin-bottom: 140px; }
+  /* SHOWCASE — alternating rows with scroll-pull animation */
+  .feature-row { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; margin-bottom: 160px; }
   .feature-row:last-child { margin-bottom: 0; }
   .feature-row.reverse .feature-copy { order: 2; }
   @media (max-width: 920px) {
-    .feature-row { grid-template-columns: 1fr; gap: 36px; margin-bottom: 90px; }
+    .feature-row { grid-template-columns: 1fr; gap: 36px; margin-bottom: 110px; }
     .feature-row.reverse .feature-copy { order: 0; }
   }
   .feature-copy h3 { font-size: clamp(28px, 3vw, 40px); letter-spacing: -0.02em; font-weight: 800; margin-bottom: 16px; line-height: 1.12; }
   .feature-copy h3 .accent { color: var(--green); }
   .feature-copy p { color: var(--text-2); font-size: 17px; line-height: 1.65; max-width: 460px; }
   .feature-copy .step { color: var(--green); font-size: 13px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 14px; display: block; }
-  .feature-shot { display: flex; justify-content: center; align-items: center; }
-  .feature-shot img { width: 100%; max-width: 340px; height: auto; filter: drop-shadow(0 30px 60px rgba(0,0,0,0.6)); }
+
+  /* Sleek phone treatment with radial glow backdrop */
+  .feature-shot { position: relative; display: flex; justify-content: center; align-items: center; padding: 40px 0; perspective: 1200px; }
+  .feature-shot::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at center, rgba(59,222,53,0.22) 0%, rgba(59,222,53,0.08) 30%, transparent 65%);
+    filter: blur(40px);
+    z-index: 0;
+    transition: transform .8s ease;
+  }
+  .feature-shot::after {
+    content: ''; position: absolute; left: 50%; bottom: 10%; transform: translateX(-50%);
+    width: 70%; height: 30%;
+    background: radial-gradient(ellipse at center, rgba(59,222,53,0.35), transparent 70%);
+    filter: blur(30px);
+    z-index: 0;
+  }
+  .feature-shot img {
+    position: relative; z-index: 1;
+    width: 100%; max-width: 340px; height: auto;
+    filter:
+      drop-shadow(0 25px 50px rgba(0,0,0,0.7))
+      drop-shadow(0 0 30px rgba(59,222,53,0.18));
+    transition: transform .9s cubic-bezier(.22,.61,.36,1);
+    transform: translateY(40px) rotateX(8deg) rotateY(-4deg) scale(0.94);
+  }
+  .feature-row.reverse .feature-shot img { transform: translateY(40px) rotateX(8deg) rotateY(4deg) scale(0.94); }
+  .feature-row.in .feature-shot img { transform: translateY(0) rotateX(0) rotateY(0) scale(1); }
+
+  /* Copy slide-in animation */
+  .feature-copy { opacity: 0; transform: translateY(40px); transition: opacity .8s ease .15s, transform .8s cubic-bezier(.22,.61,.36,1) .15s; }
+  .feature-row.in .feature-copy { opacity: 1; transform: translateY(0); }
 
   /* VIDEO WALL — This Was Major style */
   .wall { position: relative; padding: 0; }

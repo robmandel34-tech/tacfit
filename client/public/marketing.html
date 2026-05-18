@@ -456,7 +456,7 @@
 <!-- PILLARS — Compete / Conquer diptych -->
 <section class="pillars">
   <div class="container pillars-grid">
-    <div class="pillar-card reveal">
+    <div class="pillar-card">
       <div class="pillar-img-wrap"><img src="/marketing/hero-silhouette.png" alt="" data-pillar-img /></div>
       <div class="pillar-overlay">
         <span class="label">Show Up</span>
@@ -464,7 +464,7 @@
         <p>Live leaderboards. Real evidence. Real points. Real teams, all chasing the same goal.</p>
       </div>
     </div>
-    <div class="pillar-card reveal">
+    <div class="pillar-card">
       <div class="pillar-img-wrap"><img src="/marketing/manifesto-stars.png" alt="" data-pillar-img /></div>
       <div class="pillar-overlay">
         <span class="label">Together</span>
@@ -569,6 +569,13 @@
     entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
   }, { threshold: 0.12 });
   document.querySelectorAll('.reveal:not(.feature-row)').forEach(el => io.observe(el));
+
+  // Pillar cards — use a more forgiving threshold so the curtain reveal fires
+  // reliably even on tall cards / short viewports.
+  const pillarIO = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); pillarIO.unobserve(e.target); } });
+  }, { threshold: 0.05, rootMargin: '0px 0px -8% 0px' });
+  document.querySelectorAll('.pillar-card').forEach(el => pillarIO.observe(el));
 
   // Feature rows — trigger when row is meaningfully on screen
   const rowIO = new IntersectionObserver((entries) => {

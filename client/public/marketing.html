@@ -83,7 +83,8 @@
   @media (max-width: 720px) { .nav-links { display: none; } }
 
   /* HERO — split layout with promo video */
-  .hero { position: relative; min-height: 100vh; display: flex; align-items: center; overflow: hidden; padding: 120px 0 80px; background: var(--bg); }
+  .hero { position: relative; min-height: 100svh; min-height: 100dvh; display: flex; align-items: center; overflow: hidden; padding: 120px 0 80px; background: var(--bg); }
+  @supports not (height: 100dvh) { .hero { min-height: 100vh; } }
   .hero::before {
     content: ''; position: absolute; inset: 0; z-index: 0;
     background:

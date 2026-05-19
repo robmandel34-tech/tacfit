@@ -7,7 +7,12 @@ import { ObjectStorageService } from "./objectStorage";
 import path from "path";
 
 const app = express();
-app.use(express.json());
+// Stripe webhook needs the raw request body to verify the signature,
+// so skip JSON parsing for that path and let the route handler use express.raw().
+app.use((req, res, next) => {
+  if (req.originalUrl === '/api/stripe-webhook') return next();
+  express.json()(req, res, next);
+});
 app.use(express.urlencoded({ extended: false }));
 
 // CORS — restrict to same origin; allow webhooks from known external services

@@ -3920,6 +3920,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Stripe webhook — server-side source of truth for completed payments.
+  // Stripe POSTs here on payment_intent.succeeded; we idempotently enter the
+  // user into the competition. This protects against the case where the
+  // client confirms a payment but its browser/network dies before the
+  // follow-up enter-with-payment call lands.
+  app.post(
+    "/api/stripe-webhook",
+    express.raw({ type: "application/json" }),
+    async (req, res) => {
+      const sig = req.headers["stripe-signature"] as string | undefined;
+      const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+      if (!webhookSecret) {
+        console.error("STRIPE_WEBHOOK_SECRET is not set — refusing webhook");
+        return res.status(500).send("Webhook secret not configured");
+      }
+      if (!sig) {
+        return res.status(400).send("Missing stripe-signature header");
+      }
+
+      let event: Stripe.Event;
+      try {
+        event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+      } catch (err: any) {
+        console.error("Stripe webhook signature verification failed:", err.message);
+        return res.status(400).send(`Webhook Error: ${err.message}`);
+      }
+
+      try {
+        if (event.type === "payment_intent.succeeded") {
+          const pi = event.data.object as Stripe.PaymentIntent;
+          const competitionId = parseInt(pi.metadata?.competitionId || "");
+          const userId = parseInt(pi.metadata?.userId || "");
+
+          if (!competitionId || !userId) {
+            console.warn(
+              `Webhook: payment_intent ${pi.id} missing competitionId/userId metadata — skipping`,
+            );
+            return res.json({ received: true, skipped: true });
+          }
+
+          try {
+            await db.insert(competitionEntriesTable).values({
+              userId,
+              competitionId,
+              paymentType: "stripe",
+              paymentStatus: "completed",
+              paymentMethod: "card",
+              stripePaymentIntentId: pi.id,
+              amountPaid: pi.amount,
+            });
+            console.log(
+              `Webhook: entered user ${userId} into competition ${competitionId} via PI ${pi.id}`,
+            );
+          } catch (e: any) {
+            if (e?.code === "23505") {
+              // Already entered (client beat us to it, or duplicate event) — fine.
+              console.log(
+                `Webhook: user ${userId} already entered competition ${competitionId} (PI ${pi.id})`,
+              );
+            } else {
+              throw e;
+            }
+          }
+        }
+
+        res.json({ received: true });
+      } catch (err: any) {
+        console.error("Stripe webhook handler error:", err);
+        res.status(500).send(`Webhook handler error: ${err.message}`);
+      }
+    },
+  );
+
   // Competition entry after successful payment
   // Authz: userId comes from session; req.body userId is ignored.
   // Idempotency: unique index on stripe_payment_intent_id + unique index on

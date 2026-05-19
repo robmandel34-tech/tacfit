@@ -148,39 +148,41 @@
      animations (presses, pedaling, swimming etc.) read clearly. */
   .feature-copy { position: relative; }
   .activity-mascot {
-    position: absolute; top: -12px; right: 0;
-    width: 55px; height: 64px;
+    position: absolute; top: -10px; right: 0;
+    width: 37px; height: 43px;
     color: var(--green);
-    filter: drop-shadow(0 0 10px rgba(59,222,53,0.35));
+    filter: drop-shadow(0 0 8px rgba(59,222,53,0.35));
     pointer-events: none;
   }
   @media (max-width: 720px) {
-    .activity-mascot { width: 46px; height: 54px; top: -8px; }
+    .activity-mascot { width: 31px; height: 36px; top: -6px; }
   }
 
-  /* Traveling mascots (runner, biker, swimmer): start mid-card and glide
-     all the way off the right edge of the viewport, then loop. */
+  /* Traveling mascots (runner, biker, swimmer): start mid-card on the same
+     baseline as the static ones, glide all the way off the right edge of
+     the viewport, then loop. */
   .activity-mascot.travel {
-    top: 50%; left: 35%; right: auto;
+    top: -10px; left: 35%; right: auto;
     will-change: transform, opacity;
     animation: mascot-travel 7s linear infinite;
   }
-  .activity-mascot.travel.swim { width: 70px; height: 60px; }
-  .activity-mascot.travel.bike { width: 64px; height: 64px; }
+  .activity-mascot.travel.swim { width: 48px; height: 40px; }
+  .activity-mascot.travel.bike { width: 44px; height: 44px; }
   @media (max-width: 720px) {
-    .activity-mascot.travel.swim { width: 58px; height: 50px; }
-    .activity-mascot.travel.bike { width: 54px; height: 54px; }
+    .activity-mascot.travel { top: -6px; }
+    .activity-mascot.travel.swim { width: 40px; height: 34px; }
+    .activity-mascot.travel.bike { width: 36px; height: 36px; }
   }
   @keyframes mascot-travel {
-    0%   { transform: translate(0,   -50%); opacity: 0; }
-    8%   { transform: translate(2vw, -50%); opacity: 1; }
-    80%  { transform: translate(75vw, -50%); opacity: 1; }
-    92%  { transform: translate(95vw, -50%); opacity: 0; }
-    93%  { transform: translate(0,   -50%); opacity: 0; }
-    100% { transform: translate(0,   -50%); opacity: 0; }
+    0%   { transform: translateX(0);    opacity: 0; }
+    8%   { transform: translateX(2vw);  opacity: 1; }
+    80%  { transform: translateX(75vw); opacity: 1; }
+    92%  { transform: translateX(95vw); opacity: 0; }
+    93%  { transform: translateX(0);    opacity: 0; }
+    100% { transform: translateX(0);    opacity: 0; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .activity-mascot.travel { animation: none; transform: translateY(-50%); }
+    .activity-mascot.travel { animation: none; }
   }
   .hero::before {
     content: ''; position: absolute; inset: 0; z-index: 0;

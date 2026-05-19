@@ -596,25 +596,39 @@
         </g>
       </symbol>
 
-      <!-- Yoga: tree pose with hands raised overhead, gentle balance sway -->
+      <!-- Yoga: starts standing tall (arms overhead), tips forward into
+           Warrior III / "airplane" pose — back leg extended horizontally,
+           torso + arms reaching forward over the standing leg — then returns. -->
       <symbol id="act-yoga" viewBox="0 0 60 64">
+        <!-- standing leg: always vertical, anchored at hip (30, 40) -->
+        <rect x="28" y="40" width="4" height="22" rx="2" fill="currentColor"/>
+
+        <!-- back leg: starts straight down beside the standing leg,
+             swings up & back to horizontal -->
         <g>
-          <!-- standing leg -->
-          <rect x="27" y="34" width="5" height="22" rx="2" fill="currentColor"/>
-          <!-- bent leg: knee out, foot tucked against standing leg -->
-          <path d="M27 36 L 44 42 L 30 46 Z" fill="currentColor"/>
-          <!-- torso -->
-          <path d="M24 18 L 35 18 L 33 36 L 26 36 Z" fill="currentColor"/>
-          <!-- head -->
-          <circle cx="29.5" cy="12" r="4.8" fill="currentColor"/>
-          <!-- arms raised overhead in a V, hands together at top -->
-          <rect x="20" y="-2" width="3.5" height="22" rx="1.5" fill="currentColor"
-                transform="rotate(-22 21.7 9)"/>
-          <rect x="36" y="-2" width="3.5" height="22" rx="1.5" fill="currentColor"
-                transform="rotate(22 37.7 9)"/>
-          <!-- balance sway -->
+          <rect x="28" y="40" width="4" height="22" rx="2" fill="currentColor"/>
           <animateTransform attributeName="transform" type="rotate"
-            values="-2 30 56; 2 30 56; -2 30 56" dur="3.5s" repeatCount="indefinite"/>
+            values="0 30 40; 0 30 40; -88 30 40; -88 30 40; 0 30 40"
+            keyTimes="0; 0.18; 0.42; 0.78; 0.95"
+            dur="5s" repeatCount="indefinite"/>
+        </g>
+
+        <!-- torso + head + arms: starts upright with arms reaching
+             overhead, tips forward 88° around the hip into airplane pose -->
+        <g>
+          <!-- torso -->
+          <path d="M26 18 L 34 18 L 33 40 L 27 40 Z" fill="currentColor"/>
+          <!-- head -->
+          <circle cx="30" cy="12" r="4.6" fill="currentColor"/>
+          <!-- left arm reaching overhead -->
+          <rect x="22" y="-4" width="3.5" height="20" rx="1.5" fill="currentColor"/>
+          <!-- right arm reaching overhead -->
+          <rect x="34.5" y="-4" width="3.5" height="20" rx="1.5" fill="currentColor"/>
+
+          <animateTransform attributeName="transform" type="rotate"
+            values="0 30 40; 0 30 40; 88 30 40; 88 30 40; 0 30 40"
+            keyTimes="0; 0.18; 0.42; 0.78; 0.95"
+            dur="5s" repeatCount="indefinite"/>
         </g>
       </symbol>
 
@@ -659,27 +673,46 @@
         <rect x="38" y="18" width="3.5" height="13" rx="1.5" fill="currentColor" transform="rotate(-30 40 24)"/>
       </symbol>
 
-      <!-- Swimmer: front arm windmills overhead, splash waves pulse -->
+      <!-- Swimmer: freestyle silhouette — extended lead arm, stroking back
+           arm that windmills, two flutter-kicking legs solidly attached to
+           the torso, splash waves below -->
       <symbol id="act-swimmer" viewBox="0 0 60 64">
-        <rect x="10" y="26" width="38" height="10" rx="5" fill="currentColor"/>
-        <circle cx="50" cy="26" r="5.2" fill="currentColor"/>
-        <g>
-          <rect x="47" y="10" width="4.5" height="18" rx="2" fill="currentColor"/>
-          <animateTransform attributeName="transform" type="rotate"
-            values="0 49 28; 180 49 28; 360 49 28" dur="2.4s" repeatCount="indefinite"/>
-        </g>
-        <rect x="6" y="20" width="16" height="4" rx="2" fill="currentColor"/>
-        <g>
-          <rect x="6" y="34" width="14" height="4" rx="2" fill="currentColor"/>
-          <animateTransform attributeName="transform" type="rotate"
-            values="-12 13 36; 12 13 36; -12 13 36" dur="0.5s" repeatCount="indefinite"/>
-        </g>
-        <path d="M2 46 Q 9 41, 16 46 T 30 46 T 44 46 T 58 46" stroke="currentColor" stroke-width="1.6" fill="none">
-          <animate attributeName="opacity" values="0.75;0.25;0.75" dur="2s" repeatCount="indefinite"/>
+        <!-- water surface waves -->
+        <path d="M2 48 Q 9 43, 16 48 T 30 48 T 44 48 T 58 48"
+              stroke="currentColor" stroke-width="1.5" fill="none">
+          <animate attributeName="opacity" values="0.75;0.3;0.75" dur="2s" repeatCount="indefinite"/>
         </path>
-        <path d="M2 54 Q 9 50, 16 54 T 30 54 T 44 54 T 58 54" stroke="currentColor" stroke-width="1.3" fill="none">
-          <animate attributeName="opacity" values="0.45;0.1;0.45"  dur="2s" begin="0.5s" repeatCount="indefinite"/>
+        <path d="M2 56 Q 9 52, 16 56 T 30 56 T 44 56 T 58 56"
+              stroke="currentColor" stroke-width="1.2" fill="none">
+          <animate attributeName="opacity" values="0.45;0.1;0.45" dur="2s" begin="0.5s" repeatCount="indefinite"/>
         </path>
+
+        <!-- legs: overlap the torso so they read as attached -->
+        <g>
+          <rect x="2" y="27.5" width="20" height="3.5" rx="1.5" fill="currentColor"/>
+          <animateTransform attributeName="transform" type="rotate"
+            values="-10 20 29; 10 20 29; -10 20 29" dur="0.5s" repeatCount="indefinite"/>
+        </g>
+        <g>
+          <rect x="2" y="32" width="20" height="3.5" rx="1.5" fill="currentColor"/>
+          <animateTransform attributeName="transform" type="rotate"
+            values="10 20 34; -10 20 34; 10 20 34" dur="0.5s" repeatCount="indefinite"/>
+        </g>
+
+        <!-- torso horizontal -->
+        <rect x="16" y="26" width="30" height="10" rx="5" fill="currentColor"/>
+        <!-- head -->
+        <circle cx="48" cy="26" r="5.2" fill="currentColor"/>
+
+        <!-- lead arm: extended forward past the head -->
+        <rect x="48" y="23" width="11" height="4" rx="2" fill="currentColor"/>
+
+        <!-- stroking arm: windmills around the shoulder -->
+        <g>
+          <rect x="42" y="10" width="4.5" height="20" rx="2" fill="currentColor"/>
+          <animateTransform attributeName="transform" type="rotate"
+            from="0 44 28" to="360 44 28" dur="2.2s" repeatCount="indefinite"/>
+        </g>
       </symbol>
     </defs>
   </svg>
@@ -733,7 +766,7 @@
       <p class="lede">Not just another workout tracker. TacFit does not work without active, daily teamwork. Don't let your team and yourself down.</p>
     </div>
 
-    <div class="feature-row reveal" data-mascot="act-reader">
+    <div class="feature-row reveal" data-mascot="act-lifter">
       <div class="feature-copy">
         <span class="step">01 — Intel Feed</span>
         <h3>Get inspired by the <span class="accent">community.</span></h3>
@@ -746,7 +779,7 @@
       </div>
     </div>
 
-    <div class="feature-row reverse reveal" data-mascot="act-lifter">
+    <div class="feature-row reverse reveal" data-mascot="act-reader">
       <div class="feature-copy">
         <span class="step">02 — Competitions</span>
         <h3>Pick a challenge. <span class="accent">Commit.</span></h3>

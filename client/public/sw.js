@@ -1,54 +1,75 @@
-const CACHE_NAME = 'tacfit-v4';
+const CACHE_NAME = 'tacfit-v5';
 const urlsToCache = [
-  '/',
-  '/static/js/bundle.js',
-  '/static/css/main.css',
   '/manifest.json',
   '/generated-icon.png'
 ];
 
 self.addEventListener('install', function(event) {
+  // Take over immediately so the new SW replaces the old (broken) one.
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(function(cache) {
-        return cache.addAll(urlsToCache);
+        return cache.addAll(urlsToCache).catch(function() {});
       })
   );
 });
 
 self.addEventListener('fetch', function(event) {
-  const url = event.request.url;
+  const req = event.request;
+  const url = new URL(req.url);
 
-  // Never intercept API calls — let them go directly to the network.
-  // This covers both same-origin /api/ paths and the absolute production URL.
+  // Only ever touch GETs to our own origin.
+  if (req.method !== 'GET' || url.origin !== self.location.origin) {
+    return;
+  }
+
+  // Never intercept anything that isn't a tiny set of truly static assets.
+  // In particular: never touch HTML navigations, Vite dev modules
+  // (`/src/...`, `/@vite/...`, `/@react-refresh`, `/@fs/...`, `/node_modules/...`),
+  // hashed bundles, or API calls. Caching those between deploys causes two
+  // copies of React to load and breaks hooks ("dispatcher.useRef is null").
   if (
-    url.includes('/api/') ||
-    url.includes('tacfit.replit.app') ||
-    event.request.method !== 'GET'
+    req.mode === 'navigate' ||
+    url.pathname.startsWith('/api/') ||
+    url.pathname.startsWith('/src/') ||
+    url.pathname.startsWith('/@') ||
+    url.pathname.startsWith('/node_modules/') ||
+    url.pathname.startsWith('/assets/') ||
+    url.pathname.startsWith('/uploads/')
   ) {
     return;
   }
 
+  // Cache-first for the small whitelist of stable static files.
+  const allowed = ['/manifest.json', '/generated-icon.png'];
+  if (!allowed.includes(url.pathname)) {
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request)
-      .then(function(response) {
-        // Return cached version or fetch from network
-        return response || fetch(event.request);
-      })
+    caches.match(req).then(function(response) {
+      return response || fetch(req);
+    })
   );
 });
 
 self.addEventListener('activate', function(event) {
   event.waitUntil(
-    caches.keys().then(function(cacheNames) {
-      return Promise.all(
-        cacheNames.map(function(cacheName) {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    Promise.all([
+      // Drop every old cache (including the broken tacfit-v4 dev-module cache).
+      caches.keys().then(function(cacheNames) {
+        return Promise.all(
+          cacheNames.map(function(cacheName) {
+            if (cacheName !== CACHE_NAME) {
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      }),
+      // Take control of any already-open tabs so they stop using the old SW.
+      self.clients.claim(),
+    ])
   );
 });
 

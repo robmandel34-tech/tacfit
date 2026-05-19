@@ -1061,7 +1061,12 @@ export default function AdminPage() {
                     Create Competition
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-tactical-dark border-tactical-gray max-w-2xl max-h-[80vh] overflow-y-auto" aria-describedby="competition-dialog-description">
+                <DialogContent
+                  className="bg-tactical-dark border-tactical-gray max-w-2xl max-h-[80vh] overflow-y-auto"
+                  aria-describedby="competition-dialog-description"
+                  onPointerDownOutside={(e) => e.preventDefault()}
+                  onInteractOutside={(e) => e.preventDefault()}
+                >
                   <DialogHeader>
                     <DialogTitle className="text-white">
                       {editingCompetition ? 'Edit Competition' : 'Create New Competition'}

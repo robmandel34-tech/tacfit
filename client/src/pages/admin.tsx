@@ -203,6 +203,7 @@ export default function AdminPage() {
     requiredActivities: [] as string[],
     targetGoals: [] as string[],
     paymentType: 'free' as 'free' | 'one_time',
+    pricingTier: 'short' as 'short' | 'long',
     entryFee: 0,
     requireActivityReflection: false,
     reflectionActivities: [] as string[],
@@ -520,6 +521,7 @@ export default function AdminPage() {
       requiredActivities: [],
       targetGoals: [],
       paymentType: 'free' as 'free' | 'one_time',
+      pricingTier: 'short' as 'short' | 'long',
       entryFee: 0,
       requireActivityReflection: false,
       reflectionActivities: [] as string[],
@@ -940,6 +942,7 @@ export default function AdminPage() {
       requiredActivities: competition.requiredActivities || [],
       targetGoals: competition.targetGoals || [],
       paymentType: (competition.paymentType as 'free' | 'one_time') || 'free',
+      pricingTier: ((competition as any).pricingTier as 'short' | 'long') || 'short',
       entryFee: competition.entryFee || 0,
       requireActivityReflection: competition.requireActivityReflection || false,
       reflectionActivities: competition.reflectionActivities || [],
@@ -1286,7 +1289,68 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    
+                    {/* Payment / Pricing */}
+                    <div className="space-y-3 border-t border-tactical-gray pt-4">
+                      <Label className="text-gray-300 text-lg font-semibold">Entry</Label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setCompetitionForm(prev => ({ ...prev, paymentType: 'free' }))}
+                          className={`p-3 rounded border text-left ${
+                            competitionForm.paymentType === 'free'
+                              ? 'border-military-green bg-military-green/20 text-white'
+                              : 'border-tactical-gray bg-tactical-gray-lighter text-gray-300'
+                          }`}
+                        >
+                          <div className="font-semibold">Free</div>
+                          <div className="text-xs opacity-80">No entry fee. Activity points still award.</div>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setCompetitionForm(prev => ({ ...prev, paymentType: 'one_time' }))}
+                          className={`p-3 rounded border text-left ${
+                            competitionForm.paymentType === 'one_time'
+                              ? 'border-military-green bg-military-green/20 text-white'
+                              : 'border-tactical-gray bg-tactical-gray-lighter text-gray-300'
+                          }`}
+                        >
+                          <div className="font-semibold">Paid</div>
+                          <div className="text-xs opacity-80">Card or points to join.</div>
+                        </button>
+                      </div>
+
+                      {competitionForm.paymentType === 'one_time' && (
+                        <div className="space-y-2 pt-2">
+                          <Label className="text-gray-300 font-semibold">Pricing Tier</Label>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <button
+                              type="button"
+                              onClick={() => setCompetitionForm(prev => ({ ...prev, pricingTier: 'short' }))}
+                              className={`p-3 rounded border text-left ${
+                                competitionForm.pricingTier === 'short'
+                                  ? 'border-military-green bg-military-green/20 text-white'
+                                  : 'border-tactical-gray bg-tactical-gray-lighter text-gray-300'
+                              }`}
+                            >
+                              <div className="font-semibold">Short (~2 weeks)</div>
+                              <div className="text-xs opacity-80">$7.00 or 1,000 points</div>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setCompetitionForm(prev => ({ ...prev, pricingTier: 'long' }))}
+                              className={`p-3 rounded border text-left ${
+                                competitionForm.pricingTier === 'long'
+                                  ? 'border-military-green bg-military-green/20 text-white'
+                                  : 'border-tactical-gray bg-tactical-gray-lighter text-gray-300'
+                              }`}
+                            >
+                              <div className="font-semibold">Long (~4 weeks)</div>
+                              <div className="text-xs opacity-80">$14.00 or 2,000 points</div>
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
 
                     <div className="flex space-x-4 pt-4">
                       <Button 

@@ -63,6 +63,8 @@ export const competitions = pgTable("competitions", {
   // Payment fields
   entryFee: integer("entry_fee").default(0), // Fee in cents (0 = free)
   paymentType: text("payment_type").default("free"), // "free", "one_time", "subscription"
+  pricingTier: text("pricing_tier"), // "short" (≈2-week pricing) or "long" (≈4-week pricing); null for free comps or legacy
+
   stripeProductId: text("stripe_product_id"), // Stripe product ID for paid competitions
   stripePriceId: text("stripe_price_id"), // Stripe price ID for paid competitions
   requireActivityReflection: boolean("require_activity_reflection").default(false), // legacy: kept for backward compat

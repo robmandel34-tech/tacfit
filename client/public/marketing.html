@@ -142,24 +142,19 @@
   .hero { position: relative; display: flex; align-items: center; overflow: hidden; padding: 120px 0 80px; background: var(--bg); }
   @media (min-width: 921px) { .hero { min-height: 100vh; min-height: 100dvh; } }
 
-  /* Scroll mascot — a translucent green character living in the background.
-     Sits at the side opposite the current phone screenshot, swaps activity
-     (and animation) as each phone section scrolls into view. */
-  .scroll-mascot {
-    position: fixed; top: 50%;
-    width: 240px; height: 280px;
+  /* Activity mascot — embedded at the bottom of each feature-row's copy column.
+     Naturally sits below the heading text and above the phone screenshot on
+     mobile (where the layout stacks). Always fully visible so the SMIL
+     animations (presses, pedaling, swimming etc.) read clearly. */
+  .activity-mascot {
+    display: block;
+    width: 110px; height: 128px;
     color: var(--green);
-    pointer-events: none; z-index: 1;
-    opacity: 0; transform: translateY(-50%);
-    transition: opacity .55s ease, left .6s ease, right .6s ease;
+    margin: 28px 0 0;
+    filter: drop-shadow(0 0 14px rgba(59,222,53,0.35));
   }
-  .scroll-mascot.side-left  { left:  2vw; right: auto; }
-  .scroll-mascot.side-right { right: 2vw; left:  auto; }
-  .scroll-mascot.show { opacity: 0.22; }
-  .scroll-mascot svg { width: 100%; height: 100%; display: block; }
   @media (max-width: 720px) {
-    .scroll-mascot { width: 120px; height: 140px; }
-    .scroll-mascot.show { opacity: 0.18; }
+    .activity-mascot { width: 92px; height: 108px; margin: 18px auto 4px; }
   }
   .hero::before {
     content: ''; position: absolute; inset: 0; z-index: 0;
@@ -665,11 +660,6 @@
     </defs>
   </svg>
 
-  <!-- Scroll mascot: green guy that swaps activity as each phone section enters view -->
-  <div id="scrollMascot" class="scroll-mascot" aria-hidden="true">
-    <svg><use href="#act-reader"/></svg>
-  </div>
-
   <div class="hero-squad" aria-hidden="true">
     <svg class="h1"><use href="#hikerIcon"/></svg>
     <svg class="h2"><use href="#hikerIcon"/></svg>
@@ -1097,61 +1087,23 @@
     });
   })();
 
-  // ===== Scroll mascot — swap activity icon based on which phone section is in view =====
-  (function scrollMascot() {
-    const mascot = document.getElementById('scrollMascot');
-    if (!mascot) return;
-    const useEl = mascot.querySelector('use');
-    const rows = Array.from(document.querySelectorAll('.feature-row[data-mascot]'));
-    if (!rows.length) return;
-    let currentId = null;
-
-    function update() {
-      const vh = window.innerHeight;
-      let best = null, bestScore = 0;
-      for (const row of rows) {
-        const r = row.getBoundingClientRect();
-        const visible = Math.max(0, Math.min(r.bottom, vh) - Math.max(r.top, 0));
-        // Score = how much of the row is in view, normalized to row or viewport height.
-        const score = visible / Math.min(r.height, vh);
-        if (score > bestScore) { bestScore = score; best = row; }
-      }
-      // Show mascot only when a row is meaningfully in view.
-      if (best && bestScore >= 0.35) {
-        const id = best.dataset.mascot;
-        // Position mascot on the side OPPOSITE the phone screenshot so it
-        // sits in the otherwise-empty background area.
-        // .reverse rows have the phone on the LEFT, so the mascot goes RIGHT.
-        const side = best.classList.contains('reverse') ? 'side-right' : 'side-left';
-        mascot.classList.remove('side-left', 'side-right');
-        mascot.classList.add(side);
-
-        if (id !== currentId) {
-          currentId = id;
-          // Quick fade-out / swap / fade-in so the change feels alive.
-          mascot.classList.remove('show');
-          setTimeout(() => {
-            useEl.setAttribute('href', '#' + id);
-            requestAnimationFrame(() => mascot.classList.add('show'));
-          }, 220);
-        } else {
-          mascot.classList.add('show');
-        }
-      } else {
-        currentId = null;
-        mascot.classList.remove('show');
-      }
-    }
-
-    let ticking = false;
-    function onScroll() {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => { update(); ticking = false; });
-    }
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-    update();
+  // ===== Inject inline activity mascot SVG into each feature-row's copy column =====
+  (function injectMascots() {
+    const rows = document.querySelectorAll('.feature-row[data-mascot]');
+    rows.forEach(row => {
+      const id = row.dataset.mascot;
+      const copy = row.querySelector('.feature-copy');
+      if (!copy || !id) return;
+      const svgNS = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(svgNS, 'svg');
+      svg.setAttribute('class', 'activity-mascot');
+      svg.setAttribute('aria-hidden', 'true');
+      svg.setAttribute('viewBox', '0 0 60 64');
+      const use = document.createElementNS(svgNS, 'use');
+      use.setAttribute('href', '#' + id);
+      svg.appendChild(use);
+      copy.appendChild(svg);
+    });
   })();
 
 </script>

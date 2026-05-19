@@ -146,15 +146,16 @@
      Naturally sits below the heading text and above the phone screenshot on
      mobile (where the layout stacks). Always fully visible so the SMIL
      animations (presses, pedaling, swimming etc.) read clearly. */
+  .feature-copy { position: relative; }
   .activity-mascot {
-    display: block;
+    position: absolute; top: -12px; right: 0;
     width: 55px; height: 64px;
     color: var(--green);
-    margin: 22px 0 0;
     filter: drop-shadow(0 0 10px rgba(59,222,53,0.35));
+    pointer-events: none;
   }
   @media (max-width: 720px) {
-    .activity-mascot { width: 46px; height: 54px; margin: 14px auto 4px; }
+    .activity-mascot { width: 46px; height: 54px; top: -8px; }
   }
   .hero::before {
     content: ''; position: absolute; inset: 0; z-index: 0;

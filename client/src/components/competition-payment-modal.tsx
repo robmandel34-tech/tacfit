@@ -131,13 +131,18 @@ export default function CompetitionPaymentModal({
     [fullComp, competition],
   );
 
+  // Reset state only when the modal opens (not on every re-render).
+  // refreshUser is intentionally excluded from deps — it's a new ref every
+  // render and would otherwise yank the user back to the chooser screen
+  // the moment Stripe Elements mounts.
   useEffect(() => {
     if (open) {
       refreshUser();
       setView("choose");
       setClientSecret(null);
     }
-  }, [open, refreshUser]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const pointsMutation = useMutation({
     mutationFn: async () => {

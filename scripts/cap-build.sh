@@ -21,8 +21,15 @@ VITE_API_URL="$VITE_API_URL" npx vite build
 echo "→ Adding iOS platform (skip if already added)..."
 if [ ! -d "ios" ]; then
   npx cap add ios
-  bash scripts/ios-permissions.sh
 fi
+
+# IMPORTANT: re-patch Info.plist on EVERY build. Previously this only ran
+# on first `cap add ios`, which meant a project that added iOS before this
+# script existed shipped without NSCameraUsageDescription and crashed on
+# Take Photo during App Store review. Running it every build also catches
+# the case where someone manually edits Info.plist and drops a key.
+echo "→ Patching Info.plist permissions (every build)..."
+bash scripts/ios-permissions.sh
 
 # Copy the TacFit splash master into the iOS asset catalog so the launch
 # screen shows the TacFit shield instead of the default Capacitor splash.

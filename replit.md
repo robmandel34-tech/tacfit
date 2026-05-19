@@ -73,9 +73,19 @@ The platform follows a military/tactical theme across its UI/UX, language, and i
 ### To build for iOS (on Mac)
 1. Set env var `VITE_API_URL` to your deployed backend URL (e.g. `https://tacfit.yourname.replit.app`)
 2. Run: `VITE_API_URL=https://... bash scripts/cap-build.sh`
-3. First run also does: `npx cap add ios` + patches Info.plist
+3. The script runs `scripts/ios-permissions.sh` on EVERY build now (not just the first one). It patches Info.plist with all required NSUsageDescription strings and aborts the build if any are missing — this prevents the "crash on Take Photo" rejection from Apple, which is caused by a missing `NSCameraUsageDescription`.
 4. Open in Xcode: `npx cap open ios`
 5. Set your Team + Bundle ID, then Archive → Distribute
+
+### If Apple rejected with "crashed on Take Photo" (2026-05-19 fix)
+Cause: prior `cap-build.sh` only ran the Info.plist patcher on the first
+`npx cap add ios`. Any subsequent build on an `ios/` folder that was
+created before the patcher existed shipped without `NSCameraUsageDescription`,
+which iOS treats as a hard crash the instant the camera UI launches.
+Fix: the patcher now runs on every build AND fails loudly if any required
+key is missing. To resubmit, just re-run `bash scripts/cap-build.sh`,
+re-archive in Xcode, and upload — the new build will have all the
+required keys.
 
 ### iOS splash screen
 - Master splash lives at `scripts/assets/ios-splash-master.png` (2732×2732, TacFit shield centered on `#0a0f0a`).

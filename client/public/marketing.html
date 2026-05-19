@@ -157,6 +157,31 @@
   @media (max-width: 720px) {
     .activity-mascot { width: 46px; height: 54px; top: -8px; }
   }
+
+  /* Traveling mascots (runner, biker, swimmer): start mid-card and glide
+     all the way off the right edge of the viewport, then loop. */
+  .activity-mascot.travel {
+    top: 50%; left: 35%; right: auto;
+    will-change: transform, opacity;
+    animation: mascot-travel 7s linear infinite;
+  }
+  .activity-mascot.travel.swim { width: 70px; height: 60px; }
+  .activity-mascot.travel.bike { width: 64px; height: 64px; }
+  @media (max-width: 720px) {
+    .activity-mascot.travel.swim { width: 58px; height: 50px; }
+    .activity-mascot.travel.bike { width: 54px; height: 54px; }
+  }
+  @keyframes mascot-travel {
+    0%   { transform: translate(0,   -50%); opacity: 0; }
+    8%   { transform: translate(2vw, -50%); opacity: 1; }
+    80%  { transform: translate(75vw, -50%); opacity: 1; }
+    92%  { transform: translate(95vw, -50%); opacity: 0; }
+    93%  { transform: translate(0,   -50%); opacity: 0; }
+    100% { transform: translate(0,   -50%); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .activity-mascot.travel { animation: none; transform: translateY(-50%); }
+  }
   .hero::before {
     content: ''; position: absolute; inset: 0; z-index: 0;
     background:
@@ -1096,6 +1121,14 @@
 
   // ===== Inject inline activity mascot SVG into each feature-row's copy column =====
   (function injectMascots() {
+    // Activities that physically travel across the screen get extra classes:
+    // `travel` triggers the CSS keyframe that slides them off the right edge,
+    // and a per-activity class tweaks the SVG container's aspect ratio.
+    const traveling = {
+      'act-runner':  { extra: 'run',  viewBox: '-4 -2 40 62' },
+      'act-biker':   { extra: 'bike', viewBox: '0 0 60 64'   },
+      'act-swimmer': { extra: 'swim', viewBox: '0 0 60 64'   },
+    };
     const rows = document.querySelectorAll('.feature-row[data-mascot]');
     rows.forEach(row => {
       const id = row.dataset.mascot;
@@ -1103,9 +1136,16 @@
       if (!copy || !id) return;
       const svgNS = 'http://www.w3.org/2000/svg';
       const svg = document.createElementNS(svgNS, 'svg');
-      svg.setAttribute('class', 'activity-mascot');
+      let cls = 'activity-mascot';
+      let viewBox = '0 0 60 64';
+      if (traveling[id]) {
+        cls += ' travel ' + traveling[id].extra;
+        viewBox = traveling[id].viewBox;
+      }
+      svg.setAttribute('class', cls);
       svg.setAttribute('aria-hidden', 'true');
-      svg.setAttribute('viewBox', '0 0 60 64');
+      svg.setAttribute('viewBox', viewBox);
+      svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
       const use = document.createElementNS(svgNS, 'use');
       use.setAttribute('href', '#' + id);
       svg.appendChild(use);

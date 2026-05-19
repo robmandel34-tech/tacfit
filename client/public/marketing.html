@@ -158,27 +158,34 @@
     .activity-mascot { width: 31px; height: 36px; top: -6px; }
   }
 
-  /* Traveling mascots (runner, biker, swimmer): start mid-card on the same
-     baseline as the static ones, glide all the way off the right edge of
-     the viewport, then loop. */
+  /* Traveling mascots (biker, swimmer): start at the inner edge of the
+     copy column (roughly the center of the viewport on desktop) so they
+     never overlap the text, then glide all the way off the right edge. */
   .activity-mascot.travel {
-    top: -10px; left: 35%; right: auto;
+    top: -10px;
     will-change: transform, opacity;
     animation: mascot-travel 7s linear infinite;
   }
+  /* Copy is on the left in normal rows → start at its right edge */
+  .feature-row:not(.reverse) .activity-mascot.travel { right: 0; left: auto; }
+  /* Copy is on the right in reverse rows → start at its left edge */
+  .feature-row.reverse        .activity-mascot.travel { left: 0;  right: auto; }
   .activity-mascot.travel.swim { width: 48px; height: 40px; }
   .activity-mascot.travel.bike { width: 44px; height: 44px; }
   @media (max-width: 720px) {
+    /* Mobile collapses to a single column — start at copy-column center */
+    .feature-row:not(.reverse) .activity-mascot.travel,
+    .feature-row.reverse        .activity-mascot.travel { left: 45%; right: auto; }
     .activity-mascot.travel { top: -6px; }
     .activity-mascot.travel.swim { width: 40px; height: 34px; }
     .activity-mascot.travel.bike { width: 36px; height: 36px; }
   }
   @keyframes mascot-travel {
     0%   { transform: translateX(0);    opacity: 0; }
-    8%   { transform: translateX(2vw);  opacity: 1; }
-    80%  { transform: translateX(75vw); opacity: 1; }
-    92%  { transform: translateX(95vw); opacity: 0; }
-    93%  { transform: translateX(0);    opacity: 0; }
+    6%   { transform: translateX(0);    opacity: 1; }
+    85%  { transform: translateX(58vw); opacity: 1; }
+    93%  { transform: translateX(72vw); opacity: 0; }
+    94%  { transform: translateX(0);    opacity: 0; }
     100% { transform: translateX(0);    opacity: 0; }
   }
   @media (prefers-reduced-motion: reduce) {
@@ -596,39 +603,47 @@
         </g>
       </symbol>
 
-      <!-- Yoga: starts standing tall (arms overhead), tips forward into
-           Warrior III / "airplane" pose — back leg extended horizontally,
-           torso + arms reaching forward over the standing leg — then returns. -->
+      <!-- Yoga: alternates between two clear silhouettes —
+           1) Mountain pose: standing tall, arms at sides.
+           2) Warrior III / "airplane": one leg vertical, body horizontal
+              with the back leg extended straight back and arms reaching
+              forward, just like the reference photo. -->
       <symbol id="act-yoga" viewBox="0 0 60 64">
-        <!-- standing leg: always vertical, anchored at hip (30, 40) -->
-        <rect x="28" y="40" width="4" height="22" rx="2" fill="currentColor"/>
-
-        <!-- back leg: starts straight down beside the standing leg,
-             swings up & back to horizontal -->
+        <!-- Mountain pose -->
         <g>
-          <rect x="28" y="40" width="4" height="22" rx="2" fill="currentColor"/>
-          <animateTransform attributeName="transform" type="rotate"
-            values="0 30 40; 0 30 40; -88 30 40; -88 30 40; 0 30 40"
-            keyTimes="0; 0.18; 0.42; 0.78; 0.95"
-            dur="5s" repeatCount="indefinite"/>
+          <!-- legs -->
+          <rect x="27"   y="34" width="3.5" height="26" rx="1.5" fill="currentColor"/>
+          <rect x="30.5" y="34" width="3.5" height="26" rx="1.5" fill="currentColor"/>
+          <!-- torso -->
+          <path d="M26 14 L 34 14 L 33 34 L 27 34 Z" fill="currentColor"/>
+          <!-- head -->
+          <circle cx="30" cy="9" r="4.6" fill="currentColor"/>
+          <!-- arms at sides -->
+          <rect x="22" y="16" width="3" height="16" rx="1.5" fill="currentColor"/>
+          <rect x="35" y="16" width="3" height="16" rx="1.5" fill="currentColor"/>
+          <animate attributeName="opacity"
+            values="1;1;0;0;1;1"
+            keyTimes="0;0.18;0.32;0.68;0.82;1"
+            dur="6s" repeatCount="indefinite"/>
         </g>
 
-        <!-- torso + head + arms: starts upright with arms reaching
-             overhead, tips forward 88° around the hip into airplane pose -->
-        <g>
-          <!-- torso -->
-          <path d="M26 18 L 34 18 L 33 40 L 27 40 Z" fill="currentColor"/>
-          <!-- head -->
-          <circle cx="30" cy="12" r="4.6" fill="currentColor"/>
-          <!-- left arm reaching overhead -->
-          <rect x="22" y="-4" width="3.5" height="20" rx="1.5" fill="currentColor"/>
-          <!-- right arm reaching overhead -->
-          <rect x="34.5" y="-4" width="3.5" height="20" rx="1.5" fill="currentColor"/>
-
-          <animateTransform attributeName="transform" type="rotate"
-            values="0 30 40; 0 30 40; 88 30 40; 88 30 40; 0 30 40"
-            keyTimes="0; 0.18; 0.42; 0.78; 0.95"
-            dur="5s" repeatCount="indefinite"/>
+        <!-- Warrior III / airplane pose -->
+        <g opacity="0">
+          <!-- standing leg, vertical -->
+          <rect x="28" y="36" width="4" height="24" rx="2" fill="currentColor"/>
+          <!-- back leg, horizontal pointing left -->
+          <rect x="8"  y="34" width="22" height="4" rx="2" fill="currentColor"/>
+          <!-- torso, horizontal pointing right -->
+          <rect x="30" y="32" width="16" height="6" rx="2" fill="currentColor"/>
+          <!-- head at the front -->
+          <circle cx="49" cy="35" r="4.6" fill="currentColor"/>
+          <!-- both arms extended forward, reaching past the head -->
+          <rect x="48" y="32" width="11" height="3.2" rx="1.5" fill="currentColor"/>
+          <rect x="48" y="36" width="11" height="3.2" rx="1.5" fill="currentColor"/>
+          <animate attributeName="opacity"
+            values="0;0;1;1;0;0"
+            keyTimes="0;0.18;0.32;0.68;0.82;1"
+            dur="6s" repeatCount="indefinite"/>
         </g>
       </symbol>
 
@@ -704,14 +719,17 @@
         <!-- head -->
         <circle cx="48" cy="26" r="5.2" fill="currentColor"/>
 
-        <!-- lead arm: extended forward past the head -->
-        <rect x="48" y="23" width="11" height="4" rx="2" fill="currentColor"/>
-
-        <!-- stroking arm: windmills around the shoulder -->
+        <!-- both arms windmill around the shoulder, 180° out of phase so
+             one is reaching forward while the other strokes back -->
         <g>
           <rect x="42" y="10" width="4.5" height="20" rx="2" fill="currentColor"/>
           <animateTransform attributeName="transform" type="rotate"
             from="0 44 28" to="360 44 28" dur="2.2s" repeatCount="indefinite"/>
+        </g>
+        <g>
+          <rect x="42" y="10" width="4.5" height="20" rx="2" fill="currentColor"/>
+          <animateTransform attributeName="transform" type="rotate"
+            from="180 44 28" to="540 44 28" dur="2.2s" repeatCount="indefinite"/>
         </g>
       </symbol>
     </defs>

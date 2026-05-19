@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -225,7 +225,14 @@ export const competitionEntries = pgTable("competition_entries", {
   paymentMethod: text("payment_method"), // Additional method info
   refundedAt: timestamp("refunded_at"), // When refund was processed
   refundAmount: integer("refund_amount"), // Points refunded
-});
+}, (t) => ({
+  // One entry per user per competition — prevents double-entry races
+  uniqUserCompetition: uniqueIndex("competition_entries_user_competition_uniq")
+    .on(t.userId, t.competitionId),
+  // One entry per Stripe payment intent — prevents replay of card payments
+  uniqStripeIntent: uniqueIndex("competition_entries_stripe_intent_uniq")
+    .on(t.stripePaymentIntentId),
+}));
 
 export const whiteboardItems = pgTable("whiteboard_items", {
   id: serial("id").primaryKey(),

@@ -96,6 +96,27 @@ The platform follows a military/tactical theme across its UI/UX, language, and i
 - Faster deployments and better performance
 - Automatic CDN caching for media assets
 
+### Competition Payments (2026-05-19) — Dev / Stripe Test Mode
+- ✅ Reactivated points-based competition entry (was inactive in v1)
+- ✅ Added Stripe card checkout via Stripe Elements (`@stripe/react-stripe-js`)
+- ✅ Pricing is derived from competition duration in `shared/pricing.ts`:
+    - 2-week competition: $7.00 or 1000 points
+    - 4-week competition: $14.00 or 2000 points
+- ✅ `CompetitionPaymentModal` shows both options; user picks Card or Points
+- ✅ `competitions.tsx` `handleJoin` now opens the payment modal for any
+     competition where `paymentType !== "free"`; free comps still skip
+     straight to team selection
+- ✅ Backend: `/api/create-payment-intent` and `/api/competitions/:id/enter-with-points`
+     now both pull the price from `getCompetitionPricing()` — no more hardcoded
+     1000 / no more client-supplied amount
+- ✅ Removed a duplicate generic `/api/create-payment-intent` route that was
+     shadowing the competition-specific one
+- Env: dev uses `STRIPE_SECRET_KEY` (server) + `VITE_STRIPE_PUBLIC_KEY` (client)
+     test-mode keys already configured in Replit Secrets
+- TODO before live mode: add Stripe webhook reconciliation (currently the
+     client confirms then calls `enter-with-payment`; a server webhook on
+     `payment_intent.succeeded` is the belt-and-suspenders backup)
+
 ### Push Notification System (2025-08-21)
 - ✅ Implemented comprehensive PWA push notification system
 - ✅ VAPID authentication for secure push messaging

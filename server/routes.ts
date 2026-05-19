@@ -11,10 +11,12 @@ import {
   insertCompetitionEntrySchema, insertMissionTaskSchema, insertActivityTypeSchema,
   insertAdminPostSchema, insertMoodLogSchema, friendships, type User,
 } from "@shared/schema";
+import { getCompetitionPricing } from "@shared/pricing";
 import { ObjectStorageService, ObjectNotFoundError } from './objectStorage.js';
 import { db } from "./db";
 import { pool } from "./db";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
+import { users as usersTable, competitionEntries as competitionEntriesTable } from "@shared/schema";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -3536,96 +3538,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }, express.static('uploads'));
 
   // Competition entry with points payment
+  // Authz: userId is derived from the session, NEVER from req.body, so users
+  // cannot trigger entries (or point deductions) on behalf of others.
+  // Atomicity: a single transaction conditionally decrements points and
+  // inserts the entry; the unique (user_id, competition_id) index prevents
+  // double-entry races.
   app.post("/api/competitions/:id/enter-with-points", async (req, res) => {
     try {
       const competitionId = parseInt(req.params.id);
-      const { userId } = req.body;
-      
+      const userId = req.session?.userId || req.session?.user?.id;
       if (!userId) {
-        return res.status(400).json({ message: "User ID is required" });
+        return res.status(401).json({ message: "You must be logged in to enter a competition." });
       }
 
-      const user = await storage.getUser(userId);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      const ENTRY_COST_POINTS = 1000;
-
-      // Check if user has enough points
-      if ((user.points || 0) < ENTRY_COST_POINTS) {
-        return res.status(400).json({ 
-          message: `Insufficient points. You need ${ENTRY_COST_POINTS} points to enter this competition. You have ${user.points || 0} points.`,
-          requiresPayment: true,
-          pointsNeeded: ENTRY_COST_POINTS,
-          currentPoints: user.points || 0
-        });
-      }
-
-      // Check if competition exists
       const competition = await storage.getCompetition(competitionId);
       if (!competition) {
         return res.status(404).json({ message: "Competition not found" });
       }
 
-      // Check if user already has an entry for this competition
-      const existingEntry = await storage.getCompetitionEntry(user.id, competitionId);
-      if (existingEntry) {
-        return res.status(400).json({ message: "You have already entered this competition" });
+      const pricing = getCompetitionPricing(competition);
+      if (!pricing) {
+        return res.status(400).json({ message: "This competition is free — no points required." });
       }
+      const ENTRY_COST_POINTS = pricing.points;
 
-      // Deduct points from user
-      const updatedUser = await storage.updateUser(user.id, {
-        points: (user.points || 0) - ENTRY_COST_POINTS
-      });
+      let result: { remainingPoints: number };
+      try {
+        result = await db.transaction(async (tx) => {
+          // Atomic conditional decrement — only succeeds if balance >= cost.
+          const [updated] = await tx
+            .update(usersTable)
+            .set({ points: sql`${usersTable.points} - ${ENTRY_COST_POINTS}` })
+            .where(and(
+              eq(usersTable.id, userId),
+              sql`COALESCE(${usersTable.points}, 0) >= ${ENTRY_COST_POINTS}`,
+            ))
+            .returning({ points: usersTable.points });
 
-      // Create competition entry  
-      console.log('Creating entry with data:', {
-        userId: user.id,
-        competitionId: competitionId,
-        paymentType: 'points',
-        paymentStatus: 'completed',
-        paymentMethod: 'points',
-        pointsUsed: ENTRY_COST_POINTS
-      });
-      
-      const entry = await storage.createCompetitionEntry({
-        userId: user.id,
-        competitionId: competitionId,
-        paymentType: 'points',
-        paymentStatus: 'completed',
-        paymentMethod: 'points',
-        pointsUsed: ENTRY_COST_POINTS
-      });
+          if (!updated) {
+            const current = await storage.getUser(userId);
+            const err: any = new Error("INSUFFICIENT_POINTS");
+            err.currentPoints = current?.points || 0;
+            throw err;
+          }
+
+          await tx.insert(competitionEntriesTable).values({
+            userId,
+            competitionId,
+            paymentType: 'points',
+            paymentStatus: 'completed',
+            paymentMethod: 'points',
+            pointsUsed: ENTRY_COST_POINTS,
+          });
+
+          return { remainingPoints: updated.points || 0 };
+        });
+      } catch (e: any) {
+        if (e?.message === "INSUFFICIENT_POINTS") {
+          return res.status(400).json({
+            message: `Insufficient points. You need ${ENTRY_COST_POINTS} points to enter this competition. You have ${e.currentPoints} points.`,
+            requiresPayment: true,
+            pointsNeeded: ENTRY_COST_POINTS,
+            currentPoints: e.currentPoints,
+          });
+        }
+        // Postgres unique-violation = duplicate entry
+        if (e?.code === '23505') {
+          return res.status(400).json({ message: "You have already entered this competition" });
+        }
+        throw e;
+      }
 
       res.json({
         message: "Successfully entered competition using points",
-        entry,
         pointsDeducted: ENTRY_COST_POINTS,
-        remainingPoints: updatedUser?.points || 0
+        remainingPoints: result.remainingPoints,
       });
-
     } catch (error: any) {
       console.error('Points payment error:', error);
       res.status(500).json({ message: error.message || "Error processing points payment" });
-    }
-  });
-
-  // Stripe payment routes
-  
-  // Create payment intent for one-time payments
-  app.post("/api/create-payment-intent", async (req, res) => {
-    try {
-      const { amount } = req.body;
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(amount * 100), // Convert to cents
-        currency: "usd",
-      });
-      res.json({ clientSecret: paymentIntent.client_secret });
-    } catch (error: any) {
-      res
-        .status(500)
-        .json({ message: "Error creating payment intent: " + error.message });
     }
   });
 
@@ -3869,49 +3860,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
-  // Stripe payment intent for competition entry
+  // Stripe payment intent for competition entry — amount is derived from
+  // the competition's duration (2 weeks → $7, 4 weeks → $14) via the
+  // shared pricing helper, so the client cannot tamper with the price.
   app.post("/api/create-payment-intent", async (req, res) => {
     try {
-      const { amount, competitionId, userId } = req.body;
-      
-      if (!amount || !competitionId || !userId) {
-        return res.status(400).json({ message: "Amount, competition ID, and user ID are required" });
+      const { competitionId } = req.body;
+      const userId = req.session?.userId || req.session?.user?.id;
+
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in to pay." });
+      }
+      if (!competitionId) {
+        return res.status(400).json({ message: "Competition ID is required" });
       }
 
-      // Verify competition exists and is paid
       const competition = await storage.getCompetition(competitionId);
       if (!competition) {
         return res.status(404).json({ message: "Competition not found" });
       }
 
-      if (competition.paymentType !== 'one_time' || !competition.entryFee) {
-        return res.status(400).json({ message: "Competition does not require payment" });
+      const pricing = getCompetitionPricing(competition);
+      if (!pricing) {
+        return res.status(400).json({ message: "This competition is free — no payment required." });
       }
 
-      // Verify amount matches competition entry fee
-      if (amount !== competition.entryFee) {
-        return res.status(400).json({ message: "Payment amount does not match competition entry fee" });
-      }
-
-      // Get user for metadata
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
 
+      // Reuse an existing entry's pending intent if one exists
+      const existingEntry = await storage.getCompetitionEntry(userId, competitionId);
+      if (existingEntry && existingEntry.paymentStatus === 'completed') {
+        return res.status(400).json({ message: "You have already entered this competition" });
+      }
+
       const paymentIntent = await stripe.paymentIntents.create({
-        amount: amount,
+        amount: pricing.cents,
         currency: "usd",
+        automatic_payment_methods: { enabled: true },
         metadata: {
           competitionId: competitionId.toString(),
           userId: userId.toString(),
           competitionName: competition.name,
-          userEmail: user.email
+          userEmail: user.email,
         },
-        description: `Entry fee for ${competition.name} competition`
+        description: `Entry fee for ${competition.name} competition`,
       });
 
-      res.json({ clientSecret: paymentIntent.client_secret });
+      res.json({
+        clientSecret: paymentIntent.client_secret,
+        amount: pricing.cents,
+        dollars: pricing.dollars,
+      });
     } catch (error: any) {
       console.error("Error creating payment intent:", error);
       res.status(500).json({ message: "Error creating payment intent: " + error.message });
@@ -3919,13 +3921,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Competition entry after successful payment
+  // Authz: userId comes from session; req.body userId is ignored.
+  // Idempotency: unique index on stripe_payment_intent_id + unique index on
+  // (user_id, competition_id) ensure replays of the same payment can't
+  // create duplicate entries or duplicate registrations.
   app.post("/api/competitions/:id/enter-with-payment", async (req, res) => {
     try {
       const competitionId = parseInt(req.params.id);
-      const { userId, paymentIntentId } = req.body;
-      
-      if (!userId || !paymentIntentId) {
-        return res.status(400).json({ message: "User ID and payment intent ID are required" });
+      const { paymentIntentId } = req.body;
+      const userId = req.session?.userId || req.session?.user?.id;
+
+      if (!userId) {
+        return res.status(401).json({ message: "You must be logged in." });
+      }
+      if (!paymentIntentId) {
+        return res.status(400).json({ message: "Payment intent ID is required" });
       }
 
       // Verify payment intent with Stripe
@@ -3934,15 +3944,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Payment has not been completed successfully" });
       }
 
-      // Verify payment metadata matches request
-      if (parseInt(paymentIntent.metadata.competitionId) !== competitionId || 
+      // Verify the payment metadata matches the authenticated user + competition
+      if (parseInt(paymentIntent.metadata.competitionId) !== competitionId ||
           parseInt(paymentIntent.metadata.userId) !== userId) {
         return res.status(400).json({ message: "Payment verification failed" });
-      }
-
-      const user = await storage.getUser(userId);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
       }
 
       const competition = await storage.getCompetition(competitionId);
@@ -3950,28 +3955,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Competition not found" });
       }
 
-      // Check if user already has an entry for this competition
-      const existingEntry = await storage.getCompetitionEntry(userId, competitionId);
-      if (existingEntry) {
-        return res.status(400).json({ message: "You have already entered this competition" });
+      // Idempotent insert — if either unique index fires, treat as success.
+      try {
+        await db.insert(competitionEntriesTable).values({
+          userId,
+          competitionId,
+          paymentType: 'stripe',
+          paymentStatus: 'completed',
+          paymentMethod: 'card',
+          stripePaymentIntentId: paymentIntentId,
+          amountPaid: paymentIntent.amount,
+        });
+      } catch (e: any) {
+        if (e?.code === '23505') {
+          // Already recorded — that's fine, the user is in.
+          return res.json({
+            message: "Already entered with this payment",
+            alreadyEntered: true,
+          });
+        }
+        throw e;
       }
 
-      // Create competition entry
-      const entry = await storage.createCompetitionEntry({
-        userId: userId,
-        competitionId: competitionId,
-        paymentType: 'stripe',
-        paymentStatus: 'completed',
-        paymentMethod: 'card',
-        stripePaymentIntentId: paymentIntentId,
-        amountPaid: paymentIntent.amount
-      });
-
-      res.json({
-        message: "Successfully entered competition with payment",
-        entry
-      });
-
+      res.json({ message: "Successfully entered competition with payment" });
     } catch (error: any) {
       console.error('Stripe payment entry error:', error);
       res.status(500).json({ message: error.message || "Error processing payment entry" });

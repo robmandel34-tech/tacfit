@@ -146,27 +146,30 @@ export default function Competitions() {
 
   const handleJoin = (competitionId: number, competitionName: string) => {
     const competition = competitions.find(c => c.id === competitionId);
-    if (competition) {
-      // All competitions treated as free — paid IAP coming in a future update
-      if (false) {
-        setPaymentModalOpen(true);
-      } else {
-        // Go directly to team selection
-        setSelectedCompetition({ 
-          id: competition.id, 
-          name: competition.name, 
-          description: competition.description 
+    if (!competition) return;
+
+    setSelectedCompetition({
+      id: competition.id,
+      name: competition.name,
+      description: competition.description,
+      startDate: competition.startDate,
+      endDate: competition.endDate,
+      paymentType: competition.paymentType,
+    } as any);
+
+    const isPaid = competition.paymentType && competition.paymentType !== "free";
+    if (isPaid) {
+      // Open the payment chooser (card or points)
+      setPaymentModalOpen(true);
+    } else {
+      // Free competition — go straight to team selection
+      setTeamSelectionModalOpen(true);
+      setTimeout(() => {
+        toast({
+          title: "Choose Your Squad",
+          description: "Select a team to join or create a new one to complete your entry",
         });
-        setTeamSelectionModalOpen(true);
-        
-        // Show helpful toast
-        setTimeout(() => {
-          toast({
-            title: "Choose Your Squad",
-            description: "Select a team to join or create a new one to complete your entry",
-          });
-        }, 500);
-      }
+      }, 500);
     }
   };
 

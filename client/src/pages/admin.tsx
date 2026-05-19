@@ -1075,7 +1075,22 @@ export default function AdminPage() {
                   <div id="competition-dialog-description" className="sr-only">
                     {editingCompetition ? 'Edit existing competition details and settings' : 'Create a new competition with activities and target goals'}
                   </div>
-                  <form onSubmit={handleSubmit} className="space-y-4 pr-2">
+                  <form
+                    onSubmit={handleSubmit}
+                    onKeyDown={(e) => {
+                      // Prevent accidental form submit when the user presses
+                      // Return/Go on the on-screen keyboard while focused in
+                      // a single-line input. Only the explicit Create/Update
+                      // button should submit. Textareas keep their Enter key.
+                      if (
+                        e.key === 'Enter' &&
+                        (e.target as HTMLElement).tagName !== 'TEXTAREA'
+                      ) {
+                        e.preventDefault();
+                      }
+                    }}
+                    className="space-y-4 pr-2"
+                  >
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="name" className="text-gray-300">Competition Name</Label>

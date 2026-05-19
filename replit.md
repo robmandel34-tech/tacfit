@@ -27,7 +27,7 @@ The platform follows a military/tactical theme across its UI/UX, language, and i
 - **Security**: Admin-only access for critical functions, session-based authentication with protected routes, email verification system.
 - **Core Features**:
     - **User Management**: Registration, login, profile customization, suspension, deletion.
-    - **Competition Management**: Creation, joining, and automatic completion with reward distribution (configurable activity types, goals, join windows). Free competitions do not award point rewards upon completion, but individual activity submissions do. Paid competitions continue to award completion rewards.
+    - **Competition Management**: Creation, joining, and automatic completion with reward distribution (configurable activity types, goals, join windows). All competitions — free and paid — award completion rewards (1st place: 1,000 pts captain / 500 pts members; 2nd place: 500 pts captain / 250 pts members). Individual activity submissions also award points throughout the competition. Only the admin (single-admin setup) can create competitions, so the points economy stays controlled.
     - **Activity Tracking**: Submission of various activity types with photo evidence, point-based scoring (including bonus points for verified evidence), and configurable text input requirements with validation.
     - **Social Features**: Buddy requests, activity feed with likes/comments, team and direct messaging chat, mission task notifications, PWA push notifications with granular control.
     - **Wellness**: Daily mood assessment system.

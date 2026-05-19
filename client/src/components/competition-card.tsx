@@ -2,7 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Trophy, Calendar, Users, Target, Share2, Activity, CheckCircle, Medal, X, Star } from "lucide-react";
+import { Trophy, Calendar, Users, Target, Share2, Activity, CheckCircle, Medal, X, Star, DollarSign } from "lucide-react";
+import { getCompetitionPricing } from "@shared/pricing";
 
 interface CompetitionCardProps {
   competition: {
@@ -20,6 +21,8 @@ interface CompetitionCardProps {
     targetGoals?: string[];
     joinWindowStatus?: string;
     canJoin?: boolean;
+    paymentType?: string | null;
+    pricingTier?: string | null;
   };
   userResult?: {
     finalRank?: number;
@@ -32,6 +35,8 @@ interface CompetitionCardProps {
 }
 
 export default function CompetitionCard({ competition, userResult, onInvite, onJoin, onDismiss }: CompetitionCardProps) {
+  const pricing = getCompetitionPricing(competition);
+  const isPaid = !!pricing;
   return (
     <Card className={`card-modern hover-lift fade-in group ${competition.isActive ? 'ring-2 ring-military-green/30 border-military-green/50 rounded-none' : ''}`}>
       <CardHeader className="pb-4">
@@ -104,6 +109,12 @@ export default function CompetitionCard({ competition, userResult, onInvite, onJ
              competition.isActive ? "Active" : "Upcoming"}
           </Badge>
         </div>
+        {isPaid && pricing && (
+          <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-combat-orange/15 border border-combat-orange/40 text-combat-orange text-xs font-semibold w-fit">
+            <DollarSign className="h-3 w-3" />
+            Paid Entry · ${pricing.dollars.toFixed(2)} or {pricing.points.toLocaleString()} pts
+          </div>
+        )}
       </CardHeader>
       <CardContent className="pt-0">
         <p className="text-body mb-6 leading-relaxed">{competition.description}</p>

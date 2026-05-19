@@ -3899,7 +3899,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const paymentIntent = await stripe.paymentIntents.create({
         amount: pricing.cents,
         currency: "usd",
-        automatic_payment_methods: { enabled: true },
+        // Card-only keeps the checkout form compact on mobile. To add
+        // Apple Pay / Google Pay / Link later, swap back to
+        // automatic_payment_methods: { enabled: true }.
+        payment_method_types: ["card"],
         metadata: {
           competitionId: competitionId.toString(),
           userId: userId.toString(),

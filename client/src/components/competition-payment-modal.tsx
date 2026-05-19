@@ -192,7 +192,7 @@ export default function CompetitionPaymentModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-md p-0 overflow-hidden bg-tactical-dark border-tactical-gray"
+        className="max-w-md p-0 bg-tactical-dark border-tactical-gray max-h-[90vh] overflow-y-auto"
         onPointerDownOutside={(e) => e.preventDefault()}
         onInteractOutside={(e) => e.preventDefault()}
       >

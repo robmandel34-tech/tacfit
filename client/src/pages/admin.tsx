@@ -1066,6 +1066,7 @@ export default function AdminPage() {
                   aria-describedby="competition-dialog-description"
                   onPointerDownOutside={(e) => e.preventDefault()}
                   onInteractOutside={(e) => e.preventDefault()}
+                  onFocusOutside={(e) => e.preventDefault()}
                 >
                   <DialogHeader>
                     <DialogTitle className="text-white">
@@ -1159,6 +1160,8 @@ export default function AdminPage() {
                           type="date"
                           value={competitionForm.startDate}
                           onChange={(e) => setCompetitionForm(prev => ({ ...prev, startDate: e.target.value }))}
+                          onPointerDown={(e) => e.stopPropagation()}
+                          onClick={(e) => e.stopPropagation()}
                           className="bg-tactical-gray-lighter border-tactical-gray text-white"
                           required
                         />
@@ -1170,6 +1173,8 @@ export default function AdminPage() {
                           type="date"
                           value={competitionForm.endDate}
                           onChange={(e) => setCompetitionForm(prev => ({ ...prev, endDate: e.target.value }))}
+                          onPointerDown={(e) => e.stopPropagation()}
+                          onClick={(e) => e.stopPropagation()}
                           className="bg-tactical-gray-lighter border-tactical-gray text-white"
                           required
                         />

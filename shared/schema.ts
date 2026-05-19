@@ -45,6 +45,16 @@ export const users = pgTable("users", {
 });
 
 
+// Opaque bearer tokens issued at login. Used by the native (Capacitor) app
+// since iOS WKWebView cross-origin cookies are unreliable. Web continues to
+// use cookie-based sessions; this table is purely additive.
+export const authTokens = pgTable("auth_tokens", {
+  token: text("token").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  createdAt: timestamp("created_at").defaultNow(),
+  lastUsedAt: timestamp("last_used_at").defaultNow(),
+});
+
 export const competitions = pgTable("competitions", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),

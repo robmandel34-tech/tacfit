@@ -1,7 +1,13 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useLocation } from "wouter";
+import { loadAuthToken, setAuthToken, getCachedAuthToken } from "@/lib/authToken";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string) ?? "";
+
+async function buildAuthHeaders(): Promise<Record<string, string>> {
+  const token = getCachedAuthToken() ?? (await loadAuthToken());
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 interface User {
   id: number;
@@ -33,9 +39,12 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
 
   useEffect(() => {
     const validateUser = async () => {
+      // Prime the auth token cache from persistent storage (Capacitor
+      // Preferences on native, localStorage on web) before any API call.
+      await loadAuthToken();
+
       const savedUser = localStorage.getItem("user");
       if (savedUser) {
-        // Always restore from localStorage first so the UI is instantly available
         try {
           const userData = JSON.parse(savedUser);
           setUser(userData);
@@ -45,25 +54,19 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
           return;
         }
 
-        // Then try to sync fresh data from the server.
-        // In Capacitor (capacitor://localhost → https://tacfit.replit.app), cross-origin
-        // cookies may not be forwarded on the first cold load. If the check fails, we
-        // keep the locally-stored user so the app stays functional rather than booting
-        // the user to the login screen unnecessarily.
+        // Try to sync fresh data from the server using bearer token + cookie.
         try {
           const sessionResponse = await fetch(`${API_BASE}/api/auth/me`, {
             credentials: "include",
+            headers: await buildAuthHeaders(),
           });
           if (sessionResponse.ok) {
             const currentUser = await sessionResponse.json();
             setUser(currentUser);
             localStorage.setItem("user", JSON.stringify(currentUser));
           }
-          // If 401/403: session cookie not available (common in Capacitor cold-start).
-          // The user stays logged in via localStorage; protected routes will redirect
-          // to login naturally if a real auth error occurs.
         } catch {
-          // Network error — keep the localStorage user as-is.
+          // Network error — keep the locally-stored user.
         }
       }
       setIsLoading(false);
@@ -91,6 +94,11 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
       }
 
       const userData = await response.json();
+      // Persist the bearer token (used by native) before stripping it from the user object.
+      if (userData.authToken) {
+        await setAuthToken(userData.authToken);
+        delete userData.authToken;
+      }
       setUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));
       // Navigation is handled by the caller so Capacitor WKWebView gets a single
@@ -130,16 +138,19 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
       await fetch(`${API_BASE}/api/auth/logout`, {
         method: "POST",
         credentials: "include",
+        headers: await buildAuthHeaders(),
       });
     } catch (error) {
       console.error("Logout error:", error);
     }
+    await setAuthToken(null);
     setUser(null);
     localStorage.removeItem("user");
     setLocation("/login");
   };
 
-  const forceRefresh = () => {
+  const forceRefresh = async () => {
+    await setAuthToken(null);
     localStorage.removeItem("user");
     setUser(null);
     setLocation("/login");
@@ -158,6 +169,7 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
       try {
         const response = await fetch(`${API_BASE}/api/users/${user.id}`, {
           credentials: "include",
+          headers: await buildAuthHeaders(),
         });
         if (response.ok) {
           const currentUser = await response.json();

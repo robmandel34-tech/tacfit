@@ -1,8 +1,16 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { getCachedAuthToken, loadAuthToken } from "./authToken";
 
 // In native Capacitor context, API calls must use the absolute backend URL.
 // Set VITE_API_URL in your .env.production to your deployed backend (e.g. https://myapp.replit.app)
 export const API_BASE = (import.meta.env.VITE_API_URL as string) ?? "";
+
+async function buildAuthHeaders(): Promise<Record<string, string>> {
+  // Use the in-memory cached token when available (instant). Fall back to
+  // an async load on the very first request after app launch.
+  const token = getCachedAuthToken() ?? (await loadAuthToken());
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 // Helper to build absolute URLs for user-uploaded files.
 // Handles bare filenames ("photo.jpg"), full paths ("/uploads/photo.jpg"), and already-absolute URLs.
@@ -25,9 +33,14 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
+  const authHeaders = await buildAuthHeaders();
+  const headers: Record<string, string> = {
+    ...(data ? { "Content-Type": "application/json" } : {}),
+    ...authHeaders,
+  };
   const res = await fetch(`${API_BASE}${url}`, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers,
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
@@ -42,8 +55,10 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
+    const authHeaders = await buildAuthHeaders();
     const res = await fetch(`${API_BASE}${queryKey.join("/")}`, {
       credentials: "include",
+      headers: authHeaders,
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {

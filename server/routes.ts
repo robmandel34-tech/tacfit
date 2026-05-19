@@ -16,7 +16,8 @@ import { ObjectStorageService, ObjectNotFoundError } from './objectStorage.js';
 import { db } from "./db";
 import { pool } from "./db";
 import { and, eq, sql } from "drizzle-orm";
-import { users as usersTable, competitionEntries as competitionEntriesTable } from "@shared/schema";
+import { users as usersTable, competitionEntries as competitionEntriesTable, authTokens as authTokensTable } from "@shared/schema";
+import crypto from "crypto";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -273,6 +274,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
+  // Bearer-token auth bridge for the native (Capacitor) app.
+  // iOS WKWebView cross-origin cookies are unreliable, so the native client
+  // sends `Authorization: Bearer <token>` instead. When a valid token is
+  // present we hydrate req.session.userId so every existing route works
+  // unchanged. Web (cookie) flows are untouched.
+  app.use(async (req, _res, next) => {
+    try {
+      const header = req.headers.authorization;
+      if (!header || !header.startsWith("Bearer ")) return next();
+      const token = header.slice(7).trim();
+      if (!token) return next();
+      const [row] = await db
+        .select({ userId: authTokensTable.userId })
+        .from(authTokensTable)
+        .where(eq(authTokensTable.token, token))
+        .limit(1);
+      if (row) {
+        (req.session as any).userId = row.userId;
+        // Bearer requests should NOT persist a server-side session row.
+        // Override save/touch on this session instance so express-session's
+        // automatic save-on-response is a no-op for native calls.
+        const noopSave = (cb?: (err?: any) => void) => {
+          if (typeof cb === "function") cb();
+          return req.session;
+        };
+        (req.session as any).save = noopSave;
+        (req.session as any).touch = () => req.session;
+        // Best-effort touch on the token row
+        db.update(authTokensTable)
+          .set({ lastUsedAt: new Date() })
+          .where(eq(authTokensTable.token, token))
+          .catch(() => {});
+      }
+    } catch (e) {
+      console.error("Bearer auth lookup failed:", e);
+    }
+    next();
+  });
+
   // Auth routes
   app.post("/api/auth/register", authRateLimit, async (req, res) => {
     try {
@@ -452,10 +492,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           
           console.log(`Login successful for user: ${email}, session ID: ${req.sessionID}`);
-          
-          // Don't send password back
-          const { password: _, ...userWithoutPassword } = user;
-          res.json(userWithoutPassword);
+
+          // Issue an opaque bearer token for native (Capacitor) clients.
+          // Web clients will ignore this field and continue using cookies.
+          const bearerToken = crypto.randomBytes(32).toString("hex");
+          db.insert(authTokensTable)
+            .values({ token: bearerToken, userId: user.id })
+            .then(() => {
+              const { password: _, ...userWithoutPassword } = user;
+              res.json({ ...userWithoutPassword, authToken: bearerToken });
+            })
+            .catch((tokenErr) => {
+              console.error("Auth token insert failed:", tokenErr);
+              const { password: _, ...userWithoutPassword } = user;
+              // Still return user — cookie session is set, web will work
+              res.json(userWithoutPassword);
+            });
         });
       });
     } catch (error) {
@@ -465,6 +517,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/auth/logout", async (req, res) => {
+    // If the request came via bearer token, revoke just that token so
+    // other devices logged in as the same user stay signed in.
+    try {
+      const header = req.headers.authorization;
+      if (header && header.startsWith("Bearer ")) {
+        const token = header.slice(7).trim();
+        if (token) {
+          await db.delete(authTokensTable).where(eq(authTokensTable.token, token));
+        }
+      }
+    } catch (e) {
+      console.error("Logout: bearer token revoke failed:", e);
+    }
+
     req.session.destroy((err) => {
       if (err) {
         return res.status(500).json({ message: "Could not log out" });

@@ -111,7 +111,14 @@ export default function AdminPage() {
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState<'competitions' | 'users' | 'activity-types' | 'posts' | 'advertisements' | 'settings'>('competitions');
-  const [isCreateCompetitionOpen, setIsCreateCompetitionOpen] = useState(false);
+  const [isCreateCompetitionOpen, _setIsCreateCompetitionOpen] = useState(false);
+  const setIsCreateCompetitionOpen = (next: boolean | ((prev: boolean) => boolean)) => {
+    // eslint-disable-next-line no-console
+    console.log('[create-comp-dialog] setIsCreateCompetitionOpen ->', next);
+    // eslint-disable-next-line no-console
+    console.trace('[create-comp-dialog] caller');
+    _setIsCreateCompetitionOpen(next as any);
+  };
   const [editingCompetition, setEditingCompetition] = useState<Competition | null>(null);
   const [pointsAdjustmentUser, setPointsAdjustmentUser] = useState<User | null>(null);
   const [pointsForm, setPointsForm] = useState({ points: '', operation: 'add' as 'add' | 'set' });

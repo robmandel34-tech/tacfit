@@ -20,12 +20,12 @@ workflows:
         script: npm install
       - name: Build frontend
         script: |
-          echo "VITE_STRIPE_PUBLIC_KEY length:
-        ${#VITE_STRIPE_PUBLIC_KEY}"
-          echo "VITE_API_URL: $VITE_API_URL"
-          VITE_API_URL=$VITE_API_URL
-        VITE_STRIPE_PUBLIC_KEY=$VITE_STRIPE_PUBLIC_KEY
-        Y npx vite build
+          STRIPE_KEY_LEN=${#VITE_STRIPE_PUBLIC_KEY}
+          echo "stripe key length $STRIPE_KEY_LEN"
+          echo "api url $VITE_API_URL"
+          VITE_API_URL=$VITE_API_URL 
+      VITE_STRIPE_PUBLIC_KEY=$VITE_STRIPE_PUBLIC_KEY 
+      npx vite build
       - name: Sync web assets to iOS
         script: |
           set -e

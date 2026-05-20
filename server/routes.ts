@@ -2037,45 +2037,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const competitionStarted = new Date(competition.startDate) <= now;
       
       let refundMessage = "";
-      
-      // Handle refunds only if competition hasn't started
-      if (!competitionStarted) {
-        // Find the user's competition entry
-        const entry = await storage.getCompetitionEntry(memberToRemove.userId!, teamToLeave.competitionId!);
-        
-        if (entry && entry.paymentStatus === 'completed' && entry.pointsUsed && entry.pointsUsed > 0) {
-          // Get user and refund points
-          const user = await storage.getUser(memberToRemove.userId!);
-          if (user) {
-            const currentPoints = user.points || 0;
-            const refundAmount = entry.pointsUsed;
-            
-            // Refund points to user
-            await storage.updateUser(user.id, {
-              points: currentPoints + refundAmount
-            });
-            await recordPointsTransaction(user.id, refundAmount, "Competition entry refund", {
-              description: competition.name,
-              refType: 'competition',
-              refId: competition.id,
-            });
-            
-            // Update entry status to refunded
-            await storage.updateCompetitionEntry(entry.id, {
-              paymentStatus: 'refunded',
-              refundedAt: new Date(),
-              refundAmount: refundAmount
-            });
-            
-            refundMessage = ` and received ${refundAmount} points refund`;
-            console.log(`Refunded ${refundAmount} points to user ${user.username} for leaving competition ${competition.name}`);
-          }
+
+      // Always look up the entry so we can clean it up on leave, regardless
+      // of whether the competition has started. Refunds, however, are only
+      // issued if the competition hasn't started.
+      const entry = await storage.getCompetitionEntry(memberToRemove.userId!, teamToLeave.competitionId!);
+
+      if (!competitionStarted && entry && entry.paymentStatus === 'completed' && entry.pointsUsed && entry.pointsUsed > 0) {
+        const user = await storage.getUser(memberToRemove.userId!);
+        if (user) {
+          const currentPoints = user.points || 0;
+          const refundAmount = entry.pointsUsed;
+
+          await storage.updateUser(user.id, { points: currentPoints + refundAmount });
+          await recordPointsTransaction(user.id, refundAmount, "Competition entry refund", {
+            description: competition.name,
+            refType: 'competition',
+            refId: competition.id,
+          });
+
+          await storage.updateCompetitionEntry(entry.id, {
+            paymentStatus: 'refunded',
+            refundedAt: new Date(),
+            refundAmount: refundAmount,
+          });
+
+          refundMessage = ` and received ${refundAmount} points refund`;
+          console.log(`Refunded ${refundAmount} points to user ${user.username} for leaving competition ${competition.name}`);
         }
-        
-        // Remove the competition entry
-        if (entry) {
-          await storage.deleteCompetitionEntry(entry.id);
-        }
+      }
+
+      // Always remove the entry row on leave so the user can cleanly rejoin
+      // later if the join window allows. (Without this, a "ghost" entry blocks
+      // re-entry even though the user no longer has a team.)
+      if (entry) {
+        await storage.deleteCompetitionEntry(entry.id);
       }
 
       // Check if leaving member is team captain and handle succession
@@ -3769,6 +3765,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       const ENTRY_COST_POINTS = pricing.points;
 
+      // Clear out any stale refunded/cancelled entry so the unique constraint
+      // doesn't block a legitimate re-entry after a refund.
+      const existingEntry = await storage.getCompetitionEntry(userId, competitionId);
+      if (existingEntry && (existingEntry.paymentStatus === 'refunded' || existingEntry.paymentStatus === 'cancelled')) {
+        await storage.deleteCompetitionEntry(existingEntry.id);
+      }
+
       let result: { remainingPoints: number };
       try {
         result = await db.transaction(async (tx) => {
@@ -4106,10 +4109,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Reuse an existing entry's pending intent if one exists
+      // Reuse an existing entry's pending intent if one exists. Only block
+      // re-entry for active 'completed' entries — 'refunded' or 'cancelled'
+      // entries mean the user has left and is allowed to rejoin.
       const existingEntry = await storage.getCompetitionEntry(userId, competitionId);
       if (existingEntry && existingEntry.paymentStatus === 'completed') {
         return res.status(400).json({ message: "You have already entered this competition" });
+      }
+      if (existingEntry && (existingEntry.paymentStatus === 'refunded' || existingEntry.paymentStatus === 'cancelled')) {
+        await storage.deleteCompetitionEntry(existingEntry.id);
       }
 
       const paymentIntent = await stripe.paymentIntents.create({

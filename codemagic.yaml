@@ -9,6 +9,8 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.tacfit.app
+      groups:
+        - stripe
       vars:
         BUNDLE_ID: "com.tacfit.app"
         XCODE_WORKSPACE: "App.xcworkspace"
@@ -20,7 +22,9 @@ workflows:
         script: npm install
       - name: Build frontend
         script: |
-          VITE_API_URL=$VITE_API_URL npx vite build
+          echo "VITE_STRIPE_PUBLIC_KEY length is ${#VITE_STRIPE_PUBLIC_KEY}"
+          echo "VITE_API_URL is $VITE_API_URL"
+          VITE_API_URL=$VITE_API_URL VITE_STRIPE_PUBLIC_KEY=$VITE_STRIPE_PUBLIC_KEY npx vite build
       - name: Sync web assets to iOS
         script: |
           set -e

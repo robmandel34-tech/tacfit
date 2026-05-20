@@ -1063,9 +1063,9 @@ export default function Profile() {
                       data-testid={`points-entry-${entry.id}`}
                     >
                       <div className="min-w-0 flex-1">
-                        <div className="text-white text-sm font-semibold truncate">{entry.reason}</div>
+                        <div className="text-white text-sm font-semibold break-words">{entry.reason}</div>
                         {entry.description && (
-                          <div className="text-white/60 text-xs truncate">{entry.description}</div>
+                          <div className="text-white/60 text-xs break-words">{entry.description}</div>
                         )}
                         <div className="text-white/40 text-[11px] mt-0.5">{dateStr}</div>
                       </div>

@@ -180,7 +180,13 @@ export default function CompetitionPaymentModal({
       setView("card");
     },
     onError: (err: any) => {
-      toast({ title: "Payment setup failed", description: err.message, variant: "destructive" });
+      const msg = String(err?.message || "");
+      if (/already entered/i.test(msg)) {
+        toast({ title: "Already joined", description: "You're already in this competition.", variant: "destructive" });
+        onOpenChange(false);
+        return;
+      }
+      toast({ title: "Payment setup failed", description: msg, variant: "destructive" });
     },
   });
 

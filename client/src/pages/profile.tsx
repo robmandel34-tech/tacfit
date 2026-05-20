@@ -60,7 +60,6 @@ export default function Profile() {
   const [isFindFriendsModalOpen, setIsFindFriendsModalOpen] = useState(false);
   const [selectedFriend, setSelectedFriend] = useState<any>(null);
   const [isProfileEditModalOpen, setIsProfileEditModalOpen] = useState(false);
-  const [isActivitiesModalOpen, setIsActivitiesModalOpen] = useState(false);
   const [isCompetitionsModalOpen, setIsCompetitionsModalOpen] = useState(false);
   const [isWinsModalOpen, setIsWinsModalOpen] = useState(false);
   const [isPointsHistoryOpen, setIsPointsHistoryOpen] = useState(false);
@@ -427,42 +426,11 @@ export default function Profile() {
                     
                     {/* Stats Grid */}
                     <div className="grid grid-cols-3 gap-3">
-                      <Dialog open={isActivitiesModalOpen} onOpenChange={setIsActivitiesModalOpen}>
-                        <DialogTrigger asChild>
-                          <div className="cursor-pointer hover:bg-white/10 transition-colors rounded-lg p-2">
-                            <Target className="mx-auto h-5 w-5 text-military-green mb-1" style={{ filter: 'brightness(2)' }} />
-                            <div className="text-lg font-bold text-white">{activities.length}</div>
-                            <div className="text-xs text-white">Activities</div>
-                          </div>
-                        </DialogTrigger>
-                        <DialogContent className="backdrop-blur-md bg-black/80 border border-white/10 max-w-2xl max-h-[80vh]">
-                          <DialogHeader>
-                            <DialogTitle className="text-white">Activities ({activities.length})</DialogTitle>
-                          </DialogHeader>
-                          <ScrollArea className="max-h-96">
-                            <div className="space-y-3">
-                              {activities.length === 0 ? (
-                                <p className="text-gray-400 text-center py-8">No activities yet</p>
-                              ) : (
-                                activities.map((activity: any) => (
-                                  <div key={activity.id} className="p-3 bg-tactical-gray rounded-lg">
-                                    <div className="flex justify-between items-start">
-                                      <div>
-                                        <h4 className="text-white font-medium">{activity.type}</h4>
-                                        <p className="text-gray-300 text-sm">{activity.description}</p>
-                                        <p className="text-gray-400 text-xs">Quantity: {activity.quantity}</p>
-                                      </div>
-                                      <div className="text-right">
-                                        <p className="text-gray-400 text-xs">{new Date(activity.submittedAt).toLocaleDateString()}</p>
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))
-                              )}
-                            </div>
-                          </ScrollArea>
-                        </DialogContent>
-                      </Dialog>
+                      <div className="rounded-lg p-2">
+                        <Target className="mx-auto h-5 w-5 text-military-green mb-1" style={{ filter: 'brightness(2)' }} />
+                        <div className="text-lg font-bold text-white">{activities.length}</div>
+                        <div className="text-xs text-white">Activities</div>
+                      </div>
                       
                       <Dialog open={isCompetitionsModalOpen} onOpenChange={setIsCompetitionsModalOpen}>
                         <DialogTrigger asChild>

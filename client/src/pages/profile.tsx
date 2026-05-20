@@ -453,7 +453,6 @@ export default function Profile() {
                                         <p className="text-gray-400 text-xs">Quantity: {activity.quantity}</p>
                                       </div>
                                       <div className="text-right">
-                                        <span className="text-combat-orange font-bold">{activity.points} pts</span>
                                         <p className="text-gray-400 text-xs">{new Date(activity.submittedAt).toLocaleDateString()}</p>
                                       </div>
                                     </div>

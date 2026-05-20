@@ -886,8 +886,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...activityRows.filter(a => (a.points || 0) > 0).map(a => ({
           id: `act-${a.id}`,
           delta: a.points || 0,
-          reason: "Activity submission",
-          description: a.description || a.type,
+          reason: a.type || "Activity submission",
+          description: a.description || null,
           refType: 'activity',
           refId: a.id,
           createdAt: a.createdAt,

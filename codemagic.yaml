@@ -9,6 +9,8 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.tacfit.app
+      groups:
+        - stripe
       vars:
         BUNDLE_ID: "com.tacfit.app"
         XCODE_WORKSPACE: "App.xcworkspace"
@@ -19,7 +21,6 @@ workflows:
       - name: Install dependencies
         script: npm install
       - name: Build frontend
-        - name: Build frontend
         script: |
           export VITE_API_URL
           export VITE_STRIPE_PUBLIC_KEY

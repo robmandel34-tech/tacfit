@@ -136,7 +136,65 @@
   .btn-primary:hover { background: var(--green-light); transform: translateY(-1px); box-shadow: 0 10px 30px -10px rgba(59,222,53,.55); }
   .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
   .btn-ghost:hover { border-color: var(--green); color: var(--green); }
-  @media (max-width: 720px) { .nav-links { display: none; } }
+
+  /* Mobile hamburger — hidden on desktop, shown under 720px */
+  .nav-toggle {
+    display: none;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    width: 40px; height: 40px;
+    padding: 0;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+  }
+  .nav-toggle svg { width: 22px; height: 22px; stroke: var(--text); }
+  .nav-toggle:hover { border-color: var(--green); }
+  .nav-toggle:hover svg { stroke: var(--green); }
+
+  @media (max-width: 720px) {
+    /* Hide the desktop inline menu and the standalone Sign In button — the
+       hamburger drawer carries those links on small screens. */
+    .nav-links { display: none; }
+    .nav-row > .btn-primary { display: none; }
+    .nav-toggle { display: inline-flex; }
+
+    /* Slide-down drawer attached to the bottom edge of the fixed nav */
+    .nav-drawer {
+      position: fixed;
+      top: 72px; left: 0; right: 0;
+      background: rgba(10,12,15,0.96);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding: 16px 24px 20px;
+      display: none;
+      flex-direction: column;
+      gap: 4px;
+      z-index: 99;
+    }
+    .nav-drawer.open { display: flex; }
+    .nav-drawer a {
+      color: var(--text);
+      font-weight: 500;
+      font-size: 16px;
+      padding: 14px 4px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .nav-drawer a:last-child { border-bottom: none; }
+    .nav-drawer a.btn-primary {
+      background: var(--green);
+      color: #000;
+      border-radius: 10px;
+      padding: 14px 20px;
+      text-align: center;
+      margin-top: 8px;
+      border-bottom: none;
+    }
+  }
+  @media (min-width: 721px) {
+    .nav-drawer { display: none !important; }
+  }
 
   /* HERO — split layout with promo video */
   .hero { position: relative; display: flex; align-items: center; overflow: hidden; padding: 120px 0 80px; background: var(--bg); }
@@ -515,9 +573,23 @@
       <a href="#why">Why TacFit</a>
       <a href="#download">Download</a>
       <a href="/contact-us.html">Contact</a>
-      <a href="https://tacfit.replit.app">Sign In</a>
     </div>
     <a href="https://tacfit.replit.app" class="btn btn-primary">Sign In</a>
+    <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false" aria-controls="navDrawer">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="3" y1="6"  x2="21" y2="6"/>
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+  </div>
+  <div class="nav-drawer" id="navDrawer">
+    <a href="#showcase">The App</a>
+    <a href="#why">Why TacFit</a>
+    <a href="#download">Download</a>
+    <a href="/contact-us.html">Contact</a>
+    <a href="/privacy.html">Privacy</a>
+    <a href="https://tacfit.replit.app" class="btn-primary">Sign In</a>
   </div>
 </nav>
 
@@ -961,6 +1033,30 @@
   window.addEventListener('scroll', () => {
     nav.classList.toggle('scrolled', window.scrollY > 40);
   });
+
+  // Mobile hamburger drawer
+  (function navDrawer() {
+    const toggle = document.getElementById('navToggle');
+    const drawer = document.getElementById('navDrawer');
+    if (!toggle || !drawer) return;
+    const close = () => {
+      drawer.classList.remove('open');
+      toggle.setAttribute('aria-expanded', 'false');
+    };
+    toggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = drawer.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    // Close after tapping any link inside the drawer
+    drawer.querySelectorAll('a').forEach(a => a.addEventListener('click', close));
+    // Close on outside click
+    document.addEventListener('click', (e) => {
+      if (!drawer.classList.contains('open')) return;
+      if (drawer.contains(e.target) || toggle.contains(e.target)) return;
+      close();
+    });
+  })();
 
   // Scroll reveals — generic
   const io = new IntersectionObserver((entries) => {

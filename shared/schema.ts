@@ -67,6 +67,21 @@ export const authTokens = pgTable("auth_tokens", {
   lastUsedAt: timestamp("last_used_at").defaultNow(),
 });
 
+export const pointsTransactions = pgTable("points_transactions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  delta: integer("delta").notNull(),
+  reason: text("reason").notNull(),
+  description: text("description"),
+  refType: text("ref_type"),
+  refId: integer("ref_id"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  userCreatedIdx: index("IDX_points_tx_user_created").on(table.userId, table.createdAt),
+}));
+
+export type PointsTransaction = typeof pointsTransactions.$inferSelect;
+
 export const competitions = pgTable("competitions", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),

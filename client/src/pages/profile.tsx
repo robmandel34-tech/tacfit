@@ -63,6 +63,7 @@ export default function Profile() {
   const [isActivitiesModalOpen, setIsActivitiesModalOpen] = useState(false);
   const [isCompetitionsModalOpen, setIsCompetitionsModalOpen] = useState(false);
   const [isWinsModalOpen, setIsWinsModalOpen] = useState(false);
+  const [isPointsHistoryOpen, setIsPointsHistoryOpen] = useState(false);
   const [isConfirmRemoveOpen, setIsConfirmRemoveOpen] = useState(false);
   const [friendToRemove, setFriendToRemove] = useState<any>(null);
   const [selectedActivityType, setSelectedActivityType] = useState<string | null>(null);
@@ -83,6 +84,19 @@ export default function Profile() {
   const { data: history = [] } = useQuery<CompetitionHistory[]>({
     queryKey: ["/api/history", targetUserId],
     enabled: !!targetUserId,
+  });
+
+  const { data: pointsHistory = [], isLoading: pointsHistoryLoading } = useQuery<Array<{
+    id: string;
+    delta: number;
+    reason: string;
+    description: string | null;
+    refType: string | null;
+    refId: number | null;
+    createdAt: string | null;
+  }>>({
+    queryKey: ["/api/users", targetUserId, "points-history"],
+    enabled: !!targetUserId && isOwnProfile && isPointsHistoryOpen,
   });
 
   const { data: activities = [] } = useQuery<Activity[]>({
@@ -395,11 +409,21 @@ export default function Profile() {
                       </p>
                     </div>
 
-                    <div className="flex items-center justify-center space-x-2 mb-4">
-                      <Trophy className="h-5 w-5" style={{ color: '#ffd580' }} />
-                      <span className="font-bold text-lg" style={{ color: '#ffd580' }}>{displayUser.points}</span>
-                    </div>
-                    <p className="text-white text-sm text-center mb-4">Total Points</p>
+                    <button
+                      type="button"
+                      onClick={() => isOwnProfile && setIsPointsHistoryOpen(true)}
+                      className={`w-full ${isOwnProfile ? 'cursor-pointer hover:bg-white/10 transition-colors' : 'cursor-default'} rounded-lg py-2 mb-2`}
+                      data-testid="button-points-history"
+                    >
+                      <div className="flex items-center justify-center space-x-2 mb-1">
+                        <Trophy className="h-5 w-5" style={{ color: '#ffd580' }} />
+                        <span className="font-bold text-lg" style={{ color: '#ffd580' }}>{displayUser.points}</span>
+                      </div>
+                      <p className="text-white text-sm text-center">
+                        Total Points{isOwnProfile && <span className="text-white/60 ml-1">· tap to view history</span>}
+                      </p>
+                    </button>
+                    <div className="mb-2" />
                     
                     {/* Stats Grid */}
                     <div className="grid grid-cols-3 gap-3">
@@ -1035,6 +1059,60 @@ export default function Profile() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isPointsHistoryOpen} onOpenChange={setIsPointsHistoryOpen}>
+        <DialogContent className="backdrop-blur-md bg-black/85 border border-white/10 max-w-md max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <Trophy className="h-5 w-5" style={{ color: '#ffd580' }} />
+              Points History
+            </DialogTitle>
+          </DialogHeader>
+          <div className="text-center mb-2">
+            <div className="text-3xl font-bold" style={{ color: '#ffd580' }}>{displayUser.points ?? 0}</div>
+            <div className="text-white/70 text-xs">Current balance</div>
+          </div>
+          <ScrollArea className="max-h-[55vh] pr-3">
+            {pointsHistoryLoading ? (
+              <div className="text-white/60 text-center py-8 text-sm">Loading…</div>
+            ) : pointsHistory.length === 0 ? (
+              <div className="text-white/60 text-center py-8 text-sm">No points activity yet.</div>
+            ) : (
+              <div className="space-y-2">
+                {pointsHistory.map((entry) => {
+                  const positive = entry.delta > 0;
+                  const dateStr = entry.createdAt
+                    ? new Date(entry.createdAt).toLocaleString(undefined, {
+                        month: 'short', day: 'numeric', year: 'numeric',
+                        hour: 'numeric', minute: '2-digit',
+                      })
+                    : '';
+                  return (
+                    <div
+                      key={entry.id}
+                      className="flex items-start justify-between gap-3 px-3 py-2 rounded-lg bg-white/5 border border-white/5"
+                      data-testid={`points-entry-${entry.id}`}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="text-white text-sm font-semibold truncate">{entry.reason}</div>
+                        {entry.description && (
+                          <div className="text-white/60 text-xs truncate">{entry.description}</div>
+                        )}
+                        <div className="text-white/40 text-[11px] mt-0.5">{dateStr}</div>
+                      </div>
+                      <div
+                        className={`font-bold text-sm whitespace-nowrap ${positive ? 'text-green-400' : 'text-red-400'}`}
+                      >
+                        {positive ? '+' : ''}{entry.delta} pts
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </ScrollArea>
         </DialogContent>
       </Dialog>
     </div>

@@ -16,7 +16,32 @@ import { ObjectStorageService, ObjectNotFoundError } from './objectStorage.js';
 import { db } from "./db";
 import { pool } from "./db";
 import { and, eq, sql } from "drizzle-orm";
-import { users as usersTable, competitionEntries as competitionEntriesTable, authTokens as authTokensTable } from "@shared/schema";
+import { users as usersTable, competitionEntries as competitionEntriesTable, authTokens as authTokensTable, pointsTransactions as pointsTransactionsTable, activities as activitiesTable } from "@shared/schema";
+import { desc } from "drizzle-orm";
+
+// Record a single points-balance change so users can see their history.
+// Never throws — points history is best-effort and must not break the
+// actual points mutation it accompanies.
+async function recordPointsTransaction(
+  userId: number,
+  delta: number,
+  reason: string,
+  opts: { description?: string; refType?: string; refId?: number } = {},
+): Promise<void> {
+  if (!delta) return;
+  try {
+    await db.insert(pointsTransactionsTable).values({
+      userId,
+      delta,
+      reason,
+      description: opts.description ?? null,
+      refType: opts.refType ?? null,
+      refId: opts.refId ?? null,
+    });
+  } catch (err) {
+    console.error("Failed to record points transaction:", err);
+  }
+}
 import crypto from "crypto";
 import multer from "multer";
 import path from "path";
@@ -48,6 +73,11 @@ async function updateUserPointsWithWebhook(
   const newPoints = previousPoints + pointsChange;
   
   await storage.updateUser(userId, { points: newPoints });
+  // Activity submissions are derived directly from the activities table in
+  // the points-history endpoint, so we skip recording a duplicate row here.
+  if (reason !== 'Activity submission') {
+    await recordPointsTransaction(userId, pointsChange, reason);
+  }
   
   console.log(`${pointsChange > 0 ? 'Awarded' : 'Deducted'} ${Math.abs(pointsChange)} points for ${reason}. User ${userId} now has ${newPoints} points.`);
   
@@ -224,6 +254,16 @@ async function completeCompetition(competitionId: number) {
           await storage.updateUser(user.id, {
             points: newPointTotal
           });
+          await recordPointsTransaction(
+            user.id,
+            pointsToAward,
+            placement === 1 ? "1st place finish" : "2nd place finish",
+            {
+              description: `${member.role === 'captain' ? 'Captain' : 'Member'} reward`,
+              refType: 'competition',
+              refId: competitionId,
+            },
+          );
         }
         
         // Record competition history for all participants
@@ -385,6 +425,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         emailVerificationToken: verificationToken,
         emailVerificationTokenExpiresAt: tokenExpiresAt,
       });
+
+      await recordPointsTransaction(user.id, 100, "Welcome bonus");
 
       // Send verification email only for non-test accounts
       if (!isTestAccount && verificationToken) {
@@ -801,6 +843,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Points history — most recent first. Combines explicit transactions
+  // (welcome bonus, competition entry, refunds, wins, admin adjustments)
+  // with activity-derived earnings from the activities table.
+  app.get("/api/users/:id/points-history", async (req, res) => {
+    try {
+      const sessionUserId = req.session?.userId;
+      const targetId = parseInt(req.params.id);
+      if (!sessionUserId) return res.status(401).json({ message: "Not authenticated" });
+      if (sessionUserId !== targetId) {
+        const sessionUser = await storage.getUser(sessionUserId);
+        if (!sessionUser?.isAdmin) {
+          return res.status(403).json({ message: "Forbidden" });
+        }
+      }
+
+      const [txRows, activityRows] = await Promise.all([
+        db.select().from(pointsTransactionsTable)
+          .where(eq(pointsTransactionsTable.userId, targetId))
+          .orderBy(desc(pointsTransactionsTable.createdAt)),
+        db.select({
+          id: activitiesTable.id,
+          type: activitiesTable.type,
+          description: activitiesTable.description,
+          points: activitiesTable.points,
+          createdAt: activitiesTable.createdAt,
+        }).from(activitiesTable)
+          .where(eq(activitiesTable.userId, targetId))
+          .orderBy(desc(activitiesTable.createdAt)),
+      ]);
+
+      const entries = [
+        ...txRows.map(t => ({
+          id: `tx-${t.id}`,
+          delta: t.delta,
+          reason: t.reason,
+          description: t.description,
+          refType: t.refType,
+          refId: t.refId,
+          createdAt: t.createdAt,
+        })),
+        ...activityRows.filter(a => (a.points || 0) > 0).map(a => ({
+          id: `act-${a.id}`,
+          delta: a.points || 0,
+          reason: "Activity submission",
+          description: a.description || a.type,
+          refType: 'activity',
+          refId: a.id,
+          createdAt: a.createdAt,
+        })),
+      ].sort((a, b) => {
+        const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return tb - ta;
+      });
+
+      res.json(entries);
+    } catch (error) {
+      console.error("Error fetching points history:", error);
+      res.status(500).json({ message: "Error fetching points history" });
+    }
+  });
+
   app.get("/api/users/:id", async (req, res) => {
     try {
       const user = await storage.getUser(parseInt(req.params.id));
@@ -815,39 +919,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/users/:id", async (req, res) => {
+  // Fields that must never be mutated through the generic user update
+  // routes. Points are only changed through audited code paths so the
+  // points-history ledger stays trustworthy; admin/suspension/email-verification
+  // flags have dedicated endpoints with their own authorization.
+  const PROTECTED_USER_UPDATE_FIELDS = new Set([
+    'points', 'isAdmin', 'isSuspended', 'suspendedAt', 'suspensionReason',
+    'isEmailVerified', 'password',
+    'emailVerificationToken', 'emailVerificationTokenExpiresAt',
+    'passwordResetToken', 'passwordResetTokenExpiresAt',
+    'stripeCustomerId', 'stripeSubscriptionId',
+    'referredBy', 'referralToken',
+  ]);
+
+  async function handleGenericUserUpdate(req: any, res: any) {
     try {
-      const updates = req.body;
-      const user = await storage.updateUser(parseInt(req.params.id), updates);
+      const sessionUserId = req.session?.userId;
+      if (!sessionUserId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      const targetId = parseInt(req.params.id);
+      if (sessionUserId !== targetId) {
+        const sessionUser = await storage.getUser(sessionUserId);
+        if (!sessionUser?.isAdmin) {
+          return res.status(403).json({ message: "Forbidden" });
+        }
+      }
+
+      const rawUpdates = req.body && typeof req.body === 'object' ? req.body : {};
+      const updates: Record<string, any> = {};
+      for (const [key, value] of Object.entries(rawUpdates)) {
+        if (PROTECTED_USER_UPDATE_FIELDS.has(key)) continue;
+        updates[key] = value;
+      }
+
+      const user = await storage.updateUser(targetId, updates);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      
       const { password, ...userWithoutPassword } = user;
       res.json(userWithoutPassword);
     } catch (error) {
       res.status(500).json({ message: "Error updating user" });
     }
-  });
+  }
 
-  // PATCH endpoint for partial updates
-  app.patch("/api/users/:id", async (req, res) => {
-    try {
-      const updates = req.body;
-      const user = await storage.updateUser(parseInt(req.params.id), updates);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      
-      const { password, ...userWithoutPassword } = user;
-      res.json(userWithoutPassword);
-    } catch (error) {
-      res.status(500).json({ message: "Error updating user" });
-    }
-  });
+  app.put("/api/users/:id", handleGenericUserUpdate);
+  app.patch("/api/users/:id", handleGenericUserUpdate);
 
-  // Adjust user points endpoint for admin
+  // Adjust user points endpoint — admin only.
   app.post("/api/users/:id/adjust-points", async (req, res) => {
+    const sessionUserId = req.session?.userId;
+    if (!sessionUserId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    const sessionUser = await storage.getUser(sessionUserId);
+    if (!sessionUser?.isAdmin) {
+      return res.status(403).json({ message: "Admin access required" });
+    }
     try {
       const userId = parseInt(req.params.id);
       const { points, operation } = req.body;
@@ -881,6 +1010,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!updatedUser) {
         return res.status(404).json({ message: "User not found" });
+      }
+
+      const delta = newPoints - (user.points || 0);
+      if (delta !== 0) {
+        await recordPointsTransaction(userId, delta, "Admin adjustment", {
+          description: operation === 'set' ? `Set to ${newPoints}` : undefined,
+        });
       }
 
       const { password, ...userWithoutPassword } = updatedUser;
@@ -1917,6 +2053,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Refund points to user
             await storage.updateUser(user.id, {
               points: currentPoints + refundAmount
+            });
+            await recordPointsTransaction(user.id, refundAmount, "Competition entry refund", {
+              description: competition.name,
+              refType: 'competition',
+              refId: competition.id,
             });
             
             // Update entry status to refunded
@@ -3655,6 +3796,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             paymentStatus: 'completed',
             paymentMethod: 'points',
             pointsUsed: ENTRY_COST_POINTS,
+          });
+
+          await tx.insert(pointsTransactionsTable).values({
+            userId,
+            delta: -ENTRY_COST_POINTS,
+            reason: "Competition entry",
+            description: competition.name,
+            refType: 'competition',
+            refId: competitionId,
           });
 
           return { remainingPoints: updated.points || 0 };

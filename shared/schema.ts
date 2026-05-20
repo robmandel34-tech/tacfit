@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, uniqueIndex, varchar, json, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -44,6 +44,18 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+
+// Session storage for cookie-based logins (managed at runtime by
+// connect-pg-simple). Declared here so Drizzle's schema push does NOT
+// try to drop this table during deployment. Do not change the column
+// shape — it is owned by the express-session store.
+export const userSessions = pgTable("user_sessions", {
+  sid: varchar("sid").primaryKey(),
+  sess: json("sess").notNull(),
+  expire: timestamp("expire", { precision: 6 }).notNull(),
+}, (table) => ({
+  expireIdx: index("IDX_user_sessions_expire").on(table.expire),
+}));
 
 // Opaque bearer tokens issued at login. Used by the native (Capacitor) app
 // since iOS WKWebView cross-origin cookies are unreliable. Web continues to

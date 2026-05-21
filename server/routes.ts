@@ -3124,22 +3124,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Accept a team invitation
   app.post("/api/team-invitations/:id/accept", async (req, res) => {
     try {
+      // Trust the session, never the body — prevents hijacking another user's invite.
+      const userId = req.session?.userId || req.session?.user?.id;
+      if (!userId) return res.status(401).json({ message: "You must be logged in." });
+
       const id = parseInt(req.params.id);
-      const { userId } = req.body;
-      if (!userId) return res.status(400).json({ message: "userId required" });
       const invitations = await storage.getUserInvitations(userId);
       const invitation = invitations.find((i: any) => i.id === id);
       if (!invitation) return res.status(404).json({ message: "Invitation not found" });
 
-      // Add user to team
-      await storage.addTeamMember({ teamId: invitation.teamId, userId: invitation.userId, role: 'member' });
+      // Look up the team's competition so we know whether payment is required.
+      const team = await storage.getTeam(invitation.teamId);
+      const competitionId = team?.competitionId ?? invitation.competitionId ?? null;
+      const competition = competitionId ? await storage.getCompetition(competitionId) : null;
+      const isPaid = !!competition && competition.paymentType && competition.paymentType !== 'free';
 
-      // Mark accepted
+      // For paid competitions, require an entry before adding to the team.
+      // NOTE: this also makes the accept route the recovery path for the
+      // orphaned-payment edge case — if `complete-after-payment` fails after
+      // a successful charge, the user can click Accept again and this branch
+      // will see the existing entry and finish the join below.
+      if (isPaid && competition) {
+        const existingEntry = await storage.getCompetitionEntry(userId, competition.id);
+        if (!existingEntry) {
+          return res.json({
+            requiresPayment: true,
+            invitationId: id,
+            teamId: invitation.teamId,
+            competition: {
+              id: competition.id,
+              name: competition.name,
+              description: competition.description,
+              startDate: competition.startDate,
+              endDate: competition.endDate,
+              paymentType: competition.paymentType,
+              pricingTier: (competition as any).pricingTier,
+            },
+          });
+        }
+      }
+
+      // Free competition (or paid with entry already on file) → add to team
+      // and mark accepted. Guard against duplicate-membership race.
+      const alreadyMember = await storage.getTeamMember(invitation.teamId, userId);
+      if (!alreadyMember) {
+        await storage.addTeamMember({ teamId: invitation.teamId, userId, role: 'member' });
+      }
       const updated = await storage.updateUserInvitation(id, 'accepted');
-      res.json({ message: "Invitation accepted", invitation: updated });
+      res.json({ message: "Invitation accepted", invitation: updated, requiresPayment: false });
     } catch (error) {
       console.error("Error accepting invitation:", error);
       res.status(500).json({ message: "Error accepting invitation" });
+    }
+  });
+
+  // Called after the user completes payment (card or points) for a paid
+  // competition they were invited to. Adds them to the inviter's team and
+  // marks the invitation accepted. Requires a competition entry on file.
+  app.post("/api/team-invitations/:id/complete-after-payment", async (req, res) => {
+    try {
+      const userId = req.session?.userId || req.session?.user?.id;
+      if (!userId) return res.status(401).json({ message: "You must be logged in." });
+
+      const id = parseInt(req.params.id);
+      const invitations = await storage.getUserInvitations(userId);
+      const invitation = invitations.find((i: any) => i.id === id);
+      if (!invitation) return res.status(404).json({ message: "Invitation not found" });
+
+      const team = await storage.getTeam(invitation.teamId);
+      const competitionId = team?.competitionId ?? invitation.competitionId ?? null;
+      if (!competitionId) {
+        return res.status(400).json({ message: "Invitation has no competition" });
+      }
+
+      const entry = await storage.getCompetitionEntry(userId, competitionId);
+      if (!entry) {
+        return res.status(400).json({ message: "Payment not yet recorded — please complete payment first." });
+      }
+
+      const alreadyMember = await storage.getTeamMember(invitation.teamId, userId);
+      if (!alreadyMember) {
+        await storage.addTeamMember({ teamId: invitation.teamId, userId, role: 'member' });
+      }
+      const updated = await storage.updateUserInvitation(id, 'accepted');
+      res.json({ message: "Invitation accepted after payment", invitation: updated });
+    } catch (error) {
+      console.error("Error completing invitation after payment:", error);
+      res.status(500).json({ message: "Error completing invitation" });
     }
   });
 

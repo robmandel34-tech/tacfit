@@ -113,17 +113,58 @@ export default function Competitions() {
     enabled: !!user?.id,
   });
 
+  // When a paid invitation needs payment first, we stash the invitation here
+  // so the payment-success callback can finish the join into the inviter's team.
+  const [pendingInvitation, setPendingInvitation] = useState<{ invitationId: number; teamId: number } | null>(null);
+
   const acceptInvitation = useMutation({
     mutationFn: async (invitationId: number) => {
       const res = await apiRequest("POST", `/api/team-invitations/${invitationId}/accept`, { userId: user?.id });
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data: any, invitationId: number) => {
+      // Paid competition — open the payment modal; the join is finished only after payment succeeds.
+      if (data?.requiresPayment && data?.competition) {
+        setSelectedCompetition({
+          id: data.competition.id,
+          name: data.competition.name,
+          description: data.competition.description,
+          startDate: data.competition.startDate,
+          endDate: data.competition.endDate,
+          paymentType: data.competition.paymentType,
+        } as any);
+        setPendingInvitation({ invitationId, teamId: data.teamId });
+        setPaymentModalOpen(true);
+        return;
+      }
+
+      // Free competition — server already added the user to the team.
       queryClient.invalidateQueries({ queryKey: ["/api/users", user?.id, "team-invitations"] });
       queryClient.invalidateQueries({ queryKey: ["/api/team-members", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions"] });
       toast({ title: "Joined!", description: "You've joined the team. Head to Team to see your squad." });
     },
     onError: () => toast({ title: "Error", description: "Could not accept the invitation.", variant: "destructive" }),
+  });
+
+  // After payment succeeds for an invited paid competition, finish the join
+  // by adding the user to the inviter's team and marking the invite accepted.
+  const completeInvitationAfterPayment = useMutation({
+    mutationFn: async (invitationId: number) => {
+      const res = await apiRequest("POST", `/api/team-invitations/${invitationId}/complete-after-payment`, { userId: user?.id });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/users", user?.id, "team-invitations"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/team-members", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/teams"] });
+      toast({ title: "You're in!", description: "Payment received and you've joined the team." });
+      setPendingInvitation(null);
+    },
+    onError: (err: any) => {
+      toast({ title: "Almost there", description: err?.message || "Payment went through but joining the team failed — contact support.", variant: "destructive" });
+    },
   });
 
   const declineInvitation = useMutation({
@@ -329,14 +370,23 @@ export default function Competitions() {
       {selectedCompetition && (
         <CompetitionPaymentModal
           open={paymentModalOpen}
-          onOpenChange={setPaymentModalOpen}
+          onOpenChange={(next) => {
+            setPaymentModalOpen(next);
+            if (!next) setPendingInvitation(null);
+          }}
           competition={selectedCompetition}
           onPaymentSuccess={() => {
-            // After successful payment, open team selection modal
             setPaymentModalOpen(false);
+
+            // If this payment was for an invited paid competition, finish the
+            // join into the inviter's team — skip team selection entirely.
+            if (pendingInvitation) {
+              completeInvitationAfterPayment.mutate(pendingInvitation.invitationId);
+              return;
+            }
+
+            // Normal self-initiated paid join → fall through to team selection.
             setTeamSelectionModalOpen(true);
-            
-            // Show helpful toast
             setTimeout(() => {
               toast({
                 title: "Choose Your Squad",

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, UserPlus, Crown, Shield } from "lucide-react";
+import CommitmentGateModal from "./commitment-gate-modal";
 
 interface TeamSelectionModalProps {
   isOpen: boolean;
@@ -49,6 +50,8 @@ export default function TeamSelectionModal({
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
+  const [gateRole, setGateRole] = useState<"captain" | "member" | null>(null);
+  const [pendingJoinTeamId, setPendingJoinTeamId] = useState<number | null>(null);
 
   const { data: teams = [], isLoading } = useQuery({
     queryKey: [`/api/competitions/${competitionId}/teams-with-members`],
@@ -122,12 +125,30 @@ export default function TeamSelectionModal({
   };
 
   const handleJoinTeam = (teamId: number) => {
-    joinTeamMutation.mutate(teamId);
+    setPendingJoinTeamId(teamId);
+    setGateRole("member");
   };
 
   const handleCreateNewTeam = () => {
-    createNewTeamMutation.mutate();
+    setGateRole("captain");
   };
+
+  const handleGateAccept = () => {
+    if (gateRole === "captain") {
+      createNewTeamMutation.mutate();
+    } else if (gateRole === "member" && pendingJoinTeamId !== null) {
+      joinTeamMutation.mutate(pendingJoinTeamId);
+    }
+  };
+
+  const handleGateCancel = () => {
+    setGateRole(null);
+    setPendingJoinTeamId(null);
+  };
+
+  const gateIsPending =
+    (gateRole === "captain" && createNewTeamMutation.isPending) ||
+    (gateRole === "member" && joinTeamMutation.isPending);
 
   if (isLoading) {
     return (
@@ -146,6 +167,14 @@ export default function TeamSelectionModal({
 
   if (selectedTeam) {
     return (
+      <>
+        <CommitmentGateModal
+          isOpen={gateRole !== null}
+          role={gateRole ?? "member"}
+          onAccept={handleGateAccept}
+          onCancel={handleGateCancel}
+          isPending={gateIsPending}
+        />
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-tactical-gray-light border-tactical-gray">
           <DialogHeader>
@@ -221,10 +250,19 @@ export default function TeamSelectionModal({
           </div>
         </DialogContent>
       </Dialog>
+      </>
     );
   }
 
   return (
+    <>
+      <CommitmentGateModal
+        isOpen={gateRole !== null}
+        role={gateRole ?? "member"}
+        onAccept={handleGateAccept}
+        onCancel={handleGateCancel}
+        isPending={gateIsPending}
+      />
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto bg-tactical-gray-light border-tactical-gray">
         <DialogHeader>
@@ -327,5 +365,6 @@ export default function TeamSelectionModal({
         </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 }

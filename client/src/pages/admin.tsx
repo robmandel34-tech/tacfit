@@ -15,6 +15,7 @@ import { useLocation } from "wouter";
 import { Plus, Edit2, Trash2, Users, Trophy, Calendar, Settings, X, Activity, AlertTriangle, MessageSquare, BarChart3, Target, Flag } from "lucide-react";
 import { apiRequest, API_BASE } from "@/lib/queryClient";
 import { AdminReportsPanel } from "@/components/admin-reports-panel";
+import { UserParticipationModal } from "@/components/user-participation-modal";
 import { format } from "date-fns";
 
 interface Competition {
@@ -120,6 +121,7 @@ export default function AdminPage() {
   const [suspensionReason, setSuspensionReason] = useState('');
   const [deleteUser, setDeleteUser] = useState<User | null>(null);
   const [viewCheckInsUser, setViewCheckInsUser] = useState<User | null>(null);
+  const [viewParticipationUser, setViewParticipationUser] = useState<User | null>(null);
 
   // Session refresh mutation - always define hooks at top level
   const refreshSession = useMutation({
@@ -1519,6 +1521,15 @@ export default function AdminPage() {
                             <Button
                               variant="ghost"
                               size="sm"
+                              onClick={() => setViewParticipationUser(u)}
+                              className="h-8 px-2 text-yellow-400 hover:text-yellow-300"
+                            >
+                              <Activity className="h-4 w-4 mr-1" />
+                              Participation
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() => {
                                 setSuspensionUser(u);
                                 setSuspensionReason('');
@@ -1823,6 +1834,13 @@ export default function AdminPage() {
                 </div>
               </DialogContent>
             </Dialog>
+
+            <UserParticipationModal
+              open={!!viewParticipationUser}
+              onOpenChange={(o) => { if (!o) setViewParticipationUser(null); }}
+              userId={viewParticipationUser?.id ?? null}
+              username={viewParticipationUser?.username}
+            />
           </div>
         )}
 

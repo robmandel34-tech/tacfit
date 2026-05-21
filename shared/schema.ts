@@ -498,3 +498,29 @@ export const insertUserBlockSchema = createInsertSchema(userBlocks).omit({ id: t
 export type UserBlock = typeof userBlocks.$inferSelect;
 export type InsertUserBlock = z.infer<typeof insertUserBlockSchema>;
 
+export const teammateReports = pgTable("teammate_reports", {
+  id: serial("id").primaryKey(),
+  teamId: integer("team_id").references(() => teams.id).notNull(),
+  competitionId: integer("competition_id").references(() => competitions.id).notNull(),
+  reporterId: integer("reporter_id").references(() => users.id).notNull(),
+  reportedUserId: integer("reported_user_id").references(() => users.id).notNull(),
+  reason: text("reason").notNull(),
+  note: text("note"),
+  status: text("status").default("pending").notNull(),
+  adminResponse: text("admin_response"),
+  resolvedAt: timestamp("resolved_at"),
+  resolvedBy: integer("resolved_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertTeammateReportSchema = createInsertSchema(teammateReports).omit({
+  id: true,
+  createdAt: true,
+  status: true,
+  adminResponse: true,
+  resolvedAt: true,
+  resolvedBy: true,
+});
+export type TeammateReport = typeof teammateReports.$inferSelect;
+export type InsertTeammateReport = z.infer<typeof insertTeammateReportSchema>;
+

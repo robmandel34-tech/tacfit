@@ -6,7 +6,8 @@ import {
   InsertCompetitionInvitation, CompetitionEntry, InsertCompetitionEntry,
   PhoneInvitation, InsertPhoneInvitation, WhiteboardItem, InsertWhiteboardItem, 
   MissionTask, InsertMissionTask, ActivityType, InsertActivityType,
-  AdminPost, InsertAdminPost, MoodLog, InsertMoodLog
+  AdminPost, InsertAdminPost, MoodLog, InsertMoodLog,
+  TeammateReport, InsertTeammateReport
 } from "@shared/schema";
 
 export interface IStorage {
@@ -168,6 +169,23 @@ export interface IStorage {
   unblockUser(blockerId: number, blockedId: number): Promise<void>;
   getBlockedUsers(blockerId: number): Promise<number[]>;
   isBlocked(blockerId: number, blockedId: number): Promise<boolean>;
+
+  // Teammate reports
+  createTeammateReport(report: InsertTeammateReport): Promise<TeammateReport>;
+  getTeammateReports(status?: string): Promise<TeammateReport[]>;
+  getTeammateReport(id: number): Promise<TeammateReport | undefined>;
+  updateTeammateReport(id: number, updates: Partial<TeammateReport>): Promise<TeammateReport | undefined>;
+  getUserParticipationSummary(userId: number, competitionId?: number): Promise<{
+    user: User | undefined;
+    totalActivities: number;
+    totalPoints: number;
+    lastActivityAt: Date | null;
+    activitiesInLast7Days: number;
+    activitiesInLast14Days: number;
+    moodLogsInLast7Days: number;
+    currentTeam: { teamId: number; teamName: string; competitionId: number; competitionName: string; role: string } | null;
+    recentActivities: Array<{ id: number; activityType: string; points: number; createdAt: Date | null }>;
+  }>;
 }
 
 import { DatabaseStorage } from "./database-storage";

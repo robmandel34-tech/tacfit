@@ -8,11 +8,12 @@ import {
   InsertWhiteboardItem, MissionTask, InsertMissionTask, ActivityType, InsertActivityType,
   AdminPost, InsertAdminPost, Advertisement, InsertAdvertisement, MoodLog, InsertMoodLog,
   UserInvitation, InsertUserInvitation, UserBlock,
+  TeammateReport, InsertTeammateReport,
   users, competitions, teams, teamMembers, activities, activityTypes,
   activityComments, activityLikes, activityFlags, chatMessages, friendships, 
   competitionHistory, competitionInvitations, competitionEntries, phoneInvitations, 
   whiteboardItems, missionTasks, adminPosts, advertisements, moodLogs, userInvitations,
-  userBlocks
+  userBlocks, teammateReports
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc, isNull, gt, lte, inArray, sql } from "drizzle-orm";
@@ -1162,5 +1163,111 @@ export class DatabaseStorage implements IStorage {
       and(eq(userBlocks.blockerId, blockerId), eq(userBlocks.blockedId, blockedId))
     ).limit(1);
     return !!row;
+  }
+
+  // Teammate reports
+  async createTeammateReport(report: InsertTeammateReport): Promise<TeammateReport> {
+    const [created] = await db.insert(teammateReports).values(report).returning();
+    return created;
+  }
+
+  async getTeammateReports(status?: string): Promise<TeammateReport[]> {
+    if (status) {
+      return await db.select().from(teammateReports)
+        .where(eq(teammateReports.status, status))
+        .orderBy(desc(teammateReports.createdAt));
+    }
+    return await db.select().from(teammateReports).orderBy(desc(teammateReports.createdAt));
+  }
+
+  async getTeammateReport(id: number): Promise<TeammateReport | undefined> {
+    const [report] = await db.select().from(teammateReports).where(eq(teammateReports.id, id));
+    return report || undefined;
+  }
+
+  async updateTeammateReport(id: number, updates: Partial<TeammateReport>): Promise<TeammateReport | undefined> {
+    const [report] = await db.update(teammateReports).set(updates).where(eq(teammateReports.id, id)).returning();
+    return report || undefined;
+  }
+
+  async getUserParticipationSummary(userId: number, competitionId?: number): Promise<{
+    user: User | undefined;
+    totalActivities: number;
+    totalPoints: number;
+    lastActivityAt: Date | null;
+    activitiesInLast7Days: number;
+    activitiesInLast14Days: number;
+    moodLogsInLast7Days: number;
+    currentTeam: { teamId: number; teamName: string; competitionId: number; competitionName: string; role: string } | null;
+    recentActivities: Array<{ id: number; activityType: string; points: number; createdAt: Date | null }>;
+  }> {
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
+
+    const userActivitiesFilter = competitionId
+      ? and(eq(activities.userId, userId), eq(activities.competitionId, competitionId))
+      : eq(activities.userId, userId);
+
+    const userActivities = await db.select().from(activities)
+      .where(userActivitiesFilter)
+      .orderBy(desc(activities.createdAt));
+
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+
+    const totalActivities = userActivities.length;
+    const totalPoints = userActivities.reduce((sum, a) => sum + (a.points || 0), 0);
+    const lastActivityAt = userActivities[0]?.createdAt ?? null;
+    const activitiesInLast7Days = userActivities.filter(a => a.createdAt && a.createdAt >= sevenDaysAgo).length;
+    const activitiesInLast14Days = userActivities.filter(a => a.createdAt && a.createdAt >= fourteenDaysAgo).length;
+
+    const recentMoodLogs = await db.select().from(moodLogs)
+      .where(and(eq(moodLogs.userId, userId), gt(moodLogs.createdAt, sevenDaysAgo)));
+    const moodLogsInLast7Days = recentMoodLogs.length;
+
+    const recentActivities = userActivities.slice(0, 10).map(a => ({
+      id: a.id,
+      activityType: a.type || "Activity",
+      points: a.points || 0,
+      createdAt: a.createdAt,
+    }));
+
+    let currentTeam: { teamId: number; teamName: string; competitionId: number; competitionName: string; role: string } | null = null;
+    const teamRows = await db.select({
+      teamId: teams.id,
+      teamName: teams.name,
+      competitionId: teams.competitionId,
+      role: teamMembers.role,
+    })
+      .from(teamMembers)
+      .innerJoin(teams, eq(teams.id, teamMembers.teamId))
+      .where(eq(teamMembers.userId, userId));
+
+    const activeTeam = competitionId
+      ? teamRows.find(t => t.competitionId === competitionId)
+      : teamRows[0];
+
+    if (activeTeam && activeTeam.competitionId !== null) {
+      const [comp] = await db.select().from(competitions).where(eq(competitions.id, activeTeam.competitionId));
+      currentTeam = {
+        teamId: activeTeam.teamId,
+        teamName: activeTeam.teamName,
+        competitionId: activeTeam.competitionId,
+        competitionName: comp?.name || "",
+        role: activeTeam.role || "member",
+      };
+    }
+
+    return {
+      user,
+      totalActivities,
+      totalPoints,
+      lastActivityAt,
+      activitiesInLast7Days,
+      activitiesInLast14Days,
+      moodLogsInLast7Days,
+      currentTeam,
+      recentActivities,
+    };
   }
 }

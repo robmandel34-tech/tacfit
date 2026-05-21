@@ -4061,6 +4061,151 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Captain reports an inactive teammate. Only the team captain can submit.
+  app.post("/api/teammate-reports", async (req, res) => {
+    try {
+      const sessionUserId = req.session?.userId || req.session?.user?.id;
+      if (!sessionUserId) return res.sendStatus(401);
+
+      const { teamId, reportedUserId, reason, note } = req.body || {};
+      if (!teamId || !reportedUserId || !reason) {
+        return res.status(400).json({ message: "teamId, reportedUserId, and reason are required" });
+      }
+
+      const team = await storage.getTeam(parseInt(teamId));
+      if (!team) return res.status(404).json({ message: "Team not found" });
+      if (team.captainId !== sessionUserId) {
+        return res.status(403).json({ message: "Only the team captain can report a teammate" });
+      }
+      if (parseInt(reportedUserId) === sessionUserId) {
+        return res.status(400).json({ message: "Cannot report yourself" });
+      }
+      if (!team.competitionId) {
+        return res.status(400).json({ message: "Team has no competition" });
+      }
+
+      const report = await storage.createTeammateReport({
+        teamId: parseInt(teamId),
+        competitionId: team.competitionId,
+        reporterId: sessionUserId,
+        reportedUserId: parseInt(reportedUserId),
+        reason: String(reason),
+        note: note ? String(note) : null,
+      });
+
+      res.json(report);
+    } catch (error: any) {
+      console.error('Create teammate report error:', error);
+      res.status(500).json({ message: error.message || "Error creating report" });
+    }
+  });
+
+  // Admin: list teammate reports
+  app.get("/api/admin/teammate-reports", async (req, res) => {
+    try {
+      const sessionUserId = req.session?.userId || req.session?.user?.id;
+      if (!sessionUserId) return res.sendStatus(401);
+      const currentUser = await storage.getUser(sessionUserId);
+      if (!currentUser?.isAdmin) return res.sendStatus(403);
+
+      const status = req.query.status ? String(req.query.status) : undefined;
+      const reports = await storage.getTeammateReports(status);
+
+      const enriched = await Promise.all(reports.map(async (r) => {
+        const [reporter, reportedUser, team, competition] = await Promise.all([
+          storage.getUser(r.reporterId),
+          storage.getUser(r.reportedUserId),
+          storage.getTeam(r.teamId),
+          storage.getCompetition(r.competitionId),
+        ]);
+        return {
+          ...r,
+          reporterUsername: reporter?.username || null,
+          reportedUsername: reportedUser?.username || null,
+          teamName: team?.name || null,
+          competitionName: competition?.name || null,
+        };
+      }));
+
+      res.json(enriched);
+    } catch (error: any) {
+      console.error('List teammate reports error:', error);
+      res.status(500).json({ message: error.message || "Error listing reports" });
+    }
+  });
+
+  // Admin: update teammate report (set status / add response / mark resolved)
+  app.patch("/api/admin/teammate-reports/:id", async (req, res) => {
+    try {
+      const sessionUserId = req.session?.userId || req.session?.user?.id;
+      if (!sessionUserId) return res.sendStatus(401);
+      const currentUser = await storage.getUser(sessionUserId);
+      if (!currentUser?.isAdmin) return res.sendStatus(403);
+
+      const reportId = parseInt(req.params.id);
+      const { status, adminResponse } = req.body || {};
+      const updates: any = {};
+      if (status) updates.status = String(status);
+      if (adminResponse !== undefined) updates.adminResponse = adminResponse ? String(adminResponse) : null;
+      if (status && status !== 'pending') {
+        updates.resolvedAt = new Date();
+        updates.resolvedBy = sessionUserId;
+      }
+
+      const updated = await storage.updateTeammateReport(reportId, updates);
+      if (!updated) return res.status(404).json({ message: "Report not found" });
+      res.json(updated);
+    } catch (error: any) {
+      console.error('Update teammate report error:', error);
+      res.status(500).json({ message: error.message || "Error updating report" });
+    }
+  });
+
+  // Admin: remove a teammate from a team (used when resolving a report)
+  app.post("/api/admin/teams/:teamId/remove-member/:userId", async (req, res) => {
+    try {
+      const sessionUserId = req.session?.userId || req.session?.user?.id;
+      if (!sessionUserId) return res.sendStatus(401);
+      const currentUser = await storage.getUser(sessionUserId);
+      if (!currentUser?.isAdmin) return res.sendStatus(403);
+
+      const teamId = parseInt(req.params.teamId);
+      const userId = parseInt(req.params.userId);
+      const team = await storage.getTeam(teamId);
+      if (!team) return res.status(404).json({ message: "Team not found" });
+      if (team.captainId === userId) {
+        return res.status(400).json({ message: "Cannot remove the team captain" });
+      }
+      const members = await storage.getTeamMembers(teamId);
+      const membership = members.find(m => m.userId === userId);
+      if (!membership) return res.status(404).json({ message: "User is not on this team" });
+
+      await storage.removeTeamMember(teamId, userId);
+      res.json({ message: "Member removed" });
+    } catch (error: any) {
+      console.error('Admin remove member error:', error);
+      res.status(500).json({ message: error.message || "Error removing member" });
+    }
+  });
+
+  // Admin: get a user's participation summary (activity counts, last activity, etc.)
+  app.get("/api/admin/users/:userId/participation", async (req, res) => {
+    try {
+      const sessionUserId = req.session?.userId || req.session?.user?.id;
+      if (!sessionUserId) return res.sendStatus(401);
+      const currentUser = await storage.getUser(sessionUserId);
+      if (!currentUser?.isAdmin) return res.sendStatus(403);
+
+      const userId = parseInt(req.params.userId);
+      const competitionId = req.query.competitionId ? parseInt(req.query.competitionId as string) : undefined;
+      const summary = await storage.getUserParticipationSummary(userId, competitionId);
+      res.json(summary);
+    } catch (error: any) {
+      console.error('Get user participation error:', error);
+      res.status(500).json({ message: error.message || "Error fetching participation" });
+    }
+  });
+
 
 
 

@@ -12,8 +12,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { Plus, Edit2, Trash2, Users, Trophy, Calendar, Settings, X, Activity, AlertTriangle, MessageSquare, BarChart3, Target } from "lucide-react";
+import { Plus, Edit2, Trash2, Users, Trophy, Calendar, Settings, X, Activity, AlertTriangle, MessageSquare, BarChart3, Target, Flag } from "lucide-react";
 import { apiRequest, API_BASE } from "@/lib/queryClient";
+import { AdminReportsPanel } from "@/components/admin-reports-panel";
 import { format } from "date-fns";
 
 interface Competition {
@@ -110,7 +111,7 @@ export default function AdminPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
-  const [activeTab, setActiveTab] = useState<'competitions' | 'users' | 'activity-types' | 'posts' | 'advertisements' | 'settings'>('competitions');
+  const [activeTab, setActiveTab] = useState<'competitions' | 'users' | 'activity-types' | 'posts' | 'advertisements' | 'reports' | 'settings'>('competitions');
   const [isCreateCompetitionOpen, setIsCreateCompetitionOpen] = useState(false);
   const [editingCompetition, setEditingCompetition] = useState<Competition | null>(null);
   const [pointsAdjustmentUser, setPointsAdjustmentUser] = useState<User | null>(null);
@@ -1037,6 +1038,14 @@ export default function AdminPage() {
             <span>Advertisements</span>
           </Button>
           <Button
+            variant={activeTab === 'reports' ? 'default' : 'ghost'}
+            onClick={() => setActiveTab('reports')}
+            className="flex items-center space-x-2 flex-shrink-0"
+          >
+            <Flag className="h-4 w-4" />
+            <span>Reports</span>
+          </Button>
+          <Button
             variant={activeTab === 'settings' ? 'default' : 'ghost'}
             onClick={() => setActiveTab('settings')}
             className="flex items-center space-x-2 flex-shrink-0"
@@ -1045,6 +1054,8 @@ export default function AdminPage() {
             <span>Settings</span>
           </Button>
         </div>
+
+        {activeTab === 'reports' && <AdminReportsPanel />}
 
         {/* Competitions Tab */}
         {activeTab === 'competitions' && (

@@ -11,10 +11,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Users, Crown, Target, Camera, Send, MessageCircle, Edit2, Check, X, ChevronDown, ChevronUp, UserPlus, Trophy } from "lucide-react";
+import { Users, Crown, Target, Camera, Send, MessageCircle, Edit2, Check, X, ChevronDown, ChevronUp, UserPlus, Trophy, Flag } from "lucide-react";
 import ChatCard from "@/components/chat-card";
 import MissionPlanningBoard from "@/components/mission-planning-board";
 import TeamInviteModal from "@/components/team-invite-modal";
+import { ReportTeammateModal } from "@/components/report-teammate-modal";
 
 import { useToast } from "@/hooks/use-toast";
 
@@ -32,6 +33,7 @@ export default function Team() {
   const [isProgressExpanded, setIsProgressExpanded] = useState(false);
   const [lastViewedProgress, setLastViewedProgress] = useState<Record<string, number>>({});
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [reportTarget, setReportTarget] = useState<{ id: number; username: string } | null>(null);
 
   // Get user's current team membership
   const { data: userTeamMember } = useQuery({
@@ -825,6 +827,21 @@ export default function Team() {
                       )}
                     </div>
                   </div>
+                  {(userTeamMember?.[0]?.role === 'captain' || team?.captainId === user?.id) &&
+                    member.role !== 'captain' &&
+                    member.user?.id !== user?.id && (
+                      <div className="mt-3 flex justify-end">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-yellow-500 hover:text-yellow-400 hover:bg-tactical-gray-darker text-xs h-7 px-2"
+                          onClick={() => setReportTarget({ id: member.user.id, username: member.user.username })}
+                        >
+                          <Flag className="h-3.5 w-3.5 mr-1" />
+                          Report Inactive
+                        </Button>
+                      </div>
+                    )}
                 </div>
               ))}
               
@@ -890,6 +907,17 @@ export default function Team() {
           teamId={team.id}
           teamName={team.name}
           competitionName={competition.name}
+        />
+      )}
+
+      {/* Report Inactive Teammate Modal */}
+      {team && reportTarget && (
+        <ReportTeammateModal
+          open={!!reportTarget}
+          onOpenChange={(o) => { if (!o) setReportTarget(null); }}
+          teamId={team.id}
+          reportedUserId={reportTarget.id}
+          reportedUsername={reportTarget.username}
         />
       )}
     </div>

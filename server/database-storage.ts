@@ -1222,7 +1222,7 @@ export class DatabaseStorage implements IStorage {
     const activitiesInLast14Days = userActivities.filter(a => a.createdAt && a.createdAt >= fourteenDaysAgo).length;
 
     const recentMoodLogs = await db.select().from(moodLogs)
-      .where(and(eq(moodLogs.userId, userId), gt(moodLogs.loggedAt, sevenDaysAgo)));
+      .where(and(eq(moodLogs.userId, userId), sql`${moodLogs.loggedAt} > ${sevenDaysAgo.toISOString()}`));
     const moodLogsInLast7Days = recentMoodLogs.length;
 
     const recentActivities = userActivities.slice(0, 10).map(a => ({

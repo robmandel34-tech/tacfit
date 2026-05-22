@@ -116,6 +116,9 @@ export default function Competitions() {
   // When a paid invitation needs payment first, we stash the invitation here
   // so the payment-success callback can finish the join into the inviter's team.
   const [pendingInvitation, setPendingInvitation] = useState<{ invitationId: number; teamId: number } | null>(null);
+  // Set right after a successful payment so we can warn the user if they
+  // close the team-selection modal without picking a team.
+  const [justPaidEntry, setJustPaidEntry] = useState(false);
 
   const acceptInvitation = useMutation({
     mutationFn: async (invitationId: number) => {
@@ -207,17 +210,26 @@ export default function Competitions() {
       paymentType: competition.paymentType,
     } as any);
 
+    // If the user already paid (card or points) but never finished picking a
+    // team, skip the payment modal and go straight to team selection so the
+    // entry isn't wasted.
+    const alreadyEntered = ((userResults as any)?.currentEntries || []).some(
+      (e: any) => e.competitionId === competitionId,
+    );
+
     const isPaid = competition.paymentType && competition.paymentType !== "free";
-    if (isPaid) {
+    if (isPaid && !alreadyEntered) {
       // Open the payment chooser (card or points)
       setPaymentModalOpen(true);
     } else {
-      // Free competition — go straight to team selection
+      // Free comp OR already paid → go straight to team selection.
       setTeamSelectionModalOpen(true);
       setTimeout(() => {
         toast({
-          title: "Choose Your Squad",
-          description: "Select a team to join or create a new one to complete your entry",
+          title: alreadyEntered ? "You're already paid in" : "Choose Your Squad",
+          description: alreadyEntered
+            ? "Just pick a team to finish joining — no extra charge."
+            : "Select a team to join or create a new one to complete your entry",
         });
       }, 500);
     }
@@ -395,6 +407,7 @@ export default function Competitions() {
             }
 
             // Normal self-initiated paid join → fall through to team selection.
+            setJustPaidEntry(true);
             setTeamSelectionModalOpen(true);
             setTimeout(() => {
               toast({
@@ -410,9 +423,21 @@ export default function Competitions() {
       {selectedCompetition && (
         <TeamSelectionModal
           isOpen={teamSelectionModalOpen}
-          onClose={() => setTeamSelectionModalOpen(false)}
+          onClose={() => {
+            setTeamSelectionModalOpen(false);
+            if (justPaidEntry) {
+              toast({
+                title: "Your entry is saved",
+                description:
+                  "We kept your payment on file. Come back to Competitions anytime to pick a team — you won't be charged again.",
+                duration: 7000,
+              });
+              setJustPaidEntry(false);
+            }
+          }}
           competitionId={selectedCompetition.id}
           competitionName={selectedCompetition.name}
+          onJoined={() => setJustPaidEntry(false)}
         />
       )}
 

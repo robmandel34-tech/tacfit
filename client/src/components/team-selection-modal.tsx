@@ -16,6 +16,7 @@ interface TeamSelectionModalProps {
   onClose: () => void;
   competitionId: number;
   competitionName: string;
+  onJoined?: () => void;
 }
 
 interface Team {
@@ -43,7 +44,8 @@ export default function TeamSelectionModal({
   isOpen, 
   onClose, 
   competitionId, 
-  competitionName 
+  competitionName,
+  onJoined,
 }: TeamSelectionModalProps) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -78,6 +80,7 @@ export default function TeamSelectionModal({
       queryClient.invalidateQueries({ queryKey: [`/api/competitions/${competitionId}/teams-with-members`] });
       queryClient.invalidateQueries({ queryKey: [`/api/teams`] });
       queryClient.invalidateQueries({ queryKey: [`/api/competitions`] });
+      onJoined?.();
       onClose();
       // Navigate to team page after successful join
       setLocation("/team");
@@ -107,6 +110,7 @@ export default function TeamSelectionModal({
       queryClient.invalidateQueries({ queryKey: [`/api/competitions/${competitionId}/teams-with-members`] });
       queryClient.invalidateQueries({ queryKey: [`/api/teams`] });
       queryClient.invalidateQueries({ queryKey: [`/api/competitions`] });
+      onJoined?.();
       onClose();
       // Navigate to team page after successful team creation
       setLocation("/team");

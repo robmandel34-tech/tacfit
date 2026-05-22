@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useLocation } from "wouter";
 import { loadAuthToken, setAuthToken, getCachedAuthToken } from "@/lib/authToken";
+import { queryClient } from "@/lib/queryClient";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string) ?? "";
 
@@ -99,6 +100,9 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
         await setAuthToken(userData.authToken);
         delete userData.authToken;
       }
+      // Drop any cached data from a previous session in this tab — otherwise
+      // staleTime:Infinity makes us reuse the prior user's team/competition data.
+      queryClient.clear();
       setUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));
       // Navigation is handled by the caller so Capacitor WKWebView gets a single
@@ -146,6 +150,9 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
     await setAuthToken(null);
     setUser(null);
     localStorage.removeItem("user");
+    // Wipe TanStack Query cache so the next user in this tab doesn't inherit
+    // this user's team/competition data.
+    queryClient.clear();
     setLocation("/login");
   };
 
@@ -153,6 +160,7 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
     await setAuthToken(null);
     localStorage.removeItem("user");
     setUser(null);
+    queryClient.clear();
     setLocation("/login");
   };
 

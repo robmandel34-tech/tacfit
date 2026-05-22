@@ -4276,8 +4276,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const currentUser = await storage.getUser(sessionUserId);
       if (!currentUser?.isAdmin) return res.sendStatus(403);
 
+      // Use flag rows as the source of truth (more reliable than the
+      // isFlagged column, which can fall out of sync if a flag was created
+      // before the sync logic was added).
+      const flagRows = await db.select().from(activityFlagsTable);
+      const flaggedIds = Array.from(new Set(flagRows.map((f: any) => f.activityId).filter(Boolean)));
       const allActivities = await storage.getActivities();
-      const flagged = allActivities.filter((a: any) => a.isFlagged);
+      const flagged = allActivities.filter((a: any) => flaggedIds.includes(a.id));
 
       const enriched = await Promise.all(flagged.map(async (a: any) => {
         const [submitter, team, flags] = await Promise.all([

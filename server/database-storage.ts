@@ -469,17 +469,31 @@ export class DatabaseStorage implements IStorage {
       .from(activityFlags)
       .where(and(eq(activityFlags.activityId, activityId), eq(activityFlags.userId, userId)));
 
+    let flagged: boolean;
     if (existingFlag) {
       await db
         .delete(activityFlags)
         .where(and(eq(activityFlags.activityId, activityId), eq(activityFlags.userId, userId)));
-      return false;
+      flagged = false;
     } else {
       await db
         .insert(activityFlags)
         .values({ activityId, userId });
-      return true;
+      flagged = true;
     }
+
+    // Keep activities.isFlagged in sync with the underlying flag rows so the
+    // admin review queue (and any other "is this flagged?" UI) stays accurate.
+    const remaining = await db
+      .select()
+      .from(activityFlags)
+      .where(eq(activityFlags.activityId, activityId));
+    await db
+      .update(activities)
+      .set({ isFlagged: remaining.length > 0 })
+      .where(eq(activities.id, activityId));
+
+    return flagged;
   }
 
   // Activity type operations

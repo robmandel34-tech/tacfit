@@ -137,27 +137,37 @@ export default function ActivityTrackingHelp() {
                     <div className="bg-blue-900/20 border border-blue-600/30 p-3 rounded-lg">
                       <h5 className="font-medium text-blue-300 mb-2 flex items-center">
                         <Camera className="h-4 w-4 mr-2" />
-                        Photo Evidence
+                        What counts as good evidence
                       </h5>
+                      <p className="text-xs text-gray-300 mb-2">Any one of these works — pick whatever's easiest:</p>
                       <ul className="text-xs text-gray-300 space-y-1">
-                        <li>• Clear image of you performing the activity</li>
-                        <li>• Show equipment or environment when relevant</li>
-                        <li>• Include workout stats from fitness apps/devices</li>
-                        <li>• Before/after progress photos</li>
+                        <li>• A selfie of you doing the activity</li>
+                        <li>• Screenshot from a GPS app (Strava, Garmin, Nike Run, etc.)</li>
+                        <li>• Screenshot from a wearable (Apple Watch, Fitbit, Whoop, Garmin)</li>
+                        <li>• A short video clip of you mid-activity</li>
                       </ul>
                     </div>
 
                     <div className="bg-purple-900/20 border border-purple-600/30 p-3 rounded-lg">
                       <h5 className="font-medium text-purple-300 mb-2 flex items-center">
                         <Video className="h-4 w-4 mr-2" />
-                        Video Evidence
+                        Why stronger evidence is better
                       </h5>
                       <ul className="text-xs text-gray-300 space-y-1">
-                        <li>• Short clips showing activity in progress</li>
-                        <li>• Demonstration of proper form/technique</li>
-                        <li>• Time-lapse of longer activities</li>
-                        <li>• Post-workout celebration or summary</li>
+                        <li>• Other teams can flag submissions they think are weak</li>
+                        <li>• Clearer proof = much lower chance of being flagged</li>
+                        <li>• Combining a photo + a short video earns double points (30 vs 15)</li>
                       </ul>
+                    </div>
+
+                    <div className="bg-yellow-900/20 border border-yellow-600/30 p-3 rounded-lg">
+                      <h5 className="font-medium text-yellow-300 mb-2">If your submission gets flagged</h5>
+                      <p className="text-xs text-gray-300">
+                        Admins don't review flagged evidence strictly — they're only looking
+                        for clearly fake submissions (AI-generated images, photos pulled
+                        from the internet, screenshots of someone else's workout, etc.).
+                        Honest effort always counts.
+                      </p>
                     </div>
                   </div>
                 </div>

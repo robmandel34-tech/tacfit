@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Camera, X } from "lucide-react";
+import { Camera, X, HelpCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { API_BASE } from "@/lib/queryClient";
 
@@ -53,6 +53,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [showGuidelines, setShowGuidelines] = useState(false);
 
   // Get user's current team membership
   const { data: userTeamMember } = useQuery<any[]>({
@@ -529,7 +530,36 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
 
               {/* Photo Evidence */}
               <div className="space-y-3">
-                <Label className="text-gray-300 font-medium">Photo Evidence <span className="text-red-400">*</span> <span className="text-gray-400">(at least 1 image required)</span></Label>
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <Label className="text-gray-300 font-medium">Photo Evidence <span className="text-red-400">*</span> <span className="text-gray-400">(at least 1 image required)</span></Label>
+                  <button
+                    type="button"
+                    onClick={() => setShowGuidelines((v) => !v)}
+                    className="inline-flex items-center gap-1 text-xs text-military-green hover:text-military-green-light underline-offset-2 hover:underline"
+                    data-testid="button-evidence-guidelines"
+                  >
+                    <HelpCircle className="w-3.5 h-3.5" />
+                    What counts as good evidence?
+                    {showGuidelines ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                  </button>
+                </div>
+                {showGuidelines && (
+                  <div className="rounded-lg border border-military-green/40 bg-tactical-gray-lighter/40 p-3 text-xs text-gray-300 space-y-2">
+                    <p className="text-white font-semibold">Good evidence (any one of these is fine):</p>
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li>A selfie of you doing the activity</li>
+                      <li>Screenshot from a GPS app (Strava, Garmin, Nike Run, etc.)</li>
+                      <li>Screenshot from a wearable (Apple Watch, Fitbit, Whoop, Garmin)</li>
+                      <li>A short video clip of you mid-activity</li>
+                    </ul>
+                    <p className="text-yellow-200">
+                      <strong>Tip:</strong> stronger proof = lower chance of being flagged by another team.
+                    </p>
+                    <p className="text-gray-400">
+                      When a flag does happen, the review isn't strict — admins are only looking for clearly fake submissions (AI-generated images, photos pulled from the internet, etc.).
+                    </p>
+                  </div>
+                )}
                 <div className="p-3 bg-military-green/20 border border-military-green/30 rounded-lg">
                   <p className="text-sm text-green-300">
                     <strong>Points:</strong> 15 points for submission with at least 1 image, 30 points for submission with image + video

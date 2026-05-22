@@ -15,6 +15,7 @@ import { useLocation } from "wouter";
 import { Plus, Edit2, Trash2, Users, Trophy, Calendar, Settings, X, Activity, AlertTriangle, MessageSquare, BarChart3, Target, Flag } from "lucide-react";
 import { apiRequest, API_BASE } from "@/lib/queryClient";
 import { AdminReportsPanel } from "@/components/admin-reports-panel";
+import { AdminFlaggedActivitiesPanel } from "@/components/admin-flagged-activities-panel";
 import { UserParticipationModal } from "@/components/user-participation-modal";
 import { format } from "date-fns";
 
@@ -112,7 +113,7 @@ export default function AdminPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
-  const [activeTab, setActiveTab] = useState<'competitions' | 'users' | 'activity-types' | 'posts' | 'advertisements' | 'reports' | 'settings'>('competitions');
+  const [activeTab, setActiveTab] = useState<'competitions' | 'users' | 'activity-types' | 'posts' | 'advertisements' | 'reports' | 'flagged' | 'settings'>('competitions');
   const [isCreateCompetitionOpen, setIsCreateCompetitionOpen] = useState(false);
   const [editingCompetition, setEditingCompetition] = useState<Competition | null>(null);
   const [pointsAdjustmentUser, setPointsAdjustmentUser] = useState<User | null>(null);
@@ -1048,6 +1049,14 @@ export default function AdminPage() {
             <span>Reports</span>
           </Button>
           <Button
+            variant={activeTab === 'flagged' ? 'default' : 'ghost'}
+            onClick={() => setActiveTab('flagged')}
+            className="flex items-center space-x-2 flex-shrink-0"
+          >
+            <AlertTriangle className="h-4 w-4" />
+            <span>Flagged</span>
+          </Button>
+          <Button
             variant={activeTab === 'settings' ? 'default' : 'ghost'}
             onClick={() => setActiveTab('settings')}
             className="flex items-center space-x-2 flex-shrink-0"
@@ -1058,6 +1067,7 @@ export default function AdminPage() {
         </div>
 
         {activeTab === 'reports' && <AdminReportsPanel />}
+        {activeTab === 'flagged' && <AdminFlaggedActivitiesPanel />}
 
         {/* Competitions Tab */}
         {activeTab === 'competitions' && (

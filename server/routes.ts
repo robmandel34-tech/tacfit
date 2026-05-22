@@ -16,7 +16,7 @@ import { ObjectStorageService, ObjectNotFoundError } from './objectStorage.js';
 import { db } from "./db";
 import { pool } from "./db";
 import { and, eq, sql } from "drizzle-orm";
-import { users as usersTable, competitionEntries as competitionEntriesTable, authTokens as authTokensTable, pointsTransactions as pointsTransactionsTable, activities as activitiesTable } from "@shared/schema";
+import { users as usersTable, competitionEntries as competitionEntriesTable, authTokens as authTokensTable, pointsTransactions as pointsTransactionsTable, activities as activitiesTable, activityFlags as activityFlagsTable } from "@shared/schema";
 import { desc } from "drizzle-orm";
 
 // Record a single points-balance change so users can see their history.
@@ -4265,6 +4265,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('Admin remove member error:', error);
       res.status(500).json({ message: error.message || "Error removing member" });
+    }
+  });
+
+  // Admin: list flagged activities for review
+  app.get("/api/admin/flagged-activities", async (req, res) => {
+    try {
+      const sessionUserId = (req.session as any)?.userId || (req.session as any)?.user?.id;
+      if (!sessionUserId) return res.sendStatus(401);
+      const currentUser = await storage.getUser(sessionUserId);
+      if (!currentUser?.isAdmin) return res.sendStatus(403);
+
+      const allActivities = await storage.getActivities();
+      const flagged = allActivities.filter((a: any) => a.isFlagged);
+
+      const enriched = await Promise.all(flagged.map(async (a: any) => {
+        const [submitter, team, flags] = await Promise.all([
+          a.userId ? storage.getUser(a.userId) : Promise.resolve(null),
+          a.teamId ? storage.getTeam(a.teamId) : Promise.resolve(null),
+          storage.getActivityFlags(a.id),
+        ]);
+        const competition = team?.competitionId ? await storage.getCompetition(team.competitionId) : null;
+        const flaggers = await Promise.all(
+          flags.map(async (f: any) => {
+            const u = f.userId ? await storage.getUser(f.userId) : null;
+            return { userId: f.userId, username: u?.username || "unknown", flaggedAt: f.createdAt };
+          })
+        );
+        return {
+          ...a,
+          submitter: submitter ? { id: submitter.id, username: submitter.username, avatar: submitter.avatar } : null,
+          team: team ? { id: team.id, name: team.name } : null,
+          competition: competition ? { id: competition.id, name: competition.name } : null,
+          flagCount: flags.length,
+          flaggers,
+        };
+      }));
+
+      // Most-flagged + most-recent first
+      enriched.sort((a, b) => (b.flagCount - a.flagCount) || (new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()));
+      res.json(enriched);
+    } catch (error: any) {
+      console.error("List flagged activities error:", error);
+      res.status(500).json({ message: error.message || "Error listing flagged activities" });
+    }
+  });
+
+  // Admin: dismiss all flags on an activity (keeps activity + points intact)
+  app.post("/api/admin/activities/:id/dismiss-flag", async (req, res) => {
+    try {
+      const sessionUserId = (req.session as any)?.userId || (req.session as any)?.user?.id;
+      if (!sessionUserId) return res.sendStatus(401);
+      const currentUser = await storage.getUser(sessionUserId);
+      if (!currentUser?.isAdmin) return res.sendStatus(403);
+
+      const activityId = parseInt(req.params.id);
+      const activity = await storage.getActivity(activityId);
+      if (!activity) return res.status(404).json({ message: "Activity not found" });
+
+      // Clear all flag rows and reset the isFlagged column
+      await db.delete(activityFlagsTable).where(eq(activityFlagsTable.activityId, activityId));
+      await db.update(activitiesTable).set({ isFlagged: false }).where(eq(activitiesTable.id, activityId));
+
+      res.json({ message: "Flag dismissed" });
+    } catch (error: any) {
+      console.error("Dismiss flag error:", error);
+      res.status(500).json({ message: error.message || "Error dismissing flag" });
     }
   });
 

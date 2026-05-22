@@ -3076,6 +3076,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "User is already a team member" });
       }
 
+      // Block duplicate pending invites for the same user + team.
+      const existingInvites = await storage.getUserInvitations(userId);
+      const alreadyPending = existingInvites.find(
+        (i: any) => i.teamId === teamId && i.status === 'pending'
+      );
+      if (alreadyPending) {
+        return res.status(400).json({ message: "This user already has a pending invitation to this team." });
+      }
+
       // Look up competitionId from the team
       const team = await storage.getTeam(teamId);
 

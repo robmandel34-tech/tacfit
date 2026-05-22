@@ -139,9 +139,15 @@ export default function Competitions() {
       }
 
       // Free competition — server already added the user to the team.
+      // Match all keys starting with /api/team-members or /api/teams, regardless
+      // of the trailing template string form used by individual pages.
       queryClient.invalidateQueries({ queryKey: ["/api/users", user?.id, "team-invitations"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/team-members", user?.id] });
-      queryClient.invalidateQueries({ queryKey: ["/api/competitions"] });
+      queryClient.invalidateQueries({
+        predicate: (q) => {
+          const k = String(q.queryKey[0] ?? "");
+          return k.startsWith("/api/team-members") || k.startsWith("/api/teams") || k.startsWith("/api/competitions");
+        },
+      });
       toast({ title: "Joined!", description: "You've joined the team. Head to Team to see your squad." });
     },
     onError: () => toast({ title: "Error", description: "Could not accept the invitation.", variant: "destructive" }),
@@ -156,9 +162,12 @@ export default function Competitions() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/users", user?.id, "team-invitations"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/team-members", user?.id] });
-      queryClient.invalidateQueries({ queryKey: ["/api/competitions"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/teams"] });
+      queryClient.invalidateQueries({
+        predicate: (q) => {
+          const k = String(q.queryKey[0] ?? "");
+          return k.startsWith("/api/team-members") || k.startsWith("/api/teams") || k.startsWith("/api/competitions");
+        },
+      });
       toast({ title: "You're in!", description: "Payment received and you've joined the team." });
       setPendingInvitation(null);
     },

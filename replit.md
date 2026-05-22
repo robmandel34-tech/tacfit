@@ -6,6 +6,13 @@ TacFit is a full-stack fitness competition platform designed for team-based fitn
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
+**Standing rule — end every change with this deployment reminder:**
+After ANY code change (no matter how small), always close the response with:
+1. **Replit Workspace (dev preview):** auto-updated, no action.
+2. **Replit Publish (live web at `.replit.app`):** click **Publish** in Replit to push live.
+3. **TestFlight (iOS):** push to GitHub → Codemagic builds → uploads to TestFlight (~15-25 min).
+Never omit this. The user is non-technical and relies on this list to know what to do.
+
 ## System Architecture
 
 ### Core Design Principles

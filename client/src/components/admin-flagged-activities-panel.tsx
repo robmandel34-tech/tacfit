@@ -30,6 +30,9 @@ export function AdminFlaggedActivitiesPanel() {
   const { toast } = useToast();
   const [confirmDelete, setConfirmDelete] = useState<FlaggedActivity | null>(null);
 
+  // Global TanStack defaults are staleTime: Infinity + no focus refetch, which
+  // would make new flag reports never appear on the admin's screen unless they
+  // hard-reloaded. Override so freshly-flagged content shows up quickly.
   const { data: items = [], isLoading } = useQuery<FlaggedActivity[]>({
     queryKey: ["/api/admin/flagged-activities"],
     queryFn: async () => {
@@ -37,6 +40,10 @@ export function AdminFlaggedActivitiesPanel() {
       if (!res.ok) throw new Error("Failed to load flagged activities");
       return res.json();
     },
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
+    refetchInterval: 30000,
   });
 
   const dismissFlag = useMutation({

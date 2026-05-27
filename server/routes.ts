@@ -2630,10 +2630,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Activity flag routes
+  // PRIVACY: only return whether the CURRENT user has flagged this activity.
+  // We deliberately do NOT return the list of flaggers or the aggregate count
+  // — that information is only visible to admins via /api/admin/flagged-activities.
   app.get("/api/activities/:id/flags", async (req, res) => {
     try {
+      const sessionUserId = (req.session as any)?.userId || (req.session as any)?.user?.id;
+      if (!sessionUserId) return res.json({ flagged: false });
       const flags = await storage.getActivityFlags(parseInt(req.params.id));
-      res.json(flags);
+      const flagged = flags.some((f: any) => f.userId === sessionUserId);
+      res.json({ flagged });
     } catch (error) {
       res.status(500).json({ message: "Error fetching flags" });
     }

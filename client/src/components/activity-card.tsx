@@ -110,8 +110,11 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
     enabled: !!user,
   });
 
-  // Get current flags for this activity
-  const { data: activityFlags } = useQuery({
+  // Get current user's PRIVATE flag status for this activity.
+  // Server returns only { flagged: boolean } for the logged-in user — it does
+  // NOT expose who else flagged or how many people flagged. Aggregate flag info
+  // is admin-only via the admin flagged-activities panel.
+  const { data: flagStatus } = useQuery<{ flagged: boolean }>({
     queryKey: [`/api/activities/${activity.id}/flags`],
     enabled: !!user,
   });
@@ -119,13 +122,13 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
   // Check if current user has liked this activity
   const userLikeStatus = Array.isArray(activityLikes) ? activityLikes.some((like: any) => like.userId === user?.id) : false;
   
-  // Check if current user has flagged this activity
-  const userFlagStatus = Array.isArray(activityFlags) ? activityFlags.some((flag: any) => flag.userId === user?.id) : false;
-  
+  // Check if current user has flagged this activity (private — derived from
+  // the per-user endpoint above, no aggregate info exposed).
+  const userFlagStatus = !!flagStatus?.flagged;
+
   // Get current counts (use live data if available, fallback to activity prop)
   const currentLikeCount = Array.isArray(activityLikes) ? activityLikes.length : activity.likesCount;
   const currentCommentCount = Array.isArray(activityComments) ? activityComments.length : activity.commentsCount;
-  const currentFlagCount = Array.isArray(activityFlags) ? activityFlags.length : 0;
   
   const getInitials = (username: string) => {
     return username.split(' ').map(word => word[0]).join('').toUpperCase() || username.slice(0, 2).toUpperCase();
@@ -283,7 +286,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
   const flagActivity = useMutation({
     mutationFn: async (activityId: number) => {
       if (!user) throw new Error('Must be logged in to flag activities');
-      
+
       const response = await fetch(`${API_BASE}/api/activities/${activityId}/flag`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -295,9 +298,29 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
       }
       return response.json();
     },
-    onSuccess: () => {
-      // Update queries to reflect the new flag status
-      queryClient.invalidateQueries({ queryKey: [`/api/activities/${activity.id}/flags`] });
+    onMutate: async (activityId) => {
+      // Optimistic toggle so the icon flips immediately even on slow networks.
+      await queryClient.cancelQueries({ queryKey: [`/api/activities/${activityId}/flags`] });
+      const previous = queryClient.getQueryData<{ flagged: boolean }>([`/api/activities/${activityId}/flags`]);
+      queryClient.setQueryData<{ flagged: boolean }>(
+        [`/api/activities/${activityId}/flags`],
+        { flagged: !previous?.flagged }
+      );
+      return { previous };
+    },
+    onError: (err: any, activityId, context) => {
+      // Roll back if the server rejected the toggle.
+      if (context?.previous !== undefined) {
+        queryClient.setQueryData([`/api/activities/${activityId}/flags`], context.previous);
+      }
+      toast({
+        title: 'Could not update flag',
+        description: err?.message || 'Please try again.',
+        variant: 'destructive',
+      });
+    },
+    onSettled: (_data, _err, activityId) => {
+      queryClient.invalidateQueries({ queryKey: [`/api/activities/${activityId}/flags`] });
     },
   });
 
@@ -602,7 +625,8 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
                       fill: userFlagStatus ? '#ef4444' : 'none'
                     }}
                   />
-                  <span className="text-gray-300">{currentFlagCount > 0 ? currentFlagCount : 'Flag'}</span>
+                  {/* Privacy: no count shown. Users only see their own flag state. */}
+                  <span className="text-gray-300">{userFlagStatus ? 'Flagged' : 'Flag'}</span>
                 </button>
               )}
 

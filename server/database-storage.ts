@@ -146,8 +146,9 @@ export class DatabaseStorage implements IStorage {
       // Delete competition history for user
       await db.delete(competitionHistory).where(eq(competitionHistory.userId, id));
       
-      // Delete competitions created by user (if any)
-      await db.delete(competitions).where(eq(competitions.createdBy, id));
+      // Unlink (not delete) competitions created by user — preserves competition
+      // data and any teams/entries that other users have, while removing the FK
+      await db.update(competitions).set({ createdBy: null }).where(eq(competitions.createdBy, id));
       
       // Update teams where user is captain (set captain to null or handle as needed)
       await db.update(teams).set({ captainId: null }).where(eq(teams.captainId, id));

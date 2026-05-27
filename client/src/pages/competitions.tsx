@@ -106,11 +106,19 @@ export default function Competitions() {
     }
   });
 
-  // Fetch pending team invitations for this user
+  // Fetch pending team invitations for this user.
+  // The global TanStack defaults are staleTime: Infinity + refetchOnWindowFocus: false,
+  // which means without these overrides a freshly-sent invite would never show up
+  // on the invitee's device until they fully kill and relaunch the app. We poll
+  // every 20s, refetch on mount, and refetch when the window/app regains focus.
   const { data: teamInvitations = [] } = useQuery<any[]>({
     queryKey: ["/api/users", user?.id, "team-invitations"],
     queryFn: () => fetch(`${API_BASE}/api/users/${user?.id}/team-invitations`, { credentials: "include" }).then(r => r.json()),
     enabled: !!user?.id,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
+    refetchInterval: 20000,
   });
 
   // When a paid invitation needs payment first, we stash the invitation here

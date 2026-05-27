@@ -89,6 +89,7 @@ export default function TeamInviteModal({
         description: "Team invitation sent successfully",
       });
       queryClient.invalidateQueries({ queryKey: [`/api/teams/${teamId}`] });
+      handleClose();
     },
     onError: () => {
       toast({

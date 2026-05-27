@@ -105,6 +105,10 @@ export class DatabaseStorage implements IStorage {
       
       // Delete user's phone invitations
       await db.delete(phoneInvitations).where(eq(phoneInvitations.invitedBy, id));
+
+      // Delete team invitations involving this user (both sent and received)
+      await db.delete(userInvitations).where(eq(userInvitations.invitedBy, id));
+      await db.delete(userInvitations).where(eq(userInvitations.userId, id));
       
       // Delete user's competition entries
       await db.delete(competitionEntries).where(eq(competitionEntries.userId, id));
@@ -120,6 +124,24 @@ export class DatabaseStorage implements IStorage {
       
       // Delete admin posts created by user
       await db.delete(adminPosts).where(eq(adminPosts.createdBy, id));
+
+      // Delete mission tasks created by user
+      await db.delete(missionTasks).where(eq(missionTasks.createdBy, id));
+
+      // Delete advertisements created by user
+      await db.delete(advertisements).where(eq(advertisements.createdBy, id));
+
+      // Delete user block records (both directions)
+      await db.delete(userBlocks).where(eq(userBlocks.blockerId, id));
+      await db.delete(userBlocks).where(eq(userBlocks.blockedId, id));
+
+      // Delete teammate reports involving this user (as reporter, reported, or resolver)
+      await db.delete(teammateReports).where(eq(teammateReports.reporterId, id));
+      await db.delete(teammateReports).where(eq(teammateReports.reportedUserId, id));
+      await db.update(teammateReports).set({ resolvedBy: null }).where(eq(teammateReports.resolvedBy, id));
+
+      // Delete competition entries created by this user (as admin)
+      await db.delete(competitionEntries).where(eq(competitionEntries.createdBy, id));
       
       // Delete competition history for user
       await db.delete(competitionHistory).where(eq(competitionHistory.userId, id));

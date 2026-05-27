@@ -357,7 +357,7 @@ export default function AdminPage() {
   // Toggle admin status mutation
   const toggleAdminStatus = useMutation({
     mutationFn: async (data: { userId: number; isAdmin: boolean }) => {
-      return apiRequest("PATCH", `/api/users/${data.userId}`, { isAdmin: data.isAdmin });
+      return apiRequest("PATCH", `/api/users/${data.userId}/admin-status`, { isAdmin: data.isAdmin });
     },
     onSuccess: () => {
       toast({

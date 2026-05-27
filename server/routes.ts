@@ -967,6 +967,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/users/:id", handleGenericUserUpdate);
   app.patch("/api/users/:id", handleGenericUserUpdate);
 
+  // Dedicated admin-only endpoint to toggle a user's isAdmin flag. The
+  // generic /api/users/:id route blocks this field for security; this
+  // endpoint is the audited path for changing admin status.
+  app.patch("/api/users/:id/admin-status", async (req: any, res: any) => {
+    try {
+      const sessionUserId = req.session?.userId;
+      if (!sessionUserId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      const sessionUser = await storage.getUser(sessionUserId);
+      if (!sessionUser?.isAdmin) {
+        return res.status(403).json({ message: "Forbidden — admin only" });
+      }
+      const targetId = parseInt(req.params.id);
+      const { isAdmin } = req.body || {};
+      if (typeof isAdmin !== "boolean") {
+        return res.status(400).json({ message: "isAdmin must be a boolean" });
+      }
+      // Prevent an admin from demoting themselves and locking everyone out.
+      if (sessionUserId === targetId && isAdmin === false) {
+        return res.status(400).json({ message: "You cannot remove your own admin status." });
+      }
+      const updated = await storage.updateUser(targetId, { isAdmin });
+      if (!updated) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      const { password, ...userWithoutPassword } = updated;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error("Error updating admin status:", error);
+      res.status(500).json({ message: "Error updating admin status" });
+    }
+  });
+
   // Adjust user points endpoint — admin only.
   app.post("/api/users/:id/adjust-points", async (req, res) => {
     const sessionUserId = req.session?.userId;

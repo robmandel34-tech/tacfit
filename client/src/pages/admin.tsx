@@ -1561,17 +1561,17 @@ export default function AdminPage() {
                             >
                               {u.isSuspended ? 'Unsuspend' : 'Suspend'}
                             </Button>
-                            {!u.isAdmin && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setDeleteUser(u)}
-                                className="h-8 w-8 p-0 text-red-600 hover:text-red-500"
-                                disabled={u.id === user?.id}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setDeleteUser(u)}
+                              className="h-8 w-8 p-0 text-red-600 hover:text-red-500"
+                              disabled={u.id === user?.id}
+                              data-testid={`button-delete-user-${u.id}`}
+                              title={u.id === user?.id ? "Can't delete yourself" : "Delete user"}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
                         </TableCell>
                         <TableCell className="text-gray-300">

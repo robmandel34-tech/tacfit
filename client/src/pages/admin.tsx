@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { Plus, Edit2, Trash2, Users, Trophy, Calendar, Settings, X, Activity, AlertTriangle, MessageSquare, BarChart3, Target, Flag } from "lucide-react";
+import { Plus, Edit2, Trash2, Users, Trophy, Calendar, Settings, X, Activity, AlertTriangle, MessageSquare, BarChart3, Target, Flag, RefreshCw } from "lucide-react";
 import { apiRequest, API_BASE } from "@/lib/queryClient";
 import { AdminReportsPanel } from "@/components/admin-reports-panel";
 import { AdminFlaggedActivitiesPanel } from "@/components/admin-flagged-activities-panel";
@@ -164,7 +164,7 @@ export default function AdminPage() {
   });
 
   // Fetch users
-  const { data: users = [], isLoading: usersLoading } = useQuery({
+  const { data: users = [], isLoading: usersLoading, refetch: refetchUsers, isFetching: usersFetching } = useQuery({
     queryKey: ["/api/users"],
     select: (data: User[]) => data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
   });
@@ -1470,8 +1470,21 @@ export default function AdminPage() {
         {/* Users Tab */}
         {activeTab === 'users' && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold">User Management</h2>
-            
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold">User Management</h2>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => refetchUsers()}
+                disabled={usersFetching}
+                className="border-tactical-gray text-gray-200 hover:bg-tactical-gray"
+                data-testid="button-refresh-users"
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${usersFetching ? 'animate-spin' : ''}`} />
+                {usersFetching ? 'Refreshing...' : 'Refresh'}
+              </Button>
+            </div>
+
             <Card className="bg-tactical-gray-lighter border-tactical-gray">
               <CardContent className="p-0">
                 <Table>

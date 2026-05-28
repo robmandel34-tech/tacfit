@@ -1252,7 +1252,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!userId || !password) return res.status(400).json({ message: "userId and password required" });
       const user = await storage.getUser(userId);
       if (!user) return res.status(404).json({ message: "User not found" });
-      if (user.password !== password) return res.status(401).json({ message: "Password is incorrect" });
+      // Passwords are bcrypt-hashed. Handle the rare legacy plaintext row too.
+      const isBcrypt = typeof user.password === "string" && user.password.startsWith("$2");
+      const passwordMatches = isBcrypt
+        ? await bcrypt.compare(password, user.password)
+        : user.password === password;
+      if (!passwordMatches) return res.status(401).json({ message: "Password is incorrect" });
       await storage.deleteUser(userId);
       req.session.destroy(() => {});
       res.json({ message: "Account deleted successfully" });

@@ -1301,9 +1301,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
       
-      // Prevent deleting admin users (safety measure)
-      if (user.isAdmin) {
-        return res.status(400).json({ message: "Cannot delete admin users" });
+      // Prevent admins from deleting themselves (safety measure)
+      if (adminUserId && Number(adminUserId) === Number(userId)) {
+        return res.status(400).json({ message: "You cannot delete your own account" });
       }
       
       console.log(`Admin ${adminUserId} deleting user ${userId} (${user.username})`);

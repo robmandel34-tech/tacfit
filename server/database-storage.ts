@@ -125,9 +125,6 @@ export class DatabaseStorage implements IStorage {
       // Delete admin posts created by user
       await db.delete(adminPosts).where(eq(adminPosts.createdBy, id));
 
-      // Delete mission tasks created by user
-      await db.delete(missionTasks).where(eq(missionTasks.createdBy, id));
-
       // Delete advertisements created by user
       await db.delete(advertisements).where(eq(advertisements.createdBy, id));
 

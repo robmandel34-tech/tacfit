@@ -405,8 +405,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Check if this is a test.com account (skip verification for development)
-      const isTestAccount = parsedData.email.endsWith('@test.com');
+      // Check if this is a test.com or tacfit.app account (skip verification — used for
+      // dev test users and the Apple reviewer account that has no real inbox).
+      const isTestAccount =
+        parsedData.email.endsWith('@test.com') ||
+        parsedData.email.endsWith('@tacfit.app');
       
       let verificationToken = null;
       let tokenExpiresAt = null;
@@ -500,8 +503,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.updateUser(user.id, { password: hashed });
       }
 
-      // Check if email is verified (skip for test.com accounts)
-      const isTestAccount = user.email.endsWith('@test.com');
+      // Check if email is verified (skip for test.com and tacfit.app accounts)
+      const isTestAccount =
+        user.email.endsWith('@test.com') || user.email.endsWith('@tacfit.app');
       if (!user.isEmailVerified && !isTestAccount) {
         return res.status(403).json({ 
           message: "Email not verified. Please check your email and verify your account before logging in.",

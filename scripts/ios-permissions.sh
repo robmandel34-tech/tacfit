@@ -56,6 +56,24 @@ set_plist_entry "NSHealthUpdateUsageDescription" \
 # entry is needed. If you ever add ad/analytics tracking SDKs, add
 # NSUserTrackingUsageDescription here AND call ATTrackingManager in app.
 
+# Encryption-export compliance: TacFit only uses HTTPS + Apple-provided crypto
+# (no custom algorithms), which is exempt from US export rules. Declaring this
+# in Info.plist makes App Store Connect stop asking the question on every
+# upload. If you ever add custom/proprietary cryptography, flip this to "true"
+# and file an annual self-classification report (ERN) with BIS.
+set_plist_bool_entry() {
+  local KEY="$1"
+  local VALUE="$2"
+  if /usr/libexec/PlistBuddy -c "Print :$KEY" "$PLIST" &>/dev/null; then
+    /usr/libexec/PlistBuddy -c "Set :$KEY $VALUE" "$PLIST"
+    echo "  Set:   $KEY (bool)"
+  else
+    /usr/libexec/PlistBuddy -c "Add :$KEY bool $VALUE" "$PLIST"
+    echo "  Added: $KEY (bool)"
+  fi
+}
+set_plist_bool_entry "ITSAppUsesNonExemptEncryption" "false"
+
 echo "✓ Info.plist permissions patched."
 
 # Verification: fail loudly if any required key is still missing. This

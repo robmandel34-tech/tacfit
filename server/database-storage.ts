@@ -137,9 +137,6 @@ export class DatabaseStorage implements IStorage {
       await db.delete(teammateReports).where(eq(teammateReports.reportedUserId, id));
       await db.update(teammateReports).set({ resolvedBy: null }).where(eq(teammateReports.resolvedBy, id));
 
-      // Delete competition entries created by this user (as admin)
-      await db.delete(competitionEntries).where(eq(competitionEntries.createdBy, id));
-      
       // Delete competition history for user
       await db.delete(competitionHistory).where(eq(competitionHistory.userId, id));
       

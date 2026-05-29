@@ -3,6 +3,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { seedDatabase } from "./seed-data";
+import { startDigestScheduler } from "./digest-service";
 import { ObjectStorageService } from "./objectStorage";
 import path from "path";
 
@@ -128,5 +129,8 @@ app.use((req, res, next) => {
     
     // Seed the database with initial data
     await seedDatabase();
+
+    // Start the per-competition Slack digest scheduler
+    startDigestScheduler();
   });
 })();

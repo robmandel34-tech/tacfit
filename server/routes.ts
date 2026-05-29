@@ -50,6 +50,7 @@ import { exec } from "child_process";
 import { promisify } from "util";
 import { generateVerificationToken, sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail } from "./email-service";
 import { notifySlack } from "./slack-service";
+import { runDigest, buildCompetitionDigest } from "./digest-service";
 import { webhookService } from "./webhook-service";
 import Stripe from "stripe";
 import bcrypt from "bcrypt";
@@ -4276,6 +4277,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('List teammate reports error:', error);
       res.status(500).json({ message: error.message || "Error listing reports" });
+    }
+  });
+
+  // Admin: run the competition digest now and post it to Slack.
+  app.post("/api/admin/digest/run", async (req, res) => {
+    try {
+      const sessionUserId = req.session?.userId || req.session?.user?.id;
+      if (!sessionUserId) return res.sendStatus(401);
+      const currentUser = await storage.getUser(sessionUserId);
+      if (!currentUser?.isAdmin) return res.sendStatus(403);
+
+      const result = await runDigest();
+      res.json({ message: `Digest posted for ${result.posted} competition(s).`, ...result });
+    } catch (error: any) {
+      console.error('Run digest error:', error);
+      res.status(500).json({ message: error.message || "Error running digest" });
+    }
+  });
+
+  // Admin: preview the digest text without posting to Slack.
+  app.get("/api/admin/digest/preview", async (req, res) => {
+    try {
+      const sessionUserId = req.session?.userId || req.session?.user?.id;
+      if (!sessionUserId) return res.sendStatus(401);
+      const currentUser = await storage.getUser(sessionUserId);
+      if (!currentUser?.isAdmin) return res.sendStatus(403);
+
+      const all = await storage.getCompetitions();
+      const now = Date.now();
+      const live = all.filter((c: any) => {
+        if (c.isActive === false || c.isCompleted) return false;
+        const start = c.startDate ? new Date(c.startDate).getTime() : 0;
+        const end = c.endDate ? new Date(c.endDate).getTime() : Infinity;
+        return start <= now && now <= end;
+      });
+      const digests = await Promise.all(live.map((c: any) => buildCompetitionDigest(c)));
+      res.json({ count: digests.length, digests });
+    } catch (error: any) {
+      console.error('Preview digest error:', error);
+      res.status(500).json({ message: error.message || "Error building digest preview" });
     }
   });
 

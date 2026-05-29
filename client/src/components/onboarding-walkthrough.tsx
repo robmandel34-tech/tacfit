@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,6 +43,14 @@ interface OnboardingWalkthroughProps {
   isOpen: boolean;
   onClose: () => void;
   onComplete: (survey: OnboardingSurvey) => void;
+  // Persists survey answers as the user advances, before onboarding is finished.
+  // notify=true signals the answers are complete and should be posted to Slack.
+  onSaveSurvey?: (
+    data: { fitnessArchetype?: string; fitnessActivities?: string },
+    notify: boolean,
+  ) => void;
+  initialArchetype?: string;
+  initialActivities?: string;
 }
 
 const ARCHETYPE_OPTIONS = [
@@ -63,11 +71,14 @@ const ARCHETYPE_OPTIONS = [
   },
 ];
 
-export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: OnboardingWalkthroughProps) {
+export function OnboardingWalkthrough({ isOpen, onClose, onComplete, onSaveSurvey, initialArchetype, initialActivities }: OnboardingWalkthroughProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
-  const [fitnessArchetype, setFitnessArchetype] = useState('');
-  const [fitnessActivities, setFitnessActivities] = useState('');
+  const [fitnessArchetype, setFitnessArchetype] = useState(initialArchetype || '');
+  const [fitnessActivities, setFitnessActivities] = useState(initialActivities || '');
+  // Ensures we only fire the "survey finished" notify once per walkthrough,
+  // even if the user navigates Back then Next past the survey again.
+  const surveyNotifiedRef = useRef(false);
 
   const steps: OnboardingStep[] = [
     {
@@ -579,6 +590,15 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
+      // Persist survey answers as the user moves past each question, so they're
+      // saved even if the user closes the walkthrough before finishing the tour.
+      const leavingId = currentStepData.id;
+      if (leavingId === 'survey-archetype' && fitnessArchetype) {
+        onSaveSurvey?.({ fitnessArchetype }, false);
+      } else if (leavingId === 'survey-activities' && !surveyNotifiedRef.current) {
+        surveyNotifiedRef.current = true;
+        onSaveSurvey?.({ fitnessArchetype, fitnessActivities }, true);
+      }
       setCompletedSteps(prev => new Set([...Array.from(prev), currentStep]));
       setCurrentStep(currentStep + 1);
     }

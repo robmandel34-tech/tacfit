@@ -66,6 +66,13 @@ export default function Dashboard() {
     enabled: !!user?.id,
   });
 
+  const saveSurveyMutation = useMutation({
+    mutationFn: async ({ data, notify }: { data: { fitnessArchetype?: string; fitnessActivities?: string }; notify: boolean }) => {
+      if (!user?.id) throw new Error("User not found");
+      return apiRequest("PATCH", `/api/users/${user.id}/fitness-survey`, { ...data, notify });
+    },
+  });
+
   const completeOnboardingMutation = useMutation({
     mutationFn: async (survey?: { fitnessArchetype: string; fitnessActivities: string }) => {
       if (!user?.id) throw new Error("User not found");
@@ -305,6 +312,11 @@ export default function Dashboard() {
         isOpen={showOnboarding}
         onClose={() => {
           setShowOnboarding(false);
+        }}
+        initialArchetype={(user as any)?.fitnessArchetype || ''}
+        initialActivities={(user as any)?.fitnessActivities || ''}
+        onSaveSurvey={(data, notify) => {
+          saveSurveyMutation.mutate({ data, notify });
         }}
         onComplete={(survey) => {
           completeOnboardingMutation.mutate(survey);

@@ -44,6 +44,8 @@ export const users = pgTable("users", {
   // Onboarding survey: whole-fitness self assessment
   fitnessArchetype: text("fitness_archetype"),
   fitnessActivities: text("fitness_activities"),
+  // Guards against duplicate Slack posts of the survey (one post per user).
+  onboardingSurveyNotified: boolean("onboarding_survey_notified").default(false),
 
   createdAt: timestamp("created_at").defaultNow(),
 });

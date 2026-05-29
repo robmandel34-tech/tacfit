@@ -1184,6 +1184,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Save onboarding survey answers WITHOUT completing onboarding. This is
+  // called as the user advances through the survey questions, so their answers
+  // are persisted even if they close the walkthrough before finishing the tour.
+  app.patch("/api/users/:id/fitness-survey", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+
+      // Only the user themselves (or an admin) may save their survey answers.
+      const sessionUserId = req.session?.userId;
+      if (!sessionUserId) return res.status(401).json({ message: "Not authenticated" });
+      if (sessionUserId !== userId) {
+        const sessionUser = await storage.getUser(sessionUserId);
+        if (!sessionUser?.isAdmin) {
+          return res.status(403).json({ message: "Forbidden" });
+        }
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const updates: Record<string, any> = {};
+      const allowedArchetypes = ["servant", "clown", "survivor"];
+      if (typeof req.body?.fitnessArchetype === "string" && allowedArchetypes.includes(req.body.fitnessArchetype.trim())) {
+        updates.fitnessArchetype = req.body.fitnessArchetype.trim();
+      }
+      if (typeof req.body?.fitnessActivities === "string") {
+        updates.fitnessActivities = req.body.fitnessActivities.trim().slice(0, 2000);
+      }
+
+      if (Object.keys(updates).length === 0) {
+        return res.status(400).json({ message: "No valid survey fields provided" });
+      }
+
+      // Decide whether to post to Slack BEFORE saving, so the one-time guard is
+      // based on the pre-update state. Only post the first time the survey is
+      // finished for this user — prevents duplicates from Back/Next or reopening.
+      const willNotify = req.body?.notify === true && !user.onboardingSurveyNotified;
+      if (willNotify) {
+        updates.onboardingSurveyNotified = true;
+      }
+
+      const updatedUser = await storage.updateUser(userId, updates);
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Failed to save survey answers" });
+      }
+
+      // Post to Slack once, when the client signals the survey is finished
+      // (after the second question). Falls back to #tacfit if no dedicated
+      // channel is configured. Fire-and-forget — never blocks the response.
+      if (willNotify) {
+        const archetypeLabels: Record<string, string> = {
+          servant: "Servant",
+          clown: "Sad/Happy Clown",
+          survivor: "Survivor",
+        };
+        const archetype = updatedUser.fitnessArchetype
+          ? (archetypeLabels[updatedUser.fitnessArchetype] || updatedUser.fitnessArchetype)
+          : "(not answered)";
+        const activities = updatedUser.fitnessActivities?.trim()
+          ? updatedUser.fitnessActivities.trim()
+          : "(none provided)";
+        notifySlack(
+          `📋 *Onboarding survey* — ${updatedUser.username} (${updatedUser.email})\n` +
+            `• *Current whole fitness:* ${archetype}\n` +
+            `• *Activities (do now / want more):* ${activities}`,
+          "onboarding",
+        );
+      }
+
+      const { password, ...userWithoutPassword } = updatedUser;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error("Fitness survey save error:", error);
+      res.status(500).json({ message: "Error saving survey answers" });
+    }
+  });
+
   // Update advertisement preferences
   app.patch("/api/users/:id/advertisement-preference", async (req, res) => {
     try {

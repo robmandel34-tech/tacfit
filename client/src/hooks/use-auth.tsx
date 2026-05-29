@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { useLocation } from "wouter";
 import { loadAuthToken, setAuthToken, getCachedAuthToken } from "@/lib/authToken";
 import { queryClient } from "@/lib/queryClient";
+import { identifyUser, resetAnalytics } from "@/lib/analytics";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string) ?? "";
 
@@ -49,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
         try {
           const userData = JSON.parse(savedUser);
           setUser(userData);
+          identifyUser(userData);
         } catch {
           localStorage.removeItem("user");
           setIsLoading(false);
@@ -104,6 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
       // staleTime:Infinity makes us reuse the prior user's team/competition data.
       queryClient.clear();
       setUser(userData);
+      identifyUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));
       // Navigation is handled by the caller so Capacitor WKWebView gets a single
       // reliable redirect rather than racing wouter's history push with React batching.
@@ -149,6 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
     }
     await setAuthToken(null);
     setUser(null);
+    resetAnalytics();
     localStorage.removeItem("user");
     // Wipe TanStack Query cache so the next user in this tab doesn't inherit
     // this user's team/competition data.
@@ -158,6 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
 
   const forceRefresh = async () => {
     await setAuthToken(null);
+    resetAnalytics();
     localStorage.removeItem("user");
     setUser(null);
     queryClient.clear();

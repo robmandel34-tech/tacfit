@@ -2,6 +2,10 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 import { installAuthFetchInterceptor, loadAuthToken } from "./lib/authToken";
+import { initAnalytics } from "./lib/analytics";
+
+// Initialize product analytics (PostHog). No-op if no key is configured.
+initAnalytics();
 
 // Attach the bearer token to every API request — required for native iOS
 // (Capacitor WKWebView) where cross-origin session cookies are unreliable.

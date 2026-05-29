@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import defaultAvatarSoldier from "@/assets/default-avatar-soldier.png";
 import { Trophy, Target, Users, Calendar, UserPlus, MessageCircle, Send, Clock, Check, X, Bell, Camera, Upload, Search, Edit, Trash2, ShieldOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, uploadUrl, API_BASE } from "@/lib/queryClient";
@@ -372,21 +373,13 @@ export default function Profile() {
                         />
                       ) : (
                         <div className="w-24 h-24 bg-gradient-to-b from-military-green to-[#1a2e1a] rounded-full flex items-center justify-center border-4 border-white shadow-lg overflow-hidden">
-                          {/* Soldier silhouette */}
-                          <svg viewBox="0 0 80 80" className="w-20 h-20" fill="none">
-                            {/* Helmet */}
-                            <ellipse cx="40" cy="22" rx="16" ry="10" fill="rgba(255,255,255,0.85)" />
-                            <rect x="24" y="29" width="32" height="4" rx="2" fill="rgba(255,255,255,0.85)" />
-                            {/* Head */}
-                            <ellipse cx="40" cy="40" rx="9" ry="10" fill="rgba(255,255,255,0.85)" />
-                            {/* Shoulders / jacket */}
-                            <path d="M18 80 Q18 58 22 55 L30 52 Q35 56 40 56 Q45 56 50 52 L58 55 Q62 58 62 80 Z" fill="rgba(255,255,255,0.85)" />
-                            {/* Collar / neck */}
-                            <rect x="36" y="49" width="8" height="6" rx="1" fill="rgba(255,255,255,0.85)" />
-                            {/* Small rank stripe */}
-                            <rect x="30" y="63" width="20" height="2" rx="1" fill="rgba(255,255,255,0.3)" />
-                            <rect x="30" y="67" width="20" height="2" rx="1" fill="rgba(255,255,255,0.3)" />
-                          </svg>
+                          {/* Saluting soldier silhouette (default avatar) */}
+                          <img
+                            src={defaultAvatarSoldier}
+                            alt="Default profile"
+                            className="w-[88%] h-[88%] object-contain"
+                            style={{ filter: "brightness(0) invert(1)" }}
+                          />
                         </div>
                       )}
                     </div>

@@ -49,6 +49,7 @@ import fs from "fs";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { generateVerificationToken, sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail } from "./email-service";
+import { notifySlack } from "./slack-service";
 import { webhookService } from "./webhook-service";
 import Stripe from "stripe";
 import bcrypt from "bcrypt";
@@ -446,7 +447,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       console.log('User created successfully:', user.id);
-      
+
+      notifySlack(`🟢 *New signup* — ${user.username} (${user.email})`);
+
       // Don't send password or sensitive verification info back
       const { password: _, emailVerificationToken: __, emailVerificationTokenExpiresAt: ___, ...userWithoutSensitiveData } = user;
       
@@ -3957,6 +3960,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         throw e;
       }
 
+      const pointsPayer = await storage.getUser(userId);
+      notifySlack(
+        `🪙 *Points entry* — ${pointsPayer?.username ?? `user ${userId}`} spent ${ENTRY_COST_POINTS} points to enter "${competition.name}"`,
+      );
+
       res.json({
         message: "Successfully entered competition using points",
         pointsDeducted: ENTRY_COST_POINTS,
@@ -4221,6 +4229,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         reason: String(reason),
         note: note ? String(note) : null,
       });
+
+      const [reporter, reported] = await Promise.all([
+        storage.getUser(sessionUserId),
+        storage.getUser(parseInt(reportedUserId)),
+      ]);
+      notifySlack(
+        `⚠️ *Teammate flag* — ${reporter?.username ?? `user ${sessionUserId}`} reported ${reported?.username ?? `user ${reportedUserId}`} for "${reason}"${note ? ` — ${note}` : ""} (needs review)`,
+      );
 
       res.json(report);
     } catch (error: any) {
@@ -4622,6 +4638,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         throw e;
       }
+
+      const payer = await storage.getUser(userId);
+      notifySlack(
+        `💳 *Payment* — ${payer?.username ?? `user ${userId}`} paid $${(paymentIntent.amount / 100).toFixed(2)} to enter "${competition.name}"`,
+      );
 
       res.json({ message: "Successfully entered competition with payment" });
     } catch (error: any) {

@@ -97,14 +97,24 @@ plugin was never compiled into the iOS binary.
 Fix applied (all committed under `ios/`, picked up by Codemagic's `pod install`):
 1. Added `pod 'PerfoodCapacitorHealthkit', :path => '../../node_modules/@perfood/capacitor-healthkit'`
    to `ios/App/Podfile` (capacitor_pods).
-2. Created `ios/App/App/App.entitlements` with `com.apple.developer.healthkit = true`.
+2. Created `ios/App/App/App.entitlements` with ONLY `com.apple.developer.healthkit = true`.
+   IMPORTANT: do NOT add `com.apple.developer.healthkit.access` — that key is the
+   "HealthKit Access (Verifiable/Clinical Health Records)" capability, which needs
+   special per-team approval from Apple and made the Codemagic archive fail with
+   `Provisioning profile "TacFit" doesn't include the HealthKit Access (Verifiable
+   Health Records) capability`. TacFit only reads workouts, so the plain
+   `com.apple.developer.healthkit` boolean is all that's needed.
 3. Wired `CODE_SIGN_ENTITLEMENTS = App/App.entitlements` into BOTH the Debug and
    Release App build configs in `ios/App/App.xcodeproj/project.pbxproj`.
 Info.plist already has NSHealthShare/NSHealthUpdate usage strings (good).
 **MANUAL step required by the user (one-time, in Apple Developer portal):**
 enable the **HealthKit** capability on the App ID `com.tacfit.app`
 (Certificates, Identifiers & Profiles → Identifiers → com.tacfit.app →
-check HealthKit → Save). Without this, signing will reject the entitlement.
+check **HealthKit** ONLY — leave "Recalibrate Estimates" / health records off →
+Save). Codemagic (App Store Connect API integration) then regenerates the
+"TacFit" provisioning profile to include HealthKit on the next build. Without the
+App ID capability, signing fails with `Provisioning profile "TacFit" doesn't
+include the HealthKit capability`.
 To ship: push to GitHub → Codemagic builds → TestFlight (new native build).
 
 ### Apple rejection "crashed when taking a photo" — REAL root cause (2026-05-29 fix)

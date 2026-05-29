@@ -84,7 +84,26 @@ The platform follows a military/tactical theme across its UI/UX, language, and i
 4. Open in Xcode: `npx cap open ios`
 5. Set your Team + Bundle ID, then Archive → Distribute
 
-### If Apple rejected with "crashed on Take Photo" (2026-05-19 fix)
+### Apple rejection "crashed when taking a photo" — REAL root cause (2026-05-29 fix)
+The earlier theory (below, 2026-05-19) blamed `cap-build.sh` not running the
+Info.plist patcher. That script is only used for MANUAL Mac builds. The actual
+TestFlight/App Store builds are produced by **Codemagic** (`codemagic.yaml`),
+which builds from the **committed `ios/` folder** and only ran `npx cap copy`
+(web assets) — it NEVER ran the permission patcher. The committed
+`ios/App/App/Info.plist` had ZERO usage-description keys, so every shipped
+build was missing `NSCameraUsageDescription` and hard-crashed the moment the
+camera opened (this is why the camera also failed on iPad).
+Fix applied:
+1. Added all usage-description keys directly to the committed
+   `ios/App/App/Info.plist` (NSCamera/NSPhotoLibrary/NSPhotoLibraryAdd/
+   NSMicrophone/NSHealthShare/NSHealthUpdate + ITSAppUsesNonExemptEncryption=false).
+2. Added an "Ensure iOS permission usage descriptions" step to `codemagic.yaml`
+   that runs `scripts/ios-permissions.sh` on every build as a belt-and-suspenders
+   guarantee (it fails the build loudly if any key is missing).
+To resubmit: push to GitHub → Codemagic builds → uploads to TestFlight, then
+submit for review. No web/server change is involved.
+
+### If Apple rejected with "crashed on Take Photo" (2026-05-19 fix — superseded, see above)
 Cause: prior `cap-build.sh` only ran the Info.plist patcher on the first
 `npx cap add ios`. Any subsequent build on an `ios/` folder that was
 created before the patcher existed shipped without `NSCameraUsageDescription`,

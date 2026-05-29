@@ -32,6 +32,14 @@ workflows:
         script: |
           set -e
           npx cap copy ios
+      - name: Ensure iOS permission usage descriptions
+        script: |
+          set -e
+          # Guarantees Info.plist always has the camera/photo/mic/health usage
+          # strings. Without NSCameraUsageDescription the app HARD-CRASHES the
+          # instant the camera opens (App Store rejection 2.1(a)). This patcher
+          # is idempotent and fails the build loudly if any key is missing.
+          bash scripts/ios-permissions.sh
       - name: Install CocoaPods
         script: |
           set -e

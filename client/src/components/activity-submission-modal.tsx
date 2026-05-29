@@ -7,9 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Camera, X, HelpCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { Camera, X, HelpCircle, ChevronDown, ChevronUp, Smartphone, RefreshCw, Activity, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { API_BASE } from "@/lib/queryClient";
+import { API_BASE, apiRequest } from "@/lib/queryClient";
+import { useAppleHealth } from "@/hooks/use-apple-health";
+import { mapHealthKitTypeToActivityName } from "@shared/healthkit";
 
 interface ActivitySubmissionModalProps {
   isOpen: boolean;
@@ -33,13 +35,27 @@ interface Competition {
   id: number;
   name: string;
   startDate: string;
+  endDate: string;
+  isCompleted?: boolean;
   requiredActivities?: string[];
+  reflectionActivities?: string[];
   requireActivityReflection?: boolean;
 }
 
 interface Team {
   id: number;
   competitionId: number;
+}
+
+interface AppleHealthWorkout {
+  id: number;
+  healthKitWorkoutId: string;
+  activityType: string;
+  startTime: string;
+  endTime: string;
+  durationSec: number;
+  distanceMeters: number;
+  energyKcal: number;
 }
 
 export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySubmissionModalProps) {
@@ -54,6 +70,10 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [showGuidelines, setShowGuidelines] = useState(false);
+  const [selectedWorkoutHkId, setSelectedWorkoutHkId] = useState<string | null>(null);
+
+  // Apple Health (iOS native only)
+  const appleHealth = useAppleHealth();
 
   // Get user's current team membership
   const { data: userTeamMember } = useQuery<any[]>({
@@ -105,6 +125,44 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   useEffect(() => {
     setType("");
   }, [competitionHasEnded]);
+
+  // Clear any selected Apple Health workout when the modal closes so a later
+  // manual submission can't accidentally re-link a stale workout.
+  useEffect(() => {
+    if (!isOpen) setSelectedWorkoutHkId(null);
+  }, [isOpen]);
+
+  // Apple Health: eligible synced workouts for the current competition
+  // (type matches required activities AND within the competition window).
+  const competitionId = currentTeam?.competitionId;
+  const showHealthWorkouts = appleHealth.native && appleHealth.connected && !competitionHasEnded && !!competitionId;
+  const { data: eligibleWorkouts = [], isFetching: workoutsLoading } = useQuery<AppleHealthWorkout[]>({
+    queryKey: ["/api/apple-health/workouts", competitionId],
+    queryFn: async () => {
+      const res = await apiRequest("GET", `/api/apple-health/workouts?competitionId=${competitionId}`);
+      return res.json();
+    },
+    enabled: isOpen && showHealthWorkouts,
+  });
+
+  // Prefill the form from a selected HealthKit workout.
+  const applyWorkout = (w: AppleHealthWorkout) => {
+    const mappedName = mapHealthKitTypeToActivityName(w.activityType);
+    const at = mappedName ? competitionActivityTypes.find(a => a.name === mappedName) : undefined;
+    if (at) {
+      setType(at.name);
+      if ((at.measurementUnit || "minutes") === "minutes") {
+        setQuantity(String(Math.max(1, Math.round((w.durationSec || 0) / 60))));
+      }
+    }
+    setSelectedWorkoutHkId(w.healthKitWorkoutId);
+    const minutes = Math.round((w.durationSec || 0) / 60);
+    const km = w.distanceMeters ? (w.distanceMeters / 1000).toFixed(2) : null;
+    const parts = [`${w.activityType}`, `${minutes} min`];
+    if (km && Number(km) > 0) parts.push(`${km} km`);
+    if (w.energyKcal) parts.push(`${w.energyKcal} cal`);
+    setDescription(`Apple Health: ${parts.join(" · ")}`);
+  };
 
   // Helper functions for text input validation
   const countWords = (text: string): number => {
@@ -233,11 +291,22 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
 
         xhr.send(data);
       }),
-    onSuccess: () => {
+    onSuccess: async (data: any) => {
       toast({
         title: "Activity submitted!",
         description: "Your activity has been recorded successfully.",
       });
+      // If this activity came from an Apple Health workout, mark it submitted
+      // so it stops showing up as an option.
+      if (selectedWorkoutHkId) {
+        try {
+          await apiRequest("POST", "/api/apple-health/link", {
+            healthKitWorkoutId: selectedWorkoutHkId,
+            activityId: typeof data?.id === "number" ? data.id : undefined,
+          });
+        } catch {}
+        queryClient.invalidateQueries({ queryKey: ["/api/apple-health/workouts"] });
+      }
       // Invalidate all activity-related queries
       queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
       queryClient.invalidateQueries({ predicate: (query) => 
@@ -278,6 +347,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     setImageFiles([]);
     setVideoFile(null);
     setUploadProgress(0);
+    setSelectedWorkoutHkId(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -426,6 +496,87 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
               </p>
             </div>
           )}
+              {/* Apple Health (iOS native only) */}
+              {appleHealth.native && (
+                <div className="p-4 bg-tactical-gray-lighter border border-tactical-gray rounded-lg">
+                  {!appleHealth.connected ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-white font-semibold">
+                        <Smartphone className="w-4 h-4 text-military-green" /> Connect Apple Health
+                      </div>
+                      <p className="text-sm text-gray-400">
+                        Pull your workouts straight from Apple Health so you can submit them with one tap.
+                      </p>
+                      <Button
+                        type="button"
+                        onClick={() => appleHealth.connect()}
+                        disabled={appleHealth.isConnecting}
+                        className="bg-military-green hover:bg-military-green/80 text-forest-green"
+                        data-testid="button-connect-apple-health"
+                      >
+                        {appleHealth.isConnecting ? "Connecting..." : "Connect Apple Health"}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-white font-semibold">
+                          <Smartphone className="w-4 h-4 text-military-green" /> Apple Health
+                          <CheckCircle className="w-4 h-4 text-green-400" />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => appleHealth.refresh()}
+                          disabled={appleHealth.isSyncing}
+                          className="border-tactical-gray text-gray-200 hover:bg-tactical-gray"
+                          data-testid="button-refresh-apple-health"
+                        >
+                          <RefreshCw className={`w-3.5 h-3.5 mr-1 ${appleHealth.isSyncing ? "animate-spin" : ""}`} />
+                          Refresh
+                        </Button>
+                      </div>
+                      {!showHealthWorkouts ? (
+                        <p className="text-sm text-gray-400">Join an active competition to import matching workouts.</p>
+                      ) : workoutsLoading ? (
+                        <p className="text-sm text-gray-400">Loading your workouts...</p>
+                      ) : eligibleWorkouts.length === 0 ? (
+                        <p className="text-sm text-gray-400">No matching Apple Health workouts found for this competition yet.</p>
+                      ) : (
+                        <div className="space-y-2 max-h-56 overflow-y-auto">
+                          {eligibleWorkouts.map((w) => {
+                            const minutes = Math.round((w.durationSec || 0) / 60);
+                            const km = w.distanceMeters ? (w.distanceMeters / 1000).toFixed(2) : null;
+                            const selected = selectedWorkoutHkId === w.healthKitWorkoutId;
+                            return (
+                              <button
+                                type="button"
+                                key={w.healthKitWorkoutId}
+                                onClick={() => applyWorkout(w)}
+                                className={`w-full text-left p-3 rounded-lg border transition-colors ${selected ? "border-military-green bg-military-green/10" : "border-tactical-gray bg-tactical-gray-light hover:bg-tactical-gray"}`}
+                                data-testid={`workout-${w.healthKitWorkoutId}`}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2 text-white font-medium">
+                                    <Activity className="w-4 h-4 text-military-green" />
+                                    {w.activityType}
+                                  </div>
+                                  {selected && <CheckCircle className="w-4 h-4 text-military-green" />}
+                                </div>
+                                <div className="text-xs text-gray-400 mt-1">
+                                  {new Date(w.startTime).toLocaleDateString()} · {minutes} min{km && Number(km) > 0 ? ` · ${km} km` : ""}{w.energyKcal ? ` · ${w.energyKcal} cal` : ""}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Activity Type Selection */}
               <div className="space-y-2">
                 <Label className="text-gray-300 font-medium">Activity Type</Label>

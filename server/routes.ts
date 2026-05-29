@@ -12,6 +12,7 @@ import {
   insertAdminPostSchema, insertMoodLogSchema, friendships, type User,
 } from "@shared/schema";
 import { getCompetitionPricing } from "@shared/pricing";
+import { z } from "zod";
 import { ObjectStorageService, ObjectNotFoundError } from './objectStorage.js';
 import { db } from "./db";
 import { pool } from "./db";
@@ -2486,6 +2487,186 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (err) {
       console.error("Failed to generate upload URL:", err);
       res.status(500).json({ message: "Failed to generate upload URL" });
+    }
+  });
+
+  // ---- Apple Health integration ----
+  const requireUserId = (req: any, res: any): number | null => {
+    const uid = req.session?.userId || req.session?.user?.id;
+    if (!uid) {
+      res.status(401).json({ message: "Not authenticated" });
+      return null;
+    }
+    return uid;
+  };
+
+  app.get("/api/apple-health/status", async (req, res) => {
+    try {
+      const userId = requireUserId(req, res);
+      if (!userId) return;
+      const conn = await storage.getAppleHealthConnection(userId);
+      res.json({
+        connected: conn?.connected ?? false,
+        lastSyncedAt: conn?.lastSyncedAt ?? null,
+        scopes: conn?.scopes ?? [],
+      });
+    } catch (e) {
+      console.error("apple-health status error:", e);
+      res.status(500).json({ message: "Failed to get Apple Health status" });
+    }
+  });
+
+  app.post("/api/apple-health/connect", async (req, res) => {
+    try {
+      const userId = requireUserId(req, res);
+      if (!userId) return;
+      const scopes = Array.isArray(req.body?.scopes)
+        ? req.body.scopes.filter((s: any) => typeof s === "string")
+        : undefined;
+      const conn = await storage.createOrUpdateAppleHealthConnection(userId, {
+        connected: true,
+        platform: "ios",
+        ...(scopes ? { scopes } : {}),
+      });
+      res.json({
+        connected: conn.connected,
+        lastSyncedAt: conn.lastSyncedAt ?? null,
+        scopes: conn.scopes ?? [],
+      });
+    } catch (e) {
+      console.error("apple-health connect error:", e);
+      res.status(500).json({ message: "Failed to connect Apple Health" });
+    }
+  });
+
+  app.post("/api/apple-health/disconnect", async (req, res) => {
+    try {
+      const userId = requireUserId(req, res);
+      if (!userId) return;
+      const conn = await storage.createOrUpdateAppleHealthConnection(userId, {
+        connected: false,
+      });
+      res.json({ connected: conn.connected });
+    } catch (e) {
+      console.error("apple-health disconnect error:", e);
+      res.status(500).json({ message: "Failed to disconnect Apple Health" });
+    }
+  });
+
+  const syncWorkoutSchema = z.object({
+    healthKitWorkoutId: z.string().min(1),
+    activityType: z.string().min(1),
+    startTime: z.coerce.date(),
+    endTime: z.coerce.date(),
+    durationSec: z.number().int().nonnegative().optional(),
+    distanceMeters: z.number().int().nonnegative().optional(),
+    energyKcal: z.number().int().nonnegative().optional(),
+    avgHeartRate: z.number().int().nonnegative().optional(),
+    routePolyline: z.string().nullable().optional(),
+    raw: z.any().optional(),
+  });
+  const syncBodySchema = z.object({
+    workouts: z.array(syncWorkoutSchema).max(500),
+  });
+
+  app.post("/api/apple-health/sync", async (req, res) => {
+    try {
+      const userId = requireUserId(req, res);
+      if (!userId) return;
+      const parsed = syncBodySchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({
+          message: "Invalid workout payload",
+          errors: parsed.error.flatten(),
+        });
+      }
+      let synced = 0;
+      for (const w of parsed.data.workouts) {
+        await storage.upsertAppleHealthWorkout({
+          userId,
+          healthKitWorkoutId: w.healthKitWorkoutId,
+          activityType: w.activityType,
+          startTime: w.startTime,
+          endTime: w.endTime,
+          durationSec: w.durationSec ?? 0,
+          distanceMeters: w.distanceMeters ?? 0,
+          energyKcal: w.energyKcal ?? 0,
+          avgHeartRate: w.avgHeartRate ?? 0,
+          routePolyline: w.routePolyline ?? null,
+          raw: w.raw ?? null,
+        });
+        synced++;
+      }
+      const conn = await storage.createOrUpdateAppleHealthConnection(userId, {
+        connected: true,
+        lastSyncedAt: new Date(),
+      });
+      res.json({ synced, lastSyncedAt: conn.lastSyncedAt });
+    } catch (e) {
+      console.error("apple-health sync error:", e);
+      res.status(500).json({ message: "Failed to sync workouts" });
+    }
+  });
+
+  app.get("/api/apple-health/workouts", async (req, res) => {
+    try {
+      const userId = requireUserId(req, res);
+      if (!userId) return;
+      const competitionId = req.query.competitionId
+        ? parseInt(req.query.competitionId as string)
+        : null;
+      if (competitionId) {
+        const competition = await storage.getCompetition(competitionId);
+        if (!competition) {
+          return res.status(404).json({ message: "Competition not found" });
+        }
+        const eligible = await storage.getEligibleWorkoutsForCompetition(
+          userId,
+          competition,
+        );
+        return res.json(eligible);
+      }
+      const all = await storage.getAppleHealthWorkouts(userId);
+      res.json(all);
+    } catch (e) {
+      console.error("apple-health workouts error:", e);
+      res.status(500).json({ message: "Failed to get workouts" });
+    }
+  });
+
+  // Marks a synced workout as submitted so it stops appearing as an option.
+  app.post("/api/apple-health/link", async (req, res) => {
+    try {
+      const userId = requireUserId(req, res);
+      if (!userId) return;
+      const { healthKitWorkoutId, activityId } = req.body || {};
+      if (typeof healthKitWorkoutId !== "string" || !healthKitWorkoutId) {
+        return res.status(400).json({ message: "healthKitWorkoutId is required" });
+      }
+      const workout = await storage.getAppleHealthWorkoutByHealthKitId(userId, healthKitWorkoutId);
+      if (!workout) {
+        return res.status(404).json({ message: "Workout not found" });
+      }
+      // If an activityId is supplied, verify it exists and belongs to this user
+      // before linking, so workouts can't be tied to someone else's activity.
+      let linkedActivityId: number | null = null;
+      if (activityId !== undefined && activityId !== null) {
+        if (typeof activityId !== "number") {
+          return res.status(400).json({ message: "activityId must be a number" });
+        }
+        const activity = await storage.getActivity(activityId);
+        if (!activity || activity.userId !== userId) {
+          return res.status(403).json({ message: "Activity not found or not owned by user" });
+        }
+        linkedActivityId = activityId;
+      }
+      const updated = await storage.updateAppleHealthWorkout(workout.id, {
+        submittedActivityId: linkedActivityId,
+      });
+      res.json(updated);
+    } catch (e) {
+      console.error("apple-health link error:", e);
+      res.status(500).json({ message: "Failed to link workout" });
     }
   });
 

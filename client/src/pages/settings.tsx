@@ -30,7 +30,11 @@ import {
   Bug,
   ChevronRight,
   ExternalLink,
+  Heart,
+  RefreshCw,
+  CheckCircle,
 } from "lucide-react";
+import { useAppleHealth } from "@/hooks/use-apple-health";
 
 export default function SettingsPage() {
   const [, setLocation] = useLocation();
@@ -43,6 +47,8 @@ export default function SettingsPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [deletePassword, setDeletePassword] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  const appleHealth = useAppleHealth();
 
   const changePassword = useMutation({
     mutationFn: async () => {
@@ -219,6 +225,71 @@ export default function SettingsPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* ── Apple Health (iOS native only) ── */}
+          {appleHealth.native && (
+            <Card className="bg-white/5 border-white/10 rounded-2xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-white flex items-center gap-2 text-base">
+                  <Heart className="h-4 w-4 text-military-green" /> Apple Health
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {!appleHealth.connected ? (
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-white text-sm font-medium">Connect Apple Health</p>
+                      <p className="text-gray-400 text-xs mt-0.5">Import your workouts so you can submit them with one tap</p>
+                    </div>
+                    <Button
+                      onClick={() => appleHealth.connect()}
+                      disabled={appleHealth.isConnecting}
+                      className="bg-military-green hover:bg-military-green/80 text-forest-green shrink-0"
+                      data-testid="button-connect-apple-health-settings"
+                    >
+                      {appleHealth.isConnecting ? "Connecting..." : "Connect"}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-white text-sm font-medium flex items-center gap-1.5">
+                          <CheckCircle className="h-4 w-4 text-green-400" /> Connected
+                        </p>
+                        <p className="text-gray-400 text-xs mt-0.5">
+                          {appleHealth.lastSyncedAt
+                            ? `Last synced ${new Date(appleHealth.lastSyncedAt).toLocaleString()}`
+                            : "Not synced yet"}
+                        </p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => appleHealth.refresh()}
+                        disabled={appleHealth.isSyncing}
+                        className="border-white/10 text-gray-200 hover:bg-white/10 shrink-0"
+                        data-testid="button-refresh-apple-health-settings"
+                      >
+                        <RefreshCw className={`h-3.5 w-3.5 mr-1 ${appleHealth.isSyncing ? "animate-spin" : ""}`} />
+                        Refresh
+                      </Button>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => appleHealth.disconnect()}
+                      disabled={appleHealth.isDisconnecting}
+                      className="text-red-400 hover:text-red-300 hover:bg-red-500/10 px-0"
+                      data-testid="button-disconnect-apple-health-settings"
+                    >
+                      Disconnect
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* ── Privacy ── */}
           <Card className="bg-white/5 border-white/10 rounded-2xl">

@@ -7,7 +7,9 @@ import {
   PhoneInvitation, InsertPhoneInvitation, WhiteboardItem, InsertWhiteboardItem, 
   MissionTask, InsertMissionTask, ActivityType, InsertActivityType,
   AdminPost, InsertAdminPost, MoodLog, InsertMoodLog,
-  TeammateReport, InsertTeammateReport
+  TeammateReport, InsertTeammateReport,
+  AppleHealthConnection, InsertAppleHealthConnection,
+  AppleHealthWorkout, InsertAppleHealthWorkout, Competition as CompetitionType
 } from "@shared/schema";
 
 export interface IStorage {
@@ -154,15 +156,14 @@ export interface IStorage {
   
   // Apple Health integration operations
   getAppleHealthConnection(userId: number): Promise<AppleHealthConnection | undefined>;
-  createOrUpdateAppleHealthConnection(userId: number, updates: Partial<AppleHealthConnection>): Promise<AppleHealthConnection>;
-  updateAppleHealthConnection(userId: number, updates: Partial<AppleHealthConnection>): Promise<AppleHealthConnection | undefined>;
-  createAppleHealthData(data: InsertAppleHealthData): Promise<AppleHealthData>;
-  getAppleHealthData(userId: number, dataType?: string, startDate?: string, endDate?: string, limit?: number): Promise<AppleHealthData[]>;
-  createAppleHealthWorkout(workout: InsertAppleHealthWorkout): Promise<AppleHealthWorkout>;
-  getAppleHealthWorkouts(userId: number, startDate?: string, endDate?: string, limit?: number): Promise<AppleHealthWorkout[]>;
+  createOrUpdateAppleHealthConnection(userId: number, updates: Partial<InsertAppleHealthConnection>): Promise<AppleHealthConnection>;
+  upsertAppleHealthWorkout(workout: InsertAppleHealthWorkout): Promise<AppleHealthWorkout>;
+  getAppleHealthWorkouts(userId: number, limit?: number): Promise<AppleHealthWorkout[]>;
   getAppleHealthWorkout(id: number): Promise<AppleHealthWorkout | undefined>;
   getAppleHealthWorkoutByHealthKitId(userId: number, healthKitWorkoutId: string): Promise<AppleHealthWorkout | undefined>;
   updateAppleHealthWorkout(id: number, updates: Partial<AppleHealthWorkout>): Promise<AppleHealthWorkout | undefined>;
+  // Workouts eligible for a competition: type matches requiredActivities, within window, not yet submitted
+  getEligibleWorkoutsForCompetition(userId: number, competition: CompetitionType): Promise<AppleHealthWorkout[]>;
 
   // User block operations
   blockUser(blockerId: number, blockedId: number): Promise<void>;

@@ -9,15 +9,18 @@ import {
   AdminPost, InsertAdminPost, Advertisement, InsertAdvertisement, MoodLog, InsertMoodLog,
   UserInvitation, InsertUserInvitation, UserBlock,
   TeammateReport, InsertTeammateReport,
+  AppleHealthConnection, InsertAppleHealthConnection,
+  AppleHealthWorkout, InsertAppleHealthWorkout,
   users, competitions, teams, teamMembers, activities, activityTypes,
   activityComments, activityLikes, activityFlags, chatMessages, friendships, 
   competitionHistory, competitionInvitations, competitionEntries, phoneInvitations, 
   whiteboardItems, missionTasks, adminPosts, advertisements, moodLogs, userInvitations,
-  userBlocks, teammateReports
+  userBlocks, teammateReports, appleHealthConnections, appleHealthWorkouts
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, or, desc, isNull, gt, lte, inArray, sql } from "drizzle-orm";
+import { eq, and, or, desc, isNull, gt, gte, lte, inArray, sql } from "drizzle-orm";
 import { IStorage } from "./storage";
+import { mapHealthKitTypeToActivityName } from "@shared/healthkit";
 
 export class DatabaseStorage implements IStorage {
   // User operations
@@ -1300,5 +1303,96 @@ export class DatabaseStorage implements IStorage {
       currentTeam,
       recentActivities,
     };
+  }
+
+  // ---- Apple Health integration ----
+  async getAppleHealthConnection(userId: number): Promise<AppleHealthConnection | undefined> {
+    const [conn] = await db.select().from(appleHealthConnections).where(eq(appleHealthConnections.userId, userId));
+    return conn || undefined;
+  }
+
+  async createOrUpdateAppleHealthConnection(userId: number, updates: Partial<InsertAppleHealthConnection>): Promise<AppleHealthConnection> {
+    const existing = await this.getAppleHealthConnection(userId);
+    if (existing) {
+      const [updated] = await db
+        .update(appleHealthConnections)
+        .set({ ...updates, updatedAt: new Date() })
+        .where(eq(appleHealthConnections.userId, userId))
+        .returning();
+      return updated;
+    }
+    const [created] = await db
+      .insert(appleHealthConnections)
+      .values({ ...updates, userId })
+      .returning();
+    return created;
+  }
+
+  async upsertAppleHealthWorkout(workout: InsertAppleHealthWorkout): Promise<AppleHealthWorkout> {
+    const existing = await this.getAppleHealthWorkoutByHealthKitId(workout.userId, workout.healthKitWorkoutId);
+    if (existing) {
+      const [updated] = await db
+        .update(appleHealthWorkouts)
+        .set({ ...workout, syncedAt: new Date() })
+        .where(eq(appleHealthWorkouts.id, existing.id))
+        .returning();
+      return updated;
+    }
+    const [created] = await db.insert(appleHealthWorkouts).values(workout).returning();
+    return created;
+  }
+
+  async getAppleHealthWorkouts(userId: number, limit: number = 50): Promise<AppleHealthWorkout[]> {
+    return await db
+      .select()
+      .from(appleHealthWorkouts)
+      .where(eq(appleHealthWorkouts.userId, userId))
+      .orderBy(desc(appleHealthWorkouts.startTime))
+      .limit(limit);
+  }
+
+  async getAppleHealthWorkout(id: number): Promise<AppleHealthWorkout | undefined> {
+    const [workout] = await db.select().from(appleHealthWorkouts).where(eq(appleHealthWorkouts.id, id));
+    return workout || undefined;
+  }
+
+  async getAppleHealthWorkoutByHealthKitId(userId: number, healthKitWorkoutId: string): Promise<AppleHealthWorkout | undefined> {
+    const [workout] = await db
+      .select()
+      .from(appleHealthWorkouts)
+      .where(and(eq(appleHealthWorkouts.userId, userId), eq(appleHealthWorkouts.healthKitWorkoutId, healthKitWorkoutId)));
+    return workout || undefined;
+  }
+
+  async updateAppleHealthWorkout(id: number, updates: Partial<AppleHealthWorkout>): Promise<AppleHealthWorkout | undefined> {
+    const [updated] = await db
+      .update(appleHealthWorkouts)
+      .set(updates)
+      .where(eq(appleHealthWorkouts.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  async getEligibleWorkoutsForCompetition(userId: number, competition: Competition): Promise<AppleHealthWorkout[]> {
+    const workouts = await db
+      .select()
+      .from(appleHealthWorkouts)
+      .where(
+        and(
+          eq(appleHealthWorkouts.userId, userId),
+          isNull(appleHealthWorkouts.submittedActivityId),
+          gte(appleHealthWorkouts.startTime, competition.startDate),
+          lte(appleHealthWorkouts.startTime, competition.endDate),
+        ),
+      )
+      .orderBy(desc(appleHealthWorkouts.startTime));
+
+    const required = competition.requiredActivities || [];
+    if (required.length === 0) return workouts; // no restriction -> all in-window workouts
+
+    return workouts.filter((w) => {
+      const mappedName = mapHealthKitTypeToActivityName(w.activityType);
+      return mappedName != null && required.includes(mappedName);
+    });
   }
 }

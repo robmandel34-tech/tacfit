@@ -530,3 +530,50 @@ export const insertTeammateReportSchema = createInsertSchema(teammateReports).om
 export type TeammateReport = typeof teammateReports.$inferSelect;
 export type InsertTeammateReport = z.infer<typeof insertTeammateReportSchema>;
 
+// Apple HealthKit integration
+export const appleHealthConnections = pgTable("apple_health_connections", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull().unique(),
+  connected: boolean("connected").default(false).notNull(),
+  platform: text("platform").default("ios"), // ios
+  scopes: text("scopes").array().default([]), // HealthKit data types authorized
+  lastSyncedAt: timestamp("last_synced_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const appleHealthWorkouts = pgTable("apple_health_workouts", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  healthKitWorkoutId: text("healthkit_workout_id").notNull(), // HKWorkout UUID
+  activityType: text("activity_type").notNull(), // HealthKit workout type, e.g. "running"
+  startTime: timestamp("start_time").notNull(),
+  endTime: timestamp("end_time").notNull(),
+  durationSec: integer("duration_sec").default(0),
+  distanceMeters: integer("distance_meters").default(0),
+  energyKcal: integer("energy_kcal").default(0),
+  avgHeartRate: integer("avg_heart_rate").default(0),
+  routePolyline: text("route_polyline"), // encoded GPS route (optional)
+  raw: json("raw"), // original payload from the device
+  submittedActivityId: integer("submitted_activity_id").references(() => activities.id), // set once submitted
+  syncedAt: timestamp("synced_at").defaultNow(),
+}, (table) => ({
+  userWorkoutUnique: uniqueIndex("apple_health_workout_user_hkid_idx").on(table.userId, table.healthKitWorkoutId),
+}));
+
+export const insertAppleHealthConnectionSchema = createInsertSchema(appleHealthConnections).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertAppleHealthWorkoutSchema = createInsertSchema(appleHealthWorkouts).omit({
+  id: true,
+  syncedAt: true,
+});
+
+export type AppleHealthConnection = typeof appleHealthConnections.$inferSelect;
+export type InsertAppleHealthConnection = z.infer<typeof insertAppleHealthConnectionSchema>;
+export type AppleHealthWorkout = typeof appleHealthWorkouts.$inferSelect;
+export type InsertAppleHealthWorkout = z.infer<typeof insertAppleHealthWorkoutSchema>;
+

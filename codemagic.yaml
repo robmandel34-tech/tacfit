@@ -50,6 +50,26 @@ workflows:
           BUILD_NUMBER=$(date +%s)
           agvtool new-version -all $BUILD_NUMBER
         working_directory: ios/App
+      - name: Debug provisioning profile entitlements
+        script: |
+          set +e
+          echo "===== Provisioning profiles fetched by Codemagic ====="
+          PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+          ls -la "$PROFILE_DIR" 2>/dev/null || echo "(no profile dir)"
+          for p in "$PROFILE_DIR"/*.mobileprovision; do
+            [ -e "$p" ] || continue
+            echo ""
+            echo "=== FILE: $p ==="
+            security cms -D -i "$p" > /tmp/pp.plist 2>/dev/null
+            echo "Name:                   $(/usr/libexec/PlistBuddy -c 'Print :Name' /tmp/pp.plist 2>/dev/null)"
+            echo "AppIDName:              $(/usr/libexec/PlistBuddy -c 'Print :AppIDName' /tmp/pp.plist 2>/dev/null)"
+            echo "UUID:                   $(/usr/libexec/PlistBuddy -c 'Print :UUID' /tmp/pp.plist 2>/dev/null)"
+            echo "application-identifier: $(/usr/libexec/PlistBuddy -c 'Print :Entitlements:application-identifier' /tmp/pp.plist 2>/dev/null)"
+            echo "HealthKit entitlement:  $(/usr/libexec/PlistBuddy -c 'Print :Entitlements:com.apple.developer.healthkit' /tmp/pp.plist 2>/dev/null)"
+            echo "--- Full entitlements ---"
+            /usr/libexec/PlistBuddy -c 'Print :Entitlements' /tmp/pp.plist 2>/dev/null
+          done
+          echo "===== End provisioning profile debug ====="
       - name: Build and sign iOS app
         script: |
           xcode-project use-profiles

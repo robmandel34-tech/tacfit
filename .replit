@@ -47,6 +47,9 @@ integrations = ["javascript_websocket:1.0.0", "javascript_database:1.0.0", "java
 [userenv.production]
 APP_ORIGIN = "https://tacfit.replit.app"
 
+[userenv.shared]
+SLACK_CHANNEL_ONBOARDING = "C0B71AABP5Y"
+
 [postMerge]
 path = "scripts/post-merge.sh"
 timeoutMs = 20000

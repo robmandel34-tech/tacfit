@@ -67,9 +67,9 @@ export default function Dashboard() {
   });
 
   const completeOnboardingMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (survey?: { fitnessArchetype: string; fitnessActivities: string }) => {
       if (!user?.id) throw new Error("User not found");
-      return apiRequest("PATCH", `/api/users/${user.id}/onboarding`, {});
+      return apiRequest("PATCH", `/api/users/${user.id}/onboarding`, survey ?? {});
     },
     onSuccess: async () => {
       toast({
@@ -306,8 +306,8 @@ export default function Dashboard() {
         onClose={() => {
           setShowOnboarding(false);
         }}
-        onComplete={() => {
-          completeOnboardingMutation.mutate();
+        onComplete={(survey) => {
+          completeOnboardingMutation.mutate(survey);
         }}
       />
     </div>

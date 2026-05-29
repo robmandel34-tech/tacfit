@@ -1143,14 +1143,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/users/:id/onboarding", async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
-      
+
+      // Only the user themselves (or an admin) may complete their onboarding
+      const sessionUserId = req.session?.userId;
+      if (!sessionUserId) return res.status(401).json({ message: "Not authenticated" });
+      if (sessionUserId !== userId) {
+        const sessionUser = await storage.getUser(sessionUserId);
+        if (!sessionUser?.isAdmin) {
+          return res.status(403).json({ message: "Forbidden" });
+        }
+      }
+
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      
-      // Mark onboarding as completed
-      const updatedUser = await storage.updateUser(userId, { onboardingCompleted: true });
+
+      // Optional onboarding survey answers
+      const updates: Record<string, any> = { onboardingCompleted: true };
+      const allowedArchetypes = ["servant", "clown", "survivor"];
+      if (typeof req.body?.fitnessArchetype === "string" && allowedArchetypes.includes(req.body.fitnessArchetype.trim())) {
+        updates.fitnessArchetype = req.body.fitnessArchetype.trim();
+      }
+      if (typeof req.body?.fitnessActivities === "string" && req.body.fitnessActivities.trim()) {
+        updates.fitnessActivities = req.body.fitnessActivities.trim().slice(0, 2000);
+      }
+
+      // Mark onboarding as completed (and store survey answers if provided)
+      const updatedUser = await storage.updateUser(userId, updates);
       
       if (!updatedUser) {
         return res.status(500).json({ message: "Failed to complete onboarding" });

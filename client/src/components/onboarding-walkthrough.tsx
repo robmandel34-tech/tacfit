@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 import { 
   ChevronRight, 
   ChevronLeft, 
@@ -33,17 +34,107 @@ interface OnboardingStep {
   content: React.ReactNode;
 }
 
+interface OnboardingSurvey {
+  fitnessArchetype: string;
+  fitnessActivities: string;
+}
+
 interface OnboardingWalkthroughProps {
   isOpen: boolean;
   onClose: () => void;
-  onComplete: () => void;
+  onComplete: (survey: OnboardingSurvey) => void;
 }
+
+const ARCHETYPE_OPTIONS = [
+  {
+    value: 'servant',
+    title: 'Servant',
+    description: 'I have excellent habits, a balanced life and I frequently serve others in various ways.',
+  },
+  {
+    value: 'clown',
+    title: 'Sad/Happy Clown',
+    description: "I am committed to whole health but am often not consistent, and although I'd like to, I actually don't often find myself serving others in meaningful ways.",
+  },
+  {
+    value: 'survivor',
+    title: 'Survivor',
+    description: "It's a daily struggle for me to make healthy choices.",
+  },
+];
 
 export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: OnboardingWalkthroughProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
+  const [fitnessArchetype, setFitnessArchetype] = useState('');
+  const [fitnessActivities, setFitnessActivities] = useState('');
 
   const steps: OnboardingStep[] = [
+    {
+      id: 'survey-archetype',
+      title: 'Quick Check-In',
+      description: 'Tell us where you are right now',
+      icon: <Target className="h-6 w-6" />,
+      content: (
+        <div className="space-y-4">
+          <h3 className="text-lg font-bold text-white">
+            How would you describe your current whole fitness (mind, body and spirit)?
+          </h3>
+          <p className="text-sm text-gray-400">There are no wrong answers — pick the one that fits best today.</p>
+          <div className="space-y-3">
+            {ARCHETYPE_OPTIONS.map((option) => {
+              const selected = fitnessArchetype === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setFitnessArchetype(option.value)}
+                  className={`w-full text-left p-4 rounded-lg border transition-all ${
+                    selected
+                      ? 'border-military-green bg-military-green/15 ring-1 ring-military-green'
+                      : 'border-gray-700 bg-gray-800/50 hover:border-gray-500'
+                  }`}
+                >
+                  <div className="flex items-start space-x-3">
+                    <div
+                      className={`mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border ${
+                        selected ? 'border-military-green bg-military-green' : 'border-gray-500'
+                      }`}
+                    >
+                      {selected && <CheckCircle className="h-4 w-4 text-forest-green" />}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-white">{option.title}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{option.description}</p>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'survey-activities',
+      title: 'Quick Check-In',
+      description: 'What does your routine look like?',
+      icon: <Activity className="h-6 w-6" />,
+      content: (
+        <div className="space-y-4">
+          <h3 className="text-lg font-bold text-white">
+            What fitness (mind, body or spirit) activities do you currently do consistently, and which are you looking to do more habitually?
+          </h3>
+          <Textarea
+            value={fitnessActivities}
+            onChange={(e) => setFitnessActivities(e.target.value)}
+            placeholder="Examples: Running, Reading, Yoga, Meditation/Prayer..."
+            className="min-h-[140px] bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 focus-visible:ring-military-green"
+          />
+          <p className="text-xs text-gray-500">Optional — you can skip this and update it later.</p>
+        </div>
+      )
+    },
     {
       id: 'welcome',
       title: 'Welcome to TacFit',
@@ -501,12 +592,13 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
 
   const handleComplete = () => {
     setCompletedSteps(prev => new Set([...Array.from(prev), currentStep]));
-    onComplete();
+    onComplete({ fitnessArchetype, fitnessActivities });
     onClose();
   };
 
   const progress = ((currentStep + 1) / steps.length) * 100;
   const currentStepData = steps[currentStep];
+  const nextDisabled = currentStepData.id === 'survey-archetype' && !fitnessArchetype;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -579,7 +671,8 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete }: Onboardin
           ) : (
             <Button
               onClick={handleNext}
-              className="bg-military-green hover:bg-military-green/80 text-forest-green font-semibold"
+              disabled={nextDisabled}
+              className="bg-military-green hover:bg-military-green/80 text-forest-green font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next
               <ChevronRight className="h-4 w-4 ml-2" />

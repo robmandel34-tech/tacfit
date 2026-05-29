@@ -41,6 +41,10 @@ export const users = pgTable("users", {
   // Profile card background theme
   profileBackground: text("profile_background").default("green"),
 
+  // Onboarding survey: whole-fitness self assessment
+  fitnessArchetype: text("fitness_archetype"),
+  fitnessActivities: text("fitness_activities"),
+
   createdAt: timestamp("created_at").defaultNow(),
 });
 

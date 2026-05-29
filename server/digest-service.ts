@@ -74,6 +74,99 @@ async function getLiveCompetitions() {
   });
 }
 
+interface TeamReport {
+  team: any;
+  recentActsCount: number;
+  recentChatCount: number;
+  completedTasksCount: number;
+  overdueCount: number;
+  memberCount: number;
+  quietMembers: string[];
+  isActive: boolean;
+}
+
+// Gather per-team stats (recent activity, chat, tasks, roster, silent members)
+// for every team in a competition. Shared by the full digest and the nudge list.
+async function gatherTeamReports(teams: any[], allActivities: any[]): Promise<TeamReport[]> {
+  const windowCutoff = hoursAgo(WINDOW_HOURS);
+  const memberCutoff = hoursAgo(MEMBER_RISK_HOURS);
+  const recentActivities = allActivities.filter(
+    (a: any) => a.createdAt && new Date(a.createdAt) >= windowCutoff,
+  );
+  const activeUserIds = new Set<number>(
+    allActivities
+      .filter((a: any) => a.createdAt && new Date(a.createdAt) >= memberCutoff && a.userId != null)
+      .map((a: any) => a.userId as number),
+  );
+
+  return Promise.all(
+    teams.map(async (team: any) => {
+      const [chat, tasks, members] = await Promise.all([
+        storage.getChatMessages(team.id),
+        storage.getMissionTasks(team.id),
+        storage.getTeamMembers(team.id),
+      ]);
+
+      const recentChat = chat.filter(
+        (m: any) => m.createdAt && new Date(m.createdAt) >= windowCutoff,
+      );
+      const teamRecentActs = recentActivities.filter((a: any) => a.teamId === team.id);
+      const completedRecentTasks = tasks.filter(
+        (t: any) =>
+          (t.status === "completed" || t.completed === true) &&
+          t.updatedAt &&
+          new Date(t.updatedAt) >= windowCutoff,
+      );
+      const overdueTasks = tasks.filter(
+        (t: any) =>
+          t.status !== "completed" &&
+          t.completed !== true &&
+          t.dueDate &&
+          new Date(t.dueDate) < new Date(),
+      );
+
+      const isActive =
+        teamRecentActs.length > 0 || recentChat.length > 0 || completedRecentTasks.length > 0;
+
+      // Roster = joined members + the captain (stored separately on the team).
+      const memberIds = new Set<number>(
+        members.map((mem: any) => mem.userId).filter((id: any) => id != null),
+      );
+      if (team.captainId != null) memberIds.add(team.captainId);
+
+      // Members who haven't submitted any activity within the risk window.
+      const memberUsers = await Promise.all([...memberIds].map((id) => storage.getUser(id)));
+      const quietMembers = memberUsers
+        .filter((u: any) => u && !activeUserIds.has(u.id))
+        .map((u: any) => u.username);
+
+      return {
+        team,
+        recentActsCount: teamRecentActs.length,
+        recentChatCount: recentChat.length,
+        completedTasksCount: completedRecentTasks.length,
+        overdueCount: overdueTasks.length,
+        memberCount: memberIds.size,
+        quietMembers,
+        isActive,
+      };
+    }),
+  );
+}
+
+// Derive engagement risks from team reports. A team counts as "quiet" only if
+// it has a real roster or standing — orphaned placeholder teams are ignored.
+function deriveRisks(teamReports: TeamReport[]) {
+  const quietTeams = teamReports.filter(
+    (r) => !r.isActive && (r.memberCount > 0 || (r.team.points || 0) > 0),
+  );
+  const overdueTeams = teamReports.filter((r) => r.overdueCount > 0);
+  const atRiskMembers = teamReports
+    .filter((r) => r.quietMembers.length > 0)
+    .map((r) => `${r.team.name}: ${r.quietMembers.join(", ")}`);
+  return { quietTeams, overdueTeams, atRiskMembers };
+}
+
 export async function buildCompetitionDigest(comp: any): Promise<string> {
   const windowCutoff = hoursAgo(WINDOW_HOURS);
   const memberCutoff = hoursAgo(MEMBER_RISK_HOURS);
@@ -117,61 +210,7 @@ export async function buildCompetitionDigest(comp: any): Promise<string> {
   });
 
   // Per-team breakdown (gather chat, tasks, members in parallel per team).
-  const teamReports = await Promise.all(
-    teams.map(async (team: any) => {
-      const [chat, tasks, members] = await Promise.all([
-        storage.getChatMessages(team.id),
-        storage.getMissionTasks(team.id),
-        storage.getTeamMembers(team.id),
-      ]);
-
-      const recentChat = chat.filter(
-        (m: any) => m.createdAt && new Date(m.createdAt) >= windowCutoff,
-      );
-      const teamRecentActs = recentActivities.filter((a: any) => a.teamId === team.id);
-      const completedRecentTasks = tasks.filter(
-        (t: any) =>
-          (t.status === "completed" || t.completed === true) &&
-          t.updatedAt &&
-          new Date(t.updatedAt) >= windowCutoff,
-      );
-      const overdueTasks = tasks.filter(
-        (t: any) =>
-          t.status !== "completed" &&
-          t.completed !== true &&
-          t.dueDate &&
-          new Date(t.dueDate) < new Date(),
-      );
-
-      const isActive =
-        teamRecentActs.length > 0 || recentChat.length > 0 || completedRecentTasks.length > 0;
-
-      // Roster = joined members + the captain (stored separately on the team).
-      const memberIds = new Set<number>(
-        members.map((mem: any) => mem.userId).filter((id: any) => id != null),
-      );
-      if (team.captainId != null) memberIds.add(team.captainId);
-
-      // Members who haven't submitted any activity within the risk window.
-      const memberUsers = await Promise.all(
-        [...memberIds].map((id) => storage.getUser(id)),
-      );
-      const quietMembers = memberUsers
-        .filter((u: any) => u && !activeUserIds.has(u.id))
-        .map((u: any) => u.username);
-
-      return {
-        team,
-        recentActsCount: teamRecentActs.length,
-        recentChatCount: recentChat.length,
-        completedTasksCount: completedRecentTasks.length,
-        overdueCount: overdueTasks.length,
-        memberCount: memberIds.size,
-        quietMembers,
-        isActive,
-      };
-    }),
-  );
+  const teamReports = await gatherTeamReports(teams, allActivities);
 
   // Individual engagement (last 24h) — most active members by submissions.
   const recentByUser = new Map<number, { count: number; points: number; teamId: number | null }>();
@@ -254,15 +293,8 @@ export async function buildCompetitionDigest(comp: any): Promise<string> {
     });
   }
 
-  // Engagement risk. A team counts as "quiet" only if it has a real roster or
-  // standing — orphaned placeholder teams (no members, no points) are ignored.
-  const quietTeams = teamReports.filter(
-    (r) => !r.isActive && (r.memberCount > 0 || (r.team.points || 0) > 0),
-  );
-  const overdueTeams = teamReports.filter((r) => r.overdueCount > 0);
-  const atRiskMembers = teamReports
-    .filter((r) => r.quietMembers.length > 0)
-    .map((r) => `${r.team.name}: ${r.quietMembers.join(", ")}`);
+  // Engagement risk.
+  const { quietTeams, overdueTeams, atRiskMembers } = deriveRisks(teamReports);
 
   if (quietTeams.length || overdueTeams.length || atRiskMembers.length) {
     lines.push("");
@@ -286,6 +318,33 @@ export async function buildCompetitionDigest(comp: any): Promise<string> {
   return lines.join("\n");
 }
 
+// Build a focused "who needs a nudge" message for a competition. Returns null
+// when there's nothing to nudge (no silent members, quiet teams, or overdue tasks).
+export async function buildNudgeMessage(comp: any): Promise<string | null> {
+  const [teams, allActivities] = await Promise.all([
+    storage.getTeamsByCompetition(comp.id),
+    storage.getActivitiesByCompetition(comp.id),
+  ]);
+  if (teams.length === 0) return null;
+
+  const teamReports = await gatherTeamReports(teams, allActivities);
+  const { quietTeams, overdueTeams, atRiskMembers } = deriveRisks(teamReports);
+  if (!quietTeams.length && !overdueTeams.length && !atRiskMembers.length) return null;
+
+  const lines: string[] = [];
+  lines.push(`*👋 Who needs a nudge — ${comp.name}*`);
+  if (atRiskMembers.length) {
+    lines.push(`• Members silent ${MEMBER_RISK_HOURS}h+ (no submissions): ${atRiskMembers.join(" | ")}`);
+  }
+  if (quietTeams.length) {
+    lines.push(`• Quiet teams (no activity, chat, or task progress in ${WINDOW_HOURS}h): ${quietTeams.map((r) => r.team.name).join(", ")}`);
+  }
+  if (overdueTeams.length) {
+    lines.push(`• Overdue tasks: ${overdueTeams.map((r) => `${r.team.name} (${r.overdueCount})`).join(", ")}`);
+  }
+  return lines.join("\n");
+}
+
 // Build and post digests for every live competition.
 export async function runDigest(): Promise<{ posted: number }> {
   let posted = 0;
@@ -299,6 +358,10 @@ export async function runDigest(): Promise<{ posted: number }> {
         const text = await buildCompetitionDigest(comp);
         notifySlack(text);
         posted += 1;
+
+        // Also post a focused "who needs a nudge" list to its own channel.
+        const nudge = await buildNudgeMessage(comp);
+        if (nudge) notifySlack(nudge, "nudges");
       } catch (err) {
         console.error(`Digest failed for competition ${comp.id}:`, err);
       }

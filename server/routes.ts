@@ -3130,7 +3130,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       const inviteUrl = `${req.protocol}://${req.get('host')}/team-invite/${inviteToken}`;
-      
+
+      const phoneInviter = invitedBy ? await storage.getUser(invitedBy) : null;
+      notifySlack(
+        `✉️ *Team invite* — ${phoneInviter?.username ?? "Someone"} invited ${phoneNumber} to join "${team.name}"`,
+        "invites",
+      );
+
       res.json({ inviteUrl, invitation });
     } catch (error) {
       res.status(500).json({ message: "Error creating phone invitation" });
@@ -3170,6 +3176,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
       });
       
+      const [invitedUser, userInviter] = await Promise.all([
+        storage.getUser(userId),
+        invitedBy ? storage.getUser(invitedBy) : Promise.resolve(null),
+      ]);
+      notifySlack(
+        `✉️ *Team invite* — ${userInviter?.username ?? "Someone"} invited ${invitedUser?.username ?? `user ${userId}`} to join "${team?.name ?? "a team"}"`,
+        "invites",
+      );
+
       res.json({ message: "Invitation sent", invitation });
     } catch (error) {
       console.error("Error sending user invitation:", error);

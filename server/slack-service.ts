@@ -18,6 +18,8 @@ export type SlackCategory =
   | "signups"
   | "activity"
   | "firstActivity"
+  | "invites"
+  | "nudges"
   | "issues";
 
 function channelFor(category: SlackCategory): string {
@@ -28,6 +30,10 @@ function channelFor(category: SlackCategory): string {
       return process.env.SLACK_CHANNEL_ACTIVITY || SLACK_CHANNEL_ID;
     case "firstActivity":
       return process.env.SLACK_CHANNEL_FIRST_ACTIVITY || SLACK_CHANNEL_ID;
+    case "invites":
+      return process.env.SLACK_CHANNEL_INVITES || SLACK_CHANNEL_ID;
+    case "nudges":
+      return process.env.SLACK_CHANNEL_NUDGES || SLACK_CHANNEL_ID;
     case "issues":
       return process.env.SLACK_CHANNEL_ISSUES || SLACK_CHANNEL_ID;
     default:

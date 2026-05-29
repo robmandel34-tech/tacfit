@@ -84,6 +84,29 @@ The platform follows a military/tactical theme across its UI/UX, language, and i
 4. Open in Xcode: `npx cap open ios`
 5. Set your Team + Bundle ID, then Archive → Distribute
 
+### Apple Health "not available on this device" on TestFlight — native build fix (2026-05-29)
+The Apple Health UI (Settings card + activity-submission prompt) showed up
+correctly in the TestFlight build, but tapping **Connect** failed with
+"Apple Health is not available on this device." Cause: the native HealthKit
+plugin was never compiled into the iOS binary.
+- `codemagic.yaml` only runs `npx cap copy ios` (web assets), never
+  `npx cap sync`, so the plugin's CocoaPod was never added to the Podfile and
+  `pod install` never built the native side. Calling the plugin then throws,
+  which the app reports as "not available."
+- There was also NO entitlements file, so HealthKit capability was off.
+Fix applied (all committed under `ios/`, picked up by Codemagic's `pod install`):
+1. Added `pod 'PerfoodCapacitorHealthkit', :path => '../../node_modules/@perfood/capacitor-healthkit'`
+   to `ios/App/Podfile` (capacitor_pods).
+2. Created `ios/App/App/App.entitlements` with `com.apple.developer.healthkit = true`.
+3. Wired `CODE_SIGN_ENTITLEMENTS = App/App.entitlements` into BOTH the Debug and
+   Release App build configs in `ios/App/App.xcodeproj/project.pbxproj`.
+Info.plist already has NSHealthShare/NSHealthUpdate usage strings (good).
+**MANUAL step required by the user (one-time, in Apple Developer portal):**
+enable the **HealthKit** capability on the App ID `com.tacfit.app`
+(Certificates, Identifiers & Profiles → Identifiers → com.tacfit.app →
+check HealthKit → Save). Without this, signing will reject the entitlement.
+To ship: push to GitHub → Codemagic builds → TestFlight (new native build).
+
 ### Apple rejection "crashed when taking a photo" — REAL root cause (2026-05-29 fix)
 The earlier theory (below, 2026-05-19) blamed `cap-build.sh` not running the
 Info.plist patcher. That script is only used for MANUAL Mac builds. The actual

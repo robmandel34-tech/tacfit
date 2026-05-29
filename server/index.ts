@@ -5,6 +5,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import { seedDatabase } from "./seed-data";
 import { startDigestScheduler } from "./digest-service";
 import { ObjectStorageService } from "./objectStorage";
+import { notifyIssue } from "./slack-service";
 import path from "path";
 
 const app = express();
@@ -98,12 +99,20 @@ app.use((req, res, next) => {
 (async () => {
   const server = await registerRoutes(app);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
-    res.status(status).json({ message });
-    throw err;
+    // Report real server errors (5xx) to the Slack issues channel — throttled
+    // so a burst of the same error won't flood it. Client errors (4xx) are skipped.
+    if (status >= 500) {
+      notifyIssue(`🛑 *App error* — ${req.method} ${req.path} → ${status}: ${message}`);
+    }
+
+    if (!res.headersSent) {
+      res.status(status).json({ message });
+    }
+    console.error("Unhandled request error:", err);
   });
 
   // importantly only setup vite in development and after

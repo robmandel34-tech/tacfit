@@ -449,7 +449,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('User created successfully:', user.id);
 
-      notifySlack(`🟢 *New signup* — ${user.username} (${user.email})`);
+      notifySlack(`🟢 *New signup* — ${user.username} (${user.email})`, "signups");
 
       // Don't send password or sensitive verification info back
       const { password: _, emailVerificationToken: __, emailVerificationTokenExpiresAt: ___, ...userWithoutSensitiveData } = user;
@@ -2562,6 +2562,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      notifySlack(
+        `🏋️ *Activity submitted* — ${user.username} logged ${activity.type}${activity.quantity ? ` (${activity.quantity})` : ""}${activity.points ? ` · ${activity.points} pts` : ""}${userTeam ? ` · ${userTeam.name}` : ""}`,
+        "activity",
+      );
+
       res.json(activity);
     } catch (error) {
       console.error("Activity submission error:", error);

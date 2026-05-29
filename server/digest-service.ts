@@ -318,8 +318,9 @@ export async function buildCompetitionDigest(comp: any): Promise<string> {
   return lines.join("\n");
 }
 
-// Build a focused "who needs a nudge" message for a competition. Returns null
-// when there's nothing to nudge (no silent members, quiet teams, or overdue tasks).
+// Build a focused "who needs a nudge" message listing quiet individual members
+// (no activity submitted in the risk window), with their team for context.
+// Returns null when no one is quiet.
 export async function buildNudgeMessage(comp: any): Promise<string | null> {
   const [teams, allActivities] = await Promise.all([
     storage.getTeamsByCompetition(comp.id),
@@ -328,20 +329,24 @@ export async function buildNudgeMessage(comp: any): Promise<string | null> {
   if (teams.length === 0) return null;
 
   const teamReports = await gatherTeamReports(teams, allActivities);
-  const { quietTeams, overdueTeams, atRiskMembers } = deriveRisks(teamReports);
-  if (!quietTeams.length && !overdueTeams.length && !atRiskMembers.length) return null;
+
+  // Flat, de-duplicated list of quiet members across the whole competition.
+  const quietUsers: string[] = [];
+  const seen = new Set<string>();
+  for (const r of teamReports) {
+    for (const username of r.quietMembers) {
+      const key = username.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      quietUsers.push(`${username} (${r.team.name})`);
+    }
+  }
+  if (quietUsers.length === 0) return null;
 
   const lines: string[] = [];
-  lines.push(`*👋 Who needs a nudge — ${comp.name}*`);
-  if (atRiskMembers.length) {
-    lines.push(`• Members silent ${MEMBER_RISK_HOURS}h+ (no submissions): ${atRiskMembers.join(" | ")}`);
-  }
-  if (quietTeams.length) {
-    lines.push(`• Quiet teams (no activity, chat, or task progress in ${WINDOW_HOURS}h): ${quietTeams.map((r) => r.team.name).join(", ")}`);
-  }
-  if (overdueTeams.length) {
-    lines.push(`• Overdue tasks: ${overdueTeams.map((r) => `${r.team.name} (${r.overdueCount})`).join(", ")}`);
-  }
+  lines.push(`*👋 Quiet members — ${comp.name}*`);
+  lines.push(`_No activity in the last ${MEMBER_RISK_HOURS}h — could use a nudge:_`);
+  quietUsers.forEach((u) => lines.push(`• ${u}`));
   return lines.join("\n");
 }
 

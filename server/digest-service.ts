@@ -24,6 +24,33 @@ function hoursAgo(h: number): Date {
   return new Date(Date.now() - h * 60 * 60 * 1000);
 }
 
+// Percent complete for a team toward the competition's target goals — mirrors
+// the frontend progress-map logic: for each required activity type, sum the
+// team's submitted quantity vs. the numeric target, cap each at 100%, then
+// average across activity types. Returns null when the competition has no
+// goals defined (so we can fall back to points).
+function teamPercentComplete(comp: any, teamActivities: any[]): number | null {
+  const required: string[] = Array.isArray(comp.requiredActivities) ? comp.requiredActivities : [];
+  const goals: string[] = Array.isArray(comp.targetGoals) ? comp.targetGoals : [];
+  if (required.length === 0 || goals.length === 0) return null;
+
+  let total = 0;
+  let counted = 0;
+  required.forEach((type: string, idx: number) => {
+    const targetStr = goals[idx] || "";
+    const targetNum = parseInt(String(targetStr).replace(/[^0-9]/g, ""), 10) || 0;
+    if (targetNum <= 0) return;
+    const qty = teamActivities
+      .filter((a: any) => a.type === type)
+      .reduce((sum: number, a: any) => sum + (parseInt(String(a.quantity), 10) || 0), 0);
+    total += Math.min((qty / targetNum) * 100, 100);
+    counted += 1;
+  });
+
+  if (counted === 0) return null;
+  return Math.round(total / counted);
+}
+
 function dayInfo(startDate: Date, endDate: Date): string {
   const now = Date.now();
   const start = new Date(startDate).getTime();
@@ -67,8 +94,27 @@ export async function buildCompetitionDigest(comp: any): Promise<string> {
       .map((a: any) => a.userId as number),
   );
 
-  // Standings — teams by points (desc).
-  const standings = [...teams].sort((a: any, b: any) => (b.points || 0) - (a.points || 0));
+  // Percent complete per team toward the competition goals (activities since
+  // the competition started). Falls back to points-only when no goals are set.
+  const compStart = comp.startDate ? new Date(comp.startDate) : new Date(0);
+  const progressByTeam = new Map<number, number | null>();
+  for (const team of teams) {
+    const teamActs = allActivities.filter(
+      (a: any) => a.teamId === team.id && a.createdAt && new Date(a.createdAt) >= compStart,
+    );
+    progressByTeam.set(team.id, teamPercentComplete(comp, teamActs));
+  }
+  const hasGoals = [...progressByTeam.values()].some((p) => p !== null);
+
+  // Standings — by % complete (desc) when goals exist, otherwise by points.
+  const standings = [...teams].sort((a: any, b: any) => {
+    if (hasGoals) {
+      const pa = progressByTeam.get(a.id) ?? -1;
+      const pb = progressByTeam.get(b.id) ?? -1;
+      if (pb !== pa) return pb - pa;
+    }
+    return (b.points || 0) - (a.points || 0);
+  });
 
   // Per-team breakdown (gather chat, tasks, members in parallel per team).
   const teamReports = await Promise.all(
@@ -143,7 +189,12 @@ export async function buildCompetitionDigest(comp: any): Promise<string> {
     const medals = ["🥇", "🥈", "🥉"];
     standings.slice(0, 8).forEach((t: any, i: number) => {
       const marker = medals[i] || `${i + 1}.`;
-      lines.push(`${marker} ${t.name} — ${t.points || 0} pts`);
+      const pct = progressByTeam.get(t.id);
+      if (pct !== null && pct !== undefined) {
+        lines.push(`${marker} ${t.name} — ${pct}% complete (${t.points || 0} pts)`);
+      } else {
+        lines.push(`${marker} ${t.name} — ${t.points || 0} pts`);
+      }
     });
   }
 

@@ -2567,6 +2567,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         "activity",
       );
 
+      // First-ever activity for this user → milestone alert. The activity is
+      // already saved, so a count of exactly 1 means this is their first.
+      try {
+        const userActs = await storage.getActivitiesByUser(activity.userId ?? userId);
+        if (userActs.length === 1) {
+          notifySlack(
+            `🎉 *First activity!* — ${user.username} just made their first submission (${activity.type})${userTeam ? ` · ${userTeam.name}` : ""}`,
+            "firstActivity",
+          );
+        }
+      } catch (_) {
+        // Non-critical: never let the milestone check break the submission.
+      }
+
       res.json(activity);
     } catch (error) {
       console.error("Activity submission error:", error);

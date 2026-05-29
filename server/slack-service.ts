@@ -13,7 +13,12 @@ const SLACK_CHANNEL_ID = process.env.SLACK_CHANNEL_ID || "C0B6ZLUAYRJ";
 // Alert categories can each route to their own channel. If a category's env
 // var isn't set, that category falls back to the default channel — so the app
 // keeps working out of the box and you can split channels whenever you like.
-export type SlackCategory = "general" | "signups" | "activity" | "issues";
+export type SlackCategory =
+  | "general"
+  | "signups"
+  | "activity"
+  | "firstActivity"
+  | "issues";
 
 function channelFor(category: SlackCategory): string {
   switch (category) {
@@ -21,6 +26,8 @@ function channelFor(category: SlackCategory): string {
       return process.env.SLACK_CHANNEL_SIGNUPS || SLACK_CHANNEL_ID;
     case "activity":
       return process.env.SLACK_CHANNEL_ACTIVITY || SLACK_CHANNEL_ID;
+    case "firstActivity":
+      return process.env.SLACK_CHANNEL_FIRST_ACTIVITY || SLACK_CHANNEL_ID;
     case "issues":
       return process.env.SLACK_CHANNEL_ISSUES || SLACK_CHANNEL_ID;
     default:

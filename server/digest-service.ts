@@ -173,6 +173,28 @@ export async function buildCompetitionDigest(comp: any): Promise<string> {
     }),
   );
 
+  // Individual engagement (last 24h) — most active members by submissions.
+  const recentByUser = new Map<number, { count: number; points: number; teamId: number | null }>();
+  for (const a of recentActivities) {
+    if (a.userId == null) continue;
+    const cur = recentByUser.get(a.userId) || { count: 0, points: 0, teamId: a.teamId ?? null };
+    cur.count += 1;
+    cur.points += a.points || 0;
+    if (cur.teamId == null && a.teamId != null) cur.teamId = a.teamId;
+    recentByUser.set(a.userId, cur);
+  }
+  const engagedIds = [...recentByUser.keys()];
+  const engagedUsers = await Promise.all(engagedIds.map((id) => storage.getUser(id)));
+  const idToName = new Map<number, string>();
+  engagedUsers.forEach((u: any) => {
+    if (u) idToName.set(u.id, u.username);
+  });
+  const teamNameById = new Map<number, string>(teams.map((t: any) => [t.id, t.name]));
+  const topEngaged = engagedIds
+    .map((id) => ({ id, ...recentByUser.get(id)! }))
+    .sort((a, b) => b.count - a.count || b.points - a.points)
+    .slice(0, 5);
+
   // ---- Build the message ----
   const lines: string[] = [];
   lines.push(`*📊 ${comp.name} — ${dayInfo(comp.startDate, comp.endDate)}*`);
@@ -213,6 +235,21 @@ export async function buildCompetitionDigest(comp: any): Promise<string> {
       const dot = r.isActive ? "🟢" : "⚪";
       lines.push(
         `${dot} ${r.team.name}: ${r.recentActsCount} activities · ${r.recentChatCount} chats · ${r.completedTasksCount} tasks done`,
+      );
+    });
+  }
+
+  // Individual engagement — most active members in the last window.
+  lines.push("");
+  lines.push("*🌟 Most engaged members (last 24h)*");
+  if (topEngaged.length === 0) {
+    lines.push("_No individual activity in the last 24h._");
+  } else {
+    topEngaged.forEach((u, i) => {
+      const name = idToName.get(u.id) || `user ${u.id}`;
+      const team = u.teamId != null ? teamNameById.get(u.teamId) : null;
+      lines.push(
+        `${i + 1}. ${name}${team ? ` (${team})` : ""} — ${u.count} submission${u.count === 1 ? "" : "s"} · ${u.points} pts`,
       );
     });
   }

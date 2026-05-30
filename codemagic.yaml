@@ -56,6 +56,7 @@ workflows:
           PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
           echo "Clearing locally cached provisioning profiles on the build machine..."
           rm -f "$PROFILE_DIR"/*.mobileprovision 2>/dev/null || true
+          mkdir -p "$PROFILE_DIR"
 
           echo "Looking up the Bundle ID resource for $BUNDLE_ID..."
           BUNDLE_RES_ID=$(app-store-connect bundle-ids list \
@@ -93,15 +94,19 @@ workflows:
             --certificate-ids $CERT_IDS \
             --type IOS_APP_STORE \
             --name "TacFit AppStore $(date +%s)" \
+            --profiles-dir "$PROFILE_DIR" \
             --save
 
           echo "Verifying the fresh profile includes the HealthKit entitlement..."
           FOUND_HK=0
-          for p in "$PROFILE_DIR"/*.mobileprovision; do
-            [ -e "$p" ] || continue
-            security cms -D -i "$p" > /tmp/pp.plist 2>/dev/null
-            HK=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:com.apple.developer.healthkit' /tmp/pp.plist 2>/dev/null)
-            [ "$HK" = "true" ] && FOUND_HK=1
+          for DIR in "$PROFILE_DIR" "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"; do
+            for p in "$DIR"/*.mobileprovision; do
+              [ -e "$p" ] || continue
+              security cms -D -i "$p" > /tmp/pp.plist 2>/dev/null
+              HK=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:com.apple.developer.healthkit' /tmp/pp.plist 2>/dev/null)
+              echo "  $p -> healthkit=$HK"
+              [ "$HK" = "true" ] && FOUND_HK=1
+            done
           done
           if [ "$FOUND_HK" != "1" ]; then
             echo "ERROR: the new provisioning profile does NOT include the HealthKit entitlement."

@@ -145,6 +145,20 @@ certificate." Always reuse the existing cert and only create the PROFILE
 (`profiles create`). Codemagic CLI uses grouped subcommands (`profiles list`,
 `profiles delete`, `bundle-ids list`, `certificates list`), not flat names.
 
+IMPORTANT lesson #2 — `profiles create --save` WITHOUT `--profiles-dir` saves to
+`$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles`, NOT
+`$HOME/Library/MobileDevice/Provisioning Profiles`. The first build with this
+step PASSED cert creation and minted a profile correctly, but the HealthKit
+verification loop checked the MobileDevice dir, found nothing, and false-failed
+with "profile does NOT include HealthKit." Fix: pass
+`--profiles-dir "$HOME/Library/MobileDevice/Provisioning Profiles"` to
+`profiles create` so the saved profile, the verification loop, and
+`xcode-project use-profiles` all read the same folder. (Verification now also
+scans the Xcode UserData dir as a fallback.) Deleting profiles in the portal
+never disables the App ID's HealthKit capability, so a freshly minted profile
+DOES inherit HealthKit — a "missing HealthKit" report from this step almost
+always means the wrong dir was checked, not a real capability problem.
+
 ### Apple rejection "crashed when taking a photo" — REAL root cause (2026-05-29 fix)
 The earlier theory (below, 2026-05-19) blamed `cap-build.sh` not running the
 Info.plist patcher. That script is only used for MANUAL Mac builds. The actual

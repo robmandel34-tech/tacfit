@@ -10,8 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { DefaultAvatar } from "@/components/default-avatar";
 import { Badge } from "@/components/ui/badge";
+import defaultAvatarSoldier from "@/assets/default-avatar-soldier.png";
 import { Trophy, Target, Users, Calendar, UserPlus, MessageCircle, Send, Clock, Check, X, Bell, Camera, Upload, Search, Edit, Trash2, ShieldOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, uploadUrl, API_BASE } from "@/lib/queryClient";
@@ -295,6 +295,10 @@ export default function Profile() {
 
   if (!user || !displayUser) return null;
 
+  const getInitials = (username: string) => {
+    return username.split(' ').map(word => word[0]).join('').toUpperCase() || username.slice(0, 2).toUpperCase();
+  };
+
   return (
     <div className="min-h-screen backdrop-blur-md bg-white/5">
       <Navigation />
@@ -368,8 +372,14 @@ export default function Profile() {
                           className="w-24 h-24 rounded-full border-4 border-white object-cover shadow-lg"
                         />
                       ) : (
-                        <div className="w-24 h-24 rounded-full border-4 border-white shadow-lg overflow-hidden">
-                          <DefaultAvatar seed={displayUser.id ?? displayUser.username} />
+                        <div className="w-24 h-24 bg-gradient-to-b from-military-green to-[#1a2e1a] rounded-full flex items-center justify-center border-4 border-white shadow-lg overflow-hidden">
+                          {/* Saluting soldier silhouette (default avatar) */}
+                          <img
+                            src={defaultAvatarSoldier}
+                            alt="Default profile"
+                            className="w-[88%] h-[88%] object-contain"
+                            style={{ filter: "brightness(0) invert(1)" }}
+                          />
                         </div>
                       )}
                     </div>
@@ -635,8 +645,13 @@ export default function Profile() {
                                               className="w-10 h-10 rounded-full object-cover"
                                             />
                                           ) : (
-                                            <AvatarFallback className="p-0 overflow-hidden">
-                                              <DefaultAvatar seed={friendship.friend?.id ?? friendship.friend?.username} />
+                                            <AvatarFallback className="bg-gradient-to-b from-military-green to-[#1a2e1a] p-0 overflow-hidden">
+                                              <svg viewBox="0 0 40 40" className="w-10 h-10" fill="none">
+                                                <ellipse cx="20" cy="11" rx="8" ry="5" fill="rgba(255,255,255,0.85)" />
+                                                <rect x="12" y="15" width="16" height="2" rx="1" fill="rgba(255,255,255,0.85)" />
+                                                <ellipse cx="20" cy="20" rx="5" ry="5" fill="rgba(255,255,255,0.85)" />
+                                                <path d="M9 40 Q9 29 11 27 L15 26 Q18 28 20 28 Q22 28 25 26 L29 27 Q31 29 31 40 Z" fill="rgba(255,255,255,0.85)" />
+                                              </svg>
                                             </AvatarFallback>
                                           )}
                                         </Avatar>
@@ -701,8 +716,8 @@ export default function Profile() {
                                     <div key={request.id} className="flex items-center justify-between p-3 bg-tactical-gray rounded-lg">
                                       <div className="flex items-center space-x-3">
                                         <Avatar className="h-10 w-10">
-                                          <AvatarFallback className="p-0 overflow-hidden">
-                                            <DefaultAvatar seed={request.requester?.id ?? request.requester?.username} />
+                                          <AvatarFallback className="bg-military-green text-forest-green">
+                                            {request.requester?.username?.charAt(0).toUpperCase()}
                                           </AvatarFallback>
                                         </Avatar>
                                         <div>

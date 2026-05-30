@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { DefaultAvatar } from "@/components/default-avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Send, ImageIcon, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -172,8 +171,8 @@ export default function DirectMessageModal({ isOpen, onClose, friend }: DirectMe
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
             <Avatar className="h-8 w-8">
-              <AvatarFallback className="p-0 overflow-hidden">
-                <DefaultAvatar seed={friend.id ?? friend.username} />
+              <AvatarFallback className="bg-military-green text-forest-green text-sm">
+                {friend.username.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             {friend.username}

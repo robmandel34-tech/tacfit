@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DefaultAvatar } from "@/components/default-avatar";
 import { Badge } from "@/components/ui/badge";
 import { UserPlus, Phone, Search, Users, Send, Copy, MessageSquare } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -151,6 +150,10 @@ export default function TeamInviteModal({
     onClose();
   };
 
+  const getInitials = (name: string) => {
+    return name?.split(' ').map(n => n[0]).join('').toUpperCase() || '?';
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-2xl bg-tactical-gray border-tactical-gray-light">
@@ -200,8 +203,8 @@ export default function TeamInviteModal({
                       <div className="flex items-center space-x-3">
                         <Avatar className="h-10 w-10">
                           <AvatarImage src={searchUser.avatar ? uploadUrl(searchUser.avatar) : undefined} />
-                          <AvatarFallback className="p-0 overflow-hidden">
-                            <DefaultAvatar seed={searchUser.id ?? searchUser.username} />
+                          <AvatarFallback className="bg-military-green text-forest-green">
+                            {getInitials(searchUser.username)}
                           </AvatarFallback>
                         </Avatar>
                         <div>

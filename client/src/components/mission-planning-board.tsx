@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DefaultAvatar } from "@/components/default-avatar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Plus, X, Edit2, Check, Trash2, Calendar, ChevronDown, ChevronUp, Clipboard } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -388,8 +387,8 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
                       <div className="flex items-center space-x-2">
                         <Avatar className="h-6 w-6">
                           <AvatarImage src={uploadUrl(teamMembers.find(m => m.user?.id?.toString() === editTask.assignedTo)?.user?.avatar)} />
-                          <AvatarFallback className="p-0 overflow-hidden">
-                            <DefaultAvatar seed={editTask.assignedTo} />
+                          <AvatarFallback className="bg-military-green text-forest-green text-xs">
+                            {teamMembers.find(m => m.user?.id?.toString() === editTask.assignedTo)?.user?.username?.charAt(0)?.toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <Select
@@ -479,8 +478,8 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
                     <div className="flex items-center space-x-2">
                       <Avatar className="h-6 w-6">
                         <AvatarImage src={uploadUrl(teamMembers.find(m => m.user?.id?.toString() === task.assignedTo)?.user?.avatar)} />
-                        <AvatarFallback className="p-0 overflow-hidden">
-                          <DefaultAvatar seed={task.assignedTo ?? task.assignedToUsername} />
+                        <AvatarFallback className="bg-military-green text-forest-green text-xs">
+                          {task.assignedToUsername?.charAt(0)?.toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <span className="text-gray-300 text-sm">{task.assignedToUsername}</span>

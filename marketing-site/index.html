@@ -885,7 +885,7 @@
         <p class="mission-note">Strength worth having is strength you can share.</p>
       </div>
       <div class="mission-graphic reveal">
-        <svg viewBox="0 0 420 420" role="img" aria-label="One person's effort radiating outward to lift a connected team">
+        <svg viewBox="0 0 420 420" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" aria-label="One person's effort radiating outward to lift a connected team">
           <defs>
             <radialGradient id="coreGrad" cx="50%" cy="42%" r="60%">
               <stop offset="0%" stop-color="#61E55D"/>
@@ -907,14 +907,42 @@
               <animate attributeName="stroke-opacity" values="0.5;0;0.5" dur="6s" begin="4s" repeatCount="indefinite"/>
             </circle>
           </g>
-          <!-- connecting lines, dashes flow outward from the center -->
-          <g stroke="#3BDE35" stroke-width="2" stroke-opacity="0.5" stroke-linecap="round" stroke-dasharray="2 10">
-            <line x1="210" y1="210" x2="360" y2="210"><animate attributeName="stroke-dashoffset" values="24;0" dur="1.6s" repeatCount="indefinite"/></line>
-            <line x1="210" y1="210" x2="285" y2="340"><animate attributeName="stroke-dashoffset" values="24;0" dur="1.6s" repeatCount="indefinite"/></line>
-            <line x1="210" y1="210" x2="135" y2="340"><animate attributeName="stroke-dashoffset" values="24;0" dur="1.6s" repeatCount="indefinite"/></line>
-            <line x1="210" y1="210" x2="60" y2="210"><animate attributeName="stroke-dashoffset" values="24;0" dur="1.6s" repeatCount="indefinite"/></line>
-            <line x1="210" y1="210" x2="135" y2="80"><animate attributeName="stroke-dashoffset" values="24;0" dur="1.6s" repeatCount="indefinite"/></line>
-            <line x1="210" y1="210" x2="285" y2="80"><animate attributeName="stroke-dashoffset" values="24;0" dur="1.6s" repeatCount="indefinite"/></line>
+          <!-- varied connecting paths, dashes flow outward from the center -->
+          <g fill="none" stroke="#3BDE35" stroke-linecap="round">
+            <path id="conn1" d="M210 210 Q 280 158 360 210" stroke-width="2.2" stroke-opacity="0.6" stroke-dasharray="2 11"><animate attributeName="stroke-dashoffset" values="26;0" dur="1.7s" repeatCount="indefinite"/></path>
+            <path id="conn2" d="M210 210 Q 230 286 285 340" stroke-width="1.5" stroke-opacity="0.4" stroke-dasharray="2 9"><animate attributeName="stroke-dashoffset" values="22;0" dur="2.4s" repeatCount="indefinite"/></path>
+            <path id="conn3" d="M210 210 Q 196 282 135 340" stroke-width="2" stroke-opacity="0.52" stroke-dasharray="3 10"><animate attributeName="stroke-dashoffset" values="26;0" dur="1.9s" repeatCount="indefinite"/></path>
+            <path id="conn4" d="M210 210 Q 134 250 60 210" stroke-width="1.5" stroke-opacity="0.38" stroke-dasharray="2 13"><animate attributeName="stroke-dashoffset" values="30;0" dur="2.7s" repeatCount="indefinite"/></path>
+            <path id="conn5" d="M210 210 Q 126 146 135 80" stroke-width="2.2" stroke-opacity="0.58" stroke-dasharray="2 10"><animate attributeName="stroke-dashoffset" values="24;0" dur="1.6s" repeatCount="indefinite"/></path>
+            <path id="conn6" d="M210 210 Q 302 146 285 80" stroke-width="1.8" stroke-opacity="0.46" stroke-dasharray="3 11"><animate attributeName="stroke-dashoffset" values="28;0" dur="2.1s" repeatCount="indefinite"/></path>
+          </g>
+          <!-- engagement actions gently traveling outward along the connections (subtle) -->
+          <g fill="#61E55D">
+            <!-- encouragement: heart on conn1 -->
+            <g opacity="0">
+              <path d="M0 2.4 C -3.4 -2.6 -9 1 0 7.4 C 9 1 3.4 -2.6 0 2.4 Z"/>
+              <animateMotion dur="4.2s" begin="0s" repeatCount="indefinite"><mpath xlink:href="#conn1"/></animateMotion>
+              <animate attributeName="opacity" values="0;0.8;0.8;0" keyTimes="0;0.2;0.78;1" dur="4.2s" begin="0s" repeatCount="indefinite"/>
+            </g>
+            <!-- check-in: chat bubble on conn3 -->
+            <g opacity="0">
+              <rect x="-6" y="-5" width="12" height="9" rx="2.6"/>
+              <path d="M-3.4 3.4 L-6 7 L-6 3.4 Z"/>
+              <animateMotion dur="5s" begin="1.3s" repeatCount="indefinite"><mpath xlink:href="#conn3"/></animateMotion>
+              <animate attributeName="opacity" values="0;0.78;0.78;0" keyTimes="0;0.2;0.78;1" dur="5s" begin="1.3s" repeatCount="indefinite"/>
+            </g>
+            <!-- celebrating wins: spark/star on conn6 -->
+            <g opacity="0">
+              <path d="M0 -6.2 L1.7 -1.7 L6.2 0 L1.7 1.7 L0 6.2 L-1.7 1.7 L-6.2 0 L-1.7 -1.7 Z"/>
+              <animateMotion dur="4.6s" begin="2.6s" repeatCount="indefinite"><mpath xlink:href="#conn6"/></animateMotion>
+              <animate attributeName="opacity" values="0;0.82;0.82;0" keyTimes="0;0.2;0.78;1" dur="4.6s" begin="2.6s" repeatCount="indefinite"/>
+            </g>
+            <!-- leadership / motivation: rising chevron on conn5 -->
+            <g opacity="0">
+              <path d="M-5 3.4 L0 -3 L5 3.4 L3 4.8 L0 0.4 L-3 4.8 Z"/>
+              <animateMotion dur="5.4s" begin="0.7s" repeatCount="indefinite"><mpath xlink:href="#conn5"/></animateMotion>
+              <animate attributeName="opacity" values="0;0.76;0.76;0" keyTimes="0;0.2;0.78;1" dur="5.4s" begin="0.7s" repeatCount="indefinite"/>
+            </g>
           </g>
           <!-- teammate nodes, each with a small figure -->
           <g>

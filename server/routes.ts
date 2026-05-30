@@ -13,6 +13,7 @@ import {
 } from "@shared/schema";
 import { getCompetitionPricing } from "@shared/pricing";
 import { mapHealthKitTypeToActivityName } from "@shared/healthkit";
+import { recomputeReadinessForUser } from "./readiness-service";
 import { z } from "zod";
 import { ObjectStorageService, ObjectNotFoundError } from './objectStorage.js';
 import { db } from "./db";
@@ -2670,6 +2671,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (e) {
       console.error("apple-health link error:", e);
       res.status(500).json({ message: "Failed to link workout" });
+    }
+  });
+
+  // --- Readiness ---
+
+  const dailyMetricSchema = z.object({
+    metricDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "metricDate must be YYYY-MM-DD"),
+    hrv: z.number().finite().nullable().optional(),
+    restingHeartRate: z.number().finite().nullable().optional(),
+    respiratoryRate: z.number().finite().nullable().optional(),
+    oxygenSaturation: z.number().finite().nullable().optional(),
+    bodyTemperature: z.number().finite().nullable().optional(),
+    sleepDurationMin: z.number().finite().nullable().optional(),
+    deepSleepMin: z.number().finite().nullable().optional(),
+    remSleepMin: z.number().finite().nullable().optional(),
+  });
+  const metricsSyncSchema = z.object({
+    metrics: z.array(dailyMetricSchema).max(90),
+  });
+
+  // Device pushes recent daily health metrics; we store them and recompute readiness.
+  app.post("/api/apple-health/metrics/sync", async (req, res) => {
+    try {
+      const userId = requireUserId(req, res);
+      if (!userId) return;
+      const parsed = metricsSyncSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({
+          message: "Invalid metrics payload",
+          errors: parsed.error.flatten(),
+        });
+      }
+      let synced = 0;
+      for (const m of parsed.data.metrics) {
+        await storage.upsertHealthMetric({
+          userId,
+          metricDate: m.metricDate,
+          hrv: m.hrv ?? null,
+          restingHeartRate: m.restingHeartRate ?? null,
+          respiratoryRate: m.respiratoryRate ?? null,
+          oxygenSaturation: m.oxygenSaturation ?? null,
+          bodyTemperature: m.bodyTemperature ?? null,
+          sleepDurationMin: m.sleepDurationMin ?? null,
+          deepSleepMin: m.deepSleepMin ?? null,
+          remSleepMin: m.remSleepMin ?? null,
+        });
+        synced++;
+      }
+      const readiness = await recomputeReadinessForUser(storage, userId);
+      res.json({ synced, readiness });
+    } catch (e) {
+      console.error("apple-health metrics sync error:", e);
+      res.status(500).json({ message: "Failed to sync health metrics" });
+    }
+  });
+
+  // Current user's own readiness.
+  app.get("/api/readiness/me", async (req, res) => {
+    try {
+      const userId = requireUserId(req, res);
+      if (!userId) return;
+      const readiness = await storage.getReadiness(userId);
+      res.json({
+        score: readiness?.score ?? null,
+        bucket: readiness?.bucket ?? null,
+        state: readiness?.state ?? "insufficient",
+      });
+    } catch (e) {
+      console.error("readiness me error:", e);
+      res.status(500).json({ message: "Failed to get readiness" });
+    }
+  });
+
+  // Readiness for everyone on a team — only the team's own members may read it,
+  // and only the public-safe fields (score/bucket/state) are returned.
+  app.get("/api/readiness/team/:teamId", async (req, res) => {
+    try {
+      const userId = requireUserId(req, res);
+      if (!userId) return;
+      const teamId = parseInt(req.params.teamId);
+      if (Number.isNaN(teamId)) {
+        return res.status(400).json({ message: "Invalid team id" });
+      }
+      const requester = await storage.getTeamMember(teamId, userId);
+      if (!requester) {
+        return res.status(403).json({ message: "Not a member of this team" });
+      }
+      const members = await storage.getTeamMembers(teamId);
+      const userIds = members.map((m) => m.userId!).filter((id) => id != null);
+      const scores = await storage.getReadinessForUsers(userIds);
+      const byUser: Record<number, { score: number | null; bucket: string | null; state: string }> = {};
+      for (const s of scores) {
+        byUser[s.userId] = { score: s.score, bucket: s.bucket, state: s.state };
+      }
+      res.json(byUser);
+    } catch (e) {
+      console.error("readiness team error:", e);
+      res.status(500).json({ message: "Failed to get team readiness" });
     }
   });
 

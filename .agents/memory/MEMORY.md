@@ -1,2 +1,2 @@
-- [Activity submission integrity](activity-submission-integrity.md) — competition/evidence/HealthKit rules must be enforced server-side in POST /api/activities, not just the modal UI; points economy is farmable otherwise.
-- [HealthKit plugin quirks](healthkit-plugin-quirks.md) — @perfood plugin duration is often 0 (derive from start/end); Apple Health provenance tracked via activities.fromAppleHealth, not description text.
+- [Capacitor plugin pods](capacitor-plugin-pods.md) — every new Capacitor plugin needs its pod added to ios/App/Podfile by hand; Codemagic only runs `cap copy`, not `cap sync`.
+- [HealthKit plugin signals](healthkit-readiness.md) — @perfood/capacitor-healthkit cannot read HRV; Readiness is built from 5 other signals, hrv column reserved.

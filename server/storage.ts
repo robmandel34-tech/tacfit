@@ -9,7 +9,8 @@ import {
   AdminPost, InsertAdminPost, MoodLog, InsertMoodLog,
   TeammateReport, InsertTeammateReport,
   AppleHealthConnection, InsertAppleHealthConnection,
-  AppleHealthWorkout, InsertAppleHealthWorkout, Competition as CompetitionType
+  AppleHealthWorkout, InsertAppleHealthWorkout, Competition as CompetitionType,
+  HealthMetric, InsertHealthMetric, ReadinessScore, InsertReadinessScore
 } from "@shared/schema";
 
 export interface IStorage {
@@ -169,6 +170,13 @@ export interface IStorage {
   // All unsubmitted workouts annotated with whether they can be used for the given
   // competition (or all eligible as independent activities when competition is null).
   getWorkoutsWithEligibility(userId: number, competition: CompetitionType | null): Promise<(AppleHealthWorkout & { eligible: boolean; ineligibleReason: string | null })[]>;
+
+  // Readiness / health metrics operations
+  upsertHealthMetric(metric: InsertHealthMetric): Promise<HealthMetric>;
+  getHealthMetrics(userId: number, sinceDate?: string): Promise<HealthMetric[]>;
+  getReadiness(userId: number): Promise<ReadinessScore | undefined>;
+  upsertReadiness(userId: number, data: Omit<InsertReadinessScore, "userId">): Promise<ReadinessScore>;
+  getReadinessForUsers(userIds: number[]): Promise<ReadinessScore[]>;
 
   // User block operations
   blockUser(blockerId: number, blockedId: number): Promise<void>;

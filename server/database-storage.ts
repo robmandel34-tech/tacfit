@@ -11,11 +11,13 @@ import {
   TeammateReport, InsertTeammateReport,
   AppleHealthConnection, InsertAppleHealthConnection,
   AppleHealthWorkout, InsertAppleHealthWorkout,
+  HealthMetric, InsertHealthMetric, ReadinessScore, InsertReadinessScore,
   users, competitions, teams, teamMembers, activities, activityTypes,
   activityComments, activityLikes, activityFlags, chatMessages, friendships, 
   competitionHistory, competitionInvitations, competitionEntries, phoneInvitations, 
   whiteboardItems, missionTasks, adminPosts, advertisements, moodLogs, userInvitations,
-  userBlocks, teammateReports, appleHealthConnections, appleHealthWorkouts
+  userBlocks, teammateReports, appleHealthConnections, appleHealthWorkouts,
+  healthMetrics, readinessScores
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc, isNull, gt, gte, lte, inArray, sql } from "drizzle-orm";
@@ -1461,5 +1463,76 @@ export class DatabaseStorage implements IStorage {
       }
       return { ...w, eligible: true, ineligibleReason: null };
     });
+  }
+
+  // --- Readiness / health metrics ---
+
+  async upsertHealthMetric(metric: InsertHealthMetric): Promise<HealthMetric> {
+    const [existing] = await db
+      .select()
+      .from(healthMetrics)
+      .where(
+        and(
+          eq(healthMetrics.userId, metric.userId),
+          eq(healthMetrics.metricDate, metric.metricDate),
+        ),
+      );
+    if (existing) {
+      const [updated] = await db
+        .update(healthMetrics)
+        .set({ ...metric, syncedAt: new Date() })
+        .where(eq(healthMetrics.id, existing.id))
+        .returning();
+      return updated;
+    }
+    const [created] = await db.insert(healthMetrics).values(metric).returning();
+    return created;
+  }
+
+  async getHealthMetrics(userId: number, sinceDate?: string): Promise<HealthMetric[]> {
+    const where = sinceDate
+      ? and(eq(healthMetrics.userId, userId), gte(healthMetrics.metricDate, sinceDate))
+      : eq(healthMetrics.userId, userId);
+    return db
+      .select()
+      .from(healthMetrics)
+      .where(where)
+      .orderBy(desc(healthMetrics.metricDate));
+  }
+
+  async getReadiness(userId: number): Promise<ReadinessScore | undefined> {
+    const [row] = await db
+      .select()
+      .from(readinessScores)
+      .where(eq(readinessScores.userId, userId));
+    return row;
+  }
+
+  async upsertReadiness(
+    userId: number,
+    data: Omit<InsertReadinessScore, "userId">,
+  ): Promise<ReadinessScore> {
+    const existing = await this.getReadiness(userId);
+    if (existing) {
+      const [updated] = await db
+        .update(readinessScores)
+        .set({ ...data, updatedAt: new Date() })
+        .where(eq(readinessScores.userId, userId))
+        .returning();
+      return updated;
+    }
+    const [created] = await db
+      .insert(readinessScores)
+      .values({ ...data, userId })
+      .returning();
+    return created;
+  }
+
+  async getReadinessForUsers(userIds: number[]): Promise<ReadinessScore[]> {
+    if (userIds.length === 0) return [];
+    return db
+      .select()
+      .from(readinessScores)
+      .where(inArray(readinessScores.userId, userIds));
   }
 }

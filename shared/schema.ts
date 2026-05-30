@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, uniqueIndex, varchar, json, index } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, uniqueIndex, varchar, json, index, real } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -577,4 +577,52 @@ export type AppleHealthConnection = typeof appleHealthConnections.$inferSelect;
 export type InsertAppleHealthConnection = z.infer<typeof insertAppleHealthConnectionSchema>;
 export type AppleHealthWorkout = typeof appleHealthWorkouts.$inferSelect;
 export type InsertAppleHealthWorkout = z.infer<typeof insertAppleHealthWorkoutSchema>;
+
+// Daily health metrics pulled from Apple Health, used to compute a Readiness score.
+// One row per user per calendar day (the device's local day, "YYYY-MM-DD").
+// All metric values are nullable because a given device/day may not have every signal.
+export const healthMetrics = pgTable("health_metrics", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  metricDate: text("metric_date").notNull(), // local calendar day "YYYY-MM-DD"
+  hrv: real("hrv"), // heart rate variability (ms) — not yet readable via current plugin; reserved
+  restingHeartRate: real("resting_heart_rate"), // bpm
+  respiratoryRate: real("respiratory_rate"), // breaths/min
+  oxygenSaturation: real("oxygen_saturation"), // 0..1 or % as reported
+  bodyTemperature: real("body_temperature"), // in the unit reported by the device
+  sleepDurationMin: real("sleep_duration_min"), // total asleep minutes
+  deepSleepMin: real("deep_sleep_min"),
+  remSleepMin: real("rem_sleep_min"),
+  raw: json("raw"),
+  syncedAt: timestamp("synced_at").defaultNow(),
+}, (table) => ({
+  userDateUnique: uniqueIndex("health_metrics_user_date_idx").on(table.userId, table.metricDate),
+}));
+
+// Latest computed readiness score per user (one row per user).
+export const readinessScores = pgTable("readiness_scores", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull().unique(),
+  score: integer("score"), // 0..100, null when state is not "ready"
+  bucket: text("bucket"), // ready | moderate | fatigued | rest | null
+  state: text("state").notNull().default("insufficient"), // ready | calibrating | insufficient
+  signalsUsed: integer("signals_used").default(0).notNull(),
+  metricDate: text("metric_date"), // the day the score was computed for
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertHealthMetricSchema = createInsertSchema(healthMetrics).omit({
+  id: true,
+  syncedAt: true,
+});
+
+export const insertReadinessScoreSchema = createInsertSchema(readinessScores).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export type HealthMetric = typeof healthMetrics.$inferSelect;
+export type InsertHealthMetric = z.infer<typeof insertHealthMetricSchema>;
+export type ReadinessScore = typeof readinessScores.$inferSelect;
+export type InsertReadinessScore = z.infer<typeof insertReadinessScoreSchema>;
 

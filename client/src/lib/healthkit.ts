@@ -15,8 +15,33 @@ export interface NormalizedWorkout {
 }
 
 // HealthKit read scopes we request. These map to @perfood/capacitor-healthkit
-// authorization option keys.
-const READ_SCOPES = ["activity", "calories", "distance", "duration"];
+// authorization option keys. The second group powers the Readiness score
+// (resting HR, respiratory rate, blood oxygen, body temperature, sleep).
+const READ_SCOPES = [
+  "activity",
+  "calories",
+  "distance",
+  "duration",
+  "restingHeartRate",
+  "respiratoryRate",
+  "oxygenSaturation",
+  "bodyTemperature",
+  "sleepAnalysis",
+];
+
+// Daily health metrics sent to /api/apple-health/metrics/sync. Any field may be
+// null when the device has no reading for that signal on that day. HRV is not
+// readable via the current plugin, so it is always omitted for now.
+export interface NormalizedDailyMetric {
+  metricDate: string; // local calendar day "YYYY-MM-DD"
+  restingHeartRate: number | null;
+  respiratoryRate: number | null;
+  oxygenSaturation: number | null;
+  bodyTemperature: number | null;
+  sleepDurationMin: number | null;
+  deepSleepMin: number | null;
+  remSleepMin: number | null;
+}
 
 // HealthKit is only available inside the native iOS app.
 export function isHealthKitAvailable(): boolean {
@@ -84,4 +109,137 @@ export async function readRecentWorkouts(sinceDays = 30): Promise<NormalizedWork
       raw: w,
       };
     });
+}
+
+// Converts a Date to a local "YYYY-MM-DD" string.
+function localDayKey(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+// Reads a single numeric sample type and groups daily averages by local day.
+async function readDailyAverages(
+  sampleName: string,
+  start: Date,
+  end: Date,
+): Promise<Record<string, number>> {
+  const { CapacitorHealthkit } = await import("@perfood/capacitor-healthkit");
+  let rows: any[] = [];
+  try {
+    const result = await CapacitorHealthkit.queryHKitSampleType<any>({
+      sampleName,
+      startDate: start.toISOString(),
+      endDate: end.toISOString(),
+      limit: 0,
+    });
+    rows = result?.resultData ?? [];
+  } catch {
+    return {};
+  }
+  const sums: Record<string, { total: number; count: number }> = {};
+  for (const r of rows) {
+    const when = r?.startDate ?? r?.endDate;
+    const value = Number(r?.value);
+    if (!when || !Number.isFinite(value)) continue;
+    const key = localDayKey(new Date(when));
+    if (!sums[key]) sums[key] = { total: 0, count: 0 };
+    sums[key].total += value;
+    sums[key].count += 1;
+  }
+  const out: Record<string, number> = {};
+  for (const [key, { total, count }] of Object.entries(sums)) {
+    if (count > 0) out[key] = total / count;
+  }
+  return out;
+}
+
+// Classifies a HealthKit sleep sample's stage from its value/string. Apple's
+// sleep stage labels vary across iOS versions, so we match loosely.
+function sleepStage(raw: any): "deep" | "rem" | "asleep" | "other" {
+  const v = String(raw?.value ?? raw?.sleepState ?? "").toLowerCase();
+  if (v.includes("deep")) return "deep";
+  if (v.includes("rem")) return "rem";
+  if (v.includes("awake") || v.includes("inbed") || v.includes("in_bed")) return "other";
+  if (v.includes("asleep") || v.includes("core") || v.includes("unspecified")) return "asleep";
+  // Numeric encodings: 1 = inBed/awake, >=2 = some asleep stage.
+  const n = Number(raw?.value);
+  if (Number.isFinite(n)) {
+    if (n >= 3) return "asleep";
+    if (n === 2) return "asleep";
+  }
+  return "other";
+}
+
+// Reads sleep samples and totals asleep / deep / REM minutes per local day.
+// A night is attributed to the day it ends on (matching how Apple shows sleep).
+async function readDailySleep(
+  start: Date,
+  end: Date,
+): Promise<Record<string, { total: number; deep: number; rem: number }>> {
+  const { CapacitorHealthkit } = await import("@perfood/capacitor-healthkit");
+  let rows: any[] = [];
+  try {
+    const result = await CapacitorHealthkit.queryHKitSampleType<any>({
+      sampleName: "sleepAnalysis",
+      startDate: start.toISOString(),
+      endDate: end.toISOString(),
+      limit: 0,
+    });
+    rows = result?.resultData ?? [];
+  } catch {
+    return {};
+  }
+  const out: Record<string, { total: number; deep: number; rem: number }> = {};
+  for (const r of rows) {
+    const s = r?.startDate ? new Date(r.startDate).getTime() : NaN;
+    const e = r?.endDate ? new Date(r.endDate).getTime() : NaN;
+    if (!Number.isFinite(s) || !Number.isFinite(e) || e <= s) continue;
+    const stage = sleepStage(r);
+    if (stage === "other") continue;
+    const minutes = (e - s) / 60000;
+    const key = localDayKey(new Date(e));
+    if (!out[key]) out[key] = { total: 0, deep: 0, rem: 0 };
+    out[key].total += minutes;
+    if (stage === "deep") out[key].deep += minutes;
+    if (stage === "rem") out[key].rem += minutes;
+  }
+  return out;
+}
+
+// Reads recent daily health metrics from HealthKit. No-ops on web.
+export async function readDailyHealthMetrics(sinceDays = 35): Promise<NormalizedDailyMetric[]> {
+  if (!isHealthKitAvailable()) return [];
+  const end = new Date();
+  const start = new Date(end.getTime() - sinceDays * 24 * 60 * 60 * 1000);
+
+  const [rhr, resp, spo2, temp, sleep] = await Promise.all([
+    readDailyAverages("restingHeartRate", start, end),
+    readDailyAverages("respiratoryRate", start, end),
+    readDailyAverages("oxygenSaturation", start, end),
+    readDailyAverages("bodyTemperature", start, end),
+    readDailySleep(start, end),
+  ]);
+
+  const days = new Set<string>([
+    ...Object.keys(rhr),
+    ...Object.keys(resp),
+    ...Object.keys(spo2),
+    ...Object.keys(temp),
+    ...Object.keys(sleep),
+  ]);
+
+  return Array.from(days)
+    .sort()
+    .map((metricDate) => ({
+      metricDate,
+      restingHeartRate: rhr[metricDate] ?? null,
+      respiratoryRate: resp[metricDate] ?? null,
+      oxygenSaturation: spo2[metricDate] ?? null,
+      bodyTemperature: temp[metricDate] ?? null,
+      sleepDurationMin: sleep[metricDate]?.total ?? null,
+      deepSleepMin: sleep[metricDate]?.deep ?? null,
+      remSleepMin: sleep[metricDate]?.rem ?? null,
+    }));
 }

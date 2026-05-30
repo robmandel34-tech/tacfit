@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   getHealthKitScopes,
   isHealthKitAvailable,
+  readDailyHealthMetrics,
   readRecentWorkouts,
   requestHealthKitAuthorization,
 } from "@/lib/healthkit";
@@ -44,6 +45,21 @@ export function useAppleHealth() {
         const data = await res.json();
         await queryClient.invalidateQueries({ queryKey: ["/api/apple-health/status"] });
         await queryClient.invalidateQueries({ queryKey: ["/api/apple-health/workouts"] });
+
+        // Also sync daily readiness metrics (best-effort; never blocks workouts).
+        try {
+          const metrics = await readDailyHealthMetrics(35);
+          if (metrics.length > 0) {
+            await apiRequest("POST", "/api/apple-health/metrics/sync", { metrics });
+            // Team readiness uses a single-string key (/api/readiness/team/:id),
+            // so match by predicate rather than an exact array prefix.
+            await queryClient.invalidateQueries({
+              predicate: (q) => String(q.queryKey[0] ?? "").startsWith("/api/readiness"),
+            });
+          }
+        } catch {
+          // ignore metric sync failures — workouts already synced
+        }
         if (!silent) {
           toast({
             title: "Apple Health synced",

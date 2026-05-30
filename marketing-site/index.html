@@ -555,6 +555,32 @@
   .foot-links { display: flex; gap: 28px; }
   .foot-links a:hover { color: var(--green); }
 
+  /* MISSION — what makes us different */
+  .mission { padding: 130px 0; position: relative; overflow: hidden; }
+  .mission::before { content: ''; position: absolute; top: -120px; left: 50%; transform: translateX(-50%); width: 900px; height: 900px; background: radial-gradient(circle, rgba(59,222,53,0.10), transparent 60%); pointer-events: none; }
+  .mission .container { position: relative; z-index: 1; }
+  .mission-grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 64px; align-items: center; }
+  @media (max-width: 920px) { .mission-grid { grid-template-columns: 1fr; gap: 44px; } }
+  .mission-copy h2 { font-size: clamp(30px, 4vw, 46px); font-weight: 900; letter-spacing: -0.03em; line-height: 1.1; margin: 14px 0 24px; }
+  .mission-copy h2 .accent { background: linear-gradient(135deg, var(--green-light), var(--green)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .mission-copy p { color: var(--text-2); font-size: 18px; line-height: 1.7; margin-bottom: 18px; }
+  .mission-copy p .em { color: var(--text); font-weight: 700; }
+  .mission-note { border-left: 2px solid var(--green); padding-left: 18px; color: var(--text); font-size: 17px; line-height: 1.5; font-style: italic; font-weight: 500; }
+  .mission-graphic { display: flex; align-items: center; justify-content: center; }
+  .mission-graphic svg { width: 100%; max-width: 440px; height: auto; }
+  .mission-proof { text-align: center; max-width: 640px; margin: 104px auto 44px; }
+  .mission-proof h3 { font-size: clamp(24px, 3vw, 34px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; margin-top: 12px; }
+  .mission-proof h3 .accent { color: var(--green); }
+  .mission-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  @media (max-width: 920px) { .mission-stats { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 520px) { .mission-stats { grid-template-columns: 1fr; } }
+  .mstat { background: linear-gradient(180deg, var(--card), var(--card-2)); border: 1px solid var(--border); border-radius: 18px; padding: 28px 24px; transition: transform .2s, border-color .2s; }
+  .mstat:hover { transform: translateY(-4px); border-color: rgba(59,222,53,0.45); }
+  .mstat strong { display: block; font-size: clamp(34px, 4vw, 48px); font-weight: 900; letter-spacing: -0.03em; background: linear-gradient(135deg, var(--green-light), var(--green)); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 10px; }
+  .mstat p { color: var(--text-2); font-size: 14.5px; line-height: 1.55; margin-bottom: 14px; }
+  .mstat cite { color: var(--text-3); font-size: 11px; font-style: normal; letter-spacing: 0.07em; text-transform: uppercase; font-weight: 600; }
+  @media (max-width: 920px) { .mission { padding: 90px 0; } .mission-proof { margin: 72px auto 36px; } }
+
   /* SCROLL REVEALS */
   .reveal { opacity: 0; transform: translateY(24px); transition: opacity .9s ease, transform .9s ease; }
   .reveal.in { opacity: 1; transform: translateY(0); }
@@ -846,6 +872,97 @@
     <span>Body · Mind · Spirit</span>
   </div>
 </div>
+
+<!-- MISSION — what makes TacFit different -->
+<section class="mission" id="mission">
+  <div class="container">
+    <div class="mission-grid">
+      <div class="mission-copy reveal">
+        <span class="section-eyebrow">What Makes Us Different</span>
+        <h2>Built to lift others, <span class="accent">not just yourself.</span></h2>
+        <p>Most fitness apps revolve around you — your streak, your likes, your highlight reel. TacFit revolves around <span class="em">us</span>. By design, every engagement, every action, every feature points the same direction: sharing the pursuit of whole fitness — body, mind and spirit — with the people beside you.</p>
+        <p>This isn't a stage for vanity or a scoreboard for validation. If you're here only for attention and applause, TacFit probably isn't your app. Our members care about getting stronger — but in service of becoming someone capable of serving and lifting others up.</p>
+        <p class="mission-note">Strength worth having is strength you can share.</p>
+      </div>
+      <div class="mission-graphic reveal">
+        <svg viewBox="0 0 420 420" role="img" aria-label="One person's effort radiating outward to lift a connected team">
+          <defs>
+            <radialGradient id="coreGrad" cx="50%" cy="42%" r="60%">
+              <stop offset="0%" stop-color="#61E55D"/>
+              <stop offset="100%" stop-color="#24BD1F"/>
+            </radialGradient>
+          </defs>
+          <!-- ripple rings radiating outward -->
+          <g fill="none" stroke="#3BDE35">
+            <circle cx="210" cy="210" r="60">
+              <animate attributeName="r" values="58;176;58" dur="6s" repeatCount="indefinite"/>
+              <animate attributeName="stroke-opacity" values="0.5;0;0.5" dur="6s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="210" cy="210" r="60">
+              <animate attributeName="r" values="58;176;58" dur="6s" begin="2s" repeatCount="indefinite"/>
+              <animate attributeName="stroke-opacity" values="0.5;0;0.5" dur="6s" begin="2s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="210" cy="210" r="60">
+              <animate attributeName="r" values="58;176;58" dur="6s" begin="4s" repeatCount="indefinite"/>
+              <animate attributeName="stroke-opacity" values="0.5;0;0.5" dur="6s" begin="4s" repeatCount="indefinite"/>
+            </circle>
+          </g>
+          <!-- connecting lines, dashes flow outward from the center -->
+          <g stroke="#3BDE35" stroke-width="2" stroke-opacity="0.5" stroke-linecap="round" stroke-dasharray="2 10">
+            <line x1="210" y1="210" x2="360" y2="210"><animate attributeName="stroke-dashoffset" values="24;0" dur="1.6s" repeatCount="indefinite"/></line>
+            <line x1="210" y1="210" x2="285" y2="340"><animate attributeName="stroke-dashoffset" values="24;0" dur="1.6s" repeatCount="indefinite"/></line>
+            <line x1="210" y1="210" x2="135" y2="340"><animate attributeName="stroke-dashoffset" values="24;0" dur="1.6s" repeatCount="indefinite"/></line>
+            <line x1="210" y1="210" x2="60" y2="210"><animate attributeName="stroke-dashoffset" values="24;0" dur="1.6s" repeatCount="indefinite"/></line>
+            <line x1="210" y1="210" x2="135" y2="80"><animate attributeName="stroke-dashoffset" values="24;0" dur="1.6s" repeatCount="indefinite"/></line>
+            <line x1="210" y1="210" x2="285" y2="80"><animate attributeName="stroke-dashoffset" values="24;0" dur="1.6s" repeatCount="indefinite"/></line>
+          </g>
+          <!-- teammate nodes, each with a small figure -->
+          <g>
+            <g transform="translate(360,210)"><circle r="22" fill="#14181F" stroke="#3BDE35" stroke-width="1.6" stroke-opacity="0.7"/><circle cy="-5" r="5" fill="#3BDE35"/><path d="M0 1 q -9 1 -9 13 h 18 q 0 -12 -9 -13 z" fill="#3BDE35"/></g>
+            <g transform="translate(285,340)"><circle r="22" fill="#14181F" stroke="#3BDE35" stroke-width="1.6" stroke-opacity="0.7"/><circle cy="-5" r="5" fill="#3BDE35"/><path d="M0 1 q -9 1 -9 13 h 18 q 0 -12 -9 -13 z" fill="#3BDE35"/></g>
+            <g transform="translate(135,340)"><circle r="22" fill="#14181F" stroke="#3BDE35" stroke-width="1.6" stroke-opacity="0.7"/><circle cy="-5" r="5" fill="#3BDE35"/><path d="M0 1 q -9 1 -9 13 h 18 q 0 -12 -9 -13 z" fill="#3BDE35"/></g>
+            <g transform="translate(60,210)"><circle r="22" fill="#14181F" stroke="#3BDE35" stroke-width="1.6" stroke-opacity="0.7"/><circle cy="-5" r="5" fill="#3BDE35"/><path d="M0 1 q -9 1 -9 13 h 18 q 0 -12 -9 -13 z" fill="#3BDE35"/></g>
+            <g transform="translate(135,80)"><circle r="22" fill="#14181F" stroke="#3BDE35" stroke-width="1.6" stroke-opacity="0.7"/><circle cy="-5" r="5" fill="#3BDE35"/><path d="M0 1 q -9 1 -9 13 h 18 q 0 -12 -9 -13 z" fill="#3BDE35"/></g>
+            <g transform="translate(285,80)"><circle r="22" fill="#14181F" stroke="#3BDE35" stroke-width="1.6" stroke-opacity="0.7"/><circle cy="-5" r="5" fill="#3BDE35"/><path d="M0 1 q -9 1 -9 13 h 18 q 0 -12 -9 -13 z" fill="#3BDE35"/></g>
+          </g>
+          <!-- core node: the individual whose strength radiates outward -->
+          <circle cx="210" cy="210" r="40" fill="url(#coreGrad)"/>
+          <g fill="#0A0C0F">
+            <circle cx="210" cy="199" r="9"/>
+            <path d="M210 211 q -16 2 -16 24 h 32 q 0 -22 -16 -24 z"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <div class="mission-proof reveal">
+      <span class="section-eyebrow">The Proof</span>
+      <h3>Pursuing fitness together simply <span class="accent">works better.</span></h3>
+    </div>
+    <div class="mission-stats">
+      <div class="mstat reveal">
+        <strong>58%</strong>
+        <p>more total weekly physical activity logged by people in group programs versus solo exercisers.</p>
+        <cite>Social Science &amp; Medicine</cite>
+      </div>
+      <div class="mstat reveal">
+        <strong>66%</strong>
+        <p>more likely to keep engaging with a fitness app when training as a team instead of alone.</p>
+        <cite>USC Fittle Study</cite>
+      </div>
+      <div class="mstat reveal">
+        <strong>76%</strong>
+        <p>goal success rate when people shared weekly progress with someone — versus 43% going it alone.</p>
+        <cite>Dominican University of California</cite>
+      </div>
+      <div class="mstat reveal">
+        <strong>69%</strong>
+        <p>long-term participation in group fitness programs that run six months or longer.</p>
+        <cite>Social Science &amp; Medicine</cite>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- APP SHOWCASE — Bevel sticky scroll -->
 <section class="block" id="showcase">

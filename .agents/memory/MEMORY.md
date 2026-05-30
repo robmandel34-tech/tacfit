@@ -1,2 +1,1 @@
-- [Capacitor plugin pods](capacitor-plugin-pods.md) — every new Capacitor plugin needs its pod added to ios/App/Podfile by hand; Codemagic only runs `cap copy`, not `cap sync`.
-- [HealthKit plugin signals](healthkit-readiness.md) — HRV needs a native plugin patch (scripts/patch-healthkit-hrv.sh, runs every build pre-pod-install); Readiness uses HRV + 5 signals.
+- [Marketing site](marketing-site.md) — public landing page is a standalone Netlify static site at `marketing-site/index.html`, separate from the app; deploys via Netlify, not Replit Publish/TestFlight.

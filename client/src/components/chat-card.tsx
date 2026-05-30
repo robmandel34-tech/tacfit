@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DefaultAvatar } from "@/components/default-avatar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Send, ImageIcon, Search, ChevronDown, ChevronUp, Radio } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -91,10 +92,6 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
     setShowGifPicker(false);
     setGifSearch("");
     setGifs([]);
-  };
-
-  const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
   // Initialize Giphy API
@@ -216,8 +213,8 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
                               src={avatarUrl}
                               alt={msg.user?.username || "User"}
                             />
-                            <AvatarFallback className="bg-military-green text-forest-green text-xs">
-                              {getInitials(msg.user?.username || "U")}
+                            <AvatarFallback className="p-0 overflow-hidden">
+                              <DefaultAvatar seed={msg.user?.id ?? msg.user?.username} />
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1">

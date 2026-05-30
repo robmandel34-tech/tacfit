@@ -7,6 +7,7 @@ import ActivityCard from "@/components/activity-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DefaultAvatar } from "@/components/default-avatar";
 import { Users, Crown, Target, Camera, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -121,8 +122,8 @@ export default function TeamPublic() {
                       onClick={() => navigate(`/profile/${member.user?.id}`)}
                     >
                       <AvatarImage src={member.user?.avatar ? uploadUrl(member.user.avatar) : undefined} />
-                      <AvatarFallback className="bg-military-green text-forest-green">
-                        {member.user?.username?.charAt(0).toUpperCase()}
+                      <AvatarFallback className="p-0 overflow-hidden">
+                        <DefaultAvatar seed={member.user?.id ?? member.user?.username} />
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">

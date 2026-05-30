@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DefaultAvatar } from "@/components/default-avatar";
 import { Send, ImageIcon, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { GiphyApi } from 'giphy-api';
@@ -90,11 +91,6 @@ export default function ChatModal({ isOpen, onClose, teamId, competitionId }: Ch
       return () => clearInterval(interval);
     }
   }, [isOpen, refetch]);
-
-  const getInitials = (username: string) => {
-    return username.split(' ').map(word => word[0]).join('').toUpperCase() || username.slice(0, 2).toUpperCase();
-  };
-
 
   // Search GIFs using Giphy API
   const searchGifs = async (query: string) => {
@@ -182,8 +178,8 @@ export default function ChatModal({ isOpen, onClose, teamId, competitionId }: Ch
                         src={avatarUrl}
                         alt={msg.user?.username || "User"}
                       />
-                      <AvatarFallback className="bg-military-green text-forest-green text-xs">
-                        {getInitials(msg.user?.username || "U")}
+                      <AvatarFallback className="p-0 overflow-hidden">
+                        <DefaultAvatar seed={msg.user?.id ?? msg.user?.username} />
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">

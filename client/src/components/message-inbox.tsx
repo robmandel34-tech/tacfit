@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { DefaultAvatar } from '@/components/default-avatar';
 import { Badge } from '@/components/ui/badge';
 import { MessageCircle, Send, Clock, ChevronDown, ChevronUp } from 'lucide-react';
 import DirectMessageModal from '@/components/direct-message-modal';
@@ -55,10 +56,6 @@ export default function MessageInbox({ userId }: MessageInboxProps) {
     setIsDMModalOpen(true);
     // Mark conversation as read when opened
     markAsRead.mutate(friend.id);
-  };
-
-  const getInitials = (username: string) => {
-    return username.split(' ').map(word => word[0]).join('').toUpperCase() || username.slice(0, 2).toUpperCase();
   };
 
   const formatLastMessage = (message: Conversation['lastMessage'], senderId: number) => {
@@ -200,8 +197,8 @@ export default function MessageInbox({ userId }: MessageInboxProps) {
             >
               <div className="relative">
                 <Avatar className="h-10 w-10">
-                  <AvatarFallback className="bg-military-green text-forest-green text-sm">
-                    {getInitials(conversation.friend.username)}
+                  <AvatarFallback className="p-0 overflow-hidden">
+                    <DefaultAvatar seed={conversation.friend.id ?? conversation.friend.username} />
                   </AvatarFallback>
                 </Avatar>
                 {Number(conversation.unreadCount || 0) > 0 && (

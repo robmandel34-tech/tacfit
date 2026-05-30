@@ -8,6 +8,7 @@ import ActivityCard from "@/components/activity-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DefaultAvatar } from "@/components/default-avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -819,8 +820,8 @@ export default function Team() {
                       title={ring ? `Readiness: ${ring.label}` : undefined}
                     >
                       <AvatarImage src={member.user?.avatar ? uploadUrl(member.user.avatar) : undefined} />
-                      <AvatarFallback className="bg-military-green text-forest-green">
-                        {member.user?.username?.charAt(0).toUpperCase()}
+                      <AvatarFallback className="p-0 overflow-hidden">
+                        <DefaultAvatar seed={member.user?.id ?? member.user?.username} />
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">

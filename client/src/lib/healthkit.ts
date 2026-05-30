@@ -62,16 +62,26 @@ export async function readRecentWorkouts(sinceDays = 30): Promise<NormalizedWork
   const rows: any[] = result?.resultData ?? [];
   return rows
     .filter((w) => w && w.uuid)
-    .map((w) => ({
+    .map((w) => {
+      const startMs = new Date(w.startDate).getTime();
+      const endMs = new Date(w.endDate).getTime();
+      // The plugin's `duration` field is often missing or 0, so fall back to
+      // the elapsed time between the workout's start and end timestamps.
+      const reportedSec = Math.max(0, Math.round(Number(w.duration) || 0));
+      const elapsedSec = Number.isFinite(startMs) && Number.isFinite(endMs)
+        ? Math.max(0, Math.round((endMs - startMs) / 1000))
+        : 0;
+      return {
       healthKitWorkoutId: String(w.uuid),
       activityType: String(w.workoutActivityName || "Workout"),
       startTime: new Date(w.startDate).toISOString(),
       endTime: new Date(w.endDate).toISOString(),
-      durationSec: Math.max(0, Math.round(Number(w.duration) || 0)),
+      durationSec: reportedSec > 0 ? reportedSec : elapsedSec,
       distanceMeters: Math.max(0, Math.round(Number(w.totalDistance) || 0)),
       energyKcal: Math.max(0, Math.round(Number(w.totalEnergyBurned) || 0)),
       avgHeartRate: 0,
       routePolyline: null,
       raw: w,
-    }));
+      };
+    });
 }

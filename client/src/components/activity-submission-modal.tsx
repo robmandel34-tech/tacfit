@@ -151,18 +151,28 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     enabled: isOpen && showHealthWorkouts,
   });
 
+  // Effective duration in minutes. Older synced workouts can have durationSec=0,
+  // so fall back to the elapsed time between the workout's start and end.
+  const workoutMinutes = (w: AppleHealthWorkout): number => {
+    let sec = w.durationSec || 0;
+    if (sec <= 0 && w.startTime && w.endTime) {
+      sec = Math.max(0, Math.round((new Date(w.endTime).getTime() - new Date(w.startTime).getTime()) / 1000));
+    }
+    return Math.round(sec / 60);
+  };
+
   // Prefill the form from a selected HealthKit workout.
   const applyWorkout = (w: AppleHealthWorkout) => {
     const mappedName = mapHealthKitTypeToActivityName(w.activityType);
     const at = mappedName ? competitionActivityTypes.find(a => a.name === mappedName) : undefined;
+    const minutes = workoutMinutes(w);
     if (at) {
       setType(at.name);
       if ((at.measurementUnit || "minutes") === "minutes") {
-        setQuantity(String(Math.max(1, Math.round((w.durationSec || 0) / 60))));
+        setQuantity(String(Math.max(1, minutes)));
       }
     }
     setSelectedWorkoutHkId(w.healthKitWorkoutId);
-    const minutes = Math.round((w.durationSec || 0) / 60);
     const km = w.distanceMeters ? (w.distanceMeters / 1000).toFixed(2) : null;
     const parts = [`${w.activityType}`, `${minutes} min`];
     if (km && Number(km) > 0) parts.push(`${km} km`);
@@ -547,46 +557,59 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                         <p className="text-sm text-gray-400">Loading your workouts...</p>
                       ) : loadedWorkouts.length === 0 ? (
                         <p className="text-sm text-gray-400">No Apple Health workouts synced yet. Tap Refresh after recording a workout.</p>
-                      ) : (
-                        <div className="space-y-2 max-h-56 overflow-y-auto">
-                          {loadedWorkouts.map((w) => {
-                            const minutes = Math.round((w.durationSec || 0) / 60);
-                            const km = w.distanceMeters ? (w.distanceMeters / 1000).toFixed(2) : null;
-                            const selected = selectedWorkoutHkId === w.healthKitWorkoutId;
-                            const eligible = w.eligible !== false;
-                            return (
-                              <button
-                                type="button"
-                                key={w.healthKitWorkoutId}
-                                onClick={() => eligible && applyWorkout(w)}
-                                disabled={!eligible}
-                                className={`w-full text-left p-3 rounded-lg border transition-colors ${
-                                  !eligible
-                                    ? "border-tactical-gray bg-tactical-gray-light/40 opacity-60 cursor-not-allowed"
-                                    : selected
-                                    ? "border-military-green bg-military-green/10"
-                                    : "border-tactical-gray bg-tactical-gray-light hover:bg-tactical-gray"
-                                }`}
-                                data-testid={`workout-${w.healthKitWorkoutId}`}
+                      ) : (() => {
+                        const selectedWorkout = loadedWorkouts.find((w) => w.healthKitWorkoutId === selectedWorkoutHkId);
+                        return (
+                          <div className="space-y-2">
+                            <Select
+                              value={selectedWorkoutHkId || ""}
+                              onValueChange={(id) => {
+                                const w = loadedWorkouts.find((x) => x.healthKitWorkoutId === id);
+                                if (w && w.eligible !== false) applyWorkout(w);
+                              }}
+                            >
+                              <SelectTrigger
+                                className="bg-tactical-gray-lighter border-2 border-tactical-gray text-white focus:border-white focus:ring-0 focus:ring-offset-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                                data-testid="select-apple-health-workout"
                               >
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-2 text-white font-medium">
-                                    <Activity className={`w-4 h-4 ${eligible ? "text-military-green" : "text-gray-500"}`} />
-                                    {w.activityType}
-                                  </div>
-                                  {selected && eligible && <CheckCircle className="w-4 h-4 text-military-green" />}
-                                </div>
-                                <div className="text-xs text-gray-400 mt-1">
-                                  {new Date(w.startTime).toLocaleDateString()} · {minutes} min{km && Number(km) > 0 ? ` · ${km} km` : ""}{w.energyKcal ? ` · ${w.energyKcal} cal` : ""}
-                                </div>
-                                {!eligible && w.ineligibleReason && (
-                                  <div className="text-xs text-amber-400 mt-1">Can't use: {w.ineligibleReason}</div>
-                                )}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
+                                <SelectValue placeholder="Choose a synced workout" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-tactical-gray-light border-tactical-gray text-white z-50 max-h-72" position="popper" sideOffset={5}>
+                                {loadedWorkouts.map((w) => {
+                                  const minutes = workoutMinutes(w);
+                                  const km = w.distanceMeters ? (w.distanceMeters / 1000).toFixed(2) : null;
+                                  const eligible = w.eligible !== false;
+                                  return (
+                                    <SelectItem
+                                      key={w.healthKitWorkoutId}
+                                      value={w.healthKitWorkoutId}
+                                      disabled={!eligible}
+                                      className="text-white"
+                                      data-testid={`workout-${w.healthKitWorkoutId}`}
+                                    >
+                                      <div className="flex items-center gap-2">
+                                        <Activity className={`w-4 h-4 ${eligible ? "text-military-green" : "text-gray-500"}`} />
+                                        <span>
+                                          {w.activityType} · {new Date(w.startTime).toLocaleDateString()} · {minutes} min{km && Number(km) > 0 ? ` · ${km} km` : ""}{w.energyKcal ? ` · ${w.energyKcal} cal` : ""}
+                                        </span>
+                                      </div>
+                                    </SelectItem>
+                                  );
+                                })}
+                              </SelectContent>
+                            </Select>
+                            {selectedWorkout && selectedWorkout.eligible !== false && (
+                              <div className="flex items-center gap-2 text-xs text-military-green">
+                                <CheckCircle className="w-3.5 h-3.5" />
+                                Selected: {selectedWorkout.activityType} · {workoutMinutes(selectedWorkout)} min
+                              </div>
+                            )}
+                            {selectedWorkout && selectedWorkout.eligible === false && selectedWorkout.ineligibleReason && (
+                              <div className="text-xs text-amber-400">Can't use: {selectedWorkout.ineligibleReason}</div>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </div>
                   )}
                 </div>

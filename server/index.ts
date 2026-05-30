@@ -7,6 +7,7 @@ import { startDigestScheduler } from "./digest-service";
 import { ObjectStorageService } from "./objectStorage";
 import { notifyIssue } from "./slack-service";
 import path from "path";
+import fs from "fs";
 
 const app = express();
 // Stripe webhook needs the raw request body to verify the signature,
@@ -65,6 +66,24 @@ app.use('/uploads', async (req, res, next) => {
   next();
 }, express.static('uploads'));
 
+// --- Marketing landing page preview (dev only) ---
+// Serves the standalone Netlify marketing site through the dev server so it can
+// be viewed in the workspace. Assets are isolated under /__mktg to avoid any
+// collision with the React app. Absolute asset paths inside the marketing HTML
+// (/marketing/*, /favicons/*) are rewritten to that prefix on the fly.
+const marketingDir = path.resolve(import.meta.dirname, "..", "marketing-site");
+app.use("/__mktg", express.static(marketingDir));
+app.get("/landing-preview", (_req, res) => {
+  try {
+    let html = fs.readFileSync(path.join(marketingDir, "index.html"), "utf8");
+    html = html
+      .replace(/="\/marketing\//g, '="/__mktg/marketing/')
+      .replace(/="\/favicons\//g, '="/__mktg/favicons/');
+    res.type("html").send(html);
+  } catch (err) {
+    res.status(500).send("Marketing preview unavailable");
+  }
+});
 
 app.use((req, res, next) => {
   const start = Date.now();

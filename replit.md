@@ -125,16 +125,25 @@ cause: Codemagic automatic signing reused an old profile (and a build-machine
 cached copy) instead of minting a fresh one. Manually deleting the profile in
 the Apple portal was unreliable.
 Fix (in `codemagic.yaml`, step "Force a fresh provisioning profile with
-HealthKit", runs before signing): it (1) deletes the locally cached
-`.mobileprovision` files on the build machine, (2) deletes existing App Store
-profiles from Apple via `app-store-connect delete-profile`, (3) re-creates a
-fresh profile with `app-store-connect fetch-signing-files "$BUNDLE_ID" --type
-IOS_APP_STORE --create` (a fresh profile automatically inherits whatever
-capabilities the App ID currently has, including HealthKit), then (4) HARD-FAILS
-the build with a clear message if the fetched profile still lacks the HealthKit
-entitlement. This means the user never has to touch the Apple portal for
-profiles again — every build mints a current one. The App ID must still have the
+HealthKit", runs before signing): it (1) clears locally cached
+`.mobileprovision` files on the build machine, (2) looks up the Bundle ID
+resource id and the EXISTING distribution certificate id(s) via
+`app-store-connect bundle-ids list` / `certificates list` (it does NOT create a
+certificate), (3) deletes stale App Store profiles via `app-store-connect
+profiles delete`, (4) creates a fresh profile with `app-store-connect profiles
+create <bundleResId> --certificate-ids <certIds> --type IOS_APP_STORE --save`
+(a fresh profile automatically inherits whatever capabilities the App ID
+currently has, including HealthKit), then (5) HARD-FAILS the build with a clear
+message if the new profile still lacks the HealthKit entitlement. The user never
+has to touch the Apple portal for profiles again. The App ID must still have the
 HealthKit capability enabled (one-time, already done).
+
+IMPORTANT lesson — do NOT use `fetch-signing-files ... --create` here: that
+command also tries to CREATE a distribution certificate, which collides with the
+existing Cert1 and fails with Apple 409 "you already have a current Distribution
+certificate." Always reuse the existing cert and only create the PROFILE
+(`profiles create`). Codemagic CLI uses grouped subcommands (`profiles list`,
+`profiles delete`, `bundle-ids list`, `certificates list`), not flat names.
 
 ### Apple rejection "crashed when taking a photo" — REAL root cause (2026-05-29 fix)
 The earlier theory (below, 2026-05-19) blamed `cap-build.sh` not running the

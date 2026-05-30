@@ -164,6 +164,7 @@ export const activities = pgTable("activities", {
   textInput: text("text_input"), // Required text input for certain activity types
   points: integer("points").default(10),
   isFlagged: boolean("is_flagged").default(false),
+  fromAppleHealth: boolean("from_apple_health").default(false), // submitted via an Apple Health import
   createdAt: timestamp("created_at").defaultNow(),
 });
 

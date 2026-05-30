@@ -587,11 +587,16 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                                       className="text-white"
                                       data-testid={`workout-${w.healthKitWorkoutId}`}
                                     >
-                                      <div className="flex items-center gap-2">
-                                        <Activity className={`w-4 h-4 ${eligible ? "text-military-green" : "text-gray-500"}`} />
-                                        <span>
-                                          {w.activityType} · {new Date(w.startTime).toLocaleDateString()} · {minutes} min{km && Number(km) > 0 ? ` · ${km} km` : ""}{w.energyKcal ? ` · ${w.energyKcal} cal` : ""}
-                                        </span>
+                                      <div className="flex items-start gap-2">
+                                        <Activity className={`w-4 h-4 mt-0.5 ${eligible ? "text-military-green" : "text-gray-500"}`} />
+                                        <div>
+                                          <div>
+                                            {w.activityType} · {new Date(w.startTime).toLocaleDateString()} · {minutes} min{km && Number(km) > 0 ? ` · ${km} km` : ""}{w.energyKcal ? ` · ${w.energyKcal} cal` : ""}
+                                          </div>
+                                          {!eligible && w.ineligibleReason && (
+                                            <div className="text-xs text-amber-400 mt-0.5">Can't use: {w.ineligibleReason}</div>
+                                          )}
+                                        </div>
                                       </div>
                                     </SelectItem>
                                   );

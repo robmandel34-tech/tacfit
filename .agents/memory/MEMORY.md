@@ -1,1 +1,2 @@
 - [Activity submission integrity](activity-submission-integrity.md) — competition/evidence/HealthKit rules must be enforced server-side in POST /api/activities, not just the modal UI; points economy is farmable otherwise.
+- [HealthKit plugin quirks](healthkit-plugin-quirks.md) — @perfood plugin duration is often 0 (derive from start/end); Apple Health provenance tracked via activities.fromAppleHealth, not description text.

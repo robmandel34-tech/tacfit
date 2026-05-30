@@ -2861,7 +2861,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         evidenceType: evidenceType,
         evidenceUrl: evidenceUrl,
         thumbnailUrl: thumbnailUrl,
-        imageUrls: imageUrls
+        imageUrls: imageUrls,
+        fromAppleHealth: !!healthWorkout,
       };
       
       

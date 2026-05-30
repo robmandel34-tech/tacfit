@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ThumbsUp, MessageCircle, Flag, Users, Image, Mountain, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { ThumbsUp, MessageCircle, Flag, Users, Image, Mountain, Trash2, ChevronDown, ChevronUp, BadgeCheck } from "lucide-react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -26,6 +26,7 @@ interface ActivityCardProps {
     imageUrls?: string[]; // New field for multiple images
     thumbnailUrl?: string; // Add thumbnailUrl field
     points?: number;
+    fromAppleHealth?: boolean;
     createdAt: string;
 
     user: {
@@ -448,7 +449,16 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
                 <Badge variant="outline" className="text-xs border-[var(--bubble-accent)]/40 text-[var(--bubble-accent)] bg-[var(--bubble-bg)] whitespace-nowrap">
                   {getActivityIcon(activity.type)} {getActivityTypeDisplayName(activity.type)}
                 </Badge>
-
+                {activity.fromAppleHealth && (
+                  <span
+                    className="inline-flex items-center gap-1 text-xs text-military-green/80 whitespace-nowrap"
+                    title="Synced from Apple Health"
+                    data-testid="badge-apple-health"
+                  >
+                    <BadgeCheck className="w-3.5 h-3.5" />
+                    Apple Health
+                  </span>
+                )}
               </div>
               {isHealthKitActivity() ? (
                 <div className="space-y-3">

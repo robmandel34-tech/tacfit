@@ -188,6 +188,35 @@ key is missing. To resubmit, just re-run `bash scripts/cap-build.sh`,
 re-archive in Xcode, and upload — the new build will have all the
 required keys.
 
+### Native "authentication error" on Apple Health connect — missing Preferences pod (2026-05-30)
+Symptom: TestFlight build signed fine and the HealthKit permission sheet
+appeared, but tapping Approve/Connect failed with an authentication error.
+Production logs showed `GET /api/auth/me 401 Not logged in` and
+`POST /api/apple-health/connect 401 Not authenticated`, while public endpoints
+(`/api/users/:id`, `/api/activities`) returned 200/304. So the native app looked
+logged in (the `user` object is cached in localStorage) but sent NO valid bearer
+token to the backend.
+Root cause: the native bearer token is persisted via `@capacitor/preferences`,
+but `ios/App/Podfile` was MISSING `pod 'CapacitorPreferences'`. Codemagic only
+runs `npx cap copy ios` (never `cap sync`), so any Capacitor plugin that isn't
+listed in the committed Podfile is never compiled into the binary. With no native
+Preferences plugin, `Preferences.set/get` no-op/throw, the token is never saved,
+and every auth-gated request 401s on native. (Same class of bug as the HealthKit
+pod omission — ALWAYS add a new Capacitor plugin's pod to `ios/App/Podfile`
+manually; `cap copy` will not do it.)
+Fix:
+1. Added `pod 'CapacitorPreferences', :path => '../../node_modules/@capacitor/preferences'`
+   to `ios/App/Podfile` (capacitor_pods).
+2. `client/src/hooks/use-auth.tsx` `validateUser` now treats an explicit 401 from
+   `/api/auth/me` as "stale/invalid auth": it clears the stored token + cached
+   user and redirects to /login. This self-heals already-installed apps that have
+   a cached user but no persisted token (they re-login, mint a fresh token that
+   now persists, and Apple Health connect works). Network errors still keep the
+   local user (offline-friendly).
+Note: `npm run check` reports pre-existing TS errors only in dead files
+(`server/routes_clean_start.ts`, `server/routes_mood_section.ts`) that nothing
+imports — unrelated to this change.
+
 ### iOS splash screen
 - Master splash lives at `scripts/assets/ios-splash-master.png` (2732×2732, TacFit shield centered on `#0a0f0a`).
 - `scripts/cap-build.sh` copies it into `ios/App/App/Assets.xcassets/Splash.imageset/` (all three @1x/@2x/@3x slots) before `npx cap sync`, so every native build picks it up automatically.

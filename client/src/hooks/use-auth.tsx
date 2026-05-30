@@ -59,14 +59,32 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
 
         // Try to sync fresh data from the server using bearer token + cookie.
         try {
-          const sessionResponse = await fetch(`${API_BASE}/api/auth/me`, {
-            credentials: "include",
-            headers: await buildAuthHeaders(),
-          });
+          const fetchMe = async () =>
+            fetch(`${API_BASE}/api/auth/me`, {
+              credentials: "include",
+              headers: await buildAuthHeaders(),
+            });
+          let sessionResponse = await fetchMe();
+          // One-shot retry on 401 so a transient/timing 401 doesn't needlessly
+          // force a logout; only a persistent 401 clears auth below.
+          if (sessionResponse.status === 401) {
+            await new Promise((r) => setTimeout(r, 600));
+            sessionResponse = await fetchMe();
+          }
           if (sessionResponse.ok) {
             const currentUser = await sessionResponse.json();
             setUser(currentUser);
             localStorage.setItem("user", JSON.stringify(currentUser));
+          } else if (sessionResponse.status === 401) {
+            // The stored session/token is no longer valid (e.g. token was never
+            // persisted on an older native build). Clear the stale auth and send
+            // the user to login so a fresh, working token/cookie is established.
+            await setAuthToken(null);
+            localStorage.removeItem("user");
+            setUser(null);
+            setIsLoading(false);
+            setLocation("/login");
+            return;
           }
         } catch {
           // Network error — keep the locally-stored user.

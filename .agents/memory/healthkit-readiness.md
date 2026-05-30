@@ -34,3 +34,26 @@ readDailyHealthMetrics → `hrv` field); the server already accepts/stores/score
 (7.5h duration + deep%/REM%), NOT a personal baseline — the other signals are
 baseline z-scored. Readiness data only exists for iOS users who connected Apple
 Health; web users have no score (ring hidden).
+
+**Prod deployment gotcha:** The Readiness tables (`health_metrics`,
+`readiness_scores`) are created in PRODUCTION only when the user clicks Publish
+(Replit's publish-time schema diff). If the user reports "no readiness ring in
+the TestFlight/live app," first check prod actually has these tables — a prod
+read showed `relation "health_metrics" does not exist`, meaning the feature was
+never published. Two independent prerequisites must both be met: (1) Publish the
+Replit app so the prod DB gets the tables AND the backend gets the
+`/api/readiness/*` routes; (2) a TestFlight build that POSTDATES the readiness
+client code (team-tab ring + `healthkit.ts` sync), since the web bundle is baked
+into the native app at build time.
+
+**Testing exception (no-baseline accounts):** `recomputeReadinessForUser` passes
+relaxed `ReadinessOptions` for a designated test account (configured in code /
+the `READINESS_TEST_EMAILS` env var): `minHistoryDays:1`, `minSignals:2`,
+`relaxBaseline:true`. relaxBaseline makes directional signals fall back to an
+absolute norm-based sub-score whenever a baseline z-score isn't possible (fewer
+than 2 history days OR zero variance), instead of dropping the signal — so the
+ring renders after a single synced day. It does NOT fabricate data; the account
+still needs ≥1 synced day of real metrics. **Why:** prod is read-only to the
+agent, so data cannot be seeded there; a code-level exception shipped via Publish
+is the only way to let an account verify the ring before 14 days of history
+accumulate.

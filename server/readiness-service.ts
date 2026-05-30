@@ -29,6 +29,56 @@ export interface ReadinessResult {
 const MIN_HISTORY_DAYS = 14;
 // Minimum number of contributing signals on the scored day to show a score.
 const MIN_SIGNALS = 3;
+
+// Testing exception: these accounts bypass the historical-data requirement so
+// they can verify the Readiness ring end-to-end with only a day or two of synced
+// data. Configurable via the READINESS_TEST_EMAILS env var (comma-separated);
+// always includes the project owner's account by default. This relaxes the
+// 14-day baseline gate and lets signals fall back to absolute scoring when there
+// isn't enough history yet — it does NOT fabricate data, so the account must
+// still have at least one synced day of metrics.
+const DEFAULT_TEST_EMAILS = ["robmandel34@gmail.com"];
+function testAccountEmails(): Set<string> {
+  const fromEnv = (process.env.READINESS_TEST_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  return new Set([...DEFAULT_TEST_EMAILS.map((e) => e.toLowerCase()), ...fromEnv]);
+}
+
+// Options that loosen the scoring gates for testing accounts.
+export interface ReadinessOptions {
+  minHistoryDays?: number;
+  minSignals?: number;
+  // When true, directional signals with too little history fall back to an
+  // absolute (norm-based) sub-score instead of being dropped.
+  relaxBaseline?: boolean;
+}
+
+// Absolute, norm-based 0..100 sub-score used only as a baseline-free fallback for
+// testing accounts. Values reflect broadly healthy adult ranges; these are
+// intentionally rough since they only exist so the ring can render before a
+// personal baseline is established.
+function absoluteSubScore(key: WeightKey, value: number): number | null {
+  const clamp = (n: number) => Math.max(0, Math.min(100, n));
+  switch (key) {
+    case "hrv":
+      // Higher is better; ~20ms -> 0, ~80ms -> 100.
+      return clamp(((value - 20) / 60) * 100);
+    case "restingHeartRate":
+      // Lower is better; 50bpm -> 100, 100bpm -> 0.
+      return clamp(100 - (value - 50) * 2);
+    case "respiratoryRate":
+      // Lower is better; 12/min -> 100, 28/min -> 0.
+      return clamp(100 - (value - 12) * 6.25);
+    case "oxygenSaturation":
+      // Higher is better; 90% -> 0, 100% -> 100.
+      return clamp((value - 90) * 10);
+    default:
+      // Body temperature has no baseline-free reading; stay neutral.
+      return null;
+  }
+}
 // Look back at most this many days when building the baseline.
 const BASELINE_WINDOW_DAYS = 30;
 // Body temperature this far above baseline (in the stored unit) forces a Rest day.
@@ -93,7 +143,14 @@ function bucketFor(score: number): ReadinessBucket {
 
 // Pure scoring function. `metrics` may be in any order; the most recent
 // metricDate is treated as "today" and the rest form the baseline.
-export function computeReadiness(metrics: HealthMetric[]): ReadinessResult {
+export function computeReadiness(
+  metrics: HealthMetric[],
+  options: ReadinessOptions = {},
+): ReadinessResult {
+  const minHistoryDays = options.minHistoryDays ?? MIN_HISTORY_DAYS;
+  const minSignals = options.minSignals ?? MIN_SIGNALS;
+  const relaxBaseline = options.relaxBaseline ?? false;
+
   if (metrics.length === 0) {
     return { score: null, bucket: null, state: "insufficient", signalsUsed: 0, metricDate: null };
   }
@@ -103,7 +160,7 @@ export function computeReadiness(metrics: HealthMetric[]): ReadinessResult {
   const history = sorted.slice(0, -1).slice(-BASELINE_WINDOW_DAYS);
 
   // Not enough total history for a meaningful personal baseline yet.
-  if (sorted.length < MIN_HISTORY_DAYS) {
+  if (sorted.length < minHistoryDays) {
     return {
       score: null,
       bucket: null,
@@ -130,10 +187,18 @@ export function computeReadiness(metrics: HealthMetric[]): ReadinessResult {
     const series = history
       .map((m) => m[key as keyof HealthMetric] as number | null)
       .filter((v): v is number => v != null);
-    if (series.length < 2) continue;
-    const avg = mean(series);
-    const sd = stddev(series, avg);
-    if (sd === 0) continue; // no variation -> uninformative
+    const avg = series.length >= 2 ? mean(series) : 0;
+    const sd = series.length >= 2 ? stddev(series, avg) : 0;
+    if (series.length < 2 || sd === 0) {
+      // Not enough history (or no variation) for a baseline z-score. For testing
+      // accounts, fall back to an absolute norm-based sub-score so the signal
+      // still counts; otherwise drop it as before.
+      if (!relaxBaseline) continue;
+      const abs = absoluteSubScore(key, value);
+      if (abs == null) continue;
+      contributions.push({ key, subScore: abs, weight: WEIGHTS[key] });
+      continue;
+    }
     let z = (value - avg) / sd;
     if (dir === -1) z = -z;
     else if (dir === 0) z = -Math.abs(z);
@@ -150,7 +215,7 @@ export function computeReadiness(metrics: HealthMetric[]): ReadinessResult {
   }
 
   const signalsUsed = contributions.length;
-  if (signalsUsed < MIN_SIGNALS) {
+  if (signalsUsed < minSignals) {
     return {
       score: null,
       bucket: null,
@@ -192,7 +257,17 @@ export async function recomputeReadinessForUser(
   userId: number,
 ): Promise<ReadinessResult> {
   const metrics = await storage.getHealthMetrics(userId);
-  const result = computeReadiness(metrics);
+
+  // Testing exception: for designated test accounts, relax the historical-data
+  // gates so the Readiness ring can be verified with only a day or two of synced
+  // data (1 day of history is enough; signals fall back to absolute scoring).
+  let options: ReadinessOptions = {};
+  const user = await storage.getUser(userId);
+  if (user?.email && testAccountEmails().has(user.email.toLowerCase())) {
+    options = { minHistoryDays: 1, minSignals: 2, relaxBaseline: true };
+  }
+
+  const result = computeReadiness(metrics, options);
   await storage.upsertReadiness(userId, {
     score: result.score,
     bucket: result.bucket,

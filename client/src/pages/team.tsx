@@ -18,26 +18,7 @@ import TeamInviteModal from "@/components/team-invite-modal";
 import { ReportTeammateModal } from "@/components/report-teammate-modal";
 
 import { useToast } from "@/hooks/use-toast";
-
-// Maps a readiness bucket to a subtle avatar ring color + label.
-// Returns null when there's no usable score (no ring shown).
-function readinessRing(
-  readiness?: { score: number | null; bucket: string | null; state: string },
-): { ring: string; label: string; text: string } | null {
-  if (!readiness || readiness.state !== "ready" || !readiness.bucket) return null;
-  switch (readiness.bucket) {
-    case "ready":
-      return { ring: "ring-2 ring-green-500", label: "Ready", text: "text-green-400" };
-    case "moderate":
-      return { ring: "ring-2 ring-yellow-500", label: "Moderate", text: "text-yellow-400" };
-    case "fatigued":
-      return { ring: "ring-2 ring-orange-500", label: "Fatigued", text: "text-orange-400" };
-    case "rest":
-      return { ring: "ring-2 ring-red-500", label: "Rest", text: "text-red-400" };
-    default:
-      return null;
-  }
-}
+import { getReadinessDisplay } from "@/lib/readiness";
 
 export default function Team() {
   const { user, isLoading } = useAuthRequired();
@@ -809,14 +790,14 @@ export default function Team() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {/* Filled Member Slots */}
               {teamMembers.map((member: any) => {
-                const ring = readinessRing(teamReadiness[String(member.user?.id)]);
+                const ring = getReadinessDisplay(teamReadiness[String(member.user?.id)]);
                 return (
                 <div key={member.id} className="content-tile p-4">
                   <div className="flex items-center space-x-3">
                     <Avatar 
-                      className={`h-12 w-12 cursor-pointer transition-all ${ring ? `${ring.ring} ring-offset-2 ring-offset-tactical-gray-darker` : "hover:ring-2 hover:ring-military-green"}`}
+                      className={`h-12 w-12 cursor-pointer transition-all ${ring?.active ? `${ring.ring} ring-offset-2 ring-offset-tactical-gray-darker` : "hover:ring-2 hover:ring-military-green"}`}
                       onClick={() => navigate(`/profile/${member.user?.id}`)}
-                      title={ring ? `Readiness: ${ring.label}` : undefined}
+                      title={ring?.active ? `Readiness: ${ring.label}${ring.score != null ? ` (${ring.score})` : ""}` : undefined}
                     >
                       <AvatarImage src={member.user?.avatar ? uploadUrl(member.user.avatar) : undefined} />
                       <AvatarFallback className="bg-military-green text-forest-green">
@@ -834,9 +815,9 @@ export default function Team() {
                         {member.role === 'captain' && (
                           <Crown className="ml-2 h-4 w-4 text-yellow-500" />
                         )}
-                        {ring && (
+                        {ring?.active && (
                           <span className={`ml-2 text-xs font-medium ${ring.text}`}>
-                            {ring.label}
+                            {ring.label}{ring.score != null ? ` ${ring.score}` : ""}
                           </span>
                         )}
                       </div>

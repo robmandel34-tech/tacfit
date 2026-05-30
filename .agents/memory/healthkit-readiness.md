@@ -1,76 +1,25 @@
 ---
-name: HealthKit Readiness signals
-description: Which health signals feed the Readiness score, and how HRV is read via a plugin patch
+name: HealthKit Readiness feature
+description: How the readiness score is computed, gated, and displayed; common "not showing" causes.
 ---
 
-The Readiness score (Team-tab teammate cards) is computed server-side in
-`server/readiness-service.ts` from Apple Health daily metrics.
+# Readiness score
 
-**Signals:** HRV (heartRateVariabilitySDNN, ms), restingHeartRate,
-respiratoryRate, oxygenSaturation, bodyTemperature, sleepAnalysis. HRV carries
-the largest weight (0.30). Weights are renormalized over whatever signals are
-present on the scored day.
+## Backend (server/readiness-service.ts)
+- Computes a 0-100 score from synced Apple Health daily metrics vs the user's own rolling baseline.
+- `state` is one of: `ready` (has a real score + a bucket of ready/moderate/fatigued/rest), `calibrating` (needs MIN_HISTORY_DAYS=14 of history first), `insufficient` (no/too-few signals).
+- Test-account exception: emails in DEFAULT_TEST_EMAILS + the READINESS_TEST_EMAILS env relax the gates (minHistoryDays:1, minSignals:2, relaxBaseline) so the ring can be verified with ~1 day of data. It does NOT fabricate data — the account still needs at least one synced day.
+- Recompute happens on every POST /api/apple-health/metrics/sync.
 
-**HRV requires a native plugin patch.** The published
-`@perfood/capacitor-healthkit` (1.3.x) has NO HRV case in its Swift
-`getSampleType` / `getTypes` / unit-mapping, so any HRV read is rejected — even
-when the user clearly has HRV in Apple Health. `scripts/patch-healthkit-hrv.sh`
-re-applies the three Swift insertions (HRV type mapping, read-auth scope, and a
-millisecond unit) to `node_modules/.../CapacitorHealthkitPlugin.swift`. It is
-idempotent and runs on EVERY build (codemagic.yaml step "Patch HealthKit plugin
-for HRV support", and `scripts/cap-build.sh`) BEFORE `pod install`, because
-node_modules is gitignored and reinstalled fresh, and CocoaPods compiles the
-plugin Swift from node_modules.
-**Why:** patch-package would need a package.json `postinstall` edit (forbidden
-here / no packager tool); a committed idempotent shell patch achieves the same
-without touching package.json.
+## Why "readiness not showing" — two independent causes
+1. **Backend not published**: the test exception only takes effect once the backend is re-Published. Until then a test account computes `calibrating` (needs 14 days) and produces no score.
+2. **UI hid every non-ready state**: the display helper previously returned null unless state==="ready", so calibrating/insufficient rendered NOTHING — looked broken. Fixed: `client/src/lib/readiness.ts` `getReadinessDisplay` now maps EVERY state to a visible ring + label (colored buckets, "Calibrating", and a "No data / connect health" hint with `active:false`). Used by team.tsx (teammate avatars) and profile.tsx (own profile: avatar ring + status pill + readiness card).
+- **Why:** users repeatedly reported the ring "not showing" on TestFlight; the silent-null UI was the visible symptom even when the data pipeline was working.
 
-**How to apply:** If HRV stops flowing, first check the patch script still
-matches the plugin's Swift (it hard-fails the build if an anchor count != 1
-after a plugin version bump). The client reads HRV in
-`client/src/lib/healthkit.ts` (`heartRateVariabilitySDNN` in READ_SCOPES +
-readDailyHealthMetrics → `hrv` field); the server already accepts/stores/scores
-`hrv` end-to-end. Sleep is intentionally scored against fixed healthy targets
-(7.5h duration + deep%/REM%), NOT a personal baseline — the other signals are
-baseline z-scored. Readiness data only exists for iOS users who connected Apple
-Health; web users have no score (ring hidden).
+## Display rules
+- The ring/pill render when `display.active` is true (real score or calibrating). `insufficient` is `active:false` so compact views (team avatars) stay clean, but the own-profile readiness card still renders it as a "connect Apple Health" hint.
+- Profile readiness is OWN-PROFILE ONLY (private health metric) via GET /api/readiness/me. Teammates' rings come from GET /api/readiness/team/:teamId (team-membership gated).
 
-**Prod deployment gotcha:** The Readiness tables (`health_metrics`,
-`readiness_scores`) are created in PRODUCTION only when the user clicks Publish
-(Replit's publish-time schema diff). If the user reports "no readiness ring in
-the TestFlight/live app," first check prod actually has these tables — a prod
-read showed `relation "health_metrics" does not exist`, meaning the feature was
-never published. Two independent prerequisites must both be met: (1) Publish the
-Replit app so the prod DB gets the tables AND the backend gets the
-`/api/readiness/*` routes; (2) a TestFlight build that POSTDATES the readiness
-client code (team-tab ring + `healthkit.ts` sync), since the web bundle is baked
-into the native app at build time.
-
-**Diagnosing "ring not showing" — use deployment logs, NOT the SQL tool's prod
-env.** The `execute_sql` "production" environment can point to a DIFFERENT
-database than the live deployment actually uses. Observed once: the SQL-tool prod
-DB had `users` (incl the test account) + `apple_health_connections/workouts` but
-NO `health_metrics`/`readiness_scores` tables, while the live deployment logs
-simultaneously showed `POST /api/apple-health/metrics/sync 200` and
-`GET /api/readiness/team/:id 200` for that same user — i.e. the live DB clearly
-HAS the tables and is storing/computing readiness. So treat the deployment logs
-as the source of truth for live readiness, and don't conclude "feature not
-published" just because the SQL-tool prod DB lacks the tables. The ring only
-renders when `state === "ready"` (team.tsx `readinessRing` returns null
-otherwise); a fresh account without the test exception sits at "calibrating"
-(<14 days history) and shows no ring. If logs prove metrics are flowing but no
-ring, the usual cause is the deployed backend predates the test-account
-exception → re-Publish (backend-only change; no new TestFlight build needed since
-the installed client already calls `metrics/sync`).
-
-**Testing exception (no-baseline accounts):** `recomputeReadinessForUser` passes
-relaxed `ReadinessOptions` for a designated test account (configured in code /
-the `READINESS_TEST_EMAILS` env var): `minHistoryDays:1`, `minSignals:2`,
-`relaxBaseline:true`. relaxBaseline makes directional signals fall back to an
-absolute norm-based sub-score whenever a baseline z-score isn't possible (fewer
-than 2 history days OR zero variance), instead of dropping the signal — so the
-ring renders after a single synced day. It does NOT fabricate data; the account
-still needs ≥1 synced day of real metrics. **Why:** prod is read-only to the
-agent, so data cannot be seeded there; a code-level exception shipped via Publish
-is the only way to let an account verify the ring before 14 days of history
-accumulate.
+## Data caveat
+- The execute_sql "production" tool points at a DIFFERENT DB than the live deployment — readiness/health_metrics rows looked empty there while deploy logs proved the live app was syncing. Trust deployment logs over that SQL tool for live readiness state.
+- The owner's live test account has different numeric user IDs in the live DB vs the dev DB — match by email, not by hardcoded id.

@@ -15,6 +15,7 @@ import defaultAvatarSoldier from "@/assets/default-avatar-soldier.png";
 import { Trophy, Target, Users, Calendar, UserPlus, MessageCircle, Send, Clock, Check, X, Bell, Camera, Upload, Search, Edit, Trash2, ShieldOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, uploadUrl, API_BASE } from "@/lib/queryClient";
+import { getReadinessDisplay, type ReadinessData } from "@/lib/readiness";
 import DirectMessageModal from "@/components/direct-message-modal";
 import FindFriendsModal from "@/components/find-friends-modal";
 import MessageInbox from "@/components/message-inbox";
@@ -80,6 +81,13 @@ export default function Profile() {
     queryKey: ["/api/users", targetUserId],
     enabled: !!targetUserId,
   });
+
+  // Readiness score (own profile only — this is a private health metric).
+  const { data: readiness } = useQuery<ReadinessData>({
+    queryKey: ["/api/readiness/me"],
+    enabled: !!user?.id && isOwnProfile,
+  });
+  const readinessDisplay = isOwnProfile ? getReadinessDisplay(readiness) : null;
 
   const { data: history = [] } = useQuery<CompetitionHistory[]>({
     queryKey: ["/api/history", targetUserId],
@@ -369,10 +377,14 @@ export default function Profile() {
                         <img
                           src={uploadUrl(displayUser.avatar)}
                           alt="Profile picture"
-                          className="w-24 h-24 rounded-full border-4 border-white object-cover shadow-lg"
+                          className={`w-24 h-24 rounded-full border-4 border-white object-cover shadow-lg ${readinessDisplay?.active ? `${readinessDisplay.ring} ring-offset-2 ring-offset-[#0a0f0a]` : ""}`}
+                          title={readinessDisplay?.active ? `Readiness: ${readinessDisplay.label}${readinessDisplay.score != null ? ` (${readinessDisplay.score})` : ""}` : undefined}
                         />
                       ) : (
-                        <div className="w-24 h-24 bg-gradient-to-b from-military-green to-[#1a2e1a] rounded-full flex items-center justify-center border-4 border-white shadow-lg overflow-hidden">
+                        <div
+                          className={`w-24 h-24 bg-gradient-to-b from-military-green to-[#1a2e1a] rounded-full flex items-center justify-center border-4 border-white shadow-lg overflow-hidden ${readinessDisplay?.active ? `${readinessDisplay.ring} ring-offset-2 ring-offset-[#0a0f0a]` : ""}`}
+                          title={readinessDisplay?.active ? `Readiness: ${readinessDisplay.label}${readinessDisplay.score != null ? ` (${readinessDisplay.score})` : ""}` : undefined}
+                        >
                           {/* Saluting soldier silhouette (default avatar) */}
                           <img
                             src={defaultAvatarSoldier}
@@ -393,6 +405,17 @@ export default function Profile() {
                     <div className="mb-0.5">
                       <h2 className="text-white font-bold text-xl text-center">{displayUser.username}</h2>
                     </div>
+
+                    {/* Readiness status pill */}
+                    {readinessDisplay?.active && (
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <span className={`w-2.5 h-2.5 rounded-full ${readinessDisplay.dot}`} />
+                        <span className={`text-sm font-semibold ${readinessDisplay.text}`}>
+                          Readiness: {readinessDisplay.label}
+                          {readinessDisplay.score != null ? ` · ${readinessDisplay.score}` : ""}
+                        </span>
+                      </div>
+                    )}
 
                     {/* User Motto */}
                     <div className="mb-3 px-6">
@@ -773,6 +796,36 @@ export default function Profile() {
 
           {/* Stats and History */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Readiness - Only show on own profile (private health metric) */}
+            {isOwnProfile && readinessDisplay && (
+              <Card className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl shadow-xl">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <span className={`w-3 h-3 rounded-full ${readinessDisplay.dot}`} />
+                    Readiness
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-4">
+                    {readinessDisplay.score != null ? (
+                      <div className={`flex items-center justify-center w-16 h-16 rounded-full ${readinessDisplay.ring} ring-offset-2 ring-offset-[#0a0f0a]`}>
+                        <span className={`text-2xl font-bold ${readinessDisplay.text}`}>
+                          {readinessDisplay.score}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className={`flex items-center justify-center w-16 h-16 rounded-full ${readinessDisplay.ring} ring-offset-2 ring-offset-[#0a0f0a]`}>
+                        <Target className={`h-6 w-6 ${readinessDisplay.text}`} />
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <p className={`font-semibold ${readinessDisplay.text}`}>{readinessDisplay.label}</p>
+                      <p className="text-sm text-gray-300">{readinessDisplay.description}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
             {/* Task Notifications - Only show on own profile if there are pending tasks */}
             {isOwnProfile && pendingTasks.length > 0 && (
               <Card className="backdrop-blur-md bg-white/5 border border-orange-500/30 rounded-2xl shadow-xl">

@@ -1,2 +1,2 @@
 - [Marketing site](marketing-site.md) — public landing page is a standalone Netlify static site at `marketing-site/index.html`, separate from the app; deploys via Netlify, not Replit Publish/TestFlight.
-- [HealthKit Readiness](healthkit-readiness.md) — Readiness scoring signals/HRV plugin patch; prod tables only created on Publish; test-account exception relaxes baseline gates.
+- [HealthKit Readiness](healthkit-readiness.md) — Readiness scoring + states (ready/calibrating/insufficient); "not showing" = backend not Published OR UI hid non-ready states (now all states render via getReadinessDisplay).

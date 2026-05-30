@@ -46,6 +46,23 @@ Replit app so the prod DB gets the tables AND the backend gets the
 client code (team-tab ring + `healthkit.ts` sync), since the web bundle is baked
 into the native app at build time.
 
+**Diagnosing "ring not showing" — use deployment logs, NOT the SQL tool's prod
+env.** The `execute_sql` "production" environment can point to a DIFFERENT
+database than the live deployment actually uses. Observed once: the SQL-tool prod
+DB had `users` (incl the test account) + `apple_health_connections/workouts` but
+NO `health_metrics`/`readiness_scores` tables, while the live deployment logs
+simultaneously showed `POST /api/apple-health/metrics/sync 200` and
+`GET /api/readiness/team/:id 200` for that same user — i.e. the live DB clearly
+HAS the tables and is storing/computing readiness. So treat the deployment logs
+as the source of truth for live readiness, and don't conclude "feature not
+published" just because the SQL-tool prod DB lacks the tables. The ring only
+renders when `state === "ready"` (team.tsx `readinessRing` returns null
+otherwise); a fresh account without the test exception sits at "calibrating"
+(<14 days history) and shows no ring. If logs prove metrics are flowing but no
+ring, the usual cause is the deployed backend predates the test-account
+exception → re-Publish (backend-only change; no new TestFlight build needed since
+the installed client already calls `metrics/sync`).
+
 **Testing exception (no-baseline accounts):** `recomputeReadinessForUser` passes
 relaxed `ReadinessOptions` for a designated test account (configured in code /
 the `READINESS_TEST_EMAILS` env var): `minHistoryDays:1`, `minSignals:2`,

@@ -117,6 +117,25 @@ App ID capability, signing fails with `Provisioning profile "TacFit" doesn't
 include the HealthKit capability`.
 To ship: push to GitHub → Codemagic builds → TestFlight (new native build).
 
+### Provisioning profile force-recreate in Codemagic (2026-05-29)
+Symptom: builds kept signing with a stale provisioning profile that had the
+correct App ID but NO `com.apple.developer.healthkit` entitlement, so the
+archive failed even after the App ID's HealthKit capability was enabled. Root
+cause: Codemagic automatic signing reused an old profile (and a build-machine
+cached copy) instead of minting a fresh one. Manually deleting the profile in
+the Apple portal was unreliable.
+Fix (in `codemagic.yaml`, step "Force a fresh provisioning profile with
+HealthKit", runs before signing): it (1) deletes the locally cached
+`.mobileprovision` files on the build machine, (2) deletes existing App Store
+profiles from Apple via `app-store-connect delete-profile`, (3) re-creates a
+fresh profile with `app-store-connect fetch-signing-files "$BUNDLE_ID" --type
+IOS_APP_STORE --create` (a fresh profile automatically inherits whatever
+capabilities the App ID currently has, including HealthKit), then (4) HARD-FAILS
+the build with a clear message if the fetched profile still lacks the HealthKit
+entitlement. This means the user never has to touch the Apple portal for
+profiles again — every build mints a current one. The App ID must still have the
+HealthKit capability enabled (one-time, already done).
+
 ### Apple rejection "crashed when taking a photo" — REAL root cause (2026-05-29 fix)
 The earlier theory (below, 2026-05-19) blamed `cap-build.sh` not running the
 Info.plist patcher. That script is only used for MANUAL Mac builds. The actual

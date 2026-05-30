@@ -50,6 +50,41 @@ workflows:
           BUILD_NUMBER=$(date +%s)
           agvtool new-version -all $BUILD_NUMBER
         working_directory: ios/App
+      - name: Force a fresh provisioning profile with HealthKit
+        script: |
+          set -e
+          PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+          echo "Clearing locally cached provisioning profiles on the build machine..."
+          rm -f "$PROFILE_DIR"/*.mobileprovision 2>/dev/null || true
+
+          echo "Deleting existing App Store profiles from Apple so a fresh one is minted..."
+          set +e
+          app-store-connect list-profiles --type IOS_APP_STORE --json 2>/dev/null \
+            | python3 -c "import sys,json; d=json.load(sys.stdin); d=d.get('data',d) if isinstance(d,dict) else d; [print(p.get('id','')) for p in d]" 2>/dev/null \
+            | while read -r PID; do
+                [ -n "$PID" ] || continue
+                echo "Deleting profile $PID"
+                app-store-connect delete-profile "$PID"
+              done
+          set -e
+
+          echo "Creating a fresh App Store profile (inherits HealthKit from the App ID)..."
+          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
+
+          echo "Verifying the fresh profile includes the HealthKit entitlement..."
+          FOUND_HK=0
+          for p in "$PROFILE_DIR"/*.mobileprovision; do
+            [ -e "$p" ] || continue
+            security cms -D -i "$p" > /tmp/pp.plist 2>/dev/null
+            HK=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:com.apple.developer.healthkit' /tmp/pp.plist 2>/dev/null)
+            [ "$HK" = "true" ] && FOUND_HK=1
+          done
+          if [ "$FOUND_HK" != "1" ]; then
+            echo "ERROR: the fetched provisioning profile does NOT include the HealthKit entitlement."
+            echo "Confirm the HealthKit capability is enabled on App ID $BUNDLE_ID in the Apple Developer portal, then rebuild."
+            exit 1
+          fi
+          echo "OK: HealthKit entitlement present in the fresh profile."
       - name: Debug provisioning profile entitlements
         script: |
           set +e

@@ -31,6 +31,13 @@ fi
 echo "→ Patching Info.plist permissions (every build)..."
 bash scripts/ios-permissions.sh
 
+# Patch the HealthKit plugin to read HRV (heartRateVariabilitySDNN). The
+# published plugin has no HRV case, so without this the strongest readiness
+# signal can never be read. Idempotent; runs before sync so the patched Swift
+# is what CocoaPods compiles.
+echo "→ Patching HealthKit plugin for HRV support..."
+bash scripts/patch-healthkit-hrv.sh
+
 # Copy the TacFit splash master into the iOS asset catalog so the launch
 # screen shows the TacFit shield instead of the default Capacitor splash.
 SPLASH_SRC="scripts/assets/ios-splash-master.png"

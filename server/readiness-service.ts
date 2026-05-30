@@ -9,11 +9,10 @@ import type { IStorage } from "./storage";
 // then combined with fixed weights (renormalized over whatever signals are
 // actually available for that user).
 //
-// HRV is the strongest readiness predictor and normally carries the largest
-// weight, but the current Apple Health plugin cannot read HRV. The weight is
-// kept here (and an `hrv` column exists) so HRV can be switched on later with no
-// algorithm change — for now its weight is simply dropped from the renormalized
-// pool whenever the value is missing.
+// HRV is the strongest readiness predictor and carries the largest weight. It is
+// read from Apple Health via a patched build of the plugin
+// (heartRateVariabilitySDNN, in milliseconds). On any day the value is missing,
+// its weight is simply dropped from the renormalized pool.
 
 export type ReadinessBucket = "ready" | "moderate" | "fatigued" | "rest";
 export type ReadinessState = "ready" | "calibrating" | "insufficient";

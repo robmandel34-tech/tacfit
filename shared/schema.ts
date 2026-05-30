@@ -585,7 +585,7 @@ export const healthMetrics = pgTable("health_metrics", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id).notNull(),
   metricDate: text("metric_date").notNull(), // local calendar day "YYYY-MM-DD"
-  hrv: real("hrv"), // heart rate variability (ms) — not yet readable via current plugin; reserved
+  hrv: real("hrv"), // heart rate variability SDNN (ms), read from Apple Health
   restingHeartRate: real("resting_heart_rate"), // bpm
   respiratoryRate: real("respiratory_rate"), // breaths/min
   oxygenSaturation: real("oxygen_saturation"), // 0..1 or % as reported

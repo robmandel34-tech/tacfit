@@ -28,6 +28,14 @@ workflows:
           echo "stripe key length $STRIPE_KEY_LEN"
           echo "api url $VITE_API_URL"
           npx vite build
+      - name: Patch HealthKit plugin for HRV support
+        script: |
+          set -e
+          # The published @perfood/capacitor-healthkit has no HRV case, so the
+          # strongest readiness signal (0.30 weight) can never be read. node_modules
+          # is reinstalled fresh on every build, so re-apply the patch here, BEFORE
+          # `pod install` compiles the plugin Swift. Idempotent.
+          bash scripts/patch-healthkit-hrv.sh
       - name: Sync web assets to iOS
         script: |
           set -e

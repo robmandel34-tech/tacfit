@@ -23,6 +23,7 @@ const READ_SCOPES = [
   "distance",
   "duration",
   "restingHeartRate",
+  "heartRateVariabilitySDNN",
   "respiratoryRate",
   "oxygenSaturation",
   "bodyTemperature",
@@ -30,11 +31,12 @@ const READ_SCOPES = [
 ];
 
 // Daily health metrics sent to /api/apple-health/metrics/sync. Any field may be
-// null when the device has no reading for that signal on that day. HRV is not
-// readable via the current plugin, so it is always omitted for now.
+// null when the device has no reading for that signal on that day. HRV is read
+// via a patched build of the plugin (heartRateVariabilitySDNN, in milliseconds).
 export interface NormalizedDailyMetric {
   metricDate: string; // local calendar day "YYYY-MM-DD"
   restingHeartRate: number | null;
+  hrv: number | null;
   respiratoryRate: number | null;
   oxygenSaturation: number | null;
   bodyTemperature: number | null;
@@ -214,8 +216,9 @@ export async function readDailyHealthMetrics(sinceDays = 35): Promise<Normalized
   const end = new Date();
   const start = new Date(end.getTime() - sinceDays * 24 * 60 * 60 * 1000);
 
-  const [rhr, resp, spo2, temp, sleep] = await Promise.all([
+  const [rhr, hrv, resp, spo2, temp, sleep] = await Promise.all([
     readDailyAverages("restingHeartRate", start, end),
+    readDailyAverages("heartRateVariabilitySDNN", start, end),
     readDailyAverages("respiratoryRate", start, end),
     readDailyAverages("oxygenSaturation", start, end),
     readDailyAverages("bodyTemperature", start, end),
@@ -224,6 +227,7 @@ export async function readDailyHealthMetrics(sinceDays = 35): Promise<Normalized
 
   const days = new Set<string>([
     ...Object.keys(rhr),
+    ...Object.keys(hrv),
     ...Object.keys(resp),
     ...Object.keys(spo2),
     ...Object.keys(temp),
@@ -235,6 +239,7 @@ export async function readDailyHealthMetrics(sinceDays = 35): Promise<Normalized
     .map((metricDate) => ({
       metricDate,
       restingHeartRate: rhr[metricDate] ?? null,
+      hrv: hrv[metricDate] ?? null,
       respiratoryRate: resp[metricDate] ?? null,
       oxygenSaturation: spo2[metricDate] ?? null,
       bodyTemperature: temp[metricDate] ?? null,

@@ -1,2 +1,2 @@
 - [Capacitor plugin pods](capacitor-plugin-pods.md) — every new Capacitor plugin needs its pod added to ios/App/Podfile by hand; Codemagic only runs `cap copy`, not `cap sync`.
-- [HealthKit plugin signals](healthkit-readiness.md) — @perfood/capacitor-healthkit cannot read HRV; Readiness is built from 5 other signals, hrv column reserved.
+- [HealthKit plugin signals](healthkit-readiness.md) — HRV needs a native plugin patch (scripts/patch-healthkit-hrv.sh, runs every build pre-pod-install); Readiness uses HRV + 5 signals.

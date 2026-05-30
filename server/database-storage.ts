@@ -1373,6 +1373,23 @@ export class DatabaseStorage implements IStorage {
     return updated || undefined;
   }
 
+  // Atomically claim an unsubmitted workout for an activity. Returns true only
+  // if THIS call linked it (submitted_activity_id was NULL). Prevents the same
+  // HealthKit workout being reused under concurrent requests.
+  async claimAppleHealthWorkout(workoutId: number, activityId: number): Promise<boolean> {
+    const updated = await db
+      .update(appleHealthWorkouts)
+      .set({ submittedActivityId: activityId })
+      .where(
+        and(
+          eq(appleHealthWorkouts.id, workoutId),
+          isNull(appleHealthWorkouts.submittedActivityId),
+        ),
+      )
+      .returning();
+    return updated.length > 0;
+  }
+
   async getEligibleWorkoutsForCompetition(userId: number, competition: Competition): Promise<AppleHealthWorkout[]> {
     const workouts = await db
       .select()
@@ -1393,6 +1410,56 @@ export class DatabaseStorage implements IStorage {
     return workouts.filter((w) => {
       const mappedName = mapHealthKitTypeToActivityName(w.activityType);
       return mappedName != null && required.includes(mappedName);
+    });
+  }
+
+  async getWorkoutsWithEligibility(
+    userId: number,
+    competition: Competition | null,
+  ): Promise<(AppleHealthWorkout & { eligible: boolean; ineligibleReason: string | null })[]> {
+    const workouts = await db
+      .select()
+      .from(appleHealthWorkouts)
+      .where(
+        and(
+          eq(appleHealthWorkouts.userId, userId),
+          isNull(appleHealthWorkouts.submittedActivityId),
+        ),
+      )
+      .orderBy(desc(appleHealthWorkouts.startTime));
+
+    // No active competition -> every synced workout can be logged as an
+    // independent activity (earns personal points, counts toward no competition).
+    if (!competition) {
+      return workouts.map((w) => ({ ...w, eligible: true, ineligibleReason: null }));
+    }
+
+    const start = new Date(competition.startDate);
+    const end = new Date(competition.endDate);
+    const startLabel = start.toLocaleDateString();
+    const endLabel = end.toLocaleDateString();
+    const required = competition.requiredActivities || [];
+
+    return workouts.map((w) => {
+      const when = new Date(w.startTime);
+      if (when < start || when > end) {
+        return {
+          ...w,
+          eligible: false,
+          ineligibleReason: `Outside the competition dates (${startLabel} – ${endLabel})`,
+        };
+      }
+      if (required.length > 0) {
+        const mappedName = mapHealthKitTypeToActivityName(w.activityType);
+        if (!mappedName || !required.includes(mappedName)) {
+          return {
+            ...w,
+            eligible: false,
+            ineligibleReason: `${w.activityType} isn't a required activity for this competition`,
+          };
+        }
+      }
+      return { ...w, eligible: true, ineligibleReason: null };
     });
   }
 }

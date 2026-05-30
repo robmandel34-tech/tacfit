@@ -12,6 +12,7 @@ import {
   insertAdminPostSchema, insertMoodLogSchema, friendships, type User,
 } from "@shared/schema";
 import { getCompetitionPricing } from "@shared/pricing";
+import { mapHealthKitTypeToActivityName } from "@shared/healthkit";
 import { z } from "zod";
 import { ObjectStorageService, ObjectNotFoundError } from './objectStorage.js';
 import { db } from "./db";
@@ -2615,19 +2616,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const competitionId = req.query.competitionId
         ? parseInt(req.query.competitionId as string)
         : null;
+      // Only annotate against a competition that is currently active (started and
+      // not ended). Before it starts or after it ends, submissions count as
+      // independent activities, so every synced workout is eligible.
+      let activeCompetition = null;
       if (competitionId) {
         const competition = await storage.getCompetition(competitionId);
         if (!competition) {
           return res.status(404).json({ message: "Competition not found" });
         }
-        const eligible = await storage.getEligibleWorkoutsForCompetition(
-          userId,
-          competition,
-        );
-        return res.json(eligible);
+        const now = new Date();
+        if (!competition.isCompleted && now >= new Date(competition.startDate) && now <= new Date(competition.endDate)) {
+          activeCompetition = competition;
+        }
       }
-      const all = await storage.getAppleHealthWorkouts(userId);
-      res.json(all);
+      const workouts = await storage.getWorkoutsWithEligibility(userId, activeCompetition);
+      res.json(workouts);
     } catch (e) {
       console.error("apple-health workouts error:", e);
       res.status(500).json({ message: "Failed to get workouts" });
@@ -2647,21 +2651,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!workout) {
         return res.status(404).json({ message: "Workout not found" });
       }
-      // If an activityId is supplied, verify it exists and belongs to this user
-      // before linking, so workouts can't be tied to someone else's activity.
-      let linkedActivityId: number | null = null;
-      if (activityId !== undefined && activityId !== null) {
-        if (typeof activityId !== "number") {
-          return res.status(400).json({ message: "activityId must be a number" });
-        }
-        const activity = await storage.getActivity(activityId);
-        if (!activity || activity.userId !== userId) {
-          return res.status(403).json({ message: "Activity not found or not owned by user" });
-        }
-        linkedActivityId = activityId;
+      // Linking requires a real, owned activity. Unlinking via this public API
+      // is not allowed (it would let a workout be reused for multiple points).
+      if (typeof activityId !== "number") {
+        return res.status(400).json({ message: "activityId is required" });
+      }
+      const activity = await storage.getActivity(activityId);
+      if (!activity || activity.userId !== userId) {
+        return res.status(403).json({ message: "Activity not found or not owned by user" });
+      }
+      if (workout.submittedActivityId && workout.submittedActivityId !== activityId) {
+        return res.status(409).json({ message: "Workout already submitted" });
       }
       const updated = await storage.updateAppleHealthWorkout(workout.id, {
-        submittedActivityId: linkedActivityId,
+        submittedActivityId: activityId,
       });
       res.json(updated);
     } catch (e) {
@@ -2723,8 +2726,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const startDate = new Date(competition.startDate);
           const endDate = new Date(competition.endDate);
           
-          // Check if competition is active (started and not ended)
-          if (now >= startDate && now <= endDate) {
+          // Check if competition is active (started, not ended, not completed)
+          if (!competition.isCompleted && now >= startDate && now <= endDate) {
             isInActiveCompetition = true;
           }
         }
@@ -2739,6 +2742,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Separate files by type
       const videoFiles = files.filter(file => file.fieldname === 'video');
       const imageFiles = files.filter(file => file.fieldname === 'images');
+
+      // --- Apple Health import + evidence/eligibility enforcement (server-side) ---
+      // The UI restricts these, but rules must also hold for crafted requests so
+      // the points economy can't be farmed.
+      const healthKitWorkoutId = typeof req.body.healthKitWorkoutId === 'string' && req.body.healthKitWorkoutId.trim()
+        ? req.body.healthKitWorkoutId.trim()
+        : null;
+      let healthWorkout = null;
+      if (healthKitWorkoutId) {
+        healthWorkout = await storage.getAppleHealthWorkoutByHealthKitId(userId, healthKitWorkoutId);
+        if (!healthWorkout) {
+          return res.status(404).json({ message: "Apple Health workout not found" });
+        }
+        if (healthWorkout.submittedActivityId) {
+          return res.status(409).json({ message: "This Apple Health workout has already been submitted." });
+        }
+      }
+
+      // Evidence rule: at least one image, OR a valid (owned, unsubmitted) HealthKit workout.
+      if (imageFiles.length === 0 && !healthWorkout) {
+        return res.status(400).json({ message: "Please add at least one photo, or import an Apple Health workout." });
+      }
+
+      // When the submission counts toward an active competition, enforce the
+      // competition's activity-type rule, plus the date-window + type match for
+      // HealthKit imports, so ineligible workouts can't be force-submitted.
+      if (isInActiveCompetition && competition) {
+        const required = competition.requiredActivities || [];
+        if (required.length > 0 && !required.includes(req.body.type)) {
+          return res.status(400).json({ message: "That activity type isn't part of this competition." });
+        }
+        if (healthWorkout) {
+          const when = new Date(healthWorkout.startTime);
+          if (when < new Date(competition.startDate) || when > new Date(competition.endDate)) {
+            return res.status(400).json({ message: "That workout is outside the competition dates." });
+          }
+          if (required.length > 0) {
+            const mappedName = mapHealthKitTypeToActivityName(healthWorkout.activityType);
+            if (!mappedName || !required.includes(mappedName)) {
+              return res.status(400).json({ message: "That workout isn't a required activity for this competition." });
+            }
+          }
+        }
+      }
       
       // Calculate base points
       let basePoints = 15;
@@ -2821,6 +2868,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertActivitySchema.parse(activityData);
       
       const activity = await storage.createActivity(validatedData);
+
+      // Atomically claim the Apple Health workout for this activity. If a
+      // concurrent request already claimed it, roll back this activity (before
+      // any points are awarded) and reject — one workout = one submission.
+      if (healthWorkout) {
+        const claimed = await storage.claimAppleHealthWorkout(healthWorkout.id, activity.id);
+        if (!claimed) {
+          await storage.deleteActivity(activity.id);
+          return res.status(409).json({ message: "This Apple Health workout has already been submitted." });
+        }
+      }
       
       
       // Always update user points (15 or 30 depending on evidence)

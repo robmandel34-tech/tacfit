@@ -162,8 +162,13 @@ export interface IStorage {
   getAppleHealthWorkout(id: number): Promise<AppleHealthWorkout | undefined>;
   getAppleHealthWorkoutByHealthKitId(userId: number, healthKitWorkoutId: string): Promise<AppleHealthWorkout | undefined>;
   updateAppleHealthWorkout(id: number, updates: Partial<AppleHealthWorkout>): Promise<AppleHealthWorkout | undefined>;
+  // Atomically claim an unsubmitted workout for an activity (returns false if already claimed).
+  claimAppleHealthWorkout(workoutId: number, activityId: number): Promise<boolean>;
   // Workouts eligible for a competition: type matches requiredActivities, within window, not yet submitted
   getEligibleWorkoutsForCompetition(userId: number, competition: CompetitionType): Promise<AppleHealthWorkout[]>;
+  // All unsubmitted workouts annotated with whether they can be used for the given
+  // competition (or all eligible as independent activities when competition is null).
+  getWorkoutsWithEligibility(userId: number, competition: CompetitionType | null): Promise<(AppleHealthWorkout & { eligible: boolean; ineligibleReason: string | null })[]>;
 
   // User block operations
   blockUser(blockerId: number, blockedId: number): Promise<void>;

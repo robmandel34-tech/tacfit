@@ -56,6 +56,8 @@ interface AppleHealthWorkout {
   durationSec: number;
   distanceMeters: number;
   energyKcal: number;
+  eligible?: boolean;
+  ineligibleReason?: string | null;
 }
 
 export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySubmissionModalProps) {
@@ -132,14 +134,18 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     if (!isOpen) setSelectedWorkoutHkId(null);
   }, [isOpen]);
 
-  // Apple Health: eligible synced workouts for the current competition
-  // (type matches required activities AND within the competition window).
+  // Apple Health: all synced workouts, annotated with whether each one can be
+  // used for the current competition. Outside an active competition every
+  // workout is submittable as an independent activity (personal points).
   const competitionId = currentTeam?.competitionId;
-  const showHealthWorkouts = appleHealth.native && appleHealth.connected && !competitionHasEnded && !!competitionId;
-  const { data: eligibleWorkouts = [], isFetching: workoutsLoading } = useQuery<AppleHealthWorkout[]>({
-    queryKey: ["/api/apple-health/workouts", competitionId],
+  const showHealthWorkouts = appleHealth.native && appleHealth.connected;
+  const { data: loadedWorkouts = [], isFetching: workoutsLoading } = useQuery<AppleHealthWorkout[]>({
+    queryKey: ["/api/apple-health/workouts", competitionId ?? "independent"],
     queryFn: async () => {
-      const res = await apiRequest("GET", `/api/apple-health/workouts?competitionId=${competitionId}`);
+      const url = competitionId
+        ? `/api/apple-health/workouts?competitionId=${competitionId}`
+        : `/api/apple-health/workouts`;
+      const res = await apiRequest("GET", url);
       return res.json();
     },
     enabled: isOpen && showHealthWorkouts,
@@ -296,15 +302,9 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
         title: "Activity submitted!",
         description: "Your activity has been recorded successfully.",
       });
-      // If this activity came from an Apple Health workout, mark it submitted
-      // so it stops showing up as an option.
+      // Apple Health imports are linked to the new activity server-side during
+      // creation; just refresh the workout list so the used one drops off.
       if (selectedWorkoutHkId) {
-        try {
-          await apiRequest("POST", "/api/apple-health/link", {
-            healthKitWorkoutId: selectedWorkoutHkId,
-            activityId: typeof data?.id === "number" ? data.id : undefined,
-          });
-        } catch {}
         queryClient.invalidateQueries({ queryKey: ["/api/apple-health/workouts"] });
       }
       // Invalidate all activity-related queries
@@ -373,8 +373,9 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
       return;
     }
 
-    // Require at least one image
-    if (imageFiles.length === 0) {
+    // Require at least one image — unless this is an Apple Health import,
+    // where the synced workout data is itself the evidence.
+    if (imageFiles.length === 0 && !selectedWorkoutHkId) {
       toast({
         title: "Image required",
         description: "Please add at least one photo to document your activity.",
@@ -392,6 +393,11 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
       formData.append("teamId", userTeamMember[0].teamId.toString());
     }
     formData.append("userId", user.id.toString());
+    // Apple Health import: send the workout id so the server can verify
+    // eligibility, accept it as evidence (no photo needed), and link it.
+    if (selectedWorkoutHkId) {
+      formData.append("healthKitWorkoutId", selectedWorkoutHkId);
+    }
     
     // Add text input if required
     if (requiresTextInput && textInput.trim()) {
@@ -537,36 +543,45 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                           Refresh
                         </Button>
                       </div>
-                      {!showHealthWorkouts ? (
-                        <p className="text-sm text-gray-400">Join an active competition to import matching workouts.</p>
-                      ) : workoutsLoading ? (
+                      {workoutsLoading ? (
                         <p className="text-sm text-gray-400">Loading your workouts...</p>
-                      ) : eligibleWorkouts.length === 0 ? (
-                        <p className="text-sm text-gray-400">No matching Apple Health workouts found for this competition yet.</p>
+                      ) : loadedWorkouts.length === 0 ? (
+                        <p className="text-sm text-gray-400">No Apple Health workouts synced yet. Tap Refresh after recording a workout.</p>
                       ) : (
                         <div className="space-y-2 max-h-56 overflow-y-auto">
-                          {eligibleWorkouts.map((w) => {
+                          {loadedWorkouts.map((w) => {
                             const minutes = Math.round((w.durationSec || 0) / 60);
                             const km = w.distanceMeters ? (w.distanceMeters / 1000).toFixed(2) : null;
                             const selected = selectedWorkoutHkId === w.healthKitWorkoutId;
+                            const eligible = w.eligible !== false;
                             return (
                               <button
                                 type="button"
                                 key={w.healthKitWorkoutId}
-                                onClick={() => applyWorkout(w)}
-                                className={`w-full text-left p-3 rounded-lg border transition-colors ${selected ? "border-military-green bg-military-green/10" : "border-tactical-gray bg-tactical-gray-light hover:bg-tactical-gray"}`}
+                                onClick={() => eligible && applyWorkout(w)}
+                                disabled={!eligible}
+                                className={`w-full text-left p-3 rounded-lg border transition-colors ${
+                                  !eligible
+                                    ? "border-tactical-gray bg-tactical-gray-light/40 opacity-60 cursor-not-allowed"
+                                    : selected
+                                    ? "border-military-green bg-military-green/10"
+                                    : "border-tactical-gray bg-tactical-gray-light hover:bg-tactical-gray"
+                                }`}
                                 data-testid={`workout-${w.healthKitWorkoutId}`}
                               >
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center gap-2 text-white font-medium">
-                                    <Activity className="w-4 h-4 text-military-green" />
+                                    <Activity className={`w-4 h-4 ${eligible ? "text-military-green" : "text-gray-500"}`} />
                                     {w.activityType}
                                   </div>
-                                  {selected && <CheckCircle className="w-4 h-4 text-military-green" />}
+                                  {selected && eligible && <CheckCircle className="w-4 h-4 text-military-green" />}
                                 </div>
                                 <div className="text-xs text-gray-400 mt-1">
                                   {new Date(w.startTime).toLocaleDateString()} · {minutes} min{km && Number(km) > 0 ? ` · ${km} km` : ""}{w.energyKcal ? ` · ${w.energyKcal} cal` : ""}
                                 </div>
+                                {!eligible && w.ineligibleReason && (
+                                  <div className="text-xs text-amber-400 mt-1">Can't use: {w.ineligibleReason}</div>
+                                )}
                               </button>
                             );
                           })}
@@ -682,7 +697,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
               {/* Photo Evidence */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <Label className="text-gray-300 font-medium">Photo Evidence <span className="text-red-400">*</span> <span className="text-gray-400">(at least 1 image required)</span></Label>
+                  <Label className="text-gray-300 font-medium">Photo Evidence {selectedWorkoutHkId ? <span className="text-gray-400">(optional — Apple Health workout is the evidence)</span> : <><span className="text-red-400">*</span> <span className="text-gray-400">(at least 1 image required)</span></>}</Label>
                   <button
                     type="button"
                     onClick={() => setShowGuidelines((v) => !v)}
@@ -826,7 +841,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
           <Button
             type="submit"
             className="w-full bg-military-green hover:bg-military-green-dark text-forest-green font-medium py-3"
-            disabled={submitActivity.isPending || !type || !description || !quantity || imageFiles.length === 0}
+            disabled={submitActivity.isPending || !type || !description || !quantity || (imageFiles.length === 0 && !selectedWorkoutHkId)}
           >
             {submitActivity.isPending
               ? uploadProgress > 0 ? `Uploading ${uploadProgress}%` : "Preparing..."

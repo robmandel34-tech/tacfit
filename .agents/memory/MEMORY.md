@@ -1,0 +1,1 @@
+- [Activity submission integrity](activity-submission-integrity.md) — competition/evidence/HealthKit rules must be enforced server-side in POST /api/activities, not just the modal UI; points economy is farmable otherwise.

@@ -907,51 +907,71 @@
               <animate attributeName="stroke-opacity" values="0.5;0;0.5" dur="6s" begin="4s" repeatCount="indefinite"/>
             </circle>
           </g>
-          <!-- varied connecting paths, dashes flow outward from the center -->
+          <!-- varied connecting paths at mixed lengths; dashes flow mostly outward, a few inward -->
           <g fill="none" stroke="#3BDE35" stroke-linecap="round">
-            <path id="conn1" d="M210 210 Q 280 158 360 210" stroke-width="2.2" stroke-opacity="0.6" stroke-dasharray="2 11"><animate attributeName="stroke-dashoffset" values="26;0" dur="1.7s" repeatCount="indefinite"/></path>
-            <path id="conn2" d="M210 210 Q 230 286 285 340" stroke-width="1.5" stroke-opacity="0.4" stroke-dasharray="2 9"><animate attributeName="stroke-dashoffset" values="22;0" dur="2.4s" repeatCount="indefinite"/></path>
-            <path id="conn3" d="M210 210 Q 196 282 135 340" stroke-width="2" stroke-opacity="0.52" stroke-dasharray="3 10"><animate attributeName="stroke-dashoffset" values="26;0" dur="1.9s" repeatCount="indefinite"/></path>
-            <path id="conn4" d="M210 210 Q 134 250 60 210" stroke-width="1.5" stroke-opacity="0.38" stroke-dasharray="2 13"><animate attributeName="stroke-dashoffset" values="30;0" dur="2.7s" repeatCount="indefinite"/></path>
-            <path id="conn5" d="M210 210 Q 126 146 135 80" stroke-width="2.2" stroke-opacity="0.58" stroke-dasharray="2 10"><animate attributeName="stroke-dashoffset" values="24;0" dur="1.6s" repeatCount="indefinite"/></path>
-            <path id="conn6" d="M210 210 Q 302 146 285 80" stroke-width="1.8" stroke-opacity="0.46" stroke-dasharray="3 11"><animate attributeName="stroke-dashoffset" values="28;0" dur="2.1s" repeatCount="indefinite"/></path>
+            <path id="conn1" d="M210 210 Q 297 172 385 210" stroke-width="2.2" stroke-opacity="0.6" stroke-dasharray="2 11"><animate attributeName="stroke-dashoffset" values="26;0" dur="1.7s" repeatCount="indefinite"/></path>
+            <path id="conn2" d="M210 210 Q 235 280 275 323" stroke-width="1.6" stroke-opacity="0.42" stroke-dasharray="2 9"><animate attributeName="stroke-dashoffset" values="0;22" dur="2.4s" repeatCount="indefinite"/></path>
+            <path id="conn3" d="M210 210 Q 188 285 130 349" stroke-width="2" stroke-opacity="0.52" stroke-dasharray="3 10"><animate attributeName="stroke-dashoffset" values="26;0" dur="1.9s" repeatCount="indefinite"/></path>
+            <path id="conn4" d="M210 210 Q 150 248 90 210" stroke-width="1.5" stroke-opacity="0.38" stroke-dasharray="2 13"><animate attributeName="stroke-dashoffset" values="0;30" dur="2.7s" repeatCount="indefinite"/></path>
+            <path id="conn5" d="M210 210 Q 120 140 120 54" stroke-width="2.2" stroke-opacity="0.58" stroke-dasharray="2 10"><animate attributeName="stroke-dashoffset" values="24;0" dur="1.6s" repeatCount="indefinite"/></path>
+            <path id="conn6" d="M210 210 Q 300 150 283 84" stroke-width="1.8" stroke-opacity="0.46" stroke-dasharray="3 11"><animate attributeName="stroke-dashoffset" values="28;0" dur="2.1s" repeatCount="indefinite"/></path>
           </g>
-          <!-- engagement actions gently traveling outward along the connections (subtle) -->
+          <!-- engagement actions traveling along the connections (subtle, mixed directions) -->
           <g fill="#61E55D">
-            <!-- encouragement: heart on conn1 -->
+            <!-- encouragement: fist bump on conn1 (outward) -->
             <g opacity="0">
-              <path d="M0 2.4 C -3.4 -2.6 -9 1 0 7.4 C 9 1 3.4 -2.6 0 2.4 Z"/>
-              <animateMotion dur="4.2s" begin="0s" repeatCount="indefinite"><mpath xlink:href="#conn1"/></animateMotion>
-              <animate attributeName="opacity" values="0;0.8;0.8;0" keyTimes="0;0.2;0.78;1" dur="4.2s" begin="0s" repeatCount="indefinite"/>
+              <g>
+                <rect x="-7.6" y="-4" width="6.6" height="8" rx="2.4"/>
+                <rect x="1" y="-4" width="6.6" height="8" rx="2.4"/>
+                <g stroke="#61E55D" stroke-width="1.1" stroke-linecap="round">
+                  <line x1="0" y1="-6.2" x2="0" y2="-8.4"/>
+                  <line x1="-2.6" y1="-5.6" x2="-4" y2="-7.2"/>
+                  <line x1="2.6" y1="-5.6" x2="4" y2="-7.2"/>
+                </g>
+              </g>
+              <animateMotion dur="4.4s" begin="0s" repeatCount="indefinite"><mpath xlink:href="#conn1"/></animateMotion>
+              <animate attributeName="opacity" values="0;0.82;0.82;0" keyTimes="0;0.2;0.78;1" dur="4.4s" begin="0s" repeatCount="indefinite"/>
             </g>
-            <!-- check-in: chat bubble on conn3 -->
+            <!-- check-ins: speech bubble with a check on conn4 (inward) -->
             <g opacity="0">
-              <rect x="-6" y="-5" width="12" height="9" rx="2.6"/>
-              <path d="M-3.4 3.4 L-6 7 L-6 3.4 Z"/>
-              <animateMotion dur="5s" begin="1.3s" repeatCount="indefinite"><mpath xlink:href="#conn3"/></animateMotion>
-              <animate attributeName="opacity" values="0;0.78;0.78;0" keyTimes="0;0.2;0.78;1" dur="5s" begin="1.3s" repeatCount="indefinite"/>
+              <g>
+                <rect x="-8" y="-6.5" width="16" height="12" rx="3.4"/>
+                <path d="M-3.5 5 L-6.5 9.5 L0.6 5.5 Z"/>
+                <path d="M-3.6 -0.6 L-1 2.2 L4 -3.4" fill="none" stroke="#0A0C0F" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+              </g>
+              <animateMotion dur="5.2s" begin="1.1s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath xlink:href="#conn4"/></animateMotion>
+              <animate attributeName="opacity" values="0;0.8;0.8;0" keyTimes="0;0.2;0.78;1" dur="5.2s" begin="1.1s" repeatCount="indefinite"/>
             </g>
-            <!-- celebrating wins: spark/star on conn6 -->
+            <!-- celebrating wins: trophy with a star above on conn2 (inward) -->
             <g opacity="0">
-              <path d="M0 -6.2 L1.7 -1.7 L6.2 0 L1.7 1.7 L0 6.2 L-1.7 1.7 L-6.2 0 L-1.7 -1.7 Z"/>
-              <animateMotion dur="4.6s" begin="2.6s" repeatCount="indefinite"><mpath xlink:href="#conn6"/></animateMotion>
-              <animate attributeName="opacity" values="0;0.82;0.82;0" keyTimes="0;0.2;0.78;1" dur="4.6s" begin="2.6s" repeatCount="indefinite"/>
+              <g transform="scale(0.82)">
+                <path d="M0 -12.4 L1 -9.8 L3.6 -9.2 L1 -8.6 L0 -6 L-1 -8.6 L-3.6 -9.2 L-1 -9.8 Z"/>
+                <path d="M-5 -4 H5 V-1.8 A5 5.6 0 0 1 -5 -1.8 Z"/>
+                <rect x="-1.2" y="2" width="2.4" height="3.6"/>
+                <rect x="-4.2" y="5.4" width="8.4" height="2.4" rx="0.9"/>
+              </g>
+              <animateMotion dur="4.8s" begin="2.5s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath xlink:href="#conn2"/></animateMotion>
+              <animate attributeName="opacity" values="0;0.82;0.82;0" keyTimes="0;0.2;0.78;1" dur="4.8s" begin="2.5s" repeatCount="indefinite"/>
             </g>
-            <!-- leadership / motivation: rising chevron on conn5 -->
+            <!-- leadership / guidance: compass on conn5 (outward) -->
             <g opacity="0">
-              <path d="M-5 3.4 L0 -3 L5 3.4 L3 4.8 L0 0.4 L-3 4.8 Z"/>
-              <animateMotion dur="5.4s" begin="0.7s" repeatCount="indefinite"><mpath xlink:href="#conn5"/></animateMotion>
-              <animate attributeName="opacity" values="0;0.76;0.76;0" keyTimes="0;0.2;0.78;1" dur="5.4s" begin="0.7s" repeatCount="indefinite"/>
+              <g>
+                <circle r="7.2" fill="none" stroke="#61E55D" stroke-width="1.6"/>
+                <path d="M0 -4.6 L2.3 0 L0 4.6 L-2.3 0 Z"/>
+                <circle r="1.1" fill="#0A0C0F"/>
+              </g>
+              <animateMotion dur="5.6s" begin="0.7s" repeatCount="indefinite"><mpath xlink:href="#conn5"/></animateMotion>
+              <animate attributeName="opacity" values="0;0.78;0.78;0" keyTimes="0;0.2;0.78;1" dur="5.6s" begin="0.7s" repeatCount="indefinite"/>
             </g>
           </g>
-          <!-- teammate nodes, each with a small figure -->
+          <!-- teammate nodes at varied distances, each with a small figure -->
           <g>
-            <g transform="translate(360,210)"><circle r="22" fill="#14181F" stroke="#3BDE35" stroke-width="1.6" stroke-opacity="0.7"/><circle cy="-5" r="5" fill="#3BDE35"/><path d="M0 1 q -9 1 -9 13 h 18 q 0 -12 -9 -13 z" fill="#3BDE35"/></g>
-            <g transform="translate(285,340)"><circle r="22" fill="#14181F" stroke="#3BDE35" stroke-width="1.6" stroke-opacity="0.7"/><circle cy="-5" r="5" fill="#3BDE35"/><path d="M0 1 q -9 1 -9 13 h 18 q 0 -12 -9 -13 z" fill="#3BDE35"/></g>
-            <g transform="translate(135,340)"><circle r="22" fill="#14181F" stroke="#3BDE35" stroke-width="1.6" stroke-opacity="0.7"/><circle cy="-5" r="5" fill="#3BDE35"/><path d="M0 1 q -9 1 -9 13 h 18 q 0 -12 -9 -13 z" fill="#3BDE35"/></g>
-            <g transform="translate(60,210)"><circle r="22" fill="#14181F" stroke="#3BDE35" stroke-width="1.6" stroke-opacity="0.7"/><circle cy="-5" r="5" fill="#3BDE35"/><path d="M0 1 q -9 1 -9 13 h 18 q 0 -12 -9 -13 z" fill="#3BDE35"/></g>
-            <g transform="translate(135,80)"><circle r="22" fill="#14181F" stroke="#3BDE35" stroke-width="1.6" stroke-opacity="0.7"/><circle cy="-5" r="5" fill="#3BDE35"/><path d="M0 1 q -9 1 -9 13 h 18 q 0 -12 -9 -13 z" fill="#3BDE35"/></g>
-            <g transform="translate(285,80)"><circle r="22" fill="#14181F" stroke="#3BDE35" stroke-width="1.6" stroke-opacity="0.7"/><circle cy="-5" r="5" fill="#3BDE35"/><path d="M0 1 q -9 1 -9 13 h 18 q 0 -12 -9 -13 z" fill="#3BDE35"/></g>
+            <g transform="translate(385,210)"><circle r="22" fill="#14181F" stroke="#3BDE35" stroke-width="1.6" stroke-opacity="0.7"/><circle cy="-5" r="5" fill="#3BDE35"/><path d="M0 1 q -9 1 -9 13 h 18 q 0 -12 -9 -13 z" fill="#3BDE35"/></g>
+            <g transform="translate(275,323)"><circle r="22" fill="#14181F" stroke="#3BDE35" stroke-width="1.6" stroke-opacity="0.7"/><circle cy="-5" r="5" fill="#3BDE35"/><path d="M0 1 q -9 1 -9 13 h 18 q 0 -12 -9 -13 z" fill="#3BDE35"/></g>
+            <g transform="translate(130,349)"><circle r="22" fill="#14181F" stroke="#3BDE35" stroke-width="1.6" stroke-opacity="0.7"/><circle cy="-5" r="5" fill="#3BDE35"/><path d="M0 1 q -9 1 -9 13 h 18 q 0 -12 -9 -13 z" fill="#3BDE35"/></g>
+            <g transform="translate(90,210)"><circle r="22" fill="#14181F" stroke="#3BDE35" stroke-width="1.6" stroke-opacity="0.7"/><circle cy="-5" r="5" fill="#3BDE35"/><path d="M0 1 q -9 1 -9 13 h 18 q 0 -12 -9 -13 z" fill="#3BDE35"/></g>
+            <g transform="translate(120,54)"><circle r="22" fill="#14181F" stroke="#3BDE35" stroke-width="1.6" stroke-opacity="0.7"/><circle cy="-5" r="5" fill="#3BDE35"/><path d="M0 1 q -9 1 -9 13 h 18 q 0 -12 -9 -13 z" fill="#3BDE35"/></g>
+            <g transform="translate(283,84)"><circle r="22" fill="#14181F" stroke="#3BDE35" stroke-width="1.6" stroke-opacity="0.7"/><circle cy="-5" r="5" fill="#3BDE35"/><path d="M0 1 q -9 1 -9 13 h 18 q 0 -12 -9 -13 z" fill="#3BDE35"/></g>
           </g>
           <!-- core node: the individual whose strength radiates outward -->
           <circle cx="210" cy="210" r="40" fill="url(#coreGrad)"/>

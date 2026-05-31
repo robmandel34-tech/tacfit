@@ -28,7 +28,12 @@ export interface ReadinessResult {
 // How many distinct days of history a user needs before a baseline is meaningful.
 const MIN_HISTORY_DAYS = 14;
 // Minimum number of contributing signals on the scored day to show a score.
-const MIN_SIGNALS = 3;
+// Two is enough when one of them is HRV (the strongest readiness predictor,
+// highest weight). Many real devices only log HRV + SpO2 on a given day —
+// resting HR, respiratory rate, and sleep require more wear time / sleep
+// tracking — so requiring three would force a false "insufficient" even with
+// months of rich history.
+const MIN_SIGNALS = 2;
 
 // Testing exception: these accounts bypass the historical-data requirement so
 // they can verify the Readiness ring end-to-end with only a day or two of synced
@@ -168,8 +173,10 @@ function bucketFor(score: number): ReadinessBucket {
 // "today." The newest calendar day is frequently a PARTIAL day that hasn't
 // picked up last night's overnight signals (HRV, sleep, respiratory rate) yet,
 // which would force a false "insufficient." So we score the most recent day that
-// actually has enough signals, as long as it's within this window.
-const SCORE_RECENCY_DAYS = 3;
+// actually has enough signals, as long as it's within this window. Kept modest
+// so the score still reflects recent recovery, but wide enough to step over a
+// partial newest day or a one-off gap in syncing.
+const SCORE_RECENCY_DAYS = 5;
 
 // Whole-day distance between two "YYYY-MM-DD" dates.
 function daysBetween(a: string, b: string): number {
@@ -272,7 +279,14 @@ export function computeReadiness(
     const history = sorted.slice(0, i).slice(-BASELINE_WINDOW_DAYS);
     const dayContribs = buildContributions(sorted[i], history, relaxBaseline);
     if (i === sorted.length - 1) latestSignalsUsed = dayContribs.length;
-    if (dayContribs.length >= minSignals) {
+    // A day qualifies when it has at least minSignals contributions. At the
+    // 2-signal floor we additionally require HRV (the strongest predictor, and
+    // the highest-weighted signal) to be one of them, so a thin low-information
+    // pair like resting HR + SpO2 can't produce a misleading score.
+    const hasHrv = dayContribs.some((c) => c.key === "hrv");
+    const qualifies =
+      dayContribs.length >= minSignals && (dayContribs.length >= 3 || hasHrv);
+    if (qualifies) {
       chosenIdx = i;
       contributions = dayContribs;
       break;

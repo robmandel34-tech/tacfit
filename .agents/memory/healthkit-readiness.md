@@ -1,26 +1,28 @@
 ---
 name: HealthKit Readiness feature
-description: How the readiness score is computed, gated, and displayed; common "not showing" causes.
+description: How the readiness score is computed/gated/displayed and the common "shows no data / insufficient" causes.
 ---
 
 # Readiness score
 
-## Backend (server/readiness-service.ts)
-- Computes a 0-100 score from synced Apple Health daily metrics vs the user's own rolling baseline.
-- `state` is one of: `ready` (has a real score + a bucket of ready/moderate/fatigued/rest), `calibrating` (needs MIN_HISTORY_DAYS=14 of history first), `insufficient` (no/too-few signals).
-- Test-account exception: emails in DEFAULT_TEST_EMAILS + the READINESS_TEST_EMAILS env relax the gates (minHistoryDays:1, minSignals:2, relaxBaseline) so the ring can be verified with ~1 day of data. It does NOT fabricate data — the account still needs at least one synced day.
-- Owner/test-account SAMPLE fallback: GET /api/readiness/me and GET /api/readiness/team/:teamId now return a hard-coded preview readiness (score 78 / "ready") for `isReadinessTestAccount(email)` accounts when there is no real score yet (state !== "ready"). It is response-only (never persisted) and real synced data always wins. This is what makes the owner's ring show even with zero recovery signals.
-- Recompute happens on every POST /api/apple-health/metrics/sync.
+## How it scores (server/readiness-service.ts)
+- 0-100 score from synced Apple Health daily metrics vs the user's own rolling baseline (mean+sd of prior days, capped at BASELINE_WINDOW_DAYS=30). HRV is the strongest, highest-weighted signal.
+- States: `ready` (real score + bucket ready/moderate/fatigued/rest), `calibrating` (has < MIN_HISTORY_DAYS=14 days of history), `insufficient` (not enough scorable signals on a recent day).
+- Scores the most recent day that has enough signals within SCORE_RECENCY_DAYS, not the literal newest day — the newest calendar day is usually PARTIAL (last night's overnight signals not synced yet), so scoring it directly causes a false "insufficient".
+- Gate: MIN_SIGNALS=2, but at the 2-signal floor HRV must be one of the two.
+- Recompute runs on every POST /api/apple-health/metrics/sync.
 
-## Why "readiness not showing" — two independent causes
-1. **Backend not published**: the test exception only takes effect once the backend is re-Published. Until then a test account computes `calibrating` (needs 14 days) and produces no score.
-2. **UI hid every non-ready state**: the display helper previously returned null unless state==="ready", so calibrating/insufficient rendered NOTHING — looked broken. Fixed: `client/src/lib/readiness.ts` `getReadinessDisplay` now maps EVERY state to a visible ring + label (colored buckets, "Calibrating", and a "No data / connect health" hint with `active:false`). Used by team.tsx (teammate avatars) and profile.tsx (own profile: avatar ring + status pill + readiness card).
-- **Why:** users repeatedly reported the ring "not showing" on TestFlight; the silent-null UI was the visible symptom even when the data pipeline was working.
+## #1 cause of "lots of data but still insufficient"
+- **Why:** recent days often carry only HRV + SpO2 (~2 signals). Resting HR, respiratory rate, and sleep need more wear time / sleep tracking, so they're sparse on the latest days even when the overall history is rich (months). The earlier 3-signal floor + 3-day window rejected these days. Fix was to require 2 (HRV-led) and widen the recency window.
+- **How to apply:** when a user reports "no readiness despite syncing," check the LATEST few days' per-signal availability, not the total day count. The bottleneck is signals-on-recent-days, not history length.
 
-## Display rules
-- The ring/pill render when `display.active` is true (real score or calibrating). `insufficient` is `active:false` so compact views (team avatars) stay clean, but the own-profile readiness card still renders it as a "connect Apple Health" hint.
-- Profile readiness is OWN-PROFILE ONLY (private health metric) via GET /api/readiness/me. Teammates' rings come from GET /api/readiness/team/:teamId (team-membership gated).
+## Test-account preview mode (OFF by default)
+- Emails in DEFAULT_TEST_EMAILS (currently empty) or the READINESS_TEST_EMAILS env get relaxed gates (minHistoryDays:1, minSignals:2, relaxBaseline) AND a hard-coded sample preview (score 78/"ready") when no real score exists yet. Response-only, never persisted; real data always wins. Re-enable only to demo the ring with ~1 day of data.
 
-## Data caveat
-- The execute_sql "production" tool points at a DIFFERENT DB than the live deployment — readiness/health_metrics rows looked empty there while deploy logs proved the live app was syncing. Trust deployment logs over that SQL tool for live readiness state.
-- The owner's live test account has different numeric user IDs in the live DB vs the dev DB — match by email, not by hardcoded id.
+## Display (client/src/lib/readiness.ts getReadinessDisplay)
+- Maps EVERY state to a visible ring/label so the UI never silently renders nothing (the old helper returned null unless state==="ready", which looked broken on TestFlight). `insufficient` is `active:false` so team-avatar views stay clean, but the own-profile card still shows a "connect Apple Health" hint.
+- Own readiness (private) via GET /api/readiness/me; teammates via GET /api/readiness/team/:teamId (membership-gated).
+
+## Ops notes
+- Readiness/scoring lives on the backend → a fix only takes effect after Replit **Publish**; the app then recomputes on the next metrics sync. No new TestFlight build needed for scoring changes (client look-back window changes do need one).
+- The `executeSql` "production" read-replica DOES match the live deployment DB (verified: same 71-day row count as deploy logs). Use it to inspect live per-signal data. Match the owner by EMAIL — user IDs differ between the dev and live DBs.

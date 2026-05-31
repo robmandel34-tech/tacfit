@@ -2688,7 +2688,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     remSleepMin: z.number().finite().nullable().optional(),
   });
   const metricsSyncSchema = z.object({
-    metrics: z.array(dailyMetricSchema).max(90),
+    // Client reads a 90-day window, which can yield 91+ calendar-day buckets
+    // (partial start day + today). Allow headroom so valid syncs aren't rejected.
+    metrics: z.array(dailyMetricSchema).max(120),
   });
 
   // Device pushes recent daily health metrics; we store them and recompute readiness.

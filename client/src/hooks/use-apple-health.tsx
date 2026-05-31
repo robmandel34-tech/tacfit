@@ -57,8 +57,10 @@ export function useAppleHealth() {
               predicate: (q) => String(q.queryKey[0] ?? "").startsWith("/api/readiness"),
             });
           }
-        } catch {
-          // ignore metric sync failures — workouts already synced
+        } catch (metricErr) {
+          // Don't block workouts (already synced), but log so a failed readiness
+          // metrics sync is diagnosable instead of silently disappearing.
+          console.warn("Apple Health metrics sync failed:", metricErr);
         }
         if (!silent) {
           toast({

@@ -32,12 +32,14 @@ const MIN_SIGNALS = 3;
 
 // Testing exception: these accounts bypass the historical-data requirement so
 // they can verify the Readiness ring end-to-end with only a day or two of synced
-// data. Configurable via the READINESS_TEST_EMAILS env var (comma-separated);
-// always includes the project owner's account by default. This relaxes the
-// 14-day baseline gate and lets signals fall back to absolute scoring when there
-// isn't enough history yet — it does NOT fabricate data, so the account must
-// still have at least one synced day of metrics.
-const DEFAULT_TEST_EMAILS = ["robmandel34@gmail.com"];
+// data. Configurable via the READINESS_TEST_EMAILS env var (comma-separated).
+// This relaxes the 14-day baseline gate and lets signals fall back to absolute
+// scoring when there isn't enough history yet — it does NOT fabricate data.
+// NOTE: intentionally EMPTY so every account (including the owner) is scored
+// like a normal user with real data. To re-enable preview/relaxed mode for an
+// account, add its email here (e.g. "robmandel34@gmail.com") or set
+// READINESS_TEST_EMAILS.
+const DEFAULT_TEST_EMAILS: string[] = [];
 function testAccountEmails(): Set<string> {
   const fromEnv = (process.env.READINESS_TEST_EMAILS ?? "")
     .split(",")

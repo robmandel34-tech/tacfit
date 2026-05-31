@@ -211,7 +211,7 @@ async function readDailySleep(
 }
 
 // Reads recent daily health metrics from HealthKit. No-ops on web.
-export async function readDailyHealthMetrics(sinceDays = 35): Promise<NormalizedDailyMetric[]> {
+export async function readDailyHealthMetrics(sinceDays = 90): Promise<NormalizedDailyMetric[]> {
   if (!isHealthKitAvailable()) return [];
   const end = new Date();
   const start = new Date(end.getTime() - sinceDays * 24 * 60 * 60 * 1000);

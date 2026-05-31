@@ -48,7 +48,7 @@ export function useAppleHealth() {
 
         // Also sync daily readiness metrics (best-effort; never blocks workouts).
         try {
-          const metrics = await readDailyHealthMetrics(35);
+          const metrics = await readDailyHealthMetrics(90);
           if (metrics.length > 0) {
             await apiRequest("POST", "/api/apple-health/metrics/sync", { metrics });
             // Team readiness uses a single-string key (/api/readiness/team/:id),

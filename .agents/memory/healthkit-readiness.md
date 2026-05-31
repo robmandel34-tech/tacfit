@@ -9,6 +9,7 @@ description: How the readiness score is computed, gated, and displayed; common "
 - Computes a 0-100 score from synced Apple Health daily metrics vs the user's own rolling baseline.
 - `state` is one of: `ready` (has a real score + a bucket of ready/moderate/fatigued/rest), `calibrating` (needs MIN_HISTORY_DAYS=14 of history first), `insufficient` (no/too-few signals).
 - Test-account exception: emails in DEFAULT_TEST_EMAILS + the READINESS_TEST_EMAILS env relax the gates (minHistoryDays:1, minSignals:2, relaxBaseline) so the ring can be verified with ~1 day of data. It does NOT fabricate data — the account still needs at least one synced day.
+- Owner/test-account SAMPLE fallback: GET /api/readiness/me and GET /api/readiness/team/:teamId now return a hard-coded preview readiness (score 78 / "ready") for `isReadinessTestAccount(email)` accounts when there is no real score yet (state !== "ready"). It is response-only (never persisted) and real synced data always wins. This is what makes the owner's ring show even with zero recovery signals.
 - Recompute happens on every POST /api/apple-health/metrics/sync.
 
 ## Why "readiness not showing" — two independent causes

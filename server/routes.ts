@@ -13,7 +13,7 @@ import {
 } from "@shared/schema";
 import { getCompetitionPricing } from "@shared/pricing";
 import { mapHealthKitTypeToActivityName } from "@shared/healthkit";
-import { recomputeReadinessForUser } from "./readiness-service";
+import { recomputeReadinessForUser, isReadinessTestAccount, sampleReadiness } from "./readiness-service";
 import { z } from "zod";
 import { ObjectStorageService, ObjectNotFoundError } from './objectStorage.js';
 import { db } from "./db";
@@ -2733,11 +2733,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = requireUserId(req, res);
       if (!userId) return;
       const readiness = await storage.getReadiness(userId);
-      res.json({
+      let payload = {
         score: readiness?.score ?? null,
         bucket: readiness?.bucket ?? null,
         state: readiness?.state ?? "insufficient",
-      });
+      };
+      // Owner/test accounts with no real readiness yet get a sample so the ring
+      // can be previewed. Real synced data always wins once it exists.
+      if (payload.state !== "ready") {
+        const user = await storage.getUser(userId);
+        if (isReadinessTestAccount(user?.email)) {
+          const s = sampleReadiness();
+          payload = { score: s.score, bucket: s.bucket, state: s.state };
+        }
+      }
+      res.json(payload);
     } catch (e) {
       console.error("readiness me error:", e);
       res.status(500).json({ message: "Failed to get readiness" });
@@ -2764,6 +2774,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const byUser: Record<number, { score: number | null; bucket: string | null; state: string }> = {};
       for (const s of scores) {
         byUser[s.userId] = { score: s.score, bucket: s.bucket, state: s.state };
+      }
+      // Owner/test accounts with no real readiness yet get a sample so their
+      // ring shows on the team view too. Real synced data always wins.
+      const requesterEntry = byUser[userId];
+      if (!requesterEntry || requesterEntry.state !== "ready") {
+        const requesterUser = await storage.getUser(userId);
+        if (isReadinessTestAccount(requesterUser?.email)) {
+          const s = sampleReadiness();
+          byUser[userId] = { score: s.score, bucket: s.bucket, state: s.state };
+        }
       }
       res.json(byUser);
     } catch (e) {

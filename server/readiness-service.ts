@@ -46,6 +46,27 @@ function testAccountEmails(): Set<string> {
   return new Set([...DEFAULT_TEST_EMAILS.map((e) => e.toLowerCase()), ...fromEnv]);
 }
 
+// True when an email belongs to a designated test/owner account.
+export function isReadinessTestAccount(email?: string | null): boolean {
+  if (!email) return false;
+  return testAccountEmails().has(email.toLowerCase());
+}
+
+// A realistic sample readiness result, used ONLY for designated test/owner
+// accounts that have no real synced health data yet, so the Readiness ring can
+// be previewed end-to-end. Real synced data always takes precedence once it
+// exists — this is never used for normal accounts and never persisted.
+export function sampleReadiness(): ReadinessResult {
+  const today = new Date().toISOString().split("T")[0];
+  return {
+    score: 78,
+    bucket: "ready",
+    state: "ready",
+    signalsUsed: 5,
+    metricDate: today,
+  };
+}
+
 // Options that loosen the scoring gates for testing accounts.
 export interface ReadinessOptions {
   minHistoryDays?: number;

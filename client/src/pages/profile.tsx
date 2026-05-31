@@ -12,7 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import defaultAvatarSoldier from "@/assets/default-avatar-soldier.png";
-import { Trophy, Target, Users, Calendar, UserPlus, MessageCircle, Send, Clock, Check, X, Bell, Camera, Upload, Search, Edit, Trash2, ShieldOff } from "lucide-react";
+import { Trophy, Target, Users, Calendar, UserPlus, MessageCircle, Send, Clock, Check, X, Bell, Camera, Upload, Search, Edit, Trash2, ShieldOff, Info, ChevronDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, uploadUrl, API_BASE } from "@/lib/queryClient";
 import { getReadinessDisplay, type ReadinessData } from "@/lib/readiness";
@@ -828,6 +828,50 @@ export default function Profile() {
                       <p className="text-sm text-gray-300">{readinessDisplay.description}</p>
                     </div>
                   </div>
+
+                  {/* Explainer: what data is needed to build a real score */}
+                  <details className="mt-4 rounded-xl border border-white/10 bg-white/5 group">
+                    <summary className="flex items-center gap-2 cursor-pointer list-none px-4 py-3 text-sm font-semibold text-white">
+                      <Info className="h-4 w-4 text-military-green" />
+                      How your readiness score is built
+                      <ChevronDown className="h-4 w-4 ml-auto text-gray-400 transition-transform group-open:rotate-180" />
+                    </summary>
+                    <div className="px-4 pb-4 pt-1 text-sm text-gray-300 space-y-3">
+                      <p>
+                        Your readiness score is calculated from recovery signals
+                        that Apple Health collects — mostly while you sleep and
+                        wear your Apple Watch.
+                      </p>
+                      <div>
+                        <p className="font-semibold text-white mb-1">What it reads:</p>
+                        <ul className="list-disc list-inside space-y-1">
+                          <li>Heart rate variability (HRV)</li>
+                          <li>Resting heart rate</li>
+                          <li>Respiratory (breathing) rate</li>
+                          <li>Blood oxygen</li>
+                          <li>Body temperature</li>
+                          <li>Sleep duration &amp; quality</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-white mb-1">What it needs to start:</p>
+                        <ul className="list-disc list-inside space-y-1">
+                          <li>Apple Health connected and syncing each day</li>
+                          <li>At least <span className="text-white font-semibold">3 of the signals</span> above</li>
+                          <li>
+                            About <span className="text-white font-semibold">14 days</span> of data to
+                            build your personal baseline — until then it shows
+                            "Calibrating," and the score grows more accurate the
+                            longer you sync.
+                          </li>
+                        </ul>
+                      </div>
+                      <p className="text-gray-400">
+                        Tip: wear your Apple Watch to bed. Sleep and overnight
+                        HRV are the biggest drivers of an accurate score.
+                      </p>
+                    </div>
+                  </details>
                 </CardContent>
               </Card>
             )}

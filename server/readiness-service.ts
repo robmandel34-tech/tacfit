@@ -164,35 +164,27 @@ function bucketFor(score: number): ReadinessBucket {
   return "rest";
 }
 
-// Pure scoring function. `metrics` may be in any order; the most recent
-// metricDate is treated as "today" and the rest form the baseline.
-export function computeReadiness(
-  metrics: HealthMetric[],
-  options: ReadinessOptions = {},
-): ReadinessResult {
-  const minHistoryDays = options.minHistoryDays ?? MIN_HISTORY_DAYS;
-  const minSignals = options.minSignals ?? MIN_SIGNALS;
-  const relaxBaseline = options.relaxBaseline ?? false;
+// How many days back from the newest synced day we'll look for a scorable
+// "today." The newest calendar day is frequently a PARTIAL day that hasn't
+// picked up last night's overnight signals (HRV, sleep, respiratory rate) yet,
+// which would force a false "insufficient." So we score the most recent day that
+// actually has enough signals, as long as it's within this window.
+const SCORE_RECENCY_DAYS = 3;
 
-  if (metrics.length === 0) {
-    return { score: null, bucket: null, state: "insufficient", signalsUsed: 0, metricDate: null };
-  }
+// Whole-day distance between two "YYYY-MM-DD" dates.
+function daysBetween(a: string, b: string): number {
+  const da = new Date(a + "T00:00:00Z").getTime();
+  const db = new Date(b + "T00:00:00Z").getTime();
+  return Math.round(Math.abs(da - db) / (24 * 60 * 60 * 1000));
+}
 
-  const sorted = [...metrics].sort((a, b) => a.metricDate.localeCompare(b.metricDate));
-  const today = sorted[sorted.length - 1];
-  const history = sorted.slice(0, -1).slice(-BASELINE_WINDOW_DAYS);
-
-  // Not enough total history for a meaningful personal baseline yet.
-  if (sorted.length < minHistoryDays) {
-    return {
-      score: null,
-      bucket: null,
-      state: "calibrating",
-      signalsUsed: 0,
-      metricDate: today.metricDate,
-    };
-  }
-
+// Builds the weighted signal contributions for a single day against its
+// prior-day baseline. Pure; makes no state decision.
+function buildContributions(
+  today: HealthMetric,
+  history: HealthMetric[],
+  relaxBaseline: boolean,
+): { key: WeightKey; subScore: number; weight: number }[] {
   // Direction: +1 means higher-is-better, -1 means lower-is-better,
   // 0 means deviation-from-baseline-is-worse (absolute).
   const directional: { key: WeightKey; value: number | null; dir: 1 | -1 | 0 }[] = [
@@ -237,16 +229,69 @@ export function computeReadiness(
     });
   }
 
-  const signalsUsed = contributions.length;
-  if (signalsUsed < minSignals) {
+  return contributions;
+}
+
+// Pure scoring function. `metrics` may be in any order. We score the most recent
+// day that has enough signals (within SCORE_RECENCY_DAYS of the newest synced
+// day), using the days before it as the baseline.
+export function computeReadiness(
+  metrics: HealthMetric[],
+  options: ReadinessOptions = {},
+): ReadinessResult {
+  const minHistoryDays = options.minHistoryDays ?? MIN_HISTORY_DAYS;
+  const minSignals = options.minSignals ?? MIN_SIGNALS;
+  const relaxBaseline = options.relaxBaseline ?? false;
+
+  if (metrics.length === 0) {
+    return { score: null, bucket: null, state: "insufficient", signalsUsed: 0, metricDate: null };
+  }
+
+  const sorted = [...metrics].sort((a, b) => a.metricDate.localeCompare(b.metricDate));
+  const newestDate = sorted[sorted.length - 1].metricDate;
+
+  // Not enough total history for a meaningful personal baseline yet.
+  if (sorted.length < minHistoryDays) {
+    return {
+      score: null,
+      bucket: null,
+      state: "calibrating",
+      signalsUsed: 0,
+      metricDate: newestDate,
+    };
+  }
+
+  // Walk newest -> older within the recency window; score the first day that has
+  // enough signals. This avoids a false "insufficient" when the very latest day
+  // is a partial day missing overnight metrics.
+  let chosenIdx = -1;
+  let contributions: { key: WeightKey; subScore: number; weight: number }[] = [];
+  let latestSignalsUsed = 0;
+  for (let i = sorted.length - 1; i >= 0; i--) {
+    if (daysBetween(sorted[i].metricDate, newestDate) > SCORE_RECENCY_DAYS) break;
+    const history = sorted.slice(0, i).slice(-BASELINE_WINDOW_DAYS);
+    const dayContribs = buildContributions(sorted[i], history, relaxBaseline);
+    if (i === sorted.length - 1) latestSignalsUsed = dayContribs.length;
+    if (dayContribs.length >= minSignals) {
+      chosenIdx = i;
+      contributions = dayContribs;
+      break;
+    }
+  }
+
+  // No recent day had enough signals to score.
+  if (chosenIdx === -1) {
     return {
       score: null,
       bucket: null,
       state: "insufficient",
-      signalsUsed,
-      metricDate: today.metricDate,
+      signalsUsed: latestSignalsUsed,
+      metricDate: newestDate,
     };
   }
+
+  const today = sorted[chosenIdx];
+  const history = sorted.slice(0, chosenIdx).slice(-BASELINE_WINDOW_DAYS);
 
   const totalWeight = contributions.reduce((a, c) => a + c.weight, 0);
   let final = contributions.reduce((a, c) => a + c.subScore * (c.weight / totalWeight), 0);
@@ -269,7 +314,7 @@ export function computeReadiness(
     score,
     bucket: bucketFor(score),
     state: "ready",
-    signalsUsed,
+    signalsUsed: contributions.length,
     metricDate: today.metricDate,
   };
 }

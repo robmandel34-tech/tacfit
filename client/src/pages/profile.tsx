@@ -87,7 +87,12 @@ export default function Profile() {
     queryKey: ["/api/readiness/me"],
     enabled: !!user?.id && isOwnProfile,
   });
-  const readinessDisplay = isOwnProfile ? getReadinessDisplay(readiness) : null;
+  // Always render something on your OWN profile, even if the API hasn't
+  // responded yet or errored on native (fall back to the "no data" state) so
+  // the readiness section is never silently invisible.
+  const readinessDisplay = isOwnProfile
+    ? getReadinessDisplay(readiness ?? { score: null, bucket: null, state: "insufficient" })
+    : null;
 
   const { data: history = [] } = useQuery<CompetitionHistory[]>({
     queryKey: ["/api/history", targetUserId],

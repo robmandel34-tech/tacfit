@@ -790,14 +790,16 @@ export default function Team() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {/* Filled Member Slots */}
               {teamMembers.map((member: any) => {
-                const ring = getReadinessDisplay(teamReadiness[String(member.user?.id)]);
+                const ring = getReadinessDisplay(
+                  teamReadiness[String(member.user?.id)] ?? { score: null, bucket: null, state: "insufficient" },
+                );
                 return (
                 <div key={member.id} className="content-tile p-4">
                   <div className="flex items-center space-x-3">
                     <Avatar 
-                      className={`h-12 w-12 cursor-pointer transition-all ${ring?.active ? `${ring.ring} ring-offset-2 ring-offset-tactical-gray-darker` : "hover:ring-2 hover:ring-military-green"}`}
+                      className={`h-12 w-12 cursor-pointer transition-all ${ring ? `${ring.ring} ring-offset-2 ring-offset-tactical-gray-darker` : "hover:ring-2 hover:ring-military-green"}`}
                       onClick={() => navigate(`/profile/${member.user?.id}`)}
-                      title={ring?.active ? `Readiness: ${ring.label}${ring.score != null ? ` (${ring.score})` : ""}` : undefined}
+                      title={ring ? `Readiness: ${ring.label}${ring.score != null ? ` (${ring.score})` : ""}` : undefined}
                     >
                       <AvatarImage src={member.user?.avatar ? uploadUrl(member.user.avatar) : undefined} />
                       <AvatarFallback className="bg-military-green text-forest-green">
@@ -815,7 +817,7 @@ export default function Team() {
                         {member.role === 'captain' && (
                           <Crown className="ml-2 h-4 w-4 text-yellow-500" />
                         )}
-                        {ring?.active && (
+                        {ring && (
                           <span className={`ml-2 text-xs font-medium ${ring.text}`}>
                             {ring.label}{ring.score != null ? ` ${ring.score}` : ""}
                           </span>

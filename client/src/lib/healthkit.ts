@@ -14,6 +14,22 @@ export interface NormalizedWorkout {
   raw: unknown;
 }
 
+// Reconcile a workout's reported active duration against its wall-clock elapsed
+// time (endDate - startDate). HealthKit's `duration` is the *active* time and is
+// normally the right value (it excludes auto-pauses), so we trust it — but the
+// plugin sometimes returns a broken value (0, missing, or implausibly tiny, e.g.
+// 2s for a 99-minute match). Only in that broken case do we fall back to the
+// elapsed time. A reported value within 20% of elapsed is treated as legitimate
+// so genuinely paused workouts are not inflated to wall-clock time.
+export function reconcileWorkoutDurationSec(reportedSec: number, elapsedSec: number): number {
+  const reported = Number.isFinite(reportedSec) ? Math.max(0, Math.round(reportedSec)) : 0;
+  const elapsed = Number.isFinite(elapsedSec) ? Math.max(0, Math.round(elapsedSec)) : 0;
+  if (reported > 0 && elapsed > 0) {
+    return reported < elapsed * 0.2 ? elapsed : reported;
+  }
+  return Math.max(reported, elapsed);
+}
+
 // HealthKit read scopes we request. These map to @perfood/capacitor-healthkit
 // authorization option keys. The second group powers the Readiness score
 // (resting HR, respiratory rate, blood oxygen, body temperature, sleep).
@@ -92,8 +108,9 @@ export async function readRecentWorkouts(sinceDays = 30): Promise<NormalizedWork
     .map((w) => {
       const startMs = new Date(w.startDate).getTime();
       const endMs = new Date(w.endDate).getTime();
-      // The plugin's `duration` field is often missing or 0, so fall back to
-      // the elapsed time between the workout's start and end timestamps.
+      // The plugin's `duration` field is unreliable — it is sometimes missing,
+      // 0, or a tiny bogus value (e.g. 2 seconds for a 99-minute match), so we
+      // reconcile it against the wall-clock elapsed time (see helper above).
       const reportedSec = Math.max(0, Math.round(Number(w.duration) || 0));
       const elapsedSec = Number.isFinite(startMs) && Number.isFinite(endMs)
         ? Math.max(0, Math.round((endMs - startMs) / 1000))
@@ -103,7 +120,7 @@ export async function readRecentWorkouts(sinceDays = 30): Promise<NormalizedWork
       activityType: String(w.workoutActivityName || "Workout"),
       startTime: new Date(w.startDate).toISOString(),
       endTime: new Date(w.endDate).toISOString(),
-      durationSec: reportedSec > 0 ? reportedSec : elapsedSec,
+      durationSec: reconcileWorkoutDurationSec(reportedSec, elapsedSec),
       distanceMeters: Math.max(0, Math.round(Number(w.totalDistance) || 0)),
       energyKcal: Math.max(0, Math.round(Number(w.totalEnergyBurned) || 0)),
       avgHeartRate: 0,

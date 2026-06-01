@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { API_BASE, apiRequest } from "@/lib/queryClient";
 import { useAppleHealth } from "@/hooks/use-apple-health";
 import { mapHealthKitTypeToActivityName } from "@shared/healthkit";
+import { reconcileWorkoutDurationSec } from "@/lib/healthkit";
 
 interface ActivitySubmissionModalProps {
   isOpen: boolean;
@@ -123,15 +124,29 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     return activityTypes.filter(at => competition.requiredActivities.includes(at.name));
   }, [activityTypes, competition?.requiredActivities, competitionHasEnded]);
 
+  const resetForm = () => {
+    setType("");
+    setDescription("");
+    setQuantity("");
+    setTextInput("");
+    setImageFiles([]);
+    setVideoFile(null);
+    setUploadProgress(0);
+    setSelectedWorkoutHkId(null);
+  };
+
   // Reset selected type whenever mode changes (ended ↔ active)
   useEffect(() => {
     setType("");
   }, [competitionHasEnded]);
 
-  // Clear any selected Apple Health workout when the modal closes so a later
-  // manual submission can't accidentally re-link a stale workout.
+  // Fully reset the form when the modal closes. Clearing only the selected
+  // workout left the prefilled "Apple Health: ..." description/type/quantity
+  // behind, so reopening and submitting created an activity that was NOT linked
+  // to its workout — the workout then stayed in the list and could be submitted
+  // again. A full reset guarantees no stale prefill survives without its link.
   useEffect(() => {
-    if (!isOpen) setSelectedWorkoutHkId(null);
+    if (!isOpen) resetForm();
   }, [isOpen]);
 
   // Apple Health: all synced workouts, annotated with whether each one can be
@@ -151,13 +166,15 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     enabled: isOpen && showHealthWorkouts,
   });
 
-  // Effective duration in minutes. Older synced workouts can have durationSec=0,
-  // so fall back to the elapsed time between the workout's start and end.
+  // Effective duration in minutes. The stored durationSec can be 0 (older
+  // syncs) or a tiny bogus value reported by HealthKit, so we reconcile it
+  // against the elapsed start→end time using the same rule as the sync path.
+  // This makes already-synced workouts self-heal without needing a re-sync.
   const workoutMinutes = (w: AppleHealthWorkout): number => {
-    let sec = w.durationSec || 0;
-    if (sec <= 0 && w.startTime && w.endTime) {
-      sec = Math.max(0, Math.round((new Date(w.endTime).getTime() - new Date(w.startTime).getTime()) / 1000));
-    }
+    const elapsed = w.startTime && w.endTime
+      ? Math.max(0, Math.round((new Date(w.endTime).getTime() - new Date(w.startTime).getTime()) / 1000))
+      : 0;
+    const sec = reconcileWorkoutDurationSec(w.durationSec || 0, elapsed);
     return Math.round(sec / 60);
   };
 
@@ -348,17 +365,6 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
       });
     },
   });
-
-  const resetForm = () => {
-    setType("");
-    setDescription("");
-    setQuantity("");
-    setTextInput("");
-    setImageFiles([]);
-    setVideoFile(null);
-    setUploadProgress(0);
-    setSelectedWorkoutHkId(null);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ThumbsUp, MessageCircle, Flag, Users, Image, Mountain, Trash2, ChevronDown, ChevronUp, BadgeCheck } from "lucide-react";
+import { ThumbsUp, MessageCircle, Flag, Users, Image, Mountain, Trash2, ChevronDown, ChevronUp, BadgeCheck, Check } from "lucide-react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -399,6 +399,16 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
             backgroundImage: `url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzNDAgMzAwIj48cGF0aCBkPSJNMjEwIDE4IEwxNDAgNDggTDE0MCAxNTIgUTE0MCAyMTAgMjEwIDIzNSBRMjgwIDIxMCAyODAgMTUyIEwyODAgNDggWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIzIiBvcGFjaXR5PSIwLjIwIi8+PHBhdGggZD0iTTE1NSA1IEw4MiAzOCBMODIgMTUwIFE4MiAyMTIgMTU1IDIzOCBRMjI4IDIxMiAyMjggMTUwIEwyMjggMzggWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIzIiBvcGFjaXR5PSIwLjEzIi8+PHBhdGggZD0iTTI3OCAxMiBMMjA1IDQ1IEwyMDUgMTU4IFEyMDUgMjIwIDI3OCAyNDYgUTM1MSAyMjAgMzUxIDE1OCBMMzUxIDQ1IFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMyIgb3BhY2l0eT0iMC4wOCIvPjwvc3ZnPg==")`,
             backgroundRepeat: 'no-repeat', backgroundSize: 'contain', backgroundPosition: 'center right',
           }} />
+          {(activity.fromAppleHealth || isHealthKitActivity()) && (
+            <div
+              className="absolute top-2.5 right-2.5 z-10 inline-flex items-center gap-1 rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm"
+              title="Synced from Apple Health"
+              data-testid="badge-apple-health-corner"
+            >
+              <Check className="w-3 h-3" strokeWidth={3} />
+              Apple Health
+            </div>
+          )}
           <div className="relative" style={{ zIndex: 1 }}>
           <div className="flex gap-4">
             <div className="flex flex-col items-center gap-1">
@@ -449,16 +459,6 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
                 <Badge variant="outline" className="text-xs border-[var(--bubble-accent)]/40 text-[var(--bubble-accent)] bg-[var(--bubble-bg)] whitespace-nowrap">
                   {getActivityIcon(activity.type)} {getActivityTypeDisplayName(activity.type)}
                 </Badge>
-                {activity.fromAppleHealth && (
-                  <span
-                    className="inline-flex items-center gap-1 text-xs text-military-green/80 whitespace-nowrap"
-                    title="Synced from Apple Health"
-                    data-testid="badge-apple-health"
-                  >
-                    <BadgeCheck className="w-3.5 h-3.5" />
-                    Apple Health
-                  </span>
-                )}
               </div>
               {isHealthKitActivity() ? (
                 <div className="space-y-3">

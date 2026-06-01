@@ -14,7 +14,12 @@ import type { IStorage } from "./storage";
 // (heartRateVariabilitySDNN, in milliseconds). On any day the value is missing,
 // its weight is simply dropped from the renormalized pool.
 
-export type ReadinessBucket = "ready" | "moderate" | "fatigued" | "rest";
+export type ReadinessBucket =
+  | "stand_down"
+  | "limited_duty"
+  | "field_ready"
+  | "combat_ready"
+  | "optimal_force";
 export type ReadinessState = "ready" | "calibrating" | "insufficient";
 
 export interface ReadinessResult {
@@ -67,7 +72,7 @@ export function sampleReadiness(): ReadinessResult {
   const today = new Date().toISOString().split("T")[0];
   return {
     score: 78,
-    bucket: "ready",
+    bucket: bucketFor(78),
     state: "ready",
     signalsUsed: 5,
     metricDate: today,
@@ -163,10 +168,11 @@ function sleepSubScore(total: number, deep: number | null, rem: number | null): 
 }
 
 function bucketFor(score: number): ReadinessBucket {
-  if (score >= 75) return "ready";
-  if (score >= 50) return "moderate";
-  if (score >= 25) return "fatigued";
-  return "rest";
+  if (score >= 80) return "optimal_force";
+  if (score >= 60) return "combat_ready";
+  if (score >= 40) return "field_ready";
+  if (score >= 20) return "limited_duty";
+  return "stand_down";
 }
 
 // How many days back from the newest synced day we'll look for a scorable

@@ -36,6 +36,7 @@ export const users = pgTable("users", {
 
   // Privacy & notification preferences
   profilePublic: boolean("profile_public").default(true),
+  shareReadiness: boolean("share_readiness").default(true),
   pushNotificationsEnabled: boolean("push_notifications_enabled").default(true),
 
   // Profile card background theme

@@ -85,6 +85,18 @@ export default function SettingsPage() {
     onError: () => toast({ title: "Error", description: "Could not update privacy setting.", variant: "destructive" }),
   });
 
+  const toggleReadiness = useMutation({
+    mutationFn: async (shareReadiness: boolean) => {
+      const res = await apiRequest("PATCH", `/api/users/${user?.id}/readiness-sharing`, { shareReadiness });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/users", user?.id] });
+    },
+    onError: () => toast({ title: "Error", description: "Could not update readiness sharing.", variant: "destructive" }),
+  });
+
   const toggleNotifications = useMutation({
     mutationFn: async (pushNotificationsEnabled: boolean) => {
       const res = await apiRequest("PATCH", `/api/users/${user?.id}/notifications`, { pushNotificationsEnabled });
@@ -139,6 +151,7 @@ export default function SettingsPage() {
   if (!user) return null;
 
   const isPublic = (user as any).profilePublic !== false;
+  const shareReadiness = (user as any).shareReadiness !== false;
   const notificationsOn = (user as any).pushNotificationsEnabled !== false;
 
   return (
@@ -310,6 +323,21 @@ export default function SettingsPage() {
                   checked={isPublic}
                   onCheckedChange={val => togglePrivacy.mutate(val)}
                   disabled={togglePrivacy.isPending}
+                  className="data-[state=checked]:bg-military-green text-forest-green"
+                />
+              </div>
+
+              <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
+                <div>
+                  <p className="text-white text-sm font-medium">Share Readiness Score</p>
+                  <p className="text-gray-400 text-xs mt-0.5">
+                    {shareReadiness ? "Your teammates can see your readiness score" : "Your readiness score is hidden from your teammates"}
+                  </p>
+                </div>
+                <Switch
+                  checked={shareReadiness}
+                  onCheckedChange={val => toggleReadiness.mutate(val)}
+                  disabled={toggleReadiness.isPending}
                   className="data-[state=checked]:bg-military-green text-forest-green"
                 />
               </div>

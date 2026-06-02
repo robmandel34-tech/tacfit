@@ -12,7 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import defaultAvatarSoldier from "@/assets/default-avatar-soldier.png";
-import { Trophy, Target, Users, Calendar, UserPlus, MessageCircle, Send, Clock, Check, X, Bell, Camera, Upload, Search, Edit, Trash2, ShieldOff, Info, ChevronDown } from "lucide-react";
+import { Trophy, Target, Users, Calendar, UserPlus, MessageCircle, Send, Clock, Check, X, Bell, Camera, Upload, Search, Edit, Trash2, ShieldOff, Info, ChevronDown, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, uploadUrl, API_BASE } from "@/lib/queryClient";
 import { getReadinessDisplay, type ReadinessData } from "@/lib/readiness";
@@ -284,6 +284,15 @@ export default function Profile() {
     enabled: !!targetUserId && !isOwnProfile && !!user?.id,
   });
 
+  // Whether this private profile's details (activities/stats/history) are
+  // hidden from the current viewer. Name and photo always stay visible.
+  const { data: profileAccess } = useQuery<{ canView: boolean; isPrivate: boolean }>({
+    queryKey: ["/api/users", targetUserId, "can-view-profile"],
+    queryFn: () => fetch(`${API_BASE}/api/users/${targetUserId}/can-view-profile`, { credentials: "include" }).then(r => r.json()),
+    enabled: !!targetUserId && !isOwnProfile && !!user?.id,
+  });
+  const detailsHidden = !isOwnProfile && (profileAccess?.isPrivate ?? false) && !(profileAccess?.canView ?? true);
+
   const blockUserMutation = useMutation({
     mutationFn: () => apiRequest("POST", `/api/users/${targetUserId}/block`),
     onSuccess: () => {
@@ -446,6 +455,7 @@ export default function Profile() {
                     <div className="mb-2" />
                     
                     {/* Stats Grid */}
+                    {!detailsHidden && (
                     <div className="grid grid-cols-3 gap-3">
                       <div className="rounded-lg p-2">
                         <Target className="mx-auto h-5 w-5 text-military-green mb-1" style={{ filter: 'brightness(2)' }} />
@@ -552,6 +562,7 @@ export default function Profile() {
                         </DialogContent>
                       </Dialog>
                     </div>
+                    )}
                   </div>
 
                   {/* Mood Tracking - Only show on own profile */}
@@ -926,7 +937,22 @@ export default function Profile() {
               </Card>
             )}
 
+            {detailsHidden && (
+              <Card className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl shadow-xl">
+                <CardContent className="py-12 text-center">
+                  <div className="flex items-center justify-center w-16 h-16 backdrop-blur-sm bg-white/5 border border-white/10 rounded-full mx-auto mb-4">
+                    <Lock className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-white font-semibold text-lg mb-2">This profile is private</h3>
+                  <p className="text-gray-400 text-sm max-w-sm mx-auto">
+                    {displayUser.username} only shares activities, stats and history with their teammates and buddies.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Current Competition Participation */}
+            {!detailsHidden && (
             <Card className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl shadow-xl">
               <CardHeader className="pb-4">
                 <CardTitle className="text-white flex items-center gap-2">
@@ -992,9 +1018,11 @@ export default function Profile() {
                 )}
               </CardContent>
             </Card>
+            )}
 
 
             {/* Individual Activity Feed */}
+            {!detailsHidden && (
             <Card className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl shadow-xl">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
@@ -1062,6 +1090,7 @@ export default function Profile() {
                 )}
               </CardContent>
             </Card>
+            )}
 
           </div>
         </div>

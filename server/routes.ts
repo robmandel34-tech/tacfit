@@ -1323,6 +1323,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/users/:id/privacy", async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
+      const sessionUserId = (req.session?.userId || req.session?.user?.id || null) as number | null;
+      const sessionUser = sessionUserId ? await storage.getUser(sessionUserId) : null;
+      if (sessionUserId !== userId && !sessionUser?.isAdmin) {
+        return res.status(403).json({ message: "Not authorized" });
+      }
       const { profilePublic } = req.body;
       const user = await storage.getUser(userId);
       if (!user) return res.status(404).json({ message: "User not found" });
@@ -1332,6 +1337,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(userWithoutPassword);
     } catch (error) {
       res.status(500).json({ message: "Error updating privacy setting" });
+    }
+  });
+
+  // Toggle readiness-score sharing with teammates
+  app.patch("/api/users/:id/readiness-sharing", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const sessionUserId = (req.session?.userId || req.session?.user?.id || null) as number | null;
+      const sessionUser = sessionUserId ? await storage.getUser(sessionUserId) : null;
+      if (sessionUserId !== userId && !sessionUser?.isAdmin) {
+        return res.status(403).json({ message: "Not authorized" });
+      }
+      const { shareReadiness } = req.body;
+      const user = await storage.getUser(userId);
+      if (!user) return res.status(404).json({ message: "User not found" });
+      const updatedUser = await storage.updateUser(userId, { shareReadiness });
+      if (!updatedUser) return res.status(500).json({ message: "Failed to update readiness sharing" });
+      const { password, ...userWithoutPassword } = updatedUser;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      res.status(500).json({ message: "Error updating readiness sharing" });
     }
   });
 
@@ -2112,6 +2138,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/team-members/:userId", async (req, res) => {
     try {
       const userId = parseInt(req.params.userId);
+      const viewerId = (req.session?.userId || req.session?.user?.id || null) as number | null;
+      if (!(await canViewProfileDetails(viewerId, userId))) {
+        return res.json([]);
+      }
       const teams = await storage.getTeams();
       const userMemberships = [];
       
@@ -2298,6 +2328,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   // Activity routes
+  // Decide whether `viewerId` is allowed to see another user's detailed
+  // profile content (activities, stats, history). A public profile is visible
+  // to everyone; a private profile is only visible to the owner, their buddies
+  // (accepted friendships), and people who share a team with them.
+  const canViewProfileDetails = async (
+    viewerId: number | null,
+    targetId: number,
+  ): Promise<boolean> => {
+    if (viewerId && viewerId === targetId) return true;
+    const target = await storage.getUser(targetId);
+    if (!target) return false;
+    if (target.profilePublic !== false) return true; // public profile
+    if (!viewerId) return false;
+    // Buddies (accepted friendship in either direction).
+    const friendships = await storage.getFriendships(viewerId);
+    const isBuddy = friendships.some(
+      (f) =>
+        f.status === "accepted" &&
+        (f.userId === targetId || f.friendId === targetId),
+    );
+    if (isBuddy) return true;
+    // Shared team membership.
+    const teams = await storage.getTeams();
+    for (const team of teams) {
+      const viewerMember = await storage.getTeamMember(team.id, viewerId);
+      if (!viewerMember) continue;
+      const targetMember = await storage.getTeamMember(team.id, targetId);
+      if (targetMember) return true;
+    }
+    return false;
+  };
+
   app.get("/api/activities", async (req, res) => {
     try {
       const competitionId = req.query.competitionId as string;
@@ -2310,7 +2372,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else if (teamId) {
         activities = await storage.getActivitiesByTeam(parseInt(teamId));
       } else if (userId) {
-        activities = await storage.getActivitiesByUser(parseInt(userId));
+        const targetId = parseInt(userId);
+        const viewerId = (req.session?.userId || req.session?.user?.id || null) as number | null;
+        if (!(await canViewProfileDetails(viewerId, targetId))) {
+          return res.json([]);
+        }
+        activities = await storage.getActivitiesByUser(targetId);
       } else {
         activities = await storage.getActivities();
       }
@@ -2776,6 +2843,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const byUser: Record<number, { score: number | null; bucket: string | null; state: string }> = {};
       for (const s of scores) {
         byUser[s.userId] = { score: s.score, bucket: s.bucket, state: s.state };
+      }
+      // Honor each member's readiness-sharing opt-out. The requester always
+      // sees their own score; anyone who turned sharing off is omitted so they
+      // show as "No data" to teammates.
+      const memberUsers = await Promise.all(userIds.map((id) => storage.getUser(id)));
+      for (const u of memberUsers) {
+        if (u && u.id !== userId && u.shareReadiness === false) {
+          delete byUser[u.id];
+        }
       }
       // Owner/test accounts with no real readiness yet get a sample so their
       // ring shows on the team view too. Real synced data always wins.
@@ -3426,7 +3502,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Competition history routes
   app.get("/api/history/:userId", async (req, res) => {
     try {
-      const history = await storage.getCompetitionHistory(parseInt(req.params.userId));
+      const targetId = parseInt(req.params.userId);
+      const viewerId = (req.session?.userId || req.session?.user?.id || null) as number | null;
+      if (!(await canViewProfileDetails(viewerId, targetId))) {
+        return res.json([]);
+      }
+      const history = await storage.getCompetitionHistory(targetId);
       
       // Get competition and team details
       const historyWithDetails = await Promise.all(
@@ -3445,6 +3526,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(historyWithDetails);
     } catch (error) {
       res.status(500).json({ message: "Error fetching competition history" });
+    }
+  });
+
+  // Whether the current viewer may see this user's detailed profile content.
+  // Name/photo are always public; this gates activities, stats and history.
+  app.get("/api/users/:id/can-view-profile", async (req, res) => {
+    try {
+      const targetId = parseInt(req.params.id);
+      const viewerId = (req.session?.userId || req.session?.user?.id || null) as number | null;
+      const target = await storage.getUser(targetId);
+      const isPrivate = target ? target.profilePublic === false : false;
+      const canView = await canViewProfileDetails(viewerId, targetId);
+      res.json({ canView, isPrivate });
+    } catch (error) {
+      res.json({ canView: true, isPrivate: false });
     }
   });
 
@@ -5242,6 +5338,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/users/:id/competition-results", async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
+      const viewerId = (req.session?.userId || req.session?.user?.id || null) as number | null;
+      if (!(await canViewProfileDetails(viewerId, userId))) {
+        return res.json({ history: [], currentEntries: [] });
+      }
       
       // Get competition history (completed competitions)
       const history = await storage.getCompetitionHistory(userId);

@@ -119,21 +119,62 @@ export function useAppleHealth() {
     },
   });
 
-  // Auto re-sync on an interval while connected, native, and foregrounded.
+  // Auto re-sync while connected: immediately on connect/launch, on a timer
+  // while foregrounded, and whenever the app returns to the foreground.
   useEffect(() => {
     if (!native || !connected) return;
+
+    // Sync right away so a freshly opened app shows current data without the
+    // user having to hit "Refresh".
+    void syncNow(true);
+
     const tick = () => {
       if (typeof document !== "undefined" && document.visibilityState === "hidden") return;
       void syncNow(true);
     };
     const id = window.setInterval(tick, SYNC_INTERVAL_MS);
+
+    // Web fallback (used in the browser / PWA).
     const onVisible = () => {
       if (document.visibilityState === "visible") void syncNow(true);
     };
     document.addEventListener("visibilitychange", onVisible);
+
+    // Native foreground detection. On iOS, the webview's `visibilitychange`
+    // event does NOT reliably fire when a Capacitor app returns from the
+    // background, and JS timers are paused while backgrounded — so without
+    // this listener nothing re-syncs until a manual refresh. The Capacitor
+    // App plugin's `appStateChange` fires with isActive=true on every
+    // foreground, which is what triggers the automatic refresh.
+    let cancelled = false;
+    let removeNativeListener: (() => void) | undefined;
+    if (native) {
+      void (async () => {
+        try {
+          const { App } = await import("@capacitor/app");
+          const handle = await App.addListener("appStateChange", ({ isActive }) => {
+            if (isActive) void syncNow(true);
+          });
+          // If the effect already cleaned up while the import/addListener was
+          // resolving, remove the listener immediately so it doesn't leak.
+          if (cancelled) {
+            void handle.remove();
+          } else {
+            removeNativeListener = () => {
+              void handle.remove();
+            };
+          }
+        } catch (e) {
+          console.warn("Apple Health foreground listener unavailable:", e);
+        }
+      })();
+    }
+
     return () => {
+      cancelled = true;
       window.clearInterval(id);
       document.removeEventListener("visibilitychange", onVisible);
+      removeNativeListener?.();
     };
   }, [native, connected, syncNow]);
 

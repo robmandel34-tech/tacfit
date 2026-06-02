@@ -844,8 +844,9 @@ export default function Profile() {
                   <div className="mt-4 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-gray-300 space-y-2">
                     <p className="font-semibold text-white">Why readiness matters</p>
                     <p>
-                      It's your daily check on personal capacity — a quick read on
-                      whether to push hard or pull back and recover.
+                      It's your real-time check on personal capacity — a quick read on
+                      whether to push hard or pull back and recover. It updates
+                      throughout the day as new health data syncs from Apple Health.
                     </p>
                     <p>
                       It also helps your team. Without being able to meet eye to eye,
@@ -870,8 +871,10 @@ export default function Profile() {
                     <div className="px-4 pb-4 pt-1 text-sm text-gray-300 space-y-3">
                       <p>
                         Your readiness score is calculated from recovery signals
-                        that Apple Health collects — mostly while you sleep and
-                        wear your Apple Watch.
+                        that Apple Health collects while you wear your Apple Watch.
+                        Many of these (like HRV and resting heart rate) are measured
+                        several times a day, so your score recalculates in real time
+                        each time fresh data syncs — it's not a once-a-day snapshot.
                       </p>
                       <div>
                         <p className="font-semibold text-white mb-1">What it reads:</p>

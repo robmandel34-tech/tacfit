@@ -84,6 +84,7 @@ import ActivityFeed from "@/pages/activity-feed";
 import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
 import Invitation from "@/pages/invitation";
+import JoinCompetition from "@/pages/join-competition";
 import TeamInvite from "@/pages/team-invite";
 import AdminPage from "@/pages/admin";
 import CompetitionSystemHelp from "@/pages/help/competition-system";
@@ -115,6 +116,7 @@ function Router() {
         <Route path="/profile" component={Profile} />
         <Route path="/profile/:userId" component={Profile} />
         <Route path="/invite/:token" component={Invitation} />
+        <Route path="/join/:code" component={JoinCompetition} />
         <Route path="/team-invite/:token" component={TeamInvite} />
         <Route path="/admin" component={AdminPage} />
         <Route path="/help/competition-system" component={CompetitionSystemHelp} />

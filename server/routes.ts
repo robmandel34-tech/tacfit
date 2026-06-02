@@ -1486,10 +1486,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await completeCompetition(competition.id);
         }
       }
-      
-      res.json(competitions.map(transformCompetition));
+
+      // Private (invite-only) competitions must not appear in the public join
+      // list. They're only returned to the admin or to users who have already
+      // joined (so their active competition keeps showing in their own views).
+      const viewerId = (req.session?.userId || req.session?.user?.id || null) as number | null;
+      const viewer = viewerId ? await storage.getUser(viewerId) : null;
+      const privateComps = competitions.filter((c) => c.isPrivate);
+      let joinedPrivateIds = new Set<number>();
+      if (viewerId && !viewer?.isAdmin && privateComps.length > 0) {
+        // A user "belongs" to a private competition if they have a points/paid
+        // entry OR they're on a team in it. The free team-join path only creates
+        // a team membership (no entry row), so we must check both.
+        const entries = await storage.getUserCompetitionEntries(viewerId);
+        for (const e of entries) {
+          if (e.competitionId != null) joinedPrivateIds.add(e.competitionId);
+        }
+        await Promise.all(
+          privateComps.map(async (c) => {
+            if (joinedPrivateIds.has(c.id)) return;
+            const team = await storage.getUserTeam(viewerId, c.id);
+            if (team) joinedPrivateIds.add(c.id);
+          })
+        );
+      }
+      const visible = competitions.filter((c) => {
+        if (!c.isPrivate) return true;
+        if (viewer?.isAdmin) return true;
+        return joinedPrivateIds.has(c.id);
+      });
+
+      res.json(visible.map(transformCompetition));
     } catch (error) {
       res.status(500).json({ message: "Error fetching competitions" });
+    }
+  });
+
+  // Look up a competition by its private invite code so people with the link
+  // can view and join it even though it's hidden from the public list.
+  app.get("/api/competitions/by-code/:code", async (req, res) => {
+    try {
+      const code = req.params.code;
+      const competitions = await storage.getCompetitions();
+      const competition = competitions.find((c) => c.inviteCode && c.inviteCode === code);
+      if (!competition) {
+        return res.status(404).json({ message: "Competition not found" });
+      }
+      res.json(transformCompetition(competition));
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching competition" });
     }
   });
 
@@ -1534,8 +1579,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const parsedData = insertCompetitionSchema.parse(processedData);
+      // Private competitions get a shareable invite code so the admin can send
+      // a join link to a specific group instead of listing it publicly.
+      const inviteCode = parsedData.isPrivate
+        ? crypto.randomBytes(6).toString("hex")
+        : null;
       const competition = await storage.createCompetition({
         ...parsedData,
+        inviteCode,
         createdBy: user.id
       });
       res.json(transformCompetition(competition));

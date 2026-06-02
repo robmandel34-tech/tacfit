@@ -1,3 +1,4 @@
 - [Marketing site](marketing-site.md) — public landing page is a standalone Netlify static site at `marketing-site/index.html`, separate from the app; deploys via Netlify, not Replit Publish/TestFlight.
 - [HealthKit Readiness](healthkit-readiness.md) — Readiness scoring + states (ready/calibrating/insufficient); "not showing" = backend not Published OR UI hid non-ready states (now all states render via getReadinessDisplay).
+- [Private competitions](private-competitions.md) — invite-only = unlisted, anyone with link joins; visibility filter must check BOTH competition entry AND team membership.
 - [Profile privacy](profile-privacy.md) — private profile hides activities/stats/history (not name/photo); gate every such endpoint via canViewProfileDetails; shareReadiness opt-out; IDOR guard on user PATCH routes.

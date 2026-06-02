@@ -100,6 +100,8 @@ export const competitions = pgTable("competitions", {
   maxTeams: integer("max_teams").default(10),
   createdBy: integer("created_by").references(() => users.id),
   isActive: boolean("is_active").default(true),
+  isPrivate: boolean("is_private").default(false), // invite-only: hidden from the public join list
+  inviteCode: text("invite_code"), // shareable code for private competitions
   requiredActivities: text("required_activities").array().default([]),
   targetGoals: text("target_goals").array().default([]),
   isCompleted: boolean("is_completed").default(false),
@@ -363,6 +365,7 @@ export const insertUserSchema = createInsertSchema(users).omit({
 export const insertCompetitionSchema = createInsertSchema(competitions).omit({
   id: true,
   createdAt: true,
+  inviteCode: true,
 });
 
 export const insertTeamSchema = createInsertSchema(teams).omit({

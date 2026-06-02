@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { Plus, Edit2, Trash2, Users, Trophy, Calendar, Settings, X, Activity, AlertTriangle, MessageSquare, BarChart3, Target, Flag, RefreshCw } from "lucide-react";
+import { Plus, Edit2, Trash2, Users, Trophy, Calendar, Settings, X, Activity, AlertTriangle, MessageSquare, BarChart3, Target, Flag, RefreshCw, Check, Copy, Lock } from "lucide-react";
 import { apiRequest, API_BASE } from "@/lib/queryClient";
 import { AdminReportsPanel } from "@/components/admin-reports-panel";
 import { AdminFlaggedActivitiesPanel } from "@/components/admin-flagged-activities-panel";
@@ -29,6 +29,8 @@ interface Competition {
   joinEndDate?: string;
   maxTeams: number;
   isActive: boolean;
+  isPrivate?: boolean;
+  inviteCode?: string | null;
   requiredActivities: string[];
   targetGoals: string[];
   isCompleted?: boolean;
@@ -204,6 +206,7 @@ export default function AdminPage() {
     startDate: '',
     endDate: '',
     maxTeams: 10,
+    isPrivate: false,
     requiredActivities: [] as string[],
     targetGoals: [] as string[],
     paymentType: 'free' as 'free' | 'one_time',
@@ -522,6 +525,7 @@ export default function AdminPage() {
       startDate: '',
       endDate: '',
       maxTeams: 10,
+      isPrivate: false,
       requiredActivities: [],
       targetGoals: [],
       paymentType: 'free' as 'free' | 'one_time',
@@ -943,6 +947,7 @@ export default function AdminPage() {
       startDate: competition.startDate ? new Date(competition.startDate).toISOString().split('T')[0] : '',
       endDate: competition.endDate ? new Date(competition.endDate).toISOString().split('T')[0] : '',
       maxTeams: competition.maxTeams,
+      isPrivate: competition.isPrivate || false,
       requiredActivities: competition.requiredActivities || [],
       targetGoals: competition.targetGoals || [],
       paymentType: (competition.paymentType as 'free' | 'one_time') || 'free',
@@ -1375,6 +1380,33 @@ export default function AdminPage() {
                       )}
                     </div>
 
+                    {/* Private (invite-only) toggle */}
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setCompetitionForm(prev => ({ ...prev, isPrivate: !prev.isPrivate }))}
+                        className={`w-full p-3 rounded border text-left ${
+                          competitionForm.isPrivate
+                            ? 'border-military-green bg-military-green/20 text-white'
+                            : 'border-tactical-gray bg-tactical-gray-lighter text-gray-300'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-semibold">Private (invite-only)</div>
+                            <div className="text-xs opacity-80">
+                              Hidden from the public list. You'll get a link to share with your group.
+                            </div>
+                          </div>
+                          <div className={`w-5 h-5 rounded border flex items-center justify-center ${
+                            competitionForm.isPrivate ? 'bg-military-green border-military-green' : 'border-gray-500'
+                          }`}>
+                            {competitionForm.isPrivate && <Check className="h-4 w-4 text-forest-green" />}
+                          </div>
+                        </div>
+                      </button>
+                    </div>
+
                     <div className="flex space-x-4 pt-4">
                       <Button 
                         type="button" 
@@ -1417,7 +1449,29 @@ export default function AdminPage() {
                   <TableBody>
                     {competitions.map((competition) => (
                       <TableRow key={competition.id} className="border-tactical-gray">
-                        <TableCell className="text-white font-medium">{competition.name}</TableCell>
+                        <TableCell className="text-white font-medium">
+                          <div className="flex items-center gap-2">
+                            <span>{competition.name}</span>
+                            {competition.isPrivate && (
+                              <Badge variant="secondary" className="bg-military-green/30 text-military-green-light gap-1">
+                                <Lock className="h-3 w-3" /> Private
+                              </Badge>
+                            )}
+                          </div>
+                          {competition.isPrivate && competition.inviteCode && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const link = `${window.location.origin}/join/${competition.inviteCode}`;
+                                navigator.clipboard?.writeText(link);
+                                toast({ title: "Invite link copied", description: "Share it with your group to let them join." });
+                              }}
+                              className="mt-1 flex items-center gap-1 text-xs text-gray-400 hover:text-military-green-light"
+                            >
+                              <Copy className="h-3 w-3" /> Copy invite link
+                            </button>
+                          )}
+                        </TableCell>
                         <TableCell className="text-gray-300">
                           {format(new Date(competition.startDate), 'MMM d')} - {format(new Date(competition.endDate), 'MMM d, yyyy')}
                         </TableCell>

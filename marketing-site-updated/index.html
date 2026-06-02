@@ -552,6 +552,22 @@
   .cta-card h2 { margin-top: 14px; }
   .cta-card .lede { max-width: 560px; margin: 0 auto 36px; }
 
+  /* FOUNDER OFFER */
+  .founder { padding: 30px 0 10px; }
+  .founder-card { position: relative; overflow: hidden; background: radial-gradient(circle at 15% 20%, rgba(59,222,53,0.20), transparent 55%), linear-gradient(180deg, var(--card), var(--card-2)); border: 1px solid rgba(59,222,53,0.35); border-radius: 28px; padding: 56px 48px; text-align: center; box-shadow: 0 30px 80px -50px rgba(59,222,53,0.5); }
+  @media (max-width: 720px) { .founder-card { padding: 40px 22px; } }
+  .founder-card h2 { font-size: clamp(30px, 4.5vw, 50px); font-weight: 900; letter-spacing: -0.03em; line-height: 1.08; margin: 16px 0 16px; }
+  .founder-card h2 .accent { background: linear-gradient(135deg, var(--green-light), var(--green)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .founder-card .lede { max-width: 620px; margin: 0 auto 30px; }
+  .founder-card .lede strong { color: var(--green); }
+  .founder-meta { display: flex; justify-content: center; flex-wrap: wrap; gap: 14px; margin-bottom: 30px; }
+  .founder-fact { background: rgba(10,12,15,0.5); border: 1px solid var(--border); border-radius: 14px; padding: 14px 22px; min-width: 120px; }
+  .founder-fact .k { display: block; font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-3); font-weight: 700; margin-bottom: 6px; }
+  .founder-fact .v { display: block; font-size: 20px; font-weight: 800; color: var(--text); }
+  .founder-activities-label { font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--green); font-weight: 700; margin-bottom: 14px; }
+  .founder-activities { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-bottom: 34px; }
+  .act-chip { background: rgba(59,222,53,0.10); border: 1px solid rgba(59,222,53,0.3); color: var(--text); border-radius: 999px; padding: 10px 18px; font-size: 14px; font-weight: 600; }
+
   /* FOOTER */
   footer { border-top: 1px solid var(--border); padding: 56px 0 64px; color: var(--text-3); font-size: 14px; }
   .foot-row { display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; }
@@ -600,7 +616,7 @@
     <div class="nav-links">
       <a href="#showcase">The App</a>
       <a href="#why">Why TacFit</a>
-      <a href="#download">Download</a>
+      <a href="#founder">Founder Offer</a>
       <a href="/partners.html">Partners</a>
       <a href="/contact-us.html">Contact</a>
     </div>
@@ -616,7 +632,8 @@
   <div class="nav-drawer" id="navDrawer">
     <a href="#showcase">The App</a>
     <a href="#why">Why TacFit</a>
-    <a href="#download">Download</a>
+    <a href="#founder">Founder Offer</a>
+    <a href="/founder.html">Join the Inaugural Competition</a>
     <a href="/partners.html">Partners</a>
     <a href="/contact-us.html">Contact</a>
     <a href="/privacy.html">Privacy</a>
@@ -878,6 +895,31 @@
     <span>Body · Mind · Spirit</span>
   </div>
 </div>
+
+<!-- FOUNDER OFFER — free inaugural competition -->
+<section class="founder" id="founder">
+  <div class="container">
+    <div class="founder-card reveal">
+      <span class="eyebrow"><span class="dot"></span> Inaugural Competition · Limited to the first 25–50 members</span>
+      <h2>Become a TacFit <span class="accent">Founder</span></h2>
+      <p class="lede">Join our free inaugural competition. Everyone who signs up and takes part earns <strong>Founder status</strong> — and <strong>TacFit free for life</strong>. This is your chance to help shape the platform from day one.</p>
+      <div class="founder-meta">
+        <div class="founder-fact"><span class="k">Length</span><span class="v">4 weeks</span></div>
+        <div class="founder-fact"><span class="k">Entry</span><span class="v">Free</span></div>
+        <div class="founder-fact"><span class="k">Spots</span><span class="v">25–50</span></div>
+      </div>
+      <p class="founder-activities-label">Activities included</p>
+      <div class="founder-activities">
+        <span class="act-chip">Cardio — any type</span>
+        <span class="act-chip">Mindfulness · Meditation · Prayer</span>
+        <span class="act-chip">Reading</span>
+      </div>
+      <div class="hero-ctas" style="justify-content:center;">
+        <a href="/founder.html" class="btn btn-primary">Claim your Founder spot →</a>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- MISSION — what makes TacFit different -->
 <section class="mission" id="mission">
@@ -1192,6 +1234,7 @@
     <div class="foot-links">
       <a href="/privacy.html">Privacy</a>
       <a href="/partners.html">Partners</a>
+      <a href="/founder.html">Founder Offer</a>
       <a href="/contact-us.html">Contact</a>
       <a href="#showcase">The App</a>
       <a href="#download">Download</a>

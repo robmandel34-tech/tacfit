@@ -18,3 +18,9 @@ id = "_Qra6OVbNx8P75XemL4R9"
 uri = "file://client/public/marketing/og-image.jpg"
 type = "image"
 title = "Preview: new link share image"
+
+[[outputs]]
+id = "fQ9d43C-nuCAvxdYFYwsk"
+uri = "file://marketing-site-updated-2026-06-02.zip"
+type = "unspecified"
+title = "Updated Marketing Site (2026-06-02)"

@@ -1,0 +1,14 @@
+[[redirects]]
+  from = "/marketing.html"
+  to = "/"
+  status = 301
+
+[[headers]]
+  for = "/marketing/*"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000"
+
+[[headers]]
+  for = "/favicons/*"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000"

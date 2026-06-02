@@ -327,6 +327,15 @@ export default function SettingsPage() {
                 />
               </div>
 
+              <div className="mt-2 rounded-lg bg-white/5 border border-white/10 px-3 py-2.5 text-xs text-gray-400 leading-relaxed">
+                <span className="text-gray-300 font-medium">When public: </span>
+                anyone can see your name, photo, rank and points, your activity
+                submissions, and your competition history.
+                <span className="text-gray-300 font-medium"> When private: </span>
+                only your team and buddies see those details. Your name and photo
+                always stay visible so teammates can recognize you.
+              </div>
+
               <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
                 <div>
                   <p className="text-white text-sm font-medium">Share Readiness Score</p>
@@ -340,6 +349,13 @@ export default function SettingsPage() {
                   disabled={toggleReadiness.isPending}
                   className="data-[state=checked]:bg-military-green text-forest-green"
                 />
+              </div>
+
+              <div className="mt-2 rounded-lg bg-white/5 border border-white/10 px-3 py-2.5 text-xs text-gray-400 leading-relaxed">
+                Only your readiness level and score are shared with teammates — never
+                the underlying health data (heart rate, sleep, and so on). Sharing it
+                helps your team gauge your current capacity and support your effort
+                when you can't meet in person.
               </div>
             </CardContent>
           </Card>

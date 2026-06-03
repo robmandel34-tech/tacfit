@@ -248,10 +248,14 @@ export interface DailyBurst {
   distanceMeters: number;
 }
 
-// Largest gap (ms) allowed inside one burst. Exercise-minute samples during a
-// workout are near-continuous; everyday movement is sporadic with bigger gaps,
-// so a 5-minute gap separates a real workout from incidental activity.
-const BURST_GAP_MS = 5 * 60 * 1000;
+// Largest gap (ms) allowed inside one burst. Apple only accrues "exercise
+// minutes" during brisk moments, so a single workout shows up as several blocks
+// with rests in between (e.g. a 19-min block then an 8-min block = one 27-min
+// session). A 45-minute gap merges those in-session rests and adjacent blocks
+// into one workout, while incidental daily movement — which on the activity
+// chart is separated by multiple empty hours — stays as its own small bursts
+// and is excluded.
+const BURST_GAP_MS = 45 * 60 * 1000;
 
 // For each local day, finds the biggest continuous burst of exercise minutes
 // and totals the active energy + distance recorded during that same window.

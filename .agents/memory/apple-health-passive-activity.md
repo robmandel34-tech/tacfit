@@ -31,8 +31,9 @@ device's local day on each workout.
 **Decision — show the workout BURST, not the whole day:** crediting a full day's
 `exerciseMinutes` was wrong — it bundled a real workout with incidental daily
 movement. The device now derives the day's single biggest continuous "burst"
-(cluster the raw `appleExerciseTime` samples, splitting on gaps >5 min, keep the
-cluster with the most minutes) and totals active energy + distance recorded in
+(cluster the raw `appleExerciseTime` samples, splitting only on gaps larger than
+`BURST_GAP_MS` ≈ 45 min, keep the cluster with the most minutes) and totals
+active energy + distance recorded in
 that same window. Burst figures are stored as nullable `burst*` columns on
 `health_metrics` and the UI prefers them, falling back to whole-day values when
 no burst exists.

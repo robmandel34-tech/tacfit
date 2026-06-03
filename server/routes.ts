@@ -2757,6 +2757,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Returns the most recent day of PASSIVE Apple Health activity (exercise
+  // minutes + distance, no recorded workout) that the user hasn't logged yet,
+  // so it can be surfaced as a one-tap "Unspecified Activity" in the log screen.
+  // Returns null when there's nothing to log. The day's type is unspecified —
+  // the user labels it — so eligibility only checks the competition date window.
+  app.get("/api/apple-health/passive-today", async (req, res) => {
+    try {
+      const userId = requireUserId(req, res);
+      if (!userId) return;
+      const competitionId = req.query.competitionId
+        ? parseInt(req.query.competitionId as string)
+        : null;
+
+      const metrics = await storage.getHealthMetrics(userId); // sorted by date desc
+      const candidate = metrics.find(
+        (m) => !m.submittedActivityId && (m.exerciseMinutes ?? 0) > 0,
+      );
+      if (!candidate) return res.json(null);
+
+      let eligible = true;
+      let ineligibleReason: string | null = null;
+      if (competitionId) {
+        const competition = await storage.getCompetition(competitionId);
+        if (competition) {
+          const now = new Date();
+          const active =
+            !competition.isCompleted &&
+            now >= new Date(competition.startDate) &&
+            now <= new Date(competition.endDate);
+          if (active) {
+            const day = new Date(`${candidate.metricDate}T12:00:00`);
+            if (day < new Date(competition.startDate) || day > new Date(competition.endDate)) {
+              eligible = false;
+              ineligibleReason = `Outside the competition dates (${new Date(
+                competition.startDate,
+              ).toLocaleDateString()} – ${new Date(competition.endDate).toLocaleDateString()})`;
+            }
+          }
+        }
+      }
+
+      res.json({
+        metricDate: candidate.metricDate,
+        exerciseMinutes: candidate.exerciseMinutes,
+        distanceMeters: candidate.distanceMeters,
+        eligible,
+        ineligibleReason,
+      });
+    } catch (e) {
+      console.error("apple-health passive-today error:", e);
+      res.status(500).json({ message: "Failed to get passive activity" });
+    }
+  });
+
   // Marks a synced workout as submitted so it stops appearing as an option.
   app.post("/api/apple-health/link", async (req, res) => {
     try {
@@ -3014,8 +3068,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // Evidence rule: at least one image, OR a valid (owned, unsubmitted) HealthKit workout.
-      if (imageFiles.length === 0 && !healthWorkout) {
+      // Passive Apple Health activity: the user logs a day's passive activity
+      // (exercise minutes + distance, no recorded workout) and labels what it was.
+      // The stored daily metric IS the evidence; it's claimable once per day so it
+      // can't be farmed for points (mirrors the recorded-workout claim above).
+      const appleHealthMetricDate = typeof req.body.appleHealthMetricDate === 'string' && req.body.appleHealthMetricDate.trim()
+        ? req.body.appleHealthMetricDate.trim()
+        : null;
+      let passiveMetric = null;
+      if (appleHealthMetricDate && !healthWorkout) {
+        passiveMetric = await storage.getHealthMetric(userId, appleHealthMetricDate);
+        if (!passiveMetric) {
+          return res.status(404).json({ message: "No Apple Health activity found for that day." });
+        }
+        if (passiveMetric.submittedActivityId) {
+          return res.status(409).json({ message: "That day's Apple Health activity has already been logged." });
+        }
+        if (!passiveMetric.exerciseMinutes || passiveMetric.exerciseMinutes <= 0) {
+          return res.status(400).json({ message: "That day has no Apple Health activity to log." });
+        }
+      }
+
+      const isAppleHealth = !!healthWorkout || !!passiveMetric;
+
+      // Evidence rule: at least one image, OR a valid (owned, unsubmitted) HealthKit
+      // workout, OR an unclaimed day of passive Apple Health activity.
+      if (imageFiles.length === 0 && !isAppleHealth) {
         return res.status(400).json({ message: "Please add at least one photo, or import an Apple Health workout." });
       }
 
@@ -3037,6 +3115,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             if (!mappedName || !required.includes(mappedName)) {
               return res.status(400).json({ message: "That workout isn't a required activity for this competition." });
             }
+          }
+        }
+        // Passive activity is "unspecified" — the user labels its type (already
+        // checked against required above), so there is no workout-type to match;
+        // only the day itself must fall inside the competition window.
+        if (passiveMetric) {
+          const day = new Date(`${passiveMetric.metricDate}T12:00:00`);
+          if (day < new Date(competition.startDate) || day > new Date(competition.endDate)) {
+            return res.status(400).json({ message: "That activity is outside the competition dates." });
           }
         }
       }
@@ -3116,7 +3203,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         evidenceUrl: evidenceUrl,
         thumbnailUrl: thumbnailUrl,
         imageUrls: imageUrls,
-        fromAppleHealth: !!healthWorkout,
+        fromAppleHealth: isAppleHealth,
       };
       
       
@@ -3132,6 +3219,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (!claimed) {
           await storage.deleteActivity(activity.id);
           return res.status(409).json({ message: "This Apple Health workout has already been submitted." });
+        }
+      }
+
+      // Same one-per-day claim for passive activity: if another request grabbed
+      // this day first, roll back before any points are awarded.
+      if (passiveMetric) {
+        const claimed = await storage.claimHealthMetricActivity(passiveMetric.id, activity.id);
+        if (!claimed) {
+          await storage.deleteActivity(activity.id);
+          return res.status(409).json({ message: "That day's Apple Health activity has already been logged." });
         }
       }
       

@@ -601,6 +601,10 @@ export const healthMetrics = pgTable("health_metrics", {
   exerciseMinutes: real("exercise_minutes"), // Apple "Exercise" ring minutes
   activeEnergyKcal: real("active_energy_kcal"), // active calories burned
   distanceMeters: real("distance_meters"), // walking + running distance
+  // Set when the day's passive activity has been logged as an activity. Acts as
+  // a one-per-day claim so the same passive day can't be submitted twice (the
+  // recorded-workout path uses appleHealthWorkouts.submittedActivityId the same way).
+  submittedActivityId: integer("submitted_activity_id"),
   raw: json("raw"),
   syncedAt: timestamp("synced_at").defaultNow(),
 }, (table) => ({
@@ -622,6 +626,7 @@ export const readinessScores = pgTable("readiness_scores", {
 export const insertHealthMetricSchema = createInsertSchema(healthMetrics).omit({
   id: true,
   syncedAt: true,
+  submittedActivityId: true,
 });
 
 export const insertReadinessScoreSchema = createInsertSchema(readinessScores).omit({

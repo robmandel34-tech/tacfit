@@ -61,6 +61,19 @@ interface AppleHealthWorkout {
   ineligibleReason?: string | null;
 }
 
+// A day of passive Apple Health activity (exercise minutes + distance, no
+// recorded workout) the user can log as an "Unspecified Activity" and label.
+interface PassiveActivity {
+  metricDate: string;
+  exerciseMinutes: number | null;
+  distanceMeters: number | null;
+  eligible: boolean;
+  ineligibleReason: string | null;
+}
+
+const metersToMiles = (m: number | null | undefined): number =>
+  m && m > 0 ? m / 1609.344 : 0;
+
 export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySubmissionModalProps) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -74,6 +87,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [showGuidelines, setShowGuidelines] = useState(false);
   const [selectedWorkoutHkId, setSelectedWorkoutHkId] = useState<string | null>(null);
+  const [passiveMetricDate, setPassiveMetricDate] = useState<string | null>(null);
 
   // Apple Health (iOS native only)
   const appleHealth = useAppleHealth();
@@ -133,6 +147,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     setVideoFile(null);
     setUploadProgress(0);
     setSelectedWorkoutHkId(null);
+    setPassiveMetricDate(null);
   };
 
   // Reset selected type whenever mode changes (ended ↔ active)
@@ -166,6 +181,20 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     enabled: isOpen && showHealthWorkouts,
   });
 
+  // Passive activity for the most recent unlogged day (exercise minutes +
+  // distance). Surfaced as a one-tap "Unspecified Activity" the user can label.
+  const { data: passiveActivity = null, isFetching: passiveLoading } = useQuery<PassiveActivity | null>({
+    queryKey: ["/api/apple-health/passive-today", competitionId ?? "independent"],
+    queryFn: async () => {
+      const url = competitionId
+        ? `/api/apple-health/passive-today?competitionId=${competitionId}`
+        : `/api/apple-health/passive-today`;
+      const res = await apiRequest("GET", url);
+      return res.json();
+    },
+    enabled: isOpen && showHealthWorkouts,
+  });
+
   // Effective duration in minutes. The stored durationSec can be 0 (older
   // syncs) or a tiny bogus value reported by HealthKit, so we reconcile it
   // against the elapsed start→end time using the same rule as the sync path.
@@ -190,12 +219,49 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
       }
     }
     setSelectedWorkoutHkId(w.healthKitWorkoutId);
+    setPassiveMetricDate(null);
     const km = w.distanceMeters ? (w.distanceMeters / 1000).toFixed(2) : null;
     const parts = [`${w.activityType}`, `${minutes} min`];
     if (km && Number(km) > 0) parts.push(`${km} km`);
     if (w.energyKcal) parts.push(`${w.energyKcal} cal`);
     setDescription(`Apple Health: ${parts.join(" · ")}`);
   };
+
+  // Minutes/miles for the passive day (whole-number minutes; miles to 2dp).
+  const passiveMinutes = (p: PassiveActivity): number =>
+    Math.max(0, Math.round(p.exerciseMinutes ?? 0));
+  const passiveMiles = (p: PassiveActivity): number =>
+    Number(metersToMiles(p.distanceMeters).toFixed(2));
+
+  // Prefill the form from the day's passive activity. The type is left blank —
+  // it's "unspecified" until the user labels it from the dropdown below.
+  const applyPassive = (p: PassiveActivity) => {
+    const minutes = passiveMinutes(p);
+    const miles = passiveMiles(p);
+    setType("");
+    setQuantity(String(Math.max(1, minutes)));
+    setSelectedWorkoutHkId(null);
+    setPassiveMetricDate(p.metricDate);
+    const parts = [`Unspecified`, `${minutes} min`];
+    if (miles > 0) parts.push(`${miles.toFixed(2)} mi`);
+    setDescription(`Apple Health: ${parts.join(" · ")}`);
+  };
+
+  // Whether a UTC workout timestamp falls on the same *device-local* calendar
+  // day as a metric's day key. Apple's exercise minutes already include time
+  // spent in recorded workouts, so if a day has a recorded workout we hide the
+  // passive item to avoid double-counting. This must be compared in local time
+  // (where the metric day was computed) — the server can't match reliably
+  // without knowing the device timezone, so we gate it here on the client.
+  const sameLocalDay = (iso: string, dayKey: string): boolean => {
+    const d = new Date(iso);
+    const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    return k === dayKey;
+  };
+  const passiveDayHasWorkout =
+    !!passiveActivity && loadedWorkouts.some((w) => sameLocalDay(w.startTime, passiveActivity.metricDate));
+  const showPassive =
+    !!passiveActivity && passiveMinutes(passiveActivity) > 0 && !passiveDayHasWorkout;
 
   // Helper functions for text input validation
   const countWords = (text: string): number => {
@@ -334,6 +400,9 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
       if (selectedWorkoutHkId) {
         queryClient.invalidateQueries({ queryKey: ["/api/apple-health/workouts"] });
       }
+      if (passiveMetricDate) {
+        queryClient.invalidateQueries({ queryKey: ["/api/apple-health/passive-today"] });
+      }
       // Invalidate all activity-related queries
       queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
       queryClient.invalidateQueries({ predicate: (query) => 
@@ -391,7 +460,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
 
     // Require at least one image — unless this is an Apple Health import,
     // where the synced workout data is itself the evidence.
-    if (imageFiles.length === 0 && !selectedWorkoutHkId) {
+    if (imageFiles.length === 0 && !selectedWorkoutHkId && !passiveMetricDate) {
       toast({
         title: "Image required",
         description: "Please add at least one photo to document your activity.",
@@ -413,6 +482,11 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     // eligibility, accept it as evidence (no photo needed), and link it.
     if (selectedWorkoutHkId) {
       formData.append("healthKitWorkoutId", selectedWorkoutHkId);
+    }
+    // Passive Apple Health day logged as an Unspecified Activity (user-labeled):
+    // send the day so the server can verify, accept it as evidence, and claim it.
+    if (passiveMetricDate) {
+      formData.append("appleHealthMetricDate", passiveMetricDate);
     }
     
     // Add text input if required
@@ -559,10 +633,50 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                           Refresh
                         </Button>
                       </div>
+                      {/* Passive activity — log a day's exercise as an Unspecified Activity the user then labels */}
+                      {showPassive && passiveActivity && (() => {
+                        const minutes = passiveMinutes(passiveActivity);
+                        const miles = passiveMiles(passiveActivity);
+                        const eligible = passiveActivity.eligible !== false;
+                        const selected = passiveMetricDate === passiveActivity.metricDate;
+                        return (
+                          <button
+                            type="button"
+                            disabled={!eligible}
+                            onClick={() => eligible && applyPassive(passiveActivity)}
+                            data-testid="button-passive-activity"
+                            className={`w-full text-left rounded-lg border p-3 transition-colors ${
+                              selected
+                                ? "border-military-green bg-military-green/10"
+                                : "border-tactical-gray bg-tactical-gray-lighter hover:bg-tactical-gray"
+                            } ${!eligible ? "opacity-60 cursor-not-allowed" : ""}`}
+                          >
+                            <div className="flex items-start gap-2">
+                              <Activity className={`w-4 h-4 mt-0.5 ${eligible ? "text-military-green" : "text-gray-500"}`} />
+                              <div className="flex-1">
+                                <div className="text-white text-sm font-medium">
+                                  Unspecified Activity
+                                  {selected && <CheckCircle className="inline w-3.5 h-3.5 text-green-400 ml-1" />}
+                                </div>
+                                <div className="text-xs text-gray-300">
+                                  {new Date(`${passiveActivity.metricDate}T12:00:00`).toLocaleDateString()} · {minutes} min{miles > 0 ? ` · ${miles.toFixed(2)} mi` : ""}
+                                </div>
+                                {!eligible && passiveActivity.ineligibleReason ? (
+                                  <div className="text-xs text-amber-400 mt-0.5">Can't use: {passiveActivity.ineligibleReason}</div>
+                                ) : (
+                                  <div className="text-xs text-gray-400 mt-0.5">Tap to log it, then choose what it was below.</div>
+                                )}
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })()}
                       {workoutsLoading ? (
                         <p className="text-sm text-gray-400">Loading your workouts...</p>
                       ) : loadedWorkouts.length === 0 ? (
-                        <p className="text-sm text-gray-400">No Apple Health workouts synced yet. Tap Refresh after recording a workout.</p>
+                        showPassive ? null : (
+                          <p className="text-sm text-gray-400">No Apple Health workouts synced yet. Tap Refresh after recording a workout.</p>
+                        )
                       ) : (() => {
                         const selectedWorkout = loadedWorkouts.find((w) => w.healthKitWorkoutId === selectedWorkoutHkId);
                         return (
@@ -731,7 +845,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
               {/* Photo Evidence */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <Label className="text-gray-300 font-medium">Photo Evidence {selectedWorkoutHkId ? <span className="text-gray-400">(optional — Apple Health workout is the evidence)</span> : <><span className="text-red-400">*</span> <span className="text-gray-400">(at least 1 image required)</span></>}</Label>
+                  <Label className="text-gray-300 font-medium">Photo Evidence {(selectedWorkoutHkId || passiveMetricDate) ? <span className="text-gray-400">(optional — Apple Health is the evidence)</span> : <><span className="text-red-400">*</span> <span className="text-gray-400">(at least 1 image required)</span></>}</Label>
                   <button
                     type="button"
                     onClick={() => setShowGuidelines((v) => !v)}
@@ -875,7 +989,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
           <Button
             type="submit"
             className="w-full bg-military-green hover:bg-military-green-dark text-forest-green font-medium py-3"
-            disabled={submitActivity.isPending || !type || !description || !quantity || (imageFiles.length === 0 && !selectedWorkoutHkId)}
+            disabled={submitActivity.isPending || !type || !description || !quantity || (imageFiles.length === 0 && !selectedWorkoutHkId && !passiveMetricDate)}
           >
             {submitActivity.isPending
               ? uploadProgress > 0 ? `Uploading ${uploadProgress}%` : "Preparing..."

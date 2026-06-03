@@ -1500,6 +1500,31 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(healthMetrics.metricDate));
   }
 
+  async getHealthMetric(userId: number, metricDate: string): Promise<HealthMetric | undefined> {
+    const [row] = await db
+      .select()
+      .from(healthMetrics)
+      .where(and(eq(healthMetrics.userId, userId), eq(healthMetrics.metricDate, metricDate)));
+    return row || undefined;
+  }
+
+  // Atomically claim a day's passive activity for an activity. Returns true only
+  // if THIS call linked it (submitted_activity_id was NULL). Prevents the same
+  // passive day being logged twice (one-per-day, mirrors claimAppleHealthWorkout).
+  async claimHealthMetricActivity(metricId: number, activityId: number): Promise<boolean> {
+    const updated = await db
+      .update(healthMetrics)
+      .set({ submittedActivityId: activityId })
+      .where(
+        and(
+          eq(healthMetrics.id, metricId),
+          isNull(healthMetrics.submittedActivityId),
+        ),
+      )
+      .returning();
+    return updated.length > 0;
+  }
+
   async getReadiness(userId: number): Promise<ReadinessScore | undefined> {
     const [row] = await db
       .select()

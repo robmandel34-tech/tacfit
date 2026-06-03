@@ -174,6 +174,8 @@ export interface IStorage {
   // Readiness / health metrics operations
   upsertHealthMetric(metric: InsertHealthMetric): Promise<HealthMetric>;
   getHealthMetrics(userId: number, sinceDate?: string): Promise<HealthMetric[]>;
+  getHealthMetric(userId: number, metricDate: string): Promise<HealthMetric | undefined>;
+  claimHealthMetricActivity(metricId: number, activityId: number): Promise<boolean>;
   getReadiness(userId: number): Promise<ReadinessScore | undefined>;
   upsertReadiness(userId: number, data: Omit<InsertReadinessScore, "userId">): Promise<ReadinessScore>;
   getReadinessForUsers(userIds: number[]): Promise<ReadinessScore[]>;

@@ -2,4 +2,5 @@
 - [HealthKit Readiness](healthkit-readiness.md) — Readiness scoring + states (ready/calibrating/insufficient); "not showing" = backend not Published OR UI hid non-ready states (now all states render via getReadinessDisplay).
 - [Private competitions](private-competitions.md) — invite-only = unlisted, anyone with link joins; visibility filter must check BOTH competition entry AND team membership.
 - [Profile privacy](profile-privacy.md) — private profile hides activities/stats/history (not name/photo); gate every such endpoint via canViewProfileDetails; shareReadiness opt-out; IDOR guard on user PATCH routes.
+- [Apple Health passive activity](apple-health-passive-activity.md) — passive exercise-minutes day logs as "Unspecified Activity" (per-day claim); hide it when that day has a recorded workout (double-count); workout-day match is client-side (TZ).
 - [Capacitor native foreground](capacitor-native-foreground.md) — native iOS "refresh on foreground" must use @capacitor/app appStateChange, not web visibilitychange/timers (paused/unreliable in WKWebView).

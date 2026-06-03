@@ -21,6 +21,7 @@ interface AppleHealthStatus {
 
 // Passive activity totals for the most recent day, surfaced to the UI.
 export interface TodayActivity {
+  metricDate: string;
   exerciseMinutes: number | null;
   activeEnergyKcal: number | null;
   distanceMeters: number | null;
@@ -60,6 +61,7 @@ export function useAppleHealth() {
         const data = await res.json();
         await queryClient.invalidateQueries({ queryKey: ["/api/apple-health/status"] });
         await queryClient.invalidateQueries({ queryKey: ["/api/apple-health/workouts"] });
+        await queryClient.invalidateQueries({ queryKey: ["/api/apple-health/passive-today"] });
 
         // Also sync daily readiness metrics (best-effort; never blocks workouts).
         try {
@@ -70,6 +72,7 @@ export function useAppleHealth() {
             const latest =
               metrics.find((m) => m.metricDate === todayKey) ?? metrics[metrics.length - 1];
             setTodayActivity({
+              metricDate: latest.metricDate,
               exerciseMinutes: latest.exerciseMinutes,
               activeEnergyKcal: latest.activeEnergyKcal,
               distanceMeters: latest.distanceMeters,

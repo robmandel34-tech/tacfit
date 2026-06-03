@@ -597,6 +597,10 @@ export const healthMetrics = pgTable("health_metrics", {
   sleepDurationMin: real("sleep_duration_min"), // total asleep minutes
   deepSleepMin: real("deep_sleep_min"),
   remSleepMin: real("rem_sleep_min"),
+  // Passive daily activity totals from Apple Health (no recorded workout needed).
+  exerciseMinutes: real("exercise_minutes"), // Apple "Exercise" ring minutes
+  activeEnergyKcal: real("active_energy_kcal"), // active calories burned
+  distanceMeters: real("distance_meters"), // walking + running distance
   raw: json("raw"),
   syncedAt: timestamp("synced_at").defaultNow(),
 }, (table) => ({

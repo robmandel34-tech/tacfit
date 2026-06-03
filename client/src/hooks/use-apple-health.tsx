@@ -19,11 +19,26 @@ interface AppleHealthStatus {
   scopes: string[];
 }
 
+// Passive activity totals for the most recent day, surfaced to the UI.
+export interface TodayActivity {
+  exerciseMinutes: number | null;
+  activeEnergyKcal: number | null;
+  distanceMeters: number | null;
+}
+
+function localDayKey(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
 export function useAppleHealth() {
   const native = isHealthKitAvailable();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isSyncing, setIsSyncing] = useState(false);
+  const [todayActivity, setTodayActivity] = useState<TodayActivity | null>(null);
   const syncingRef = useRef(false);
 
   const { data: status, isLoading } = useQuery<AppleHealthStatus>({
@@ -50,6 +65,15 @@ export function useAppleHealth() {
         try {
           const metrics = await readDailyHealthMetrics(90);
           if (metrics.length > 0) {
+            // Surface the most recent day's passive activity totals to the UI.
+            const todayKey = localDayKey(new Date());
+            const latest =
+              metrics.find((m) => m.metricDate === todayKey) ?? metrics[metrics.length - 1];
+            setTodayActivity({
+              exerciseMinutes: latest.exerciseMinutes,
+              activeEnergyKcal: latest.activeEnergyKcal,
+              distanceMeters: latest.distanceMeters,
+            });
             await apiRequest("POST", "/api/apple-health/metrics/sync", { metrics });
             // Team readiness uses a single-string key (/api/readiness/team/:id),
             // so match by predicate rather than an exact array prefix.
@@ -190,5 +214,6 @@ export function useAppleHealth() {
     isConnecting: connectMutation.isPending,
     isDisconnecting: disconnectMutation.isPending,
     isSyncing,
+    todayActivity,
   };
 }

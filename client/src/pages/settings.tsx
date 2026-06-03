@@ -288,6 +288,53 @@ export default function SettingsPage() {
                         Refresh
                       </Button>
                     </div>
+                    {/* Today's passive activity — counts even without a recorded workout */}
+                    {appleHealth.todayActivity && (
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="bg-white/5 rounded-xl p-2.5 text-center">
+                          <p className="text-white text-base font-bold leading-none">
+                            {appleHealth.todayActivity.exerciseMinutes != null
+                              ? Math.round(appleHealth.todayActivity.exerciseMinutes)
+                              : "—"}
+                          </p>
+                          <p className="text-gray-400 text-[10px] mt-1">Exercise min</p>
+                        </div>
+                        <div className="bg-white/5 rounded-xl p-2.5 text-center">
+                          <p className="text-white text-base font-bold leading-none">
+                            {appleHealth.todayActivity.activeEnergyKcal != null
+                              ? Math.round(appleHealth.todayActivity.activeEnergyKcal)
+                              : "—"}
+                          </p>
+                          <p className="text-gray-400 text-[10px] mt-1">Active cal</p>
+                        </div>
+                        <div className="bg-white/5 rounded-xl p-2.5 text-center">
+                          <p className="text-white text-base font-bold leading-none">
+                            {appleHealth.todayActivity.distanceMeters != null
+                              ? (appleHealth.todayActivity.distanceMeters / 1609.344).toFixed(1)
+                              : "—"}
+                          </p>
+                          <p className="text-gray-400 text-[10px] mt-1">Miles</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Tip: let the Apple Watch auto-prompt to record workouts */}
+                    <div className="bg-military-green/10 border border-military-green/20 rounded-xl p-3">
+                      <p className="text-white text-xs font-medium mb-1">
+                        Get credit automatically
+                      </p>
+                      <p className="text-gray-300 text-[11px] leading-relaxed">
+                        Turn on your Apple Watch workout reminders so it asks you to record
+                        when it detects activity. On your iPhone: open the{" "}
+                        <span className="text-white font-medium">Watch</span> app →{" "}
+                        <span className="text-white font-medium">Workout</span> → turn on{" "}
+                        <span className="text-white font-medium">Start Workout Reminder</span> and{" "}
+                        <span className="text-white font-medium">End Workout Reminder</span>.
+                        Your exercise minutes, active calories, and run distance sync here
+                        automatically either way.
+                      </p>
+                    </div>
+
                     <Button
                       variant="ghost"
                       size="sm"

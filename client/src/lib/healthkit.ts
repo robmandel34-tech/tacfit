@@ -59,6 +59,10 @@ export interface NormalizedDailyMetric {
   sleepDurationMin: number | null;
   deepSleepMin: number | null;
   remSleepMin: number | null;
+  // Passive activity totals (no recorded workout required).
+  exerciseMinutes: number | null;
+  activeEnergyKcal: number | null;
+  distanceMeters: number | null;
 }
 
 // HealthKit is only available inside the native iOS app.
@@ -174,6 +178,38 @@ async function readDailyAverages(
   return out;
 }
 
+// Reads a single numeric sample type and groups daily TOTALS (sums) by local
+// day. Used for cumulative quantities like exercise minutes, active calories,
+// and distance, where the daily figure is the sum of all samples that day.
+async function readDailySums(
+  sampleName: string,
+  start: Date,
+  end: Date,
+): Promise<Record<string, number>> {
+  const { CapacitorHealthkit } = await import("@perfood/capacitor-healthkit");
+  let rows: any[] = [];
+  try {
+    const result = await CapacitorHealthkit.queryHKitSampleType<any>({
+      sampleName,
+      startDate: start.toISOString(),
+      endDate: end.toISOString(),
+      limit: 0,
+    });
+    rows = result?.resultData ?? [];
+  } catch {
+    return {};
+  }
+  const out: Record<string, number> = {};
+  for (const r of rows) {
+    const when = r?.startDate ?? r?.endDate;
+    const value = Number(r?.value);
+    if (!when || !Number.isFinite(value)) continue;
+    const key = localDayKey(new Date(when));
+    out[key] = (out[key] ?? 0) + value;
+  }
+  return out;
+}
+
 // Classifies a HealthKit sleep sample's stage from its value/string. Apple's
 // sleep stage labels vary across iOS versions, so we match loosely.
 function sleepStage(raw: any): "deep" | "rem" | "asleep" | "other" {
@@ -233,14 +269,19 @@ export async function readDailyHealthMetrics(sinceDays = 90): Promise<Normalized
   const end = new Date();
   const start = new Date(end.getTime() - sinceDays * 24 * 60 * 60 * 1000);
 
-  const [rhr, hrv, resp, spo2, temp, sleep] = await Promise.all([
-    readDailyAverages("restingHeartRate", start, end),
-    readDailyAverages("heartRateVariabilitySDNN", start, end),
-    readDailyAverages("respiratoryRate", start, end),
-    readDailyAverages("oxygenSaturation", start, end),
-    readDailyAverages("bodyTemperature", start, end),
-    readDailySleep(start, end),
-  ]);
+  const [rhr, hrv, resp, spo2, temp, sleep, exercise, activeEnergy, distance] =
+    await Promise.all([
+      readDailyAverages("restingHeartRate", start, end),
+      readDailyAverages("heartRateVariabilitySDNN", start, end),
+      readDailyAverages("respiratoryRate", start, end),
+      readDailyAverages("oxygenSaturation", start, end),
+      readDailyAverages("bodyTemperature", start, end),
+      readDailySleep(start, end),
+      // Cumulative quantities — summed per day, not averaged.
+      readDailySums("appleExerciseTime", start, end),
+      readDailySums("activeEnergyBurned", start, end),
+      readDailySums("distanceWalkingRunning", start, end),
+    ]);
 
   const days = new Set<string>([
     ...Object.keys(rhr),
@@ -249,6 +290,9 @@ export async function readDailyHealthMetrics(sinceDays = 90): Promise<Normalized
     ...Object.keys(spo2),
     ...Object.keys(temp),
     ...Object.keys(sleep),
+    ...Object.keys(exercise),
+    ...Object.keys(activeEnergy),
+    ...Object.keys(distance),
   ]);
 
   return Array.from(days)
@@ -263,5 +307,8 @@ export async function readDailyHealthMetrics(sinceDays = 90): Promise<Normalized
       sleepDurationMin: sleep[metricDate]?.total ?? null,
       deepSleepMin: sleep[metricDate]?.deep ?? null,
       remSleepMin: sleep[metricDate]?.rem ?? null,
+      exerciseMinutes: exercise[metricDate] ?? null,
+      activeEnergyKcal: activeEnergy[metricDate] ?? null,
+      distanceMeters: distance[metricDate] ?? null,
     }));
 }

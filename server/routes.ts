@@ -2804,6 +2804,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     sleepDurationMin: z.number().finite().nullable().optional(),
     deepSleepMin: z.number().finite().nullable().optional(),
     remSleepMin: z.number().finite().nullable().optional(),
+    exerciseMinutes: z.number().finite().nullable().optional(),
+    activeEnergyKcal: z.number().finite().nullable().optional(),
+    distanceMeters: z.number().finite().nullable().optional(),
   });
   const metricsSyncSchema = z.object({
     // Client reads a 90-day window, which can yield 91+ calendar-day buckets
@@ -2836,6 +2839,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           sleepDurationMin: m.sleepDurationMin ?? null,
           deepSleepMin: m.deepSleepMin ?? null,
           remSleepMin: m.remSleepMin ?? null,
+          exerciseMinutes: m.exerciseMinutes ?? null,
+          activeEnergyKcal: m.activeEnergyKcal ?? null,
+          distanceMeters: m.distanceMeters ?? null,
         });
         synced++;
       }

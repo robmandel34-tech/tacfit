@@ -8,25 +8,7 @@ type = "text"
 title = "TacFit Privacy Policy (HTML — paste into Webflow Embed)"
 
 [[outputs]]
-id = "Q-kxlFUhQsVTA5-DM0jQq"
-uri = "file://marketing-site.zip"
-type = "unspecified"
-title = "TacFit Marketing Site (latest) — for Netlify"
-
-[[outputs]]
 id = "_Qra6OVbNx8P75XemL4R9"
 uri = "file://client/public/marketing/og-image.jpg"
 type = "image"
 title = "Preview: new link share image"
-
-[[outputs]]
-id = "fQ9d43C-nuCAvxdYFYwsk"
-uri = "file://marketing-site-updated-2026-06-02.zip"
-type = "unspecified"
-title = "Updated Marketing Site (2026-06-02)"
-
-[[outputs]]
-id = "THXwLfUYnaMCAm2LwM_T3"
-uri = "file://downloads/tacfit-marketing-site.zip"
-type = "unspecified"
-title = "TacFit Marketing Site (latest)"

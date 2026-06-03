@@ -56,18 +56,18 @@ interface OnboardingWalkthroughProps {
 const ARCHETYPE_OPTIONS = [
   {
     value: 'servant',
-    title: 'Servant',
-    description: 'I have excellent habits, a balanced life and I frequently serve others in various ways.',
+    title: 'Excellent',
+    description: '',
   },
   {
     value: 'clown',
-    title: 'Sad/Happy Clown',
-    description: "I am committed to whole health but am often not consistent, and although I'd like to, I actually don't often find myself serving others in meaningful ways.",
+    title: 'Inconsistent',
+    description: '',
   },
   {
     value: 'survivor',
-    title: 'Survivor',
-    description: "It's a daily struggle for me to make healthy choices.",
+    title: 'Struggling',
+    description: '',
   },
 ];
 
@@ -116,7 +116,9 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete, onSaveSurve
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-white">{option.title}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{option.description}</p>
+                      {option.description && (
+                        <p className="text-xs text-gray-400 mt-0.5">{option.description}</p>
+                      )}
                     </div>
                   </div>
                 </button>

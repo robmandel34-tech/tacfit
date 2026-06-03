@@ -841,25 +841,31 @@ export default function Profile() {
                   </div>
 
                   {/* Purpose: why readiness matters, for you and your team */}
-                  <div className="mt-4 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-gray-300 space-y-2">
-                    <p className="font-semibold text-white">Why readiness matters</p>
-                    <p>
-                      It's your real-time check on personal capacity — a quick read on
-                      whether to push hard or pull back and recover. It updates
-                      throughout the day as new health data syncs from Apple Health.
-                    </p>
-                    <p>
-                      It also helps your team. Without being able to meet eye to eye,
-                      it's hard to know where a teammate is really at. Sharing your
-                      readiness lets your squad gauge each other's current capacity
-                      and properly support and guide everyone's effort.
-                    </p>
-                    <p className="text-gray-400">
-                      Teammates only see your readiness level and score — never your
-                      underlying health data. You control this from Settings →
-                      Privacy → Share Readiness Score.
-                    </p>
-                  </div>
+                  <details className="mt-4 rounded-xl border border-white/10 bg-white/5 group">
+                    <summary className="flex items-center gap-2 cursor-pointer list-none px-4 py-3 text-sm font-semibold text-white">
+                      <Info className="h-4 w-4 text-military-green" />
+                      Why readiness matters
+                      <ChevronDown className="h-4 w-4 ml-auto text-gray-400 transition-transform group-open:rotate-180" />
+                    </summary>
+                    <div className="px-4 pb-4 pt-1 text-sm text-gray-300 space-y-2">
+                      <p>
+                        It's your real-time check on personal capacity — a quick read on
+                        whether to push hard or pull back and recover. It updates
+                        throughout the day as new health data syncs from Apple Health.
+                      </p>
+                      <p>
+                        It also helps your team. Without being able to meet eye to eye,
+                        it's hard to know where a teammate is really at. Sharing your
+                        readiness lets your squad gauge each other's current capacity
+                        and properly support and guide everyone's effort.
+                      </p>
+                      <p className="text-gray-400">
+                        Teammates only see your readiness level and score — never your
+                        underlying health data. You control this from Settings →
+                        Privacy → Share Readiness Score.
+                      </p>
+                    </div>
+                  </details>
 
                   {/* Explainer: what data is needed to build a real score */}
                   <details className="mt-4 rounded-xl border border-white/10 bg-white/5 group">

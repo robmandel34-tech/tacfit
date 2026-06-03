@@ -1240,9 +1240,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // channel is configured. Fire-and-forget — never blocks the response.
       if (willNotify) {
         const archetypeLabels: Record<string, string> = {
-          servant: "Servant",
-          clown: "Sad/Happy Clown",
-          survivor: "Survivor",
+          servant: "Excellent",
+          clown: "Inconsistent",
+          survivor: "Struggling",
         };
         const archetype = updatedUser.fitnessArchetype
           ? (archetypeLabels[updatedUser.fitnessArchetype] || updatedUser.fitnessArchetype)

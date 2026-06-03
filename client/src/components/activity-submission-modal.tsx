@@ -584,7 +584,11 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-tactical-gray-dark border border-tactical-gray text-white">
+      <DialogContent
+        className="max-w-2xl max-h-[90vh] overflow-y-auto bg-tactical-gray-dark border border-tactical-gray text-white"
+        onInteractOutside={(e) => e.preventDefault()}
+        onPointerDownOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle className="text-white text-xl font-bold">Submit Activity</DialogTitle>
         </DialogHeader>

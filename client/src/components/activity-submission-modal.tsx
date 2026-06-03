@@ -66,7 +66,14 @@ interface AppleHealthWorkout {
 interface PassiveActivity {
   metricDate: string;
   exerciseMinutes: number | null;
+  activeEnergyKcal: number | null;
   distanceMeters: number | null;
+  // The day's main workout burst (preferred over the whole-day totals above).
+  burstStart: string | null;
+  burstEnd: string | null;
+  burstExerciseMinutes: number | null;
+  burstActiveEnergyKcal: number | null;
+  burstDistanceMeters: number | null;
   eligible: boolean;
   ineligibleReason: string | null;
 }
@@ -227,22 +234,35 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     setDescription(`Apple Health: ${parts.join(" · ")}`);
   };
 
-  // Minutes/miles for the passive day (whole-number minutes; miles to 2dp).
+  // Figures for the passive day. We prefer the detected workout "burst" (the
+  // continuous period the user actually exercised) over the whole-day totals,
+  // falling back to whole-day numbers when no burst was detected.
   const passiveMinutes = (p: PassiveActivity): number =>
-    Math.max(0, Math.round(p.exerciseMinutes ?? 0));
+    Math.max(0, Math.round(p.burstExerciseMinutes ?? p.exerciseMinutes ?? 0));
   const passiveMiles = (p: PassiveActivity): number =>
-    Number(metersToMiles(p.distanceMeters).toFixed(2));
+    Number(metersToMiles(p.burstDistanceMeters ?? p.distanceMeters).toFixed(2));
+  const passiveCalories = (p: PassiveActivity): number =>
+    Math.max(0, Math.round(p.burstActiveEnergyKcal ?? p.activeEnergyKcal ?? 0));
+  // "7:10 – 7:52 AM" for the burst window, or null when there's no burst.
+  const passiveTimeRange = (p: PassiveActivity): string | null => {
+    if (!p.burstStart || !p.burstEnd) return null;
+    const fmt = (iso: string) =>
+      new Date(iso).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    return `${fmt(p.burstStart)} – ${fmt(p.burstEnd)}`;
+  };
 
   // Prefill the form from the day's passive activity. The type is left blank —
   // it's "unspecified" until the user labels it from the dropdown below.
   const applyPassive = (p: PassiveActivity) => {
     const minutes = passiveMinutes(p);
     const miles = passiveMiles(p);
+    const cals = passiveCalories(p);
     setType("");
     setQuantity(String(Math.max(1, minutes)));
     setSelectedWorkoutHkId(null);
     setPassiveMetricDate(p.metricDate);
     const parts = [`Unspecified`, `${minutes} min`];
+    if (cals > 0) parts.push(`${cals} cal`);
     if (miles > 0) parts.push(`${miles.toFixed(2)} mi`);
     setDescription(`Apple Health: ${parts.join(" · ")}`);
   };
@@ -637,6 +657,8 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                       {showPassive && passiveActivity && (() => {
                         const minutes = passiveMinutes(passiveActivity);
                         const miles = passiveMiles(passiveActivity);
+                        const cals = passiveCalories(passiveActivity);
+                        const range = passiveTimeRange(passiveActivity);
                         const eligible = passiveActivity.eligible !== false;
                         const selected = passiveMetricDate === passiveActivity.metricDate;
                         return (
@@ -659,8 +681,11 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                                   {selected && <CheckCircle className="inline w-3.5 h-3.5 text-green-400 ml-1" />}
                                 </div>
                                 <div className="text-xs text-gray-300">
-                                  {new Date(`${passiveActivity.metricDate}T12:00:00`).toLocaleDateString()} · {minutes} min{miles > 0 ? ` · ${miles.toFixed(2)} mi` : ""}
+                                  {new Date(`${passiveActivity.metricDate}T12:00:00`).toLocaleDateString()} · {minutes} min{cals > 0 ? ` · ${cals} cal` : ""}{miles > 0 ? ` · ${miles.toFixed(2)} mi` : ""}
                                 </div>
+                                {range && (
+                                  <div className="text-xs text-gray-400 mt-0.5">Workout window: {range}</div>
+                                )}
                                 {!eligible && passiveActivity.ineligibleReason ? (
                                   <div className="text-xs text-amber-400 mt-0.5">Can't use: {passiveActivity.ineligibleReason}</div>
                                 ) : (

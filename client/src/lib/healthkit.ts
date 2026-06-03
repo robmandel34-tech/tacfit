@@ -59,10 +59,16 @@ export interface NormalizedDailyMetric {
   sleepDurationMin: number | null;
   deepSleepMin: number | null;
   remSleepMin: number | null;
-  // Passive activity totals (no recorded workout required).
+  // Passive activity totals for the whole day (no recorded workout required).
   exerciseMinutes: number | null;
   activeEnergyKcal: number | null;
   distanceMeters: number | null;
+  // The day's main continuous activity burst (a workout the user didn't record).
+  burstStart: string | null; // ISO
+  burstEnd: string | null; // ISO
+  burstExerciseMinutes: number | null;
+  burstActiveEnergyKcal: number | null;
+  burstDistanceMeters: number | null;
 }
 
 // HealthKit is only available inside the native iOS app.
@@ -178,14 +184,22 @@ async function readDailyAverages(
   return out;
 }
 
-// Reads a single numeric sample type and groups daily TOTALS (sums) by local
-// day. Used for cumulative quantities like exercise minutes, active calories,
-// and distance, where the daily figure is the sum of all samples that day.
-async function readDailySums(
+// A raw timestamped sample: `value` accrued over [start, end] (ms epoch).
+interface RawSample {
+  start: number;
+  end: number;
+  value: number;
+}
+
+// Reads raw timestamped samples for a cumulative quantity type (exercise
+// minutes, active calories, distance), sorted by start time. Returning the
+// individual samples (rather than only a daily sum) lets us detect the day's
+// workout "burst" — see computeDailyBursts.
+async function readRawSamples(
   sampleName: string,
   start: Date,
   end: Date,
-): Promise<Record<string, number>> {
+): Promise<RawSample[]> {
   const { CapacitorHealthkit } = await import("@perfood/capacitor-healthkit");
   let rows: any[] = [];
   try {
@@ -197,15 +211,114 @@ async function readDailySums(
     });
     rows = result?.resultData ?? [];
   } catch {
-    return {};
+    return [];
   }
-  const out: Record<string, number> = {};
+  const out: RawSample[] = [];
   for (const r of rows) {
-    const when = r?.startDate ?? r?.endDate;
+    const s = r?.startDate ? new Date(r.startDate).getTime() : NaN;
+    const eRaw = r?.endDate ? new Date(r.endDate).getTime() : s;
     const value = Number(r?.value);
-    if (!when || !Number.isFinite(value)) continue;
-    const key = localDayKey(new Date(when));
-    out[key] = (out[key] ?? 0) + value;
+    if (!Number.isFinite(s) || !Number.isFinite(value)) continue;
+    const e = Number.isFinite(eRaw) ? Math.max(s, eRaw) : s;
+    out.push({ start: s, end: e, value });
+  }
+  out.sort((a, b) => a.start - b.start);
+  return out;
+}
+
+// Sums raw samples into per-local-day totals (the whole-day figure).
+function sumByDay(samples: RawSample[]): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const s of samples) {
+    const key = localDayKey(new Date(s.start));
+    out[key] = (out[key] ?? 0) + s.value;
+  }
+  return out;
+}
+
+// The day's single biggest continuous activity "burst": exercise minutes,
+// active calories and distance recorded during one continuous window. Used to
+// represent a workout the user didn't formally record, instead of crediting the
+// whole day's incidental movement.
+export interface DailyBurst {
+  startTime: string; // ISO
+  endTime: string; // ISO
+  exerciseMinutes: number;
+  activeEnergyKcal: number;
+  distanceMeters: number;
+}
+
+// Largest gap (ms) allowed inside one burst. Exercise-minute samples during a
+// workout are near-continuous; everyday movement is sporadic with bigger gaps,
+// so a 5-minute gap separates a real workout from incidental activity.
+const BURST_GAP_MS = 5 * 60 * 1000;
+
+// For each local day, finds the biggest continuous burst of exercise minutes
+// and totals the active energy + distance recorded during that same window.
+function computeDailyBursts(
+  exercise: RawSample[],
+  energy: RawSample[],
+  distance: RawSample[],
+): Record<string, DailyBurst> {
+  // Group positive exercise-minute samples by local day.
+  const byDay: Record<string, RawSample[]> = {};
+  for (const s of exercise) {
+    if (s.value <= 0) continue;
+    const key = localDayKey(new Date(s.start));
+    (byDay[key] ??= []).push(s);
+  }
+  // Sum another series within a [from, to] window. A sample's value is prorated
+  // to the fraction of it that overlaps the window (a sample straddling the edge
+  // only contributes its overlapping share), so calories/distance aren't
+  // over-credited. Instantaneous (zero-duration) samples count fully if inside.
+  const sumOverlap = (samples: RawSample[], from: number, to: number): number => {
+    let total = 0;
+    for (const s of samples) {
+      const dur = s.end - s.start;
+      if (dur <= 0) {
+        if (s.start >= from && s.start < to) total += s.value;
+        continue;
+      }
+      const overlap = Math.min(s.end, to) - Math.max(s.start, from);
+      if (overlap > 0) total += s.value * (overlap / dur);
+    }
+    return total;
+  };
+  const out: Record<string, DailyBurst> = {};
+  for (const [key, samples] of Object.entries(byDay)) {
+    // Walk samples, accumulating a cluster until a gap exceeds the threshold;
+    // keep the cluster with the most exercise minutes.
+    let best: { start: number; end: number; minutes: number } | null = null;
+    let curStart = samples[0].start;
+    let curEnd = samples[0].end;
+    let curMin = samples[0].value;
+    const flush = () => {
+      if (!best || curMin > best.minutes) {
+        best = { start: curStart, end: curEnd, minutes: curMin };
+      }
+    };
+    for (let i = 1; i < samples.length; i++) {
+      const s = samples[i];
+      if (s.start - curEnd <= BURST_GAP_MS) {
+        curEnd = Math.max(curEnd, s.end);
+        curMin += s.value;
+      } else {
+        flush();
+        curStart = s.start;
+        curEnd = s.end;
+        curMin = s.value;
+      }
+    }
+    flush();
+    if (!best) continue;
+    const b: { start: number; end: number; minutes: number } = best;
+    out[key] = {
+      startTime: new Date(b.start).toISOString(),
+      endTime: new Date(b.end).toISOString(),
+      exerciseMinutes: b.minutes,
+      activeEnergyKcal: sumOverlap(energy, b.start, b.end),
+      distanceMeters: sumOverlap(distance, b.start, b.end),
+    };
   }
   return out;
 }
@@ -269,7 +382,7 @@ export async function readDailyHealthMetrics(sinceDays = 90): Promise<Normalized
   const end = new Date();
   const start = new Date(end.getTime() - sinceDays * 24 * 60 * 60 * 1000);
 
-  const [rhr, hrv, resp, spo2, temp, sleep, exercise, activeEnergy, distance] =
+  const [rhr, hrv, resp, spo2, temp, sleep, exerciseRaw, activeEnergyRaw, distanceRaw] =
     await Promise.all([
       readDailyAverages("restingHeartRate", start, end),
       readDailyAverages("heartRateVariabilitySDNN", start, end),
@@ -277,11 +390,17 @@ export async function readDailyHealthMetrics(sinceDays = 90): Promise<Normalized
       readDailyAverages("oxygenSaturation", start, end),
       readDailyAverages("bodyTemperature", start, end),
       readDailySleep(start, end),
-      // Cumulative quantities — summed per day, not averaged.
-      readDailySums("appleExerciseTime", start, end),
-      readDailySums("activeEnergyBurned", start, end),
-      readDailySums("distanceWalkingRunning", start, end),
+      // Cumulative quantities — read raw samples so we can derive both the
+      // whole-day sum AND the day's workout burst from the same data.
+      readRawSamples("appleExerciseTime", start, end),
+      readRawSamples("activeEnergyBurned", start, end),
+      readRawSamples("distanceWalkingRunning", start, end),
     ]);
+
+  const exercise = sumByDay(exerciseRaw);
+  const activeEnergy = sumByDay(activeEnergyRaw);
+  const distance = sumByDay(distanceRaw);
+  const bursts = computeDailyBursts(exerciseRaw, activeEnergyRaw, distanceRaw);
 
   const days = new Set<string>([
     ...Object.keys(rhr),
@@ -310,5 +429,10 @@ export async function readDailyHealthMetrics(sinceDays = 90): Promise<Normalized
       exerciseMinutes: exercise[metricDate] ?? null,
       activeEnergyKcal: activeEnergy[metricDate] ?? null,
       distanceMeters: distance[metricDate] ?? null,
+      burstStart: bursts[metricDate]?.startTime ?? null,
+      burstEnd: bursts[metricDate]?.endTime ?? null,
+      burstExerciseMinutes: bursts[metricDate]?.exerciseMinutes ?? null,
+      burstActiveEnergyKcal: bursts[metricDate]?.activeEnergyKcal ?? null,
+      burstDistanceMeters: bursts[metricDate]?.distanceMeters ?? null,
     }));
 }

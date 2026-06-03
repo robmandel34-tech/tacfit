@@ -598,9 +598,17 @@ export const healthMetrics = pgTable("health_metrics", {
   deepSleepMin: real("deep_sleep_min"),
   remSleepMin: real("rem_sleep_min"),
   // Passive daily activity totals from Apple Health (no recorded workout needed).
-  exerciseMinutes: real("exercise_minutes"), // Apple "Exercise" ring minutes
-  activeEnergyKcal: real("active_energy_kcal"), // active calories burned
-  distanceMeters: real("distance_meters"), // walking + running distance
+  exerciseMinutes: real("exercise_minutes"), // Apple "Exercise" ring minutes (whole day)
+  activeEnergyKcal: real("active_energy_kcal"), // active calories burned (whole day)
+  distanceMeters: real("distance_meters"), // walking + running distance (whole day)
+  // The day's single biggest continuous activity "burst" (a workout the user
+  // didn't formally record). These let us credit just that period instead of
+  // the entire day's incidental movement. Null when no burst was detected.
+  burstStart: text("burst_start"), // ISO timestamp of the burst window start
+  burstEnd: text("burst_end"), // ISO timestamp of the burst window end
+  burstExerciseMinutes: real("burst_exercise_minutes"), // exercise minutes within the burst
+  burstActiveEnergyKcal: real("burst_active_energy_kcal"), // active calories within the burst
+  burstDistanceMeters: real("burst_distance_meters"), // distance within the burst
   // Set when the day's passive activity has been logged as an activity. Acts as
   // a one-per-day claim so the same passive day can't be submitted twice (the
   // recorded-workout path uses appleHealthWorkouts.submittedActivityId the same way).

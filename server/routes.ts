@@ -2801,7 +2801,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({
         metricDate: candidate.metricDate,
         exerciseMinutes: candidate.exerciseMinutes,
+        activeEnergyKcal: candidate.activeEnergyKcal,
         distanceMeters: candidate.distanceMeters,
+        burstStart: candidate.burstStart,
+        burstEnd: candidate.burstEnd,
+        burstExerciseMinutes: candidate.burstExerciseMinutes,
+        burstActiveEnergyKcal: candidate.burstActiveEnergyKcal,
+        burstDistanceMeters: candidate.burstDistanceMeters,
         eligible,
         ineligibleReason,
       });
@@ -2861,6 +2867,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     exerciseMinutes: z.number().finite().nullable().optional(),
     activeEnergyKcal: z.number().finite().nullable().optional(),
     distanceMeters: z.number().finite().nullable().optional(),
+    burstStart: z.string().nullable().optional(),
+    burstEnd: z.string().nullable().optional(),
+    burstExerciseMinutes: z.number().finite().nullable().optional(),
+    burstActiveEnergyKcal: z.number().finite().nullable().optional(),
+    burstDistanceMeters: z.number().finite().nullable().optional(),
   });
   const metricsSyncSchema = z.object({
     // Client reads a 90-day window, which can yield 91+ calendar-day buckets
@@ -2896,6 +2907,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           exerciseMinutes: m.exerciseMinutes ?? null,
           activeEnergyKcal: m.activeEnergyKcal ?? null,
           distanceMeters: m.distanceMeters ?? null,
+          burstStart: m.burstStart ?? null,
+          burstEnd: m.burstEnd ?? null,
+          burstExerciseMinutes: m.burstExerciseMinutes ?? null,
+          burstActiveEnergyKcal: m.burstActiveEnergyKcal ?? null,
+          burstDistanceMeters: m.burstDistanceMeters ?? null,
         });
         synced++;
       }

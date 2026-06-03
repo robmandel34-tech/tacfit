@@ -27,3 +27,18 @@ compared in local time), not server-side.
 **How to apply:** keep the same-local-day workout check in the activity
 submission modal; don't try to move it to the server without persisting the
 device's local day on each workout.
+
+**Decision — show the workout BURST, not the whole day:** crediting a full day's
+`exerciseMinutes` was wrong — it bundled a real workout with incidental daily
+movement. The device now derives the day's single biggest continuous "burst"
+(cluster the raw `appleExerciseTime` samples, splitting on gaps >5 min, keep the
+cluster with the most minutes) and totals active energy + distance recorded in
+that same window. Burst figures are stored as nullable `burst*` columns on
+`health_metrics` and the UI prefers them, falling back to whole-day values when
+no burst exists.
+**Why:** the day total over-reported effort; users expect to log the ~40-min
+workout they actually did, with its calories, like a recorded workout shows.
+**How to apply:** when summing a second series (calories/distance) over a burst
+window, PRORATE each sample by its overlap fraction — adding the full value on
+any overlap over-credits edge-straddling samples. Always keep whole-day values
+in the payload as the fallback so a no-burst day still shows real numbers.

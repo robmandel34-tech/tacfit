@@ -12,7 +12,7 @@ import {
   insertAdminPostSchema, insertMoodLogSchema, friendships, type User,
 } from "@shared/schema";
 import { getCompetitionPricing } from "@shared/pricing";
-import { mapHealthKitTypeToActivityName } from "@shared/healthkit";
+import { mapHealthKitTypeToActivityName, MIN_PASSIVE_EXERCISE_MINUTES } from "@shared/healthkit";
 import { recomputeReadinessForUser, isReadinessTestAccount, sampleReadiness } from "./readiness-service";
 import { z } from "zod";
 import { ObjectStorageService, ObjectNotFoundError } from './objectStorage.js';
@@ -2771,8 +2771,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         : null;
 
       const metrics = await storage.getHealthMetrics(userId); // sorted by date desc
+      // The loggable value is the workout burst (falling back to whole-day);
+      // only surface a day whose burst clears the real-exercise minimum.
       const candidate = metrics.find(
-        (m) => !m.submittedActivityId && (m.exerciseMinutes ?? 0) > 0,
+        (m) =>
+          !m.submittedActivityId &&
+          (m.burstExerciseMinutes ?? m.exerciseMinutes ?? 0) >= MIN_PASSIVE_EXERCISE_MINUTES,
       );
       if (!candidate) return res.json(null);
 
@@ -3100,8 +3104,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (passiveMetric.submittedActivityId) {
           return res.status(409).json({ message: "That day's Apple Health activity has already been logged." });
         }
-        if (!passiveMetric.exerciseMinutes || passiveMetric.exerciseMinutes <= 0) {
-          return res.status(400).json({ message: "That day has no Apple Health activity to log." });
+        const effectiveMinutes = passiveMetric.burstExerciseMinutes ?? passiveMetric.exerciseMinutes ?? 0;
+        if (effectiveMinutes < MIN_PASSIVE_EXERCISE_MINUTES) {
+          return res.status(400).json({ message: `That activity is too short to log — it must be at least ${MIN_PASSIVE_EXERCISE_MINUTES} minutes of exercise.` });
         }
       }
 

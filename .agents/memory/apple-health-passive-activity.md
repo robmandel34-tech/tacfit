@@ -43,3 +43,10 @@ workout they actually did, with its calories, like a recorded workout shows.
 window, PRORATE each sample by its overlap fraction — adding the full value on
 any overlap over-credits edge-straddling samples. Always keep whole-day values
 in the payload as the fallback so a no-burst day still shows real numbers.
+
+**Minimum threshold:** a burst must clear `MIN_PASSIVE_EXERCISE_MINUTES`
+(shared/healthkit.ts, currently 10 min) to count as real exercise — tiny 1-min
+blips are incidental movement. Enforced in three places that must stay in sync:
+client `showPassive`, server passive-today candidate finder, and the submit
+guard. Threshold the loggable value `burstExerciseMinutes ?? exerciseMinutes`,
+not whole-day alone.

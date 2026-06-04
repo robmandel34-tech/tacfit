@@ -69,6 +69,11 @@ export const HEALTHKIT_TO_TACFIT: Record<string, string> = {
   skatingsports: "ice_skate",
 };
 
+// Minimum exercise minutes in a single passive burst for it to count as real
+// exercise worth logging as an "Unspecified Activity". Anything shorter is
+// treated as incidental daily movement and is not surfaced or accepted.
+export const MIN_PASSIVE_EXERCISE_MINUTES = 10;
+
 // Normalize a raw HealthKit workout type string to a lookup key.
 export function normalizeHealthKitType(raw: string): string {
   return (raw || "").toString().trim().toLowerCase().replace(/[\s_-]+/g, "");

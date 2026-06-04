@@ -11,7 +11,7 @@ import { Camera, X, HelpCircle, ChevronDown, ChevronUp, Smartphone, RefreshCw, A
 import { useToast } from "@/hooks/use-toast";
 import { API_BASE, apiRequest } from "@/lib/queryClient";
 import { useAppleHealth } from "@/hooks/use-apple-health";
-import { mapHealthKitTypeToActivityName } from "@shared/healthkit";
+import { mapHealthKitTypeToActivityName, MIN_PASSIVE_EXERCISE_MINUTES } from "@shared/healthkit";
 import { reconcileWorkoutDurationSec } from "@/lib/healthkit";
 
 interface ActivitySubmissionModalProps {
@@ -281,7 +281,9 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   const passiveDayHasWorkout =
     !!passiveActivity && loadedWorkouts.some((w) => sameLocalDay(w.startTime, passiveActivity.metricDate));
   const showPassive =
-    !!passiveActivity && passiveMinutes(passiveActivity) > 0 && !passiveDayHasWorkout;
+    !!passiveActivity &&
+    passiveMinutes(passiveActivity) >= MIN_PASSIVE_EXERCISE_MINUTES &&
+    !passiveDayHasWorkout;
 
   // Helper functions for text input validation
   const countWords = (text: string): number => {

@@ -624,7 +624,11 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete, onSaveSurve
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] bg-gray-900 border-gray-700 flex flex-col">
+      <DialogContent
+        className="max-w-3xl max-h-[90vh] bg-gray-900 border-gray-700 flex flex-col"
+        onInteractOutside={(e) => e.preventDefault()}
+        onPointerDownOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader className="pb-4 flex-shrink-0">
           <div className="flex items-center space-x-3">
             <div className="flex items-center justify-center w-10 h-10 rounded-full bg-military-green/20">

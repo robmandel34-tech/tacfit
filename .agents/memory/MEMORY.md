@@ -4,3 +4,4 @@
 - [Profile privacy](profile-privacy.md) — private profile hides activities/stats/history (not name/photo); gate every such endpoint via canViewProfileDetails; shareReadiness opt-out; IDOR guard on user PATCH routes.
 - [Apple Health passive activity](apple-health-passive-activity.md) — passive exercise-minutes day logs as "Unspecified Activity" (per-day claim); hide it when that day has a recorded workout (double-count); workout-day match is client-side (TZ).
 - [Capacitor native foreground](capacitor-native-foreground.md) — native iOS "refresh on foreground" must use @capacitor/app appStateChange, not web visibilitychange/timers (paused/unreliable in WKWebView).
+- [Capacitor dialog tap-close](capacitor-dialog-tap-close.md) — Radix Dialog self-closes on inside taps (e.g. Next) in iOS WKWebView; add onInteractOutside + onPointerDownOutside preventDefault.

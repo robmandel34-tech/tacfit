@@ -125,6 +125,11 @@ export const renderEmailShell = (o: EmailShellOptions): string => {
 </html>`;
 };
 
+// Sender shown in the recipient's inbox. The display name ("TacFit") controls
+// the name and the auto-generated avatar letter the mail client draws. The
+// address must stay on the SendGrid-authenticated domain (tacfit.app).
+const FROM_ADDRESS = `${process.env.FROM_NAME || 'TacFit'} <${process.env.FROM_EMAIL || 'noreply@tacfit.app'}>`;
+
 // SendGrid tracking is disabled so links are delivered exactly as written.
 const TRACKING_SETTINGS = {
   clickTracking: { enable: false, enableText: false },
@@ -164,7 +169,7 @@ export const sendVerificationEmail = async (
     if (process.env.SENDGRID_API_KEY) {
       await sgMail.send({
         to: email,
-        from: process.env.FROM_EMAIL || 'noreply@tacfit.app',
+        from: FROM_ADDRESS,
         subject: 'TacFit - Verify Your Email Address',
         text: emailText,
         html: emailHtml,
@@ -174,7 +179,7 @@ export const sendVerificationEmail = async (
     } else {
       const transporter = createEmailTransporter();
       const info = await transporter.sendMail({
-        from: process.env.FROM_EMAIL || 'noreply@tacfit.app',
+        from: FROM_ADDRESS,
         to: email,
         subject: 'TacFit - Verify Your Email Address',
         text: emailText,
@@ -224,7 +229,7 @@ export const sendPasswordResetEmail = async (
     if (process.env.SENDGRID_API_KEY) {
       await sgMail.send({
         to: email,
-        from: process.env.FROM_EMAIL || 'noreply@tacfit.app',
+        from: FROM_ADDRESS,
         subject: 'TacFit - Reset Your Password',
         text: emailText,
         html: emailHtml,
@@ -234,7 +239,7 @@ export const sendPasswordResetEmail = async (
     } else {
       const transporter = createEmailTransporter();
       const info = await transporter.sendMail({
-        from: process.env.FROM_EMAIL || 'noreply@tacfit.app',
+        from: FROM_ADDRESS,
         to: email,
         subject: 'TacFit - Reset Your Password',
         text: emailText,
@@ -280,7 +285,7 @@ export const sendWelcomeEmail = async (
     if (process.env.SENDGRID_API_KEY) {
       await sgMail.send({
         to: email,
-        from: process.env.FROM_EMAIL || 'noreply@tacfit.app',
+        from: FROM_ADDRESS,
         subject: 'Welcome to TacFit - Let\'s Get Started!',
         text: emailText,
         html: emailHtml,
@@ -290,7 +295,7 @@ export const sendWelcomeEmail = async (
     } else {
       const transporter = createEmailTransporter();
       const info = await transporter.sendMail({
-        from: process.env.FROM_EMAIL || 'noreply@tacfit.app',
+        from: FROM_ADDRESS,
         to: email,
         subject: 'Welcome to TacFit - Let\'s Get Started!',
         text: emailText,

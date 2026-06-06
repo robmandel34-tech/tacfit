@@ -127,8 +127,10 @@ export const renderEmailShell = (o: EmailShellOptions): string => {
 
 // Sender shown in the recipient's inbox. The display name ("TacFit") controls
 // the name and the auto-generated avatar letter the mail client draws. The
-// address must stay on the SendGrid-authenticated domain (tacfit.app).
-const FROM_ADDRESS = `${process.env.FROM_NAME || 'TacFit'} <${process.env.FROM_EMAIL || 'noreply@tacfit.app'}>`;
+// address is team@tacfit.app, which stays on the SendGrid-authenticated domain
+// (tacfit.app). We intentionally do NOT read the legacy FROM_EMAIL secret here
+// (it was hello@tacfit.app, which made inboxes show "hello").
+const FROM_ADDRESS = `${process.env.FROM_NAME || 'TacFit'} <team@tacfit.app>`;
 
 // SendGrid tracking is disabled so links are delivered exactly as written.
 const TRACKING_SETTINGS = {

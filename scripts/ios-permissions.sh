@@ -74,6 +74,26 @@ set_plist_bool_entry() {
 }
 set_plist_bool_entry "ITSAppUsesNonExemptEncryption" "false"
 
+# Register the custom URL scheme (tacfitapp://) so the email-verification web
+# page can deep-link the user back into the native app. Idempotent: only adds
+# what's missing, never duplicates.
+ensure_url_scheme() {
+  local SCHEME="tacfitapp"
+  if ! /usr/libexec/PlistBuddy -c "Print :CFBundleURLTypes" "$PLIST" &>/dev/null; then
+    /usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes array" "$PLIST"
+    /usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:0 dict" "$PLIST"
+    /usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:0:CFBundleURLName string com.tacfit.app" "$PLIST"
+    /usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:0:CFBundleURLSchemes array" "$PLIST"
+  fi
+  if /usr/libexec/PlistBuddy -c "Print :CFBundleURLTypes:0:CFBundleURLSchemes" "$PLIST" 2>/dev/null | grep -q "$SCHEME"; then
+    echo "  URL scheme already present: $SCHEME"
+  else
+    /usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:0:CFBundleURLSchemes: string $SCHEME" "$PLIST"
+    echo "  Added URL scheme: $SCHEME"
+  fi
+}
+ensure_url_scheme
+
 echo "✓ Info.plist permissions patched."
 
 # Verification: fail loudly if any required key is still missing. This

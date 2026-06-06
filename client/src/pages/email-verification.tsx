@@ -7,6 +7,11 @@ import { useToast } from "@/hooks/use-toast";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string) ?? "";
 
+// Deep link that re-opens the native iOS app (registered in Info.plist as
+// CFBundleURLSchemes -> "tacfitapp"). Tapping it from mobile Safari launches
+// the app; on desktop it does nothing, so we always keep a browser fallback.
+const APP_DEEP_LINK = "tacfitapp://login";
+
 export default function EmailVerification() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -39,9 +44,8 @@ export default function EmailVerification() {
           setIsVerified(true);
           toast({
             title: "Email verified successfully",
-            description: "You can now log in to your account.",
+            description: "Open the TacFit app and sign in to get started.",
           });
-          setTimeout(() => setLocation("/login"), 3000);
         } else {
           // Non-ok response — data already parsed above, handle it here
           const errorMessage = data?.message || "Email verification failed";
@@ -93,11 +97,32 @@ export default function EmailVerification() {
             {isVerifying 
               ? "Please wait while we verify your email address..."
               : isVerified 
-                ? "Your email has been successfully verified. Redirecting to login..."
+                ? "Your email is verified. Open the TacFit app and sign in to get started."
                 : error || "Email verification failed"
             }
           </CardDescription>
         </CardHeader>
+
+        {isVerified && (
+          <CardContent className="space-y-4">
+            <Button
+              onClick={() => { window.location.href = APP_DEEP_LINK; }}
+              className="w-full bg-military-green hover:bg-military-green/90 text-forest-green font-semibold"
+            >
+              Open the TacFit App
+            </Button>
+            <p className="text-muted text-center text-sm">
+              On your iPhone, tap the button above to jump back into the app and sign in. If nothing happens, open the TacFit app from your home screen.
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => setLocation("/login")}
+              className="w-full"
+            >
+              Continue in browser
+            </Button>
+          </CardContent>
+        )}
 
         {!isVerifying && !isVerified && (
           <CardContent className="space-y-6">

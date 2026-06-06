@@ -685,12 +685,12 @@ export default function Profile() {
                                             />
                                           ) : (
                                             <AvatarFallback className="bg-gradient-to-b from-military-green to-[#1a2e1a] p-0 overflow-hidden">
-                                              <svg viewBox="0 0 40 40" className="w-10 h-10" fill="none">
-                                                <ellipse cx="20" cy="11" rx="8" ry="5" fill="rgba(255,255,255,0.85)" />
-                                                <rect x="12" y="15" width="16" height="2" rx="1" fill="rgba(255,255,255,0.85)" />
-                                                <ellipse cx="20" cy="20" rx="5" ry="5" fill="rgba(255,255,255,0.85)" />
-                                                <path d="M9 40 Q9 29 11 27 L15 26 Q18 28 20 28 Q22 28 25 26 L29 27 Q31 29 31 40 Z" fill="rgba(255,255,255,0.85)" />
-                                              </svg>
+                                              <img
+                                                src={defaultAvatarSoldier}
+                                                alt="Default profile"
+                                                className="w-[88%] h-[88%] object-contain"
+                                                style={{ filter: "brightness(0) invert(1)" }}
+                                              />
                                             </AvatarFallback>
                                           )}
                                         </Avatar>

@@ -21,6 +21,116 @@ const createEmailTransporter = () => {
   });
 };
 
+// ---------------------------------------------------------------------------
+// Branded email template (TacFit military/tactical theme)
+// Dark background, green gradient accents, sharp edges, TACFIT wordmark.
+// All styling is inline + table-based for maximum email-client compatibility.
+// ---------------------------------------------------------------------------
+const BRAND = {
+  pageBg: '#0a0f0a',
+  cardBg: '#12180f',
+  border: '#2a3a1e',
+  green: '#7cb342',
+  greenDeep: '#4d7d27',
+  textLight: '#cdd8c2',
+  textMuted: '#8a9a7d',
+  heading: '#ffffff',
+};
+
+const escapeHtml = (value: string): string =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+export const para = (html: string): string =>
+  `<p style="margin:0 0 16px; font-family:Arial,Helvetica,sans-serif; font-size:16px; line-height:26px; color:${BRAND.textLight};">${html}</p>`;
+
+export const bulletList = (items: Array<{ label: string; text: string }>): string => {
+  const rows = items
+    .map(
+      (i) => `
+      <tr>
+        <td valign="top" style="padding:6px 12px 6px 0; color:${BRAND.green}; font-size:16px; line-height:24px; font-family:Arial,Helvetica,sans-serif;">&#9656;</td>
+        <td style="padding:6px 0; color:${BRAND.textLight}; font-size:15px; line-height:24px; font-family:Arial,Helvetica,sans-serif;"><strong style="color:${BRAND.heading};">${i.label}</strong> ${i.text}</td>
+      </tr>`
+    )
+    .join('');
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:12px 0 4px;">${rows}</table>`;
+};
+
+interface EmailShellOptions {
+  preheader: string;
+  heading: string;
+  bodyHtml: string;
+  ctaLabel?: string;
+  ctaUrl?: string;
+  footerNote: string;
+}
+
+export const renderEmailShell = (o: EmailShellOptions): string => {
+  const cta =
+    o.ctaLabel && o.ctaUrl
+      ? `
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:28px auto 8px;">
+          <tr>
+            <td bgcolor="${BRAND.greenDeep}" style="border-radius:2px; background:linear-gradient(135deg, ${BRAND.green} 0%, ${BRAND.greenDeep} 100%);">
+              <a href="${o.ctaUrl}" style="display:inline-block; padding:16px 40px; font-family:Arial,Helvetica,sans-serif; font-size:14px; font-weight:bold; letter-spacing:1.5px; text-transform:uppercase; color:#0a0f0a; text-decoration:none;">${o.ctaLabel}</a>
+            </td>
+          </tr>
+        </table>
+        <p style="margin:14px 0 0; text-align:center; font-family:Arial,Helvetica,sans-serif; font-size:12px; line-height:20px; color:${BRAND.textMuted};">
+          Button not working? Copy and paste this link:<br>
+          <a href="${o.ctaUrl}" style="color:${BRAND.green}; word-break:break-all;">${o.ctaUrl}</a>
+        </p>`
+      : '';
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <title>TacFit</title>
+</head>
+<body style="margin:0; padding:0; background-color:${BRAND.pageBg};">
+  <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent;">${o.preheader}</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${BRAND.pageBg}; padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px; width:100%; background-color:${BRAND.cardBg}; border:1px solid ${BRAND.border};">
+          <tr><td height="4" style="height:4px; line-height:4px; font-size:0; background:linear-gradient(90deg, ${BRAND.greenDeep} 0%, ${BRAND.green} 50%, ${BRAND.greenDeep} 100%); background-color:${BRAND.green};">&nbsp;</td></tr>
+          <tr><td style="padding:36px 40px 8px; text-align:center;">
+            <div style="font-family:'Arial Black',Arial,Helvetica,sans-serif; font-size:34px; font-weight:900; letter-spacing:6px; color:${BRAND.green}; text-transform:uppercase;">TACFIT</div>
+            <div style="font-family:Arial,Helvetica,sans-serif; font-size:11px; letter-spacing:4px; color:${BRAND.textMuted}; text-transform:uppercase; margin-top:10px;">Teamwork &nbsp;&middot;&nbsp; Fitness &nbsp;&middot;&nbsp; Winning</div>
+          </td></tr>
+          <tr><td style="padding:18px 40px 0;"><div style="height:1px; background-color:${BRAND.border}; font-size:0; line-height:0;">&nbsp;</div></td></tr>
+          <tr><td style="padding:28px 40px 8px;">
+            <h1 style="margin:0 0 16px; font-family:Arial,Helvetica,sans-serif; font-size:22px; font-weight:bold; color:${BRAND.heading}; text-transform:uppercase; letter-spacing:0.5px;">${o.heading}</h1>
+            ${o.bodyHtml}
+            ${cta}
+          </td></tr>
+          <tr><td style="padding:28px 40px 36px;">
+            <div style="height:1px; background-color:${BRAND.border}; font-size:0; line-height:0; margin-bottom:18px;">&nbsp;</div>
+            <p style="margin:0 0 6px; font-family:Arial,Helvetica,sans-serif; font-size:12px; line-height:20px; color:${BRAND.textMuted};">${o.footerNote}</p>
+            <p style="margin:10px 0 0; font-family:Arial,Helvetica,sans-serif; font-size:11px; letter-spacing:2px; color:${BRAND.textMuted}; text-transform:uppercase;">&copy; ${new Date().getFullYear()} TacFit</p>
+          </td></tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+};
+
+// SendGrid tracking is disabled so links are delivered exactly as written.
+const TRACKING_SETTINGS = {
+  clickTracking: { enable: false, enableText: false },
+  openTracking: { enable: false },
+};
+
 // Generate verification token
 export const generateVerificationToken = (): string => {
   return crypto.randomBytes(32).toString('hex');
@@ -35,78 +145,42 @@ export const sendVerificationEmail = async (
   const baseUrl = process.env.APP_URL || 'http://localhost:5000';
   const verificationUrl = `${baseUrl}/verify-email?token=${token}`;
   console.log('Generated verification URL:', verificationUrl);
-  
-  const emailHtml = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <div style="text-align: center; margin-bottom: 30px;">
-        <h1 style="color: #7cb342; font-size: 32px; margin: 0;">TacFit</h1>
-        <p style="color: #666; font-size: 16px; margin: 5px 0;">Teamwork, Fitness, Winning</p>
-      </div>
-      
-      <div style="background-color: #f8f9fa; padding: 30px; border-radius: 8px; border-left: 4px solid #7cb342;">
-        <h2 style="color: #333; margin-top: 0;">Welcome to TacFit, ${username}!</h2>
-        <p style="color: #555; font-size: 16px; line-height: 1.5;">
-          Thank you for joining the TacFit community. To complete your registration and start competing with your team, please verify your email address.
-        </p>
-        
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="${verificationUrl}" 
-             style="background-color: #7cb342; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
-            Verify Email Address
-          </a>
-        </div>
-        
-        <p style="color: #777; font-size: 14px; margin-bottom: 0;">
-          If the button doesn't work, copy and paste this link into your browser:<br>
-          <a href="${verificationUrl}" style="color: #7cb342; word-break: break-all;">${verificationUrl}</a>
-        </p>
-      </div>
-      
-      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-        <p style="color: #999; font-size: 12px; text-align: center; margin: 0;">
-          This verification link will expire in 24 hours.<br>
-          If you didn't create an account with TacFit, please ignore this email.
-        </p>
-      </div>
-    </div>
-  `;
+
+  const emailHtml = renderEmailShell({
+    preheader: 'Confirm your email to activate your TacFit account.',
+    heading: 'Confirm Your Email',
+    bodyHtml:
+      para(`Welcome to TacFit, <strong style="color:${BRAND.heading};">${escapeHtml(username)}</strong>.`) +
+      para('Confirm your email address to activate your account, join your team, and start competing.'),
+    ctaLabel: 'Verify Email',
+    ctaUrl: verificationUrl,
+    footerNote:
+      'This verification link expires in 24 hours. If you didn\u2019t create a TacFit account, you can safely ignore this email.',
+  });
+
+  const emailText = `Welcome to TacFit, ${username}.\n\nConfirm your email to activate your account:\n${verificationUrl}\n\nThis link expires in 24 hours. If you didn't create a TacFit account, you can ignore this email.`;
 
   try {
     if (process.env.SENDGRID_API_KEY) {
-      // Use SendGrid
-      const msg = {
+      await sgMail.send({
         to: email,
         from: process.env.FROM_EMAIL || 'noreply@tacfit.app',
         subject: 'TacFit - Verify Your Email Address',
+        text: emailText,
         html: emailHtml,
-        // Disable click tracking to prevent link redirects
-        trackingSettings: {
-          clickTracking: {
-            enable: false,
-            enableText: false
-          },
-          openTracking: {
-            enable: false
-          }
-        }
-      };
-
-      await sgMail.send(msg);
+        trackingSettings: TRACKING_SETTINGS,
+      });
       console.log('Verification email sent via SendGrid to:', email);
     } else {
-      // Fallback to SMTP/Ethereal
       const transporter = createEmailTransporter();
-      const mailOptions = {
+      const info = await transporter.sendMail({
         from: process.env.FROM_EMAIL || 'noreply@tacfit.app',
         to: email,
         subject: 'TacFit - Verify Your Email Address',
+        text: emailText,
         html: emailHtml,
-      };
-
-      const info = await transporter.sendMail(mailOptions);
+      });
       console.log('Verification email sent via SMTP:', info.messageId);
-      
-      // For development with Ethereal, log the preview URL
       if (process.env.NODE_ENV !== 'production') {
         console.log('Preview URL:', nodemailer.getTestMessageUrl(info));
       }
@@ -131,70 +205,39 @@ export const sendPasswordResetEmail = async (
   const baseUrl = process.env.APP_URL || 'http://localhost:5000';
   const resetUrl = `${baseUrl}/reset-password?token=${token}`;
   console.log('Generated password reset URL:', resetUrl);
-  
-  const emailHtml = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <div style="text-align: center; margin-bottom: 30px;">
-        <h1 style="color: #7cb342; font-size: 32px; margin: 0;">TacFit</h1>
-        <p style="color: #666; font-size: 16px; margin: 5px 0;">Teamwork, Fitness, Winning</p>
-      </div>
-      
-      <div style="background-color: #f8f9fa; padding: 30px; border-radius: 8px; border-left: 4px solid #7cb342;">
-        <h2 style="color: #333; margin-top: 0;">Password Reset Request, ${username}</h2>
-        <p style="color: #555; font-size: 16px; line-height: 1.5;">
-          We received a request to reset your password for your TacFit account. If you requested this, click the button below to set a new password.
-        </p>
-        
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="${resetUrl}" 
-             style="background-color: #7cb342; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
-            Reset Password
-          </a>
-        </div>
-        
-        <p style="color: #777; font-size: 14px; margin-bottom: 0;">
-          If the button doesn't work, copy and paste this link into your browser:<br>
-          <a href="${resetUrl}" style="color: #7cb342; word-break: break-all;">${resetUrl}</a>
-        </p>
-      </div>
-      
-      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-        <p style="color: #999; font-size: 12px; text-align: center; margin: 0;">
-          This password reset link will expire in 1 hour.<br>
-          If you didn't request a password reset, please ignore this email.
-        </p>
-      </div>
-    </div>
-  `;
+
+  const emailHtml = renderEmailShell({
+    preheader: 'Reset the password for your TacFit account.',
+    heading: 'Reset Your Password',
+    bodyHtml:
+      para(`We received a request to reset the password for your TacFit account, <strong style="color:${BRAND.heading};">${escapeHtml(username)}</strong>.`) +
+      para('Tap the button below to set a new password and get back in the fight.'),
+    ctaLabel: 'Reset Password',
+    ctaUrl: resetUrl,
+    footerNote:
+      'This password reset link expires in 1 hour. If you didn\u2019t request this, ignore this email and your password will stay the same.',
+  });
+
+  const emailText = `Password reset requested for your TacFit account, ${username}.\n\nSet a new password here:\n${resetUrl}\n\nThis link expires in 1 hour. If you didn't request this, ignore this email.`;
 
   try {
     if (process.env.SENDGRID_API_KEY) {
-      // Use SendGrid
-      const msg = {
+      await sgMail.send({
         to: email,
         from: process.env.FROM_EMAIL || 'noreply@tacfit.app',
         subject: 'TacFit - Reset Your Password',
+        text: emailText,
         html: emailHtml,
-        // Disable click tracking to prevent link redirects
-        trackingSettings: {
-          clickTracking: {
-            enable: false,
-            enableText: false
-          },
-          openTracking: {
-            enable: false
-          }
-        }
-      };
-      await sgMail.send(msg);
+        trackingSettings: TRACKING_SETTINGS,
+      });
       console.log('Password reset email sent via SendGrid to:', email);
     } else {
-      // Use SMTP
       const transporter = createEmailTransporter();
       const info = await transporter.sendMail({
         from: process.env.FROM_EMAIL || 'noreply@tacfit.app',
         to: email,
         subject: 'TacFit - Reset Your Password',
+        text: emailText,
         html: emailHtml,
       });
       console.log('Password reset email sent via SMTP:', info.messageId);
@@ -213,77 +256,46 @@ export const sendWelcomeEmail = async (
   // For Replit deployments, use HTTP instead of HTTPS to avoid SSL issues
   const baseUrl = process.env.APP_URL || 'http://localhost:5000';
   const correctedUrl = baseUrl.replace('https://', 'http://');
-  
-  const emailHtml = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <div style="text-align: center; margin-bottom: 30px;">
-        <h1 style="color: #7cb342; font-size: 32px; margin: 0;">TacFit</h1>
-        <p style="color: #666; font-size: 16px; margin: 5px 0;">Teamwork, Fitness, Winning</p>
-      </div>
-      
-      <div style="background-color: #f8f9fa; padding: 30px; border-radius: 8px; border-left: 4px solid #7cb342;">
-        <h2 style="color: #333; margin-top: 0;">Mission Briefing Ready, ${username}!</h2>
-        <p style="color: #555; font-size: 16px; line-height: 1.5;">
-          Your email has been verified and your tactical command access is now active. Here's what you can do next:
-        </p>
-        
-        <ul style="color: #555; font-size: 16px; line-height: 1.8; padding-left: 20px;">
-          <li><strong>Join a Competition:</strong> Find active competitions and form or join a team</li>
-          <li><strong>Submit Activities:</strong> Track your cardio, strength, and mobility training</li>
-          <li><strong>Earn Points:</strong> Get 15 points per activity (minimum 1 image required), 30 points with photo + video evidence</li>
-          <li><strong>Daily Wellness:</strong> Complete mood check-ins for 5 bonus points</li>
-          <li><strong>Connect with Buddies:</strong> Build your tactical network</li>
-        </ul>
-        
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="${correctedUrl}" 
-             style="background-color: #7cb342; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
-            Enter Command Center
-          </a>
-        </div>
-      </div>
-      
-      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-        <p style="color: #999; font-size: 12px; text-align: center; margin: 0;">
-          Welcome to the TacFit community. Let's achieve your fitness goals together!
-        </p>
-      </div>
-    </div>
-  `;
+
+  const emailHtml = renderEmailShell({
+    preheader: 'Your TacFit command access is active. Here\u2019s your mission briefing.',
+    heading: `You're In, ${escapeHtml(username)}`,
+    bodyHtml:
+      para('Your email is verified and your tactical command access is now active. Here\u2019s your mission briefing:') +
+      bulletList([
+        { label: 'Join a Competition:', text: 'Find active competitions and form or join a team.' },
+        { label: 'Submit Activities:', text: 'Track your cardio, strength, and mobility training.' },
+        { label: 'Earn Points:', text: '15 points per activity (1 image required), 30 with photo + video evidence.' },
+        { label: 'Daily Wellness:', text: 'Complete mood check-ins for 5 bonus points.' },
+        { label: 'Connect with Buddies:', text: 'Build your tactical network.' },
+      ]),
+    ctaLabel: 'Enter Command Center',
+    ctaUrl: correctedUrl,
+    footerNote: 'Welcome to the TacFit community. Let\u2019s achieve your fitness goals together.',
+  });
+
+  const emailText = `You're in, ${username}! Your email is verified and your TacFit account is active.\n\nNext steps:\n- Join a competition and form or join a team\n- Submit activities to track cardio, strength, and mobility\n- Earn points (15 per activity, 30 with photo + video)\n- Complete daily mood check-ins for bonus points\n- Connect with buddies\n\nEnter the Command Center: ${correctedUrl}`;
 
   try {
     if (process.env.SENDGRID_API_KEY) {
-      // Use SendGrid
-      const msg = {
+      await sgMail.send({
         to: email,
         from: process.env.FROM_EMAIL || 'noreply@tacfit.app',
         subject: 'Welcome to TacFit - Let\'s Get Started!',
+        text: emailText,
         html: emailHtml,
-        // Disable click tracking to prevent link redirects
-        trackingSettings: {
-          clickTracking: {
-            enable: false,
-            enableText: false
-          },
-          openTracking: {
-            enable: false
-          }
-        }
-      };
-
-      await sgMail.send(msg);
+        trackingSettings: TRACKING_SETTINGS,
+      });
       console.log('Welcome email sent via SendGrid to:', email);
     } else {
-      // Fallback to SMTP
       const transporter = createEmailTransporter();
-      const mailOptions = {
+      const info = await transporter.sendMail({
         from: process.env.FROM_EMAIL || 'noreply@tacfit.app',
         to: email,
         subject: 'Welcome to TacFit - Let\'s Get Started!',
+        text: emailText,
         html: emailHtml,
-      };
-
-      const info = await transporter.sendMail(mailOptions);
+      });
       console.log('Welcome email sent via SMTP:', info.messageId);
     }
   } catch (error) {

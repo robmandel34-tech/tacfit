@@ -5,3 +5,4 @@
 - [Apple Health passive activity](apple-health-passive-activity.md) — passive exercise-minutes day logs as "Unspecified Activity" (per-day claim); hide it when that day has a recorded workout (double-count); workout-day match is client-side (TZ).
 - [Capacitor native foreground](capacitor-native-foreground.md) — native iOS "refresh on foreground" must use @capacitor/app appStateChange, not web visibilitychange/timers (paused/unreliable in WKWebView).
 - [Capacitor dialog tap-close](capacitor-dialog-tap-close.md) — Radix Dialog self-closes on inside taps (e.g. Next) in iOS WKWebView; add onInteractOutside + onPointerDownOutside preventDefault.
+- [SSO auth](sso-auth.md) — Apple+Google sits beside email/password; only link by email when provider says it's VERIFIED (else account-takeover); password is nullable, guard every password path.

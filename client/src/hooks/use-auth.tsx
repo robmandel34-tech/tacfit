@@ -24,6 +24,8 @@ interface User {
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
+  loginWithApple: () => Promise<void>;
   register: (username: string, email: string, password: string, phoneNumber?: string) => Promise<any>;
   logout: () => void;
   updateUser: (updatedUser: Partial<User>) => void;
@@ -133,6 +135,42 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
     }
   };
 
+  // Shared finish step for Apple/Google sign-in: persist token + user, identical
+  // to the email/password login above. Navigation is handled by the caller.
+  const completeSso = async (endpoint: string, body: Record<string, unknown>) => {
+    const response = await fetch(`${API_BASE}${endpoint}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      credentials: "include",
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "Sign-in failed");
+    }
+    const userData = await response.json();
+    if (userData.authToken) {
+      await setAuthToken(userData.authToken);
+      delete userData.authToken;
+    }
+    queryClient.clear();
+    setUser(userData);
+    identifyUser(userData);
+    localStorage.setItem("user", JSON.stringify(userData));
+  };
+
+  const loginWithGoogle = async () => {
+    const { signInWithGoogle } = await import("@/lib/sso");
+    const { idToken } = await signInWithGoogle();
+    await completeSso("/api/auth/google", { idToken });
+  };
+
+  const loginWithApple = async () => {
+    const { signInWithApple } = await import("@/lib/sso");
+    const { idToken, fullName } = await signInWithApple();
+    await completeSso("/api/auth/apple", { idToken, fullName });
+  };
+
   const register = async (username: string, email: string, password: string, phoneNumber?: string) => {
     try {
       const response = await fetch(`${API_BASE}/api/auth/register`, {
@@ -216,6 +254,8 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
   const contextValue: AuthContextType = {
     user,
     login,
+    loginWithGoogle,
+    loginWithApple,
     register,
     logout,
     updateUser,

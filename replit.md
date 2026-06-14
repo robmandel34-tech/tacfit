@@ -222,6 +222,50 @@ imports — unrelated to this change.
 - `scripts/cap-build.sh` copies it into `ios/App/App/Assets.xcassets/Splash.imageset/` (all three @1x/@2x/@3x slots) before `npx cap sync`, so every native build picks it up automatically.
 - To change the splash: replace `scripts/assets/ios-splash-master.png` with a new 2732×2732 PNG, then rebuild and re-upload to TestFlight. Splash updates only take effect with a new native build — reinstalling the same TestFlight build will keep showing the old splash.
 
+### Single Sign-On — Apple + Google (2026-06-14)
+Added "Continue with Apple" and "Continue with Google" alongside the existing
+email/password login (email/password still works unchanged). One code path for
+web and native iOS via `@capgo/capacitor-social-login` (native sheet on iOS,
+Google Identity Services / Apple JS on web).
+
+How it works:
+- Provider returns a signed identity token → frontend posts it to
+  `POST /api/auth/google` or `POST /api/auth/apple` → backend verifies it
+  (`server/sso-auth.ts`: Google via google-auth-library, Apple via Apple JWKS),
+  then find-or-creates the user and issues the SAME session cookie + bearer
+  token as normal login.
+- Matching order: provider id (`users.appleUserId` / `users.googleUserId`,
+  unique) first, then a VERIFIED provider email links to an existing account.
+  SECURITY: linking by email only happens when the provider says the email is
+  verified, to prevent account takeover via an unverified address.
+- `users.password` is now nullable (SSO accounts have no password). Login,
+  change-password, and reset-password paths all guard against null passwords.
+- Buttons only appear once the matching client ids are configured, so nothing
+  shows/breaks until setup is done.
+
+Config needed (client ids are PUBLIC, not secrets — set them as env vars; the
+buttons stay hidden until set). Frontend uses `VITE_`-prefixed vars, which must
+ALSO be added to Codemagic for native builds (same as `VITE_API_URL`):
+- Apple on iPhone (native): NO values needed from anyone — just enable the
+  "Sign in with Apple" capability on App ID `com.tacfit.app` in the Apple
+  Developer portal (one-time). The native entitlement + audience (bundle id
+  `com.tacfit.app`, backend default) are already wired.
+- Google on iPhone (native): create an iOS OAuth client in Google Cloud →
+  set `VITE_GOOGLE_IOS_CLIENT_ID` (frontend) + `GOOGLE_IOS_CLIENT_ID` (backend),
+  and replace `REPLACE_WITH_REVERSED_GOOGLE_IOS_CLIENT_ID` in
+  `ios/App/App/Info.plist` with the REVERSED iOS client id
+  (`com.googleusercontent.apps.<...>`).
+- Google on web: create a Web OAuth client → `VITE_GOOGLE_CLIENT_ID` +
+  `GOOGLE_CLIENT_ID`.
+- Apple on web (optional): create a Services ID + return URL in the Apple portal
+  → `VITE_APPLE_SERVICES_ID` + `VITE_APPLE_REDIRECT_URI` + `APPLE_SERVICES_ID`.
+
+Native gotcha (same class as HealthKit/Preferences pods): the plugin's pod
+`CapgoCapacitorSocialLogin` was added to `ios/App/Podfile` manually because
+Codemagic only runs `npx cap copy` (never `cap sync`), so unlisted plugin pods
+never compile. The plugin also pulls in Google/Facebook/Alamofire pods (Facebook
+unused but a required transitive dep of this plugin).
+
 ## Recent Optimizations (2025-08-21)
 
 ### Deployment Optimization

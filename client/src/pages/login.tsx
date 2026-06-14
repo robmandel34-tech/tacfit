@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Mail } from "lucide-react";
 import logoPath from "@assets/tacfit-logo-no-bg.png";
 import { useToast } from "@/hooks/use-toast";
+import { SsoButtons } from "@/components/sso-buttons";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string) ?? "";
 
@@ -144,7 +145,9 @@ export default function Login() {
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
-            
+
+            <SsoButtons />
+
             <div className="text-center space-y-3">
               <Link href="/forgot-password" className="block text-gray-400 hover:text-military-green text-sm transition-colors">
                 Forgot your password?

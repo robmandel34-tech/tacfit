@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Mail } from "lucide-react";
 import logoPath from "@assets/tacfit-logo-no-bg.png";
 import { useToast } from "@/hooks/use-toast";
+import { SsoButtons } from "@/components/sso-buttons";
 
 const API_BASE = (import.meta.env.VITE_API_URL as string) ?? "";
 
@@ -118,7 +119,9 @@ export default function Register() {
               {isLoading ? "Registering operator..." : "Join the Force"}
             </Button>
           </form>
-            
+
+            <SsoButtons />
+
             <div className="text-center">
             <span className="text-secondary text-sm">
               Already have tactical access?{" "}

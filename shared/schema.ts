@@ -6,7 +6,12 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   email: text("email").notNull().unique(),
-  password: text("password").notNull(),
+  // Nullable: accounts created via Sign in with Apple/Google have no password.
+  password: text("password"),
+
+  // Single sign-on (SSO) identity links — set when a user signs in with Apple/Google.
+  appleUserId: text("apple_user_id").unique(),
+  googleUserId: text("google_user_id").unique(),
   points: integer("points").default(0),
   avatar: text("avatar"),
   coverPhoto: text("cover_photo"),
@@ -360,6 +365,8 @@ export const moodLogs = pgTable("mood_logs", {
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
+  appleUserId: true,
+  googleUserId: true,
 });
 
 export const insertCompetitionSchema = createInsertSchema(competitions).omit({

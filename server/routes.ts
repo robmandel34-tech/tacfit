@@ -14,6 +14,7 @@ import {
 import { getCompetitionPricing } from "@shared/pricing";
 import { mapHealthKitTypeToActivityName, MIN_PASSIVE_EXERCISE_MINUTES } from "@shared/healthkit";
 import { recomputeReadinessForUser, isReadinessTestAccount, sampleReadiness } from "./readiness-service";
+import { verifyGoogleIdToken, verifyAppleIdToken, isGoogleConfigured, isAppleConfigured, type SsoIdentity } from "./sso-auth";
 import { z } from "zod";
 import { ObjectStorageService, ObjectNotFoundError } from './objectStorage.js';
 import { db } from "./db";
@@ -494,6 +495,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
+      // Accounts created via Sign in with Apple/Google have no password.
+      // They must use the matching SSO button, not email/password login.
+      if (!user.password) {
+        const provider = user.appleUserId ? "Apple" : user.googleUserId ? "Google" : "social";
+        return res.status(401).json({
+          message: `This account uses ${provider} sign-in. Please use the "Continue with ${provider}" button.`,
+        });
+      }
+
       // Support both bcrypt hashes and legacy plaintext (transition period)
       const isLegacyPlaintext = !user.password.startsWith('$2');
       const passwordMatch = isLegacyPlaintext
@@ -566,6 +576,196 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Login error:', error);
       res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  // ---- Single sign-on (Sign in with Apple / Google) ---------------------
+  // Both endpoints accept an identity token from the provider, verify it
+  // server-side, find-or-create the matching account, then issue the SAME
+  // session cookie + bearer token that /api/auth/login does.
+
+  // Build a unique username from a base string (name or email local-part).
+  async function generateUniqueUsername(base: string): Promise<string> {
+    const cleaned =
+      (base || "user").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 20) ||
+      "user";
+    let candidate = cleaned;
+    let n = 0;
+    while (await storage.getUserByUsername(candidate)) {
+      n += 1;
+      candidate = `${cleaned}${n}`.slice(0, 30);
+      if (n > 9999) {
+        candidate = `${cleaned}${crypto.randomBytes(3).toString("hex")}`;
+        break;
+      }
+    }
+    return candidate;
+  }
+
+  function issueSsoSession(req: any, res: any, user: any) {
+    req.session.regenerate((err: any) => {
+      if (err) {
+        console.error("Session regeneration error (SSO):", err);
+        return res.status(500).json({ message: "Sign-in failed" });
+      }
+      req.session.userId = user.id;
+      req.session.user = user;
+      req.session.save((saveErr: any) => {
+        if (saveErr) {
+          console.error("Session save error (SSO):", saveErr);
+          return res.status(500).json({ message: "Sign-in failed" });
+        }
+        const bearerToken = crypto.randomBytes(32).toString("hex");
+        db.insert(authTokensTable)
+          .values({ token: bearerToken, userId: user.id })
+          .then(() => {
+            const { password: _pw, ...userWithoutPassword } = user;
+            res.json({ ...userWithoutPassword, authToken: bearerToken });
+          })
+          .catch((tokenErr: any) => {
+            console.error("Auth token insert failed (SSO):", tokenErr);
+            const { password: _pw, ...userWithoutPassword } = user;
+            res.json(userWithoutPassword);
+          });
+      });
+    });
+  }
+
+  async function findOrCreateSsoUser(
+    identity: SsoIdentity,
+    provider: "apple" | "google",
+  ) {
+    // 1. Returning user — match by the provider's stable id.
+    let user =
+      provider === "apple"
+        ? await storage.getUserByAppleId(identity.providerId)
+        : await storage.getUserByGoogleId(identity.providerId);
+    if (user) return user;
+
+    const providerField = provider === "apple" ? "appleUserId" : "googleUserId";
+
+    // 2. Existing email/password account with the same email — link SSO to it.
+    //    SECURITY: only auto-link when the provider asserts the email is
+    //    verified. Linking on an unverified provider email would let someone
+    //    who controls an unverified address at the provider take over an
+    //    existing TacFit account that uses that email.
+    if (identity.email && identity.emailVerified) {
+      const existing = await storage.getUserByEmail(identity.email);
+      if (existing) {
+        const updates: Record<string, any> = {
+          [providerField]: identity.providerId,
+        };
+        if (!existing.isEmailVerified) {
+          updates.isEmailVerified = true;
+        }
+        const updated = await storage.updateUser(existing.id, updates);
+        return updated || existing;
+      }
+    }
+
+    // 3. Brand new account. Apple may withhold the email on later sign-ins,
+    //    but always provides it on first consent, so a missing email here is
+    //    rare; fall back to a stable provider-derived address if needed.
+    const email =
+      identity.email ||
+      `${provider}_${identity.providerId.slice(0, 16)}@users.tacfit.app`;
+    const usernameBase =
+      identity.name ||
+      (identity.email ? identity.email.split("@")[0] : `${provider}user`);
+    const username = await generateUniqueUsername(usernameBase);
+
+    let created = await storage.createUser({
+      username,
+      email,
+      password: null,
+      points: 100,
+      // Trust the provider's own verification state rather than blindly
+      // marking SSO emails as verified.
+      isEmailVerified: identity.emailVerified === true,
+    } as any);
+    created =
+      (await storage.updateUser(created.id, {
+        [providerField]: identity.providerId,
+      } as any)) || created;
+
+    await recordPointsTransaction(created.id, 100, "Welcome bonus");
+    notifySlack(
+      `🟢 *New signup* (${provider}) — ${created.username} (${created.email})`,
+      "signups",
+    );
+    return created;
+  }
+
+  app.post("/api/auth/google", authRateLimit, async (req, res) => {
+    try {
+      const { idToken } = req.body;
+      if (!idToken) {
+        return res.status(400).json({ message: "Missing idToken" });
+      }
+      if (!isGoogleConfigured()) {
+        return res
+          .status(503)
+          .json({ message: "Google sign-in is not configured yet." });
+      }
+      let identity: SsoIdentity;
+      try {
+        identity = await verifyGoogleIdToken(idToken);
+      } catch (e) {
+        console.error("Google token verification failed:", e);
+        return res
+          .status(401)
+          .json({ message: "Could not verify Google sign-in." });
+      }
+      const user = await findOrCreateSsoUser(identity, "google");
+      if (user.isSuspended) {
+        return res.status(403).json({
+          message: "Account suspended",
+          suspensionReason: user.suspensionReason || "No reason provided",
+        });
+      }
+      issueSsoSession(req, res, user);
+    } catch (error) {
+      console.error("Google sign-in error:", error);
+      res.status(500).json({ message: "Google sign-in failed" });
+    }
+  });
+
+  app.post("/api/auth/apple", authRateLimit, async (req, res) => {
+    try {
+      const { idToken } = req.body;
+      if (!idToken) {
+        return res.status(400).json({ message: "Missing idToken" });
+      }
+      if (!isAppleConfigured()) {
+        return res
+          .status(503)
+          .json({ message: "Apple sign-in is not configured yet." });
+      }
+      let identity: SsoIdentity;
+      try {
+        identity = await verifyAppleIdToken(idToken);
+      } catch (e) {
+        console.error("Apple token verification failed:", e);
+        return res
+          .status(401)
+          .json({ message: "Could not verify Apple sign-in." });
+      }
+      // Apple sends the user's name only in the authorization response (first
+      // sign-in), not in the token — let the client pass it through.
+      if (!identity.name && typeof req.body.fullName === "string") {
+        identity.name = req.body.fullName;
+      }
+      const user = await findOrCreateSsoUser(identity, "apple");
+      if (user.isSuspended) {
+        return res.status(403).json({
+          message: "Account suspended",
+          suspensionReason: user.suspensionReason || "No reason provided",
+        });
+      }
+      issueSsoSession(req, res, user);
+    } catch (error) {
+      console.error("Apple sign-in error:", error);
+      res.status(500).json({ message: "Apple sign-in failed" });
     }
   });
 
@@ -1301,6 +1501,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (newPassword.length < 6) return res.status(400).json({ message: "New password must be at least 6 characters" });
       const user = await storage.getUser(userId);
       if (!user) return res.status(404).json({ message: "User not found" });
+      if (!user.password) return res.status(400).json({ message: "This account uses Apple or Google sign-in and has no password to change." });
 
       // Support both bcrypt hashes and legacy plaintext
       const isLegacyPlaintext = !user.password.startsWith('$2');

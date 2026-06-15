@@ -11,8 +11,11 @@
 > `tacfit`, all `@tacfit.app` email ADDRESSES (domain still SendGrid-authenticated;
 > only display names changed), asset filenames containing `tacfit`, code
 > identifiers/localStorage keys, and the `X-Webhook-Source: TacFit-Points-Sync`
-> integration header. CORS now ALSO allows `mainlink.app` / `app.mainlink.app`
-> (additive — current Replit URL still works). The shield-and-cross logo has no
+> integration header. (`mainlink.app` was taken; user bought `mainlinkapp.com`
+> [recommended primary, no hyphen], `main-link.app`, and `mainlinkapp.net`.) CORS
+> now ALSO allows all owned domains — `mainlinkapp.com` / `www` / `app.` plus
+> `main-link.app` (+`www`/`app.`) and `mainlinkapp.net` (+`www`) — additive, so
+> the current Replit URL still works. The shield-and-cross logo has no
 > text, so it carries over unchanged. **User still owns:** buying the domain +
 > DNS records, App Store Connect display name, and a fresh TestFlight build for
 > the native name to take effect.

@@ -26,9 +26,16 @@ app.use((req, res, next) => {
     'ionic://localhost',
     'http://localhost',
     // Main Link custom domains (additive — current Replit URL still works)
-    'https://mainlink.app',
-    'https://www.mainlink.app',
-    'https://app.mainlink.app',
+    // Primary: mainlinkapp.com. Others are owned too (redirect/backup), allowed
+    // so the app frontend works no matter which domain serves it.
+    'https://mainlinkapp.com',
+    'https://www.mainlinkapp.com',
+    'https://app.mainlinkapp.com',
+    'https://main-link.app',
+    'https://www.main-link.app',
+    'https://app.main-link.app',
+    'https://mainlinkapp.net',
+    'https://www.mainlinkapp.net',
   ].filter(Boolean);
   const origin = req.headers.origin;
   if (origin && allowedOrigins.includes(origin)) {

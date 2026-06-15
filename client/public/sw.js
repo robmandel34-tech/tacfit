@@ -88,14 +88,14 @@ self.addEventListener('push', function(event) {
   } catch (error) {
     console.error('Error parsing push data:', error);
     notificationData = {
-      title: 'Main Link Update',
+      title: 'MainLink Update',
       body: event.data.text(),
       icon: '/generated-icon.png',
       badge: '/generated-icon.png'
     };
   }
 
-  const title = notificationData.title || 'Main Link';
+  const title = notificationData.title || 'MainLink';
   const options = {
     body: notificationData.body || 'New update available',
     icon: notificationData.icon || '/generated-icon.png',

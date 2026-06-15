@@ -1,10 +1,10 @@
-# Main Link - Fitness Competition Platform
+# MainLink - Fitness Competition Platform
 
-> **Rebrand in progress (2026-06-15): "TacFit" → "Main Link"** (tagline: "Find your team").
+> **Rebrand in progress (2026-06-15): "TacFit" → "MainLink"** (tagline: "Find your team").
 > All user-facing text in the React app, PWA shell (title/manifest/service-worker
 > notifications), email display names, marketing/legal HTML pages, native app
 > display name (Info.plist `CFBundleDisplayName`), and demo assets now read
-> "Main Link". The military/tactical THEME and voice ("squad", "mission",
+> "MainLink". The military/tactical THEME and voice ("squad", "mission",
 > "Command Center", "Intel Feed") are intentionally kept.
 > **Intentionally NOT changed** (would break things or are invisible): the bundle
 > id `com.tacfit.app` (permanent, invisible to users), the iOS custom scheme

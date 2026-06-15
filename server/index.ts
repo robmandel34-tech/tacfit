@@ -25,7 +25,7 @@ app.use((req, res, next) => {
     'capacitor://localhost',
     'ionic://localhost',
     'http://localhost',
-    // Main Link custom domains (additive — current Replit URL still works)
+    // MainLink custom domains (additive — current Replit URL still works)
     // Primary: mainlinkapp.com. Others are owned too (redirect/backup), allowed
     // so the app frontend works no matter which domain serves it.
     'https://mainlinkapp.com',

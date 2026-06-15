@@ -2,7 +2,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
   appId: "com.tacfit.app",
-  appName: "Main Link",
+  appName: "MainLink",
   webDir: "dist/public",
   server: {
     androidScheme: "https",

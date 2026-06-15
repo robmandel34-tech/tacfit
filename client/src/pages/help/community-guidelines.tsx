@@ -7,7 +7,7 @@ export default function CommunityGuidelinesHelp() {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-white mb-2">Community Guidelines</h1>
-          <p className="text-gray-400">Rules of engagement and community standards for Main Link operators</p>
+          <p className="text-gray-400">Rules of engagement and community standards for MainLink operators</p>
         </div>
 
         <div className="space-y-6">
@@ -21,7 +21,7 @@ export default function CommunityGuidelinesHelp() {
             </CardHeader>
             <CardContent className="text-gray-300 space-y-4">
               <p>
-                Main Link supports free speech and encourages light-hearted banter between teams. 
+                MainLink supports free speech and encourages light-hearted banter between teams. 
                 Some friendly poking and competitive spirit makes competitions fun! Our community 
                 thrives on mutual respect, accountability, and shared commitment to fitness excellence.
               </p>

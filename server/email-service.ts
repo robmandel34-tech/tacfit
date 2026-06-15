@@ -22,7 +22,7 @@ const createEmailTransporter = () => {
 };
 
 // ---------------------------------------------------------------------------
-// Branded email template (Main Link military/tactical theme)
+// Branded email template (MainLink military/tactical theme)
 // Dark background, green gradient accents, sharp edges, TACFIT wordmark.
 // All styling is inline + table-based for maximum email-client compatibility.
 // ---------------------------------------------------------------------------
@@ -93,7 +93,7 @@ export const renderEmailShell = (o: EmailShellOptions): string => {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="dark">
-  <title>Main Link</title>
+  <title>MainLink</title>
 </head>
 <body style="margin:0; padding:0; background-color:${BRAND.pageBg};">
   <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent;">${o.preheader}</div>
@@ -115,7 +115,7 @@ export const renderEmailShell = (o: EmailShellOptions): string => {
           <tr><td style="padding:28px 40px 36px;">
             <div style="height:1px; background-color:${BRAND.border}; font-size:0; line-height:0; margin-bottom:18px;">&nbsp;</div>
             <p style="margin:0 0 6px; font-family:Arial,Helvetica,sans-serif; font-size:12px; line-height:20px; color:${BRAND.textMuted};">${o.footerNote}</p>
-            <p style="margin:10px 0 0; font-family:Arial,Helvetica,sans-serif; font-size:11px; letter-spacing:2px; color:${BRAND.textMuted}; text-transform:uppercase;">&copy; ${new Date().getFullYear()} Main Link</p>
+            <p style="margin:10px 0 0; font-family:Arial,Helvetica,sans-serif; font-size:11px; letter-spacing:2px; color:${BRAND.textMuted}; text-transform:uppercase;">&copy; ${new Date().getFullYear()} MainLink</p>
           </td></tr>
         </table>
       </td>
@@ -125,12 +125,12 @@ export const renderEmailShell = (o: EmailShellOptions): string => {
 </html>`;
 };
 
-// Sender shown in the recipient's inbox. The display name ("Main Link") controls
+// Sender shown in the recipient's inbox. The display name ("MainLink") controls
 // the name and the auto-generated avatar letter the mail client draws. The
 // address is team@tacfit.app, which stays on the SendGrid-authenticated domain
 // (tacfit.app). We intentionally do NOT read the legacy FROM_EMAIL secret here
 // (it was hello@tacfit.app, which made inboxes show "hello").
-const FROM_ADDRESS = `${process.env.FROM_NAME || 'Main Link'} <team@tacfit.app>`;
+const FROM_ADDRESS = `${process.env.FROM_NAME || 'MainLink'} <team@tacfit.app>`;
 
 // SendGrid tracking is disabled so links are delivered exactly as written.
 const TRACKING_SETTINGS = {
@@ -154,25 +154,25 @@ export const sendVerificationEmail = async (
   console.log('Generated verification URL:', verificationUrl);
 
   const emailHtml = renderEmailShell({
-    preheader: 'Confirm your email to activate your Main Link account.',
+    preheader: 'Confirm your email to activate your MainLink account.',
     heading: 'Confirm Your Email',
     bodyHtml:
-      para(`Welcome to Main Link, <strong style="color:${BRAND.heading};">${escapeHtml(username)}</strong>.`) +
+      para(`Welcome to MainLink, <strong style="color:${BRAND.heading};">${escapeHtml(username)}</strong>.`) +
       para('Confirm your email address to activate your account, join your team, and start competing.'),
     ctaLabel: 'Verify Email',
     ctaUrl: verificationUrl,
     footerNote:
-      'This verification link expires in 24 hours. If you didn\u2019t create a Main Link account, you can safely ignore this email.',
+      'This verification link expires in 24 hours. If you didn\u2019t create a MainLink account, you can safely ignore this email.',
   });
 
-  const emailText = `Welcome to Main Link, ${username}.\n\nConfirm your email to activate your account:\n${verificationUrl}\n\nThis link expires in 24 hours. If you didn't create a Main Link account, you can ignore this email.`;
+  const emailText = `Welcome to MainLink, ${username}.\n\nConfirm your email to activate your account:\n${verificationUrl}\n\nThis link expires in 24 hours. If you didn't create a MainLink account, you can ignore this email.`;
 
   try {
     if (process.env.SENDGRID_API_KEY) {
       await sgMail.send({
         to: email,
         from: FROM_ADDRESS,
-        subject: 'Main Link - Verify Your Email Address',
+        subject: 'MainLink - Verify Your Email Address',
         text: emailText,
         html: emailHtml,
         trackingSettings: TRACKING_SETTINGS,
@@ -183,7 +183,7 @@ export const sendVerificationEmail = async (
       const info = await transporter.sendMail({
         from: FROM_ADDRESS,
         to: email,
-        subject: 'Main Link - Verify Your Email Address',
+        subject: 'MainLink - Verify Your Email Address',
         text: emailText,
         html: emailHtml,
       });
@@ -214,10 +214,10 @@ export const sendPasswordResetEmail = async (
   console.log('Generated password reset URL:', resetUrl);
 
   const emailHtml = renderEmailShell({
-    preheader: 'Reset the password for your Main Link account.',
+    preheader: 'Reset the password for your MainLink account.',
     heading: 'Reset Your Password',
     bodyHtml:
-      para(`We received a request to reset the password for your Main Link account, <strong style="color:${BRAND.heading};">${escapeHtml(username)}</strong>.`) +
+      para(`We received a request to reset the password for your MainLink account, <strong style="color:${BRAND.heading};">${escapeHtml(username)}</strong>.`) +
       para('Tap the button below to set a new password and get back in the fight.'),
     ctaLabel: 'Reset Password',
     ctaUrl: resetUrl,
@@ -225,14 +225,14 @@ export const sendPasswordResetEmail = async (
       'This password reset link expires in 1 hour. If you didn\u2019t request this, ignore this email and your password will stay the same.',
   });
 
-  const emailText = `Password reset requested for your Main Link account, ${username}.\n\nSet a new password here:\n${resetUrl}\n\nThis link expires in 1 hour. If you didn't request this, ignore this email.`;
+  const emailText = `Password reset requested for your MainLink account, ${username}.\n\nSet a new password here:\n${resetUrl}\n\nThis link expires in 1 hour. If you didn't request this, ignore this email.`;
 
   try {
     if (process.env.SENDGRID_API_KEY) {
       await sgMail.send({
         to: email,
         from: FROM_ADDRESS,
-        subject: 'Main Link - Reset Your Password',
+        subject: 'MainLink - Reset Your Password',
         text: emailText,
         html: emailHtml,
         trackingSettings: TRACKING_SETTINGS,
@@ -243,7 +243,7 @@ export const sendPasswordResetEmail = async (
       const info = await transporter.sendMail({
         from: FROM_ADDRESS,
         to: email,
-        subject: 'Main Link - Reset Your Password',
+        subject: 'MainLink - Reset Your Password',
         text: emailText,
         html: emailHtml,
       });
@@ -265,7 +265,7 @@ export const sendWelcomeEmail = async (
   const correctedUrl = baseUrl.replace('https://', 'http://');
 
   const emailHtml = renderEmailShell({
-    preheader: 'Your Main Link command access is active. Here\u2019s your mission briefing.',
+    preheader: 'Your MainLink command access is active. Here\u2019s your mission briefing.',
     heading: `You're In, ${escapeHtml(username)}`,
     bodyHtml:
       para('Your email is verified and your tactical command access is now active. Here\u2019s your mission briefing:') +
@@ -278,17 +278,17 @@ export const sendWelcomeEmail = async (
       ]),
     ctaLabel: 'Enter Command Center',
     ctaUrl: correctedUrl,
-    footerNote: 'Welcome to the Main Link community. Let\u2019s achieve your fitness goals together.',
+    footerNote: 'Welcome to the MainLink community. Let\u2019s achieve your fitness goals together.',
   });
 
-  const emailText = `You're in, ${username}! Your email is verified and your Main Link account is active.\n\nNext steps:\n- Join a competition and form or join a team\n- Submit activities to track cardio, strength, and mobility\n- Earn points (15 per activity, 30 with photo + video)\n- Complete daily mood check-ins for bonus points\n- Connect with buddies\n\nEnter the Command Center: ${correctedUrl}`;
+  const emailText = `You're in, ${username}! Your email is verified and your MainLink account is active.\n\nNext steps:\n- Join a competition and form or join a team\n- Submit activities to track cardio, strength, and mobility\n- Earn points (15 per activity, 30 with photo + video)\n- Complete daily mood check-ins for bonus points\n- Connect with buddies\n\nEnter the Command Center: ${correctedUrl}`;
 
   try {
     if (process.env.SENDGRID_API_KEY) {
       await sgMail.send({
         to: email,
         from: FROM_ADDRESS,
-        subject: 'Welcome to Main Link - Let\'s Get Started!',
+        subject: 'Welcome to MainLink - Let\'s Get Started!',
         text: emailText,
         html: emailHtml,
         trackingSettings: TRACKING_SETTINGS,
@@ -299,7 +299,7 @@ export const sendWelcomeEmail = async (
       const info = await transporter.sendMail({
         from: FROM_ADDRESS,
         to: email,
-        subject: 'Welcome to Main Link - Let\'s Get Started!',
+        subject: 'Welcome to MainLink - Let\'s Get Started!',
         text: emailText,
         html: emailHtml,
       });

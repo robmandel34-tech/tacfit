@@ -1,6 +1,6 @@
 {
-  "name": "Main Link - Find Your Team",
-  "short_name": "Main Link",
+  "name": "MainLink - Find Your Team",
+  "short_name": "MainLink",
   "description": "Teamwork, Fitness, Winning - Compete with your team in tactical fitness challenges",
   "start_url": "/",
   "display": "standalone",

@@ -25,6 +25,10 @@ app.use((req, res, next) => {
     'capacitor://localhost',
     'ionic://localhost',
     'http://localhost',
+    // Main Link custom domains (additive — current Replit URL still works)
+    'https://mainlink.app',
+    'https://www.mainlink.app',
+    'https://app.mainlink.app',
   ].filter(Boolean);
   const origin = req.headers.origin;
   if (origin && allowedOrigins.includes(origin)) {

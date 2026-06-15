@@ -44,7 +44,7 @@ export default function EmailVerification() {
           setIsVerified(true);
           toast({
             title: "Email verified successfully",
-            description: "Open the TacFit app and sign in to get started.",
+            description: "Open the Main Link app and sign in to get started.",
           });
         } else {
           // Non-ok response — data already parsed above, handle it here
@@ -97,7 +97,7 @@ export default function EmailVerification() {
             {isVerifying 
               ? "Please wait while we verify your email address..."
               : isVerified 
-                ? "Your email is verified. Open the TacFit app and sign in to get started."
+                ? "Your email is verified. Open the Main Link app and sign in to get started."
                 : error || "Email verification failed"
             }
           </CardDescription>
@@ -109,10 +109,10 @@ export default function EmailVerification() {
               onClick={() => { window.location.href = APP_DEEP_LINK; }}
               className="w-full bg-military-green hover:bg-military-green/90 text-forest-green font-semibold"
             >
-              Open the TacFit App
+              Open the Main Link App
             </Button>
             <p className="text-muted text-center text-sm">
-              On your iPhone, tap the button above to jump back into the app and sign in. If nothing happens, open the TacFit app from your home screen.
+              On your iPhone, tap the button above to jump back into the app and sign in. If nothing happens, open the Main Link app from your home screen.
             </p>
             <Button
               variant="outline"

@@ -150,7 +150,7 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete, onSaveSurve
     },
     {
       id: 'welcome',
-      title: 'Welcome to TacFit',
+      title: 'Welcome to Main Link',
       description: 'Your tactical fitness competition platform',
       icon: <Trophy className="h-6 w-6" />,
       content: (
@@ -161,7 +161,7 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete, onSaveSurve
             </div>
             <h3 className="text-xl font-bold text-white mb-2">Mission Briefing</h3>
             <p className="text-gray-300">
-              TacFit is a team-based fitness competition platform where you'll join teams, 
+              Main Link is a team-based fitness competition platform where you'll join teams, 
               complete fitness activities, and compete for victory.
             </p>
           </div>
@@ -209,7 +209,7 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete, onSaveSurve
     {
       id: 'competitions',
       title: 'Tactical Operations',
-      description: 'How competitions work in TacFit',
+      description: 'How competitions work in Main Link',
       icon: <Target className="h-6 w-6" />,
       content: (
         <div className="space-y-4">
@@ -453,7 +453,7 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete, onSaveSurve
             </div>
             <h3 className="text-xl font-bold text-white mb-2">Community Standards</h3>
             <p className="text-gray-300">
-              TacFit supports free speech and encourages light-hearted banter between teams. 
+              Main Link supports free speech and encourages light-hearted banter between teams. 
               Some friendly poking and competitive spirit makes competitions fun!
             </p>
           </div>
@@ -530,7 +530,7 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete, onSaveSurve
 
           <div className="bg-blue-900/20 border border-blue-600/30 p-3 rounded-lg">
             <p className="text-sm text-blue-200">
-              <strong>Remember:</strong> TacFit is about building a supportive fitness community. 
+              <strong>Remember:</strong> Main Link is about building a supportive fitness community. 
               Respect your fellow operators and play fair!
             </p>
           </div>

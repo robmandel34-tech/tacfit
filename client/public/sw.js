@@ -88,14 +88,14 @@ self.addEventListener('push', function(event) {
   } catch (error) {
     console.error('Error parsing push data:', error);
     notificationData = {
-      title: 'TacFit Update',
+      title: 'Main Link Update',
       body: event.data.text(),
       icon: '/generated-icon.png',
       badge: '/generated-icon.png'
     };
   }
 
-  const title = notificationData.title || 'TacFit';
+  const title = notificationData.title || 'Main Link';
   const options = {
     body: notificationData.body || 'New update available',
     icon: notificationData.icon || '/generated-icon.png',

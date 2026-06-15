@@ -67,7 +67,7 @@ export function HelpPopupModal({ isOpen, onClose }: HelpPopupModalProps) {
     {
       title: "Navigation Help",
       icon: <MessageSquare className="h-5 w-5" />,
-      description: "Learn how to navigate the TacFit platform effectively",
+      description: "Learn how to navigate the Main Link platform effectively",
       component: "navigation"
     }
   ];
@@ -116,7 +116,7 @@ export function HelpPopupModal({ isOpen, onClose }: HelpPopupModalProps) {
               ) : (
                 <div className="flex items-center space-x-2">
                   <HelpCircle className="h-6 w-6 text-military-green" />
-                  <span>TacFit Help Center</span>
+                  <span>Main Link Help Center</span>
                 </div>
               )}
             </DialogTitle>
@@ -158,7 +158,7 @@ export function HelpPopupModal({ isOpen, onClose }: HelpPopupModalProps) {
                   <CardHeader>
                     <CardTitle className="text-white flex items-center space-x-2">
                       <BookOpen className="h-5 w-5 text-military-green" />
-                      <span>New to TacFit?</span>
+                      <span>New to Main Link?</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">

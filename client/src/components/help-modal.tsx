@@ -84,7 +84,7 @@ export function HelpModal() {
               ) : (
                 <>
                   <HelpCircle className="h-6 w-6 text-military-green" />
-                  <span>TacFit Help Center</span>
+                  <span>Main Link Help Center</span>
                 </>
               )}
             </DialogTitle>
@@ -111,7 +111,7 @@ export function HelpModal() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-200 mb-4">
-                  New to TacFit? Take our guided walkthrough to learn all the features and competition mechanics.
+                  New to Main Link? Take our guided walkthrough to learn all the features and competition mechanics.
                 </p>
                 <Button 
                   onClick={() => setShowOnboarding(true)}

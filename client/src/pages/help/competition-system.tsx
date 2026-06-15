@@ -11,7 +11,7 @@ export default function CompetitionSystemHelp() {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-white mb-2">Competition System</h1>
-          <p className="text-gray-400">Complete guide to TacFit's tactical operations and competition mechanics</p>
+          <p className="text-gray-400">Complete guide to Main Link's tactical operations and competition mechanics</p>
         </div>
 
         <div className="space-y-6">
@@ -25,7 +25,7 @@ export default function CompetitionSystemHelp() {
             </CardHeader>
             <CardContent className="text-gray-300 space-y-4">
               <p>
-                TacFit competitions are structured fitness challenges designed to promote teamwork, 
+                Main Link competitions are structured fitness challenges designed to promote teamwork, 
                 accountability, and healthy competition. Each competition follows a three-phase structure 
                 to ensure fair participation and exciting outcomes.
               </p>
@@ -222,7 +222,7 @@ export default function CompetitionSystemHelp() {
             </CardHeader>
             <CardContent className="text-gray-300 space-y-4">
               <div className="bg-military-green/20 border border-military-green/40 p-4 rounded-lg">
-                <h4 className="font-semibold text-military-green mb-1">TacFit is completely free right now!</h4>
+                <h4 className="font-semibold text-military-green mb-1">Main Link is completely free right now!</h4>
                 <p className="text-sm">
                   Every active user can join competitions, earn points, and build fitness habits at zero cost. 
                   Paid competitions are coming in a future update — and when they arrive, you'll be able to 

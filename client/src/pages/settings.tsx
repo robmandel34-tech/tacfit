@@ -452,7 +452,7 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-1 p-0">
               <a
-                href="mailto:tacfit2025@gmail.com?subject=TacFit%20Feedback"
+                href="mailto:tacfit2025@gmail.com?subject=Main%20Link%20Feedback"
                 className="flex items-center justify-between px-6 py-3 hover:bg-white/5 transition-colors"
               >
                 <div className="flex items-center gap-3">
@@ -463,7 +463,7 @@ export default function SettingsPage() {
               </a>
               <div className="border-t border-white/5" />
               <a
-                href="mailto:tacfit2025@gmail.com?subject=TacFit%20Bug%20Report&body=Describe%20the%20bug%20here%3A%0A%0ASteps%20to%20reproduce%3A%0A1.%20%0A2.%20%0A3.%20%0A%0AExpected%20behavior%3A%0A%0AActual%20behavior%3A"
+                href="mailto:tacfit2025@gmail.com?subject=Main%20Link%20Bug%20Report&body=Describe%20the%20bug%20here%3A%0A%0ASteps%20to%20reproduce%3A%0A1.%20%0A2.%20%0A3.%20%0A%0AExpected%20behavior%3A%0A%0AActual%20behavior%3A"
                 className="flex items-center justify-between px-6 py-3 hover:bg-white/5 transition-colors"
               >
                 <div className="flex items-center gap-3">
@@ -537,7 +537,7 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          <p className="text-center text-gray-600 text-xs pb-4">TacFit · Version 1.0.0</p>
+          <p className="text-center text-gray-600 text-xs pb-4">Main Link · Version 1.0.0</p>
         </div>
       </div>
     </div>

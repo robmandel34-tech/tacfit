@@ -5976,7 +5976,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/sync/health", (req, res) => {
     res.json({
       status: "healthy",
-      service: "TacFit Data Sync API",
+      service: "Main Link Data Sync API",
       timestamp: new Date().toISOString(),
       version: "1.0.0"
     });

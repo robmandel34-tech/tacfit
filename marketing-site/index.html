@@ -1083,7 +1083,7 @@
 <section class="founder" id="founder">
   <div class="container">
 
-    <p class="infil-headline">DROP IN FOR THE INFIL!</p>
+    <p class="infil-headline">DROP IN AND INFIL!</p>
 
     <!-- Drop-in animation: the squad parachutes onto the muster point, then the card reveals -->
     <div class="infil-stage" id="infilStage" aria-hidden="true">
@@ -1939,14 +1939,14 @@
     else { stopLooping(); }
   }
   // "flowdone" fires the moment the team finishes celebrating; hold the squad's
-  // first drop-in a further 2.5s so the two animations never overlap.
+  // first drop-in a further 0.5s so it follows the celebration closely.
   var startTimer = null;
   function onFlowDone() {
     if (flowReady || startTimer) return;         // schedule the first drop-in once
     startTimer = setTimeout(function () {
       flowReady = true;
       if (pendingStart && inView && !document.hidden) { pendingStart = false; reallyStart(); }
-    }, 2500);
+    }, 500);
   }
   if (!flowReady) {
     document.addEventListener('muster:flowdone', onFlowDone);

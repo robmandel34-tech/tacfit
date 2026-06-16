@@ -13,13 +13,15 @@
 > `tacfit`, all `@tacfit.app` email ADDRESSES (domain still SendGrid-authenticated;
 > only display names changed), asset filenames containing `tacfit`, code
 > identifiers/localStorage keys, and the `X-Webhook-Source: TacFit-Points-Sync`
-> integration header. DOMAIN: `muster.com` is taken (existing software co.); the
-> user is choosing among `joinmuster.com`, `muster.app`, and `musterfit.com`.
-> `server/index.ts` CORS allow-lists all three (+ www/app variants), additive —
-> the current Replit URL still works; prune to the final pick once it's bought.
-> The shield-and-cross logo has no text, so it carries over unchanged.
-> **User still owns:** buying the domain + DNS records, App Store Connect display
-> name, and a fresh TestFlight build for the native name to take effect.
+> integration header. DOMAIN: `muster.com` was taken (existing software co.), so
+> the user bought **`joinmuster.com`** (2026-06-16) as the final domain.
+> `server/index.ts` CORS allow-lists `joinmuster.com` (+ `www.` + `app.`),
+> additive — the current Replit URL still works. Once the domain points at the
+> deployment, set the `APP_ORIGIN` env var to `https://joinmuster.com` so
+> credentialed auth/CORS uses the real origin. The shield-and-cross logo has no
+> text, so it carries over unchanged. **User still owns:** wiring DNS records (see
+> below), App Store Connect display name, and a fresh TestFlight build for the
+> native name to take effect.
 
 ## Overview
 TacFit is a full-stack fitness competition platform designed for team-based fitness challenges. It enables users to create and join competitions, form teams, track various activities (Cardio, Strength, Mobility Training, Meditation), and engage through social features like chat and activity feeds. The platform incorporates a reward system for competition winners, activity submissions, and daily mood assessments, and integrates with external services for automated activity tracking. The vision is to provide a comprehensive wellness platform beyond just fitness, incorporating mental health aspects and fostering community engagement in a tactical-themed environment.

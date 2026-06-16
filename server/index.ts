@@ -25,16 +25,11 @@ app.use((req, res, next) => {
     'capacitor://localhost',
     'ionic://localhost',
     'http://localhost',
-    // Muster custom domains (additive — current Replit URL still works).
-    // muster.com is taken; final pick pending among these candidates — all are
-    // allow-listed so the app works whichever the user buys. Prune after.
+    // Muster custom domain (additive — current Replit URL still works).
+    // Final domain: joinmuster.com (purchased 2026-06-16). www + app covered.
     'https://joinmuster.com',
     'https://www.joinmuster.com',
-    'https://muster.app',
-    'https://www.muster.app',
-    'https://app.muster.app',
-    'https://musterfit.com',
-    'https://www.musterfit.com',
+    'https://app.joinmuster.com',
   ].filter(Boolean);
   const origin = req.headers.origin;
   if (origin && allowedOrigins.includes(origin)) {

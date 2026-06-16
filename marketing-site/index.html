@@ -1134,7 +1134,7 @@
         <p><span class="obj-q">Don't believe this will be different?</span> <span class="obj-x" aria-hidden="true">✕</span> <span class="obj-a">It will.</span></p>
       </div>
       <p class="lede">Join the <strong>Muster Infil</strong>, our free inaugural competition.</p>
-      <p class="lede">We all want to make excuses, that won't change. <span class="lede-hl">But the motivation in watching others push through and refuse to back down from the doubts is unlike any other.</span> As much as this is possible, Muster will deliver exactly that spark and your team and community of fellow Musters will keep that fire burning.</p>
+      <p class="lede">We all want to make excuses, that won't change. <span class="lede-hl">But there's an unmatched motivation you get from watching others push through and refuse to back down from their doubts and daily struggles.</span> As much as this is possible, Muster will deliver exactly that spark and your team and community of fellow Musters will keep that fire burning.</p>
       <p class="lede">Everyone who signs up for this inaugural and takes part earns <strong>Founder status</strong> — and <strong>Muster free for life</strong>. This is your chance to help shape the community from day one.</p>
       <div class="founder-meta">
         <div class="founder-fact"><span class="k">Length</span><span class="v">4 weeks</span></div>
@@ -1938,13 +1938,19 @@
     if (inView && !document.hidden) { try { startLooping(); } catch (err) { showCard(); } }
     else { stopLooping(); }
   }
+  // "flowdone" fires the moment the team finishes celebrating; hold the squad's
+  // first drop-in a further 2.5s so the two animations never overlap.
+  var startTimer = null;
   function onFlowDone() {
-    flowReady = true;
-    if (pendingStart && inView && !document.hidden) { pendingStart = false; reallyStart(); }
+    if (flowReady || startTimer) return;         // schedule the first drop-in once
+    startTimer = setTimeout(function () {
+      flowReady = true;
+      if (pendingStart && inView && !document.hidden) { pendingStart = false; reallyStart(); }
+    }, 2500);
   }
   if (!flowReady) {
     document.addEventListener('muster:flowdone', onFlowDone);
-    setTimeout(onFlowDone, 7000);                // safety net so the drop-in never gets stuck
+    setTimeout(onFlowDone, 9000);                // safety net so the drop-in never gets stuck
   }
 
   document.addEventListener('visibilitychange', syncLoop);
@@ -1967,7 +1973,7 @@
   };
   var fire = function () {
     flow.classList.add('in-view');
-    setTimeout(markDone, 3000); // the staircase finishes landing ~2.8s after it starts revealing
+    setTimeout(markDone, 5850); // fire when the team finishes celebrating (last fist-bump spark ends ~5.85s)
   };
   if (!('IntersectionObserver' in window)) { fire(); return; }
   var io = new IntersectionObserver(function (entries) {

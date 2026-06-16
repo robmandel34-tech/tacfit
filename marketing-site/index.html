@@ -640,6 +640,7 @@
   .infil-anim { width: 100%; height: auto; display: block; overflow: hidden; }
   .infil-anim .ia-trail { stroke-dasharray: 240; stroke-dashoffset: 240; }
   .infil-anim .ia-pop, .infil-anim .ia-pulse { opacity: 0; transform-box: fill-box; transform-origin: center; }
+  .infil-anim .cPos { opacity: 0; }
   /* card reveal is controlled by JS after the squad drops in (not the generic .reveal observer) */
   .infil-card { opacity: 0; transform: translateY(28px); transition: opacity .9s ease, transform .9s ease; }
   .infil-card.infil-in { opacity: 1; transform: translateY(0); }
@@ -1775,17 +1776,40 @@
     pulse(2150); pulse(2520);
     // the moment the route finishes drawing, the squad jumps the summit
     launchChuters(1950);
-    // once the squad has dropped in, bring up the competition card
-    setTimeout(showCard, 3600);
   }
 
-  var io = new IntersectionObserver(function (entries, obs) {
-    entries.forEach(function (e) {
-      if (e.isIntersecting) {
-        obs.disconnect();
-        try { play(); } catch (err) { showCard(); }
-      }
-    });
+  // Loop the drop-in: full sequence runs ~5.6s, then a short breather before it replays.
+  var CYCLE = 6500;
+  var loopId = null, inView = false, cardShown = false;
+
+  function clearAnims() {
+    anims.forEach(function (a) { try { a.cancel(); } catch (e) {} });
+    anims = [];
+  }
+  function resetAndPlay() {
+    clearAnims();
+    trail.style.strokeDashoffset = L;
+    play();
+  }
+  function startLooping() {
+    if (loopId !== null) return;                 // guard against double-start
+    resetAndPlay();                              // play immediately on (re)entry
+    loopId = setInterval(resetAndPlay, CYCLE);
+    if (!cardShown) { cardShown = true; setTimeout(showCard, 3600); } // reveal offer once
+  }
+  function stopLooping() {
+    if (loopId !== null) { clearInterval(loopId); loopId = null; }
+    clearAnims();                                // don't churn animations while paused
+  }
+  function syncLoop() {
+    if (inView && !document.hidden) { try { startLooping(); } catch (err) { showCard(); } }
+    else { stopLooping(); }
+  }
+
+  document.addEventListener('visibilitychange', syncLoop);
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) { inView = e.isIntersecting; });
+    syncLoop();
   }, { threshold: 0.25 });
   io.observe(root.querySelector('.infil-stage'));
 })();

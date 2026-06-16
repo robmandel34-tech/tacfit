@@ -573,7 +573,7 @@
 
   /* INFIL drop-in animation */
   .infil-stage { max-width: 440px; margin: 0 auto 30px; padding: 0 10px; }
-  .infil-anim { width: 100%; height: auto; display: block; overflow: visible; }
+  .infil-anim { width: 100%; height: auto; display: block; overflow: hidden; }
   .infil-anim .ia-trail { stroke-dasharray: 240; stroke-dashoffset: 240; }
   .infil-anim .ia-pop, .infil-anim .ia-pulse { opacity: 0; transform-box: fill-box; transform-origin: center; }
   /* card reveal is controlled by JS after the squad drops in (not the generic .reveal observer) */
@@ -914,7 +914,7 @@
 <section class="founder" id="founder">
   <div class="container">
 
-    <p class="infil-headline">Drop in for the Infil!</p>
+    <p class="infil-headline">DROP IN FOR THE INFIL!</p>
 
     <!-- Drop-in animation: the squad parachutes onto the muster point, then the card reveals -->
     <div class="infil-stage" id="infilStage" aria-hidden="true">
@@ -1639,8 +1639,8 @@
         canopy: pos.querySelector('.canopy'),
         jx: 4 + rnd() * 4,
         jh: 4 + rnd() * 3,
-        ex: 205 + i * 15 + rnd() * 18,
-        ey: 150 + rnd() * 22,
+        ex: 224 + i * 16 + rnd() * 20,
+        ey: 168 + rnd() * 24,
         wind: 3 + rnd() * 8,
         dur: 2400 + rnd() * 520,
         amp: 5 + rnd() * 5,

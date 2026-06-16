@@ -673,7 +673,7 @@
   .founder-card h2 .accent { background: linear-gradient(135deg, var(--green-light), var(--green)); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .founder-card .lede { max-width: 620px; margin: 0 auto 30px; font-size: 16px; }
   .founder-card .lede strong { color: var(--green); }
-  .founder-card .lede .lede-hl { color: var(--text); font-weight: 700; }
+  .founder-card .lede .lede-hl { color: var(--text); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
   .founder-card .lede + .lede { margin-top: 18px; }
   .why-bubble { display: inline-flex; align-items: center; justify-content: center; flex-wrap: wrap; max-width: 100%; gap: 12px; padding: 10px 22px 10px 14px; margin: 4px 0 28px; border: 1px solid rgba(210,145,60,0.45); border-radius: 999px; background: rgba(210,145,60,0.12); color: var(--green); font-weight: 800; font-size: clamp(17px, 2.4vw, 23px); letter-spacing: -0.01em; }
   .why-bubble .why-pushup { flex-shrink: 0; display: inline-flex; color: var(--green); filter: drop-shadow(0 0 5px rgba(210,145,60,0.4)); }
@@ -1875,29 +1875,54 @@
   // Loop the drop-in: full sequence runs ~5.6s, then a short breather before it replays.
   var CYCLE = 6500;
   var loopId = null, inView = false, cardShown = false;
+  // Hold the very first run until the "How it works" flow has finished appearing.
+  var flowReady = !!window.__musterFlowDone, pendingStart = false;
 
   function clearAnims() {
     anims.forEach(function (a) { try { a.cancel(); } catch (e) {} });
     anims = [];
   }
+  function hideMarks() {
+    // Force every marker hidden at the loop seam so no "popped" frame (e.g. the
+    // white dot at the bottom-right of the M) leaks for a frame between cycles.
+    ['.ia-start', '.ia-end', '.ia-left', '.ia-summit', '.ia-beacon', '.ia-pulse'].forEach(function (s) {
+      var el = q(s); if (el) el.style.opacity = '0';
+    });
+  }
   function resetAndPlay() {
     clearAnims();
+    hideMarks();
     trail.style.strokeDashoffset = L;
+    if (svg) { void svg.getBoundingClientRect(); } // flush the hidden state so no stale frame paints at the seam
     play();
   }
-  function startLooping() {
+  function reallyStart() {
     if (loopId !== null) return;                 // guard against double-start
     resetAndPlay();                              // play immediately on (re)entry
     loopId = setInterval(resetAndPlay, CYCLE);
     if (!cardShown) { cardShown = true; setTimeout(showCard, 3600); } // reveal offer once
   }
+  function startLooping() {
+    if (loopId !== null) return;
+    if (!flowReady) { pendingStart = true; return; } // wait for the flow to finish first
+    reallyStart();
+  }
   function stopLooping() {
     if (loopId !== null) { clearInterval(loopId); loopId = null; }
+    pendingStart = false;
     clearAnims();                                // don't churn animations while paused
   }
   function syncLoop() {
     if (inView && !document.hidden) { try { startLooping(); } catch (err) { showCard(); } }
     else { stopLooping(); }
+  }
+  function onFlowDone() {
+    flowReady = true;
+    if (pendingStart && inView && !document.hidden) { pendingStart = false; reallyStart(); }
+  }
+  if (!flowReady) {
+    document.addEventListener('muster:flowdone', onFlowDone);
+    setTimeout(onFlowDone, 7000);                // safety net so the drop-in never gets stuck
   }
 
   document.addEventListener('visibilitychange', syncLoop);
@@ -1914,7 +1939,14 @@
   var flow = document.querySelector('.strip .flow');
   if (!flow) return;
   flow.classList.add('anim'); // mark JS-enabled so items start hidden
-  var fire = function () { flow.classList.add('in-view'); };
+  var markDone = function () {
+    window.__musterFlowDone = true;
+    document.dispatchEvent(new Event('muster:flowdone'));
+  };
+  var fire = function () {
+    flow.classList.add('in-view');
+    setTimeout(markDone, 3000); // the staircase finishes landing ~2.8s after it starts revealing
+  };
   if (!('IntersectionObserver' in window)) { fire(); return; }
   var io = new IntersectionObserver(function (entries) {
     entries.forEach(function (e) {

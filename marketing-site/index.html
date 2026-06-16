@@ -1920,7 +1920,7 @@
     if (loopId !== null) return;                 // guard against double-start
     resetAndPlay();                              // play immediately on (re)entry
     loopId = setInterval(resetAndPlay, CYCLE);
-    if (!cardShown) { cardShown = true; setTimeout(showCard, 3600); } // reveal offer once
+    if (!cardShown) { cardShown = true; showCard(); } // reveal the offer at the same time the drop-in starts
   }
   function startLooping() {
     if (loopId !== null) return;

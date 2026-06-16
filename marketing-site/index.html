@@ -290,7 +290,7 @@
   @media (prefers-reduced-motion: reduce) {
     .hero-canvas, .hero-squad { display: none; }
   }
-  .hero-grid { position: relative; z-index: 2; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 80px; align-items: center; width: 100%; }
+  .hero-grid { position: relative; z-index: 2; display: grid; grid-template-columns: 1fr; gap: 80px; align-items: center; width: 100%; }
   @media (max-width: 920px) { .hero-grid { grid-template-columns: 1fr; gap: 48px; text-align: center; } }
   .hero-content { max-width: 620px; }
   @media (max-width: 920px) { .hero-content { margin: 0 auto; } .hero-ctas { justify-content: center; } }
@@ -579,7 +579,7 @@
   /* card reveal is controlled by JS after the squad drops in (not the generic .reveal observer) */
   .infil-card { opacity: 0; transform: translateY(28px); transition: opacity .9s ease, transform .9s ease; }
   .infil-card.infil-in { opacity: 1; transform: translateY(0); }
-  .infil-headline { font-size: clamp(22px, 3.4vw, 36px); font-weight: 900; letter-spacing: -0.02em; line-height: 1.05; color: var(--green); margin: 0 0 16px; }
+  .infil-headline { font-size: clamp(22px, 3.4vw, 36px); font-weight: 900; letter-spacing: -0.02em; line-height: 1.05; color: var(--green); margin: 0 0 22px; text-align: center; }
   @media (prefers-reduced-motion: reduce) {
     .infil-card { opacity: 1; transform: none; transition: none; }
     .infil-anim .ia-trail { stroke-dashoffset: 0; }
@@ -891,13 +891,8 @@
       </div>
       <p class="android-note">Android app coming soon. Have an Android phone? You can use the <a href="https://tacfit.replit.app">web version</a> in the meantime.</p>
     </div>
-    <div class="hero-video-wrap">
-      <div class="hero-video-frame">
-        <video controls preload="none" playsinline tabindex="-1" poster="/marketing/video/promo-poster.jpg">
-          <source src="/marketing/video/promo.mp4" type="video/mp4">
-        </video>
-      </div>
-    </div>
+    <!-- Hero video removed pending updated branded promo video. To restore: re-add the .hero-video-wrap block and set .hero-grid back to two columns (grid-template-columns: 1.1fr 0.9fr). -->
+
   </div>
   <div class="hero-scroll">
     <span>Scroll</span>
@@ -918,6 +913,8 @@
 <!-- FOUNDER OFFER — the Muster Infil (inaugural competition) -->
 <section class="founder" id="founder">
   <div class="container">
+
+    <p class="infil-headline">Drop in for the Infil!</p>
 
     <!-- Drop-in animation: the squad parachutes onto the muster point, then the card reveals -->
     <div class="infil-stage" id="infilStage" aria-hidden="true">
@@ -953,7 +950,6 @@
     </div>
 
     <div class="founder-card infil-card" id="infilCard">
-      <p class="infil-headline">Drop in for the Infil!</p>
       <span class="eyebrow"><span class="dot"></span> The Muster Infil · Inaugural Competition · First 25–50 members</span>
       <h2>Become a Muster <span class="accent">Founder</span></h2>
       <p class="lede">Join the <strong>Muster Infil</strong>, our free inaugural competition. Everyone who signs up and takes part earns <strong>Founder status</strong> — and <strong>Muster free for life</strong>. This is your chance to help shape the platform from day one.</p>

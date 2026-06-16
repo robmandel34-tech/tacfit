@@ -1761,7 +1761,7 @@
   function showCard() { card.classList.add('infil-in'); }
 
   // If anything is unavailable, never leave the offer hidden.
-  if (!svg || reduce || typeof svg.animate !== 'function' || !('IntersectionObserver' in window)) {
+  if (!svg || reduce || typeof svg.animate !== 'function') {
     showCard();
     return;
   }
@@ -1892,9 +1892,7 @@
 
   // Loop the drop-in: full sequence runs ~5.6s, then a short breather before it replays.
   var CYCLE = 6500;
-  var loopId = null, rafId = null, inView = false, cardShown = false;
-  // Hold the very first run until the "How it works" flow has finished appearing.
-  var flowReady = !!window.__musterFlowDone, pendingStart = false;
+  var loopId = null, rafId = null, cardShown = false;
 
   function clearAnims() {
     anims.forEach(function (a) { try { a.cancel(); } catch (e) {} });
@@ -1922,49 +1920,27 @@
       play();
     });
   }
-  function reallyStart() {
-    if (loopId !== null) return;                 // guard against double-start
-    resetAndPlay();                              // play immediately on (re)entry
-    loopId = setInterval(resetAndPlay, CYCLE);
-    if (!cardShown) { cardShown = true; showCard(); } // reveal the offer at the same time the drop-in starts
-  }
   function startLooping() {
-    if (loopId !== null) return;
-    if (!flowReady) { pendingStart = true; return; } // wait for the flow to finish first
-    reallyStart();
+    if (loopId !== null) return;                 // guard against double-start
+    resetAndPlay();                              // play immediately
+    loopId = setInterval(resetAndPlay, CYCLE);
+    if (!cardShown) { cardShown = true; showCard(); } // reveal the offer alongside the drop-in
   }
   function stopLooping() {
     if (loopId !== null) { clearInterval(loopId); loopId = null; }
     if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-    pendingStart = false;
     clearAnims();                                // don't churn animations while paused
     svg.style.opacity = '';                      // never leave the drawing blanked when paused
   }
+  // Start the drop-in as soon as the page loads and keep it looping, so the squad
+  // and the offer card are already there no matter how fast you scroll down to
+  // them — no more blank gap. Only pause while the tab is hidden, then resume.
   function syncLoop() {
-    if (inView && !document.hidden) { try { startLooping(); } catch (err) { showCard(); } }
+    if (!document.hidden) { try { startLooping(); } catch (err) { showCard(); } }
     else { stopLooping(); }
   }
-  // "flowdone" fires the moment the team finishes celebrating; hold the squad's
-  // first drop-in a further 0.5s so it follows the celebration closely.
-  var startTimer = null;
-  function onFlowDone() {
-    if (flowReady || startTimer) return;         // schedule the first drop-in once
-    startTimer = setTimeout(function () {
-      flowReady = true;
-      if (pendingStart && inView && !document.hidden) { pendingStart = false; reallyStart(); }
-    }, 500);
-  }
-  if (!flowReady) {
-    document.addEventListener('muster:flowdone', onFlowDone);
-    setTimeout(onFlowDone, 9000);                // safety net so the drop-in never gets stuck
-  }
-
   document.addEventListener('visibilitychange', syncLoop);
-  var io = new IntersectionObserver(function (entries) {
-    entries.forEach(function (e) { inView = e.isIntersecting; });
-    syncLoop();
-  }, { threshold: 0.25 });
-  io.observe(root.querySelector('.infil-stage'));
+  syncLoop();
 })();
 </script>
 <script>

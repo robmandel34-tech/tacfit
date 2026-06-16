@@ -31,3 +31,12 @@ from `.reveal` — JS adds `.anim` then `.in-view`, and CSS keyframes fire on st
 do NOT rotate the arm path — SVG rotation-origin/`transform-box` is unreliable. Instead
 draw both a resting arm and a raised arm and cross-fade their opacity. Geometry is exact
 (endpoints meet at computed midpoints) and there are no pivot bugs.
+
+**Stray-dot at a line's endpoint = round stroke-linecap, not a marker.** The infil
+parachute "draw the M route" effect hides/reveals the line via `stroke-dashoffset`. With
+`stroke-linecap="round"`, WebKit (Safari/iOS) paints a stray DOT at the path's endpoint
+whenever the line is fully hidden (default state + every loop reset) — it looks like a lone
+floating marker. Fix: use `stroke-linecap="butt"` (endpoints sit under marker circles, so no
+visible change). **Why:** chasing it as a marker opacity/fill-mode bug wastes attempts — the
+dot is the dash-boundary cap, independent of the `.ia-pop` markers. If a single dot sits at a
+drawn-line's start/end point, suspect the linecap first.

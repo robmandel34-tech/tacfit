@@ -394,11 +394,11 @@
   .flow.anim.in-view .flow-step { animation: flowStepIn 0.5s ease forwards var(--d, 0s); }
   .flow.anim.in-view .conn-line { animation: flowDraw 0.55s ease forwards var(--d, 0s); }
   .flow.anim.in-view .conn-mark { animation: flowPop 0.35s ease forwards calc(var(--d, 0s) + 0.4s); }
-  .flow .s1 { --d: 0s; }    .flow .c1 { --d: 0.5s; }
-  .flow .s2 { --d: 1.2s; }  .flow .c2 { --d: 1.7s; }
-  .flow .s3 { --d: 2.4s; }  .flow .c3 { --d: 2.9s; }
-  .flow .s4 { --d: 3.6s; }  .flow .c4 { --d: 4.1s; }
-  .flow .s5 { --d: 4.8s; }
+  .flow .s1 { --d: 0s; }    .flow .c1 { --d: 0.26s; }
+  .flow .s2 { --d: 0.58s; } .flow .c2 { --d: 0.84s; }
+  .flow .s3 { --d: 1.16s; } .flow .c3 { --d: 1.42s; }
+  .flow .s4 { --d: 1.74s; } .flow .c4 { --d: 2.0s; }
+  .flow .s5 { --d: 2.32s; }
   @keyframes flowStepIn { to { opacity: 1; transform: translateY(0); } }
   @keyframes flowDraw { to { stroke-dashoffset: 0; } }
   @keyframes flowPop { to { opacity: 1; transform: scale(1); } }
@@ -449,7 +449,9 @@
     .flow.anim .win-crew { opacity: 1; }
     .flow.anim.in-view .s5 .flow-ic, .flow.anim.in-view .win-burst i, .flow.anim.in-view .win-crew,
     .flow.anim.in-view .win-crew .up, .flow.anim.in-view .win-crew .rest, .flow.anim.in-view .win-crew .spark { animation: none; }
-    .why-bubble .why-pushup .pu-fig { animation: none; }
+    .why-bubble .why-pushup .pu-up, .why-bubble .why-pushup .pu-down { animation: none; }
+    .why-bubble .why-pushup .pu-down { opacity: 0; }
+    .why-bubble .why-pushup .pu-up { opacity: 1; }
   }
 
   /* SECTIONS */
@@ -665,23 +667,27 @@
 
   /* FOUNDER OFFER */
   .founder { padding: 30px 0 10px; }
-  .founder-card { position: relative; overflow: hidden; background: radial-gradient(circle at 15% 20%, rgba(210,145,60,0.20), transparent 55%), linear-gradient(180deg, var(--card), var(--card-2)); border: 1px solid rgba(210,145,60,0.35); border-radius: 28px; padding: 56px 48px; text-align: center; box-shadow: 0 30px 80px -50px rgba(210,145,60,0.5); }
-  @media (max-width: 720px) { .founder-card { padding: 40px 22px; } }
-  .founder-card h2 { font-size: clamp(30px, 4.5vw, 50px); font-weight: 900; letter-spacing: -0.03em; line-height: 1.08; margin: 16px 0 16px; }
+  .founder-card { position: relative; overflow: hidden; background: radial-gradient(circle at 15% 20%, rgba(210,145,60,0.20), transparent 55%), linear-gradient(180deg, var(--card), var(--card-2)); border: 1px solid rgba(210,145,60,0.35); border-radius: 28px; padding: 38px 48px 56px; text-align: center; box-shadow: 0 30px 80px -50px rgba(210,145,60,0.5); }
+  @media (max-width: 720px) { .founder-card { padding: 26px 22px 40px; } }
+  .founder-card h2 { font-size: clamp(30px, 4.5vw, 50px); font-weight: 900; letter-spacing: -0.03em; line-height: 1.08; margin: 0 0 16px; }
   .founder-card h2 .accent { background: linear-gradient(135deg, var(--green-light), var(--green)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .founder-card .lede { max-width: 620px; margin: 0 auto 30px; }
+  .founder-card .lede { max-width: 620px; margin: 0 auto 30px; font-size: 16px; }
   .founder-card .lede strong { color: var(--green); }
-  .founder-card .lede + .lede { margin-top: 20px; }
+  .founder-card .lede .lede-hl { color: var(--text); font-weight: 700; }
+  .founder-card .lede + .lede { margin-top: 18px; }
   .why-bubble { display: inline-flex; align-items: center; justify-content: center; flex-wrap: wrap; max-width: 100%; gap: 12px; padding: 10px 22px 10px 14px; margin: 4px 0 28px; border: 1px solid rgba(210,145,60,0.45); border-radius: 999px; background: rgba(210,145,60,0.12); color: var(--green); font-weight: 800; font-size: clamp(17px, 2.4vw, 23px); letter-spacing: -0.01em; }
   .why-bubble .why-pushup { flex-shrink: 0; display: inline-flex; color: var(--green); filter: drop-shadow(0 0 5px rgba(210,145,60,0.4)); }
-  .why-bubble .why-pushup svg { width: 40px; height: auto; display: block; }
-  .why-bubble .why-pushup .pu-fig { transform-box: fill-box; transform-origin: 92% 88%; animation: pushup 1.3s ease-in-out infinite; }
-  @keyframes pushup { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(9deg); } }
-  @media (max-width: 420px) { .why-bubble { gap: 9px; padding: 9px 16px 9px 12px; border-radius: 22px; } .why-bubble .why-pushup svg { width: 33px; } }
+  .why-bubble .why-pushup svg { width: 34px; height: auto; display: block; }
+  .why-bubble .why-pushup .pu-up { animation: puUp 1.6s ease-in-out infinite; }
+  .why-bubble .why-pushup .pu-down { opacity: 0; animation: puDown 1.6s ease-in-out infinite; }
+  @keyframes puUp { 0%, 42% { opacity: 1; } 54%, 80% { opacity: 0; } 92%, 100% { opacity: 1; } }
+  @keyframes puDown { 0%, 42% { opacity: 0; } 54%, 80% { opacity: 1; } 92%, 100% { opacity: 0; } }
+  @media (max-width: 420px) { .why-bubble { gap: 9px; padding: 9px 16px 9px 12px; border-radius: 22px; } .why-bubble .why-pushup svg { width: 28px; } }
   .objections { max-width: 540px; margin: 0 auto 30px; background: rgba(10,12,15,0.5); border: 1px solid var(--border); border-radius: 18px; padding: 22px 26px; text-align: left; }
   .objections p { margin: 0 0 12px; color: var(--text-2); font-size: clamp(9px, 2.8vw, 16px); line-height: 1.5; display: flex; align-items: baseline; gap: 6px; flex-wrap: nowrap; white-space: nowrap; }
   .objections p:last-child { margin-bottom: 0; }
-  .objections .obj-q { color: var(--text); font-weight: 700; }
+  .objections .obj-q { color: var(--text-2); font-weight: 500; }
+  .objections .obj-a { color: var(--text); font-weight: 800; }
   .objections .obj-x { color: #E5534B; font-weight: 900; font-size: 1.25em; line-height: 1; flex-shrink: 0; }
   @media (max-width: 420px) { .objections { padding: 16px 12px; } }
   .founder-meta { display: flex; justify-content: center; flex-wrap: wrap; gap: 14px; margin-bottom: 30px; }
@@ -1115,15 +1121,16 @@
     <div class="founder-card infil-card" id="infilCard">
       <h2>Join the Inaugural Muster <span class="accent">Infil</span> Competition</h2>
       <div class="why-bubble">
-        <span class="why-pushup" aria-hidden="true"><svg viewBox="0 0 52 30" aria-hidden="true"><g class="pu-fig" fill="currentColor" stroke="currentColor" stroke-width="3.8" stroke-linecap="round"><circle cx="11" cy="10" r="4.3" stroke="none"/><line x1="14" y1="12" x2="34" y2="17"/><line x1="34" y1="17" x2="48" y2="26"/><line x1="16" y1="13" x2="16" y2="26"/></g></svg></span>
+        <span class="why-pushup" aria-hidden="true"><svg viewBox="0 0 48 28" aria-hidden="true"><g class="pu-fig" fill="currentColor" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><g class="pu-up"><circle cx="8" cy="8" r="3.9" stroke="none"/><line x1="11" y1="10" x2="44" y2="24"/><line x1="12" y1="11" x2="13" y2="24"/></g><g class="pu-down"><circle cx="8" cy="14" r="3.9" stroke="none"/><line x1="11" y1="16" x2="44" y2="24"/><polyline points="12,16 18,21 13,24" fill="none"/></g></g></svg></span>
         <span>Why not you? Why not now?</span>
       </div>
       <div class="objections">
-        <p><span class="obj-q">Too busy?</span> <span class="obj-x" aria-hidden="true">✕</span> No you're not.</p>
-        <p><span class="obj-q">No motivation?</span> <span class="obj-x" aria-hidden="true">✕</span> Just take that first step.</p>
-        <p><span class="obj-q">Don't believe this will be different?</span> <span class="obj-x" aria-hidden="true">✕</span> It will.</p>
+        <p><span class="obj-q">Too busy?</span> <span class="obj-x" aria-hidden="true">✕</span> <span class="obj-a">No you're not.</span></p>
+        <p><span class="obj-q">No motivation?</span> <span class="obj-x" aria-hidden="true">✕</span> <span class="obj-a">Just take that first step.</span></p>
+        <p><span class="obj-q">Don't believe this will be different?</span> <span class="obj-x" aria-hidden="true">✕</span> <span class="obj-a">It will.</span></p>
       </div>
-      <p class="lede">Join the <strong>Muster Infil</strong>, our free inaugural competition. We all want to make excuses, that won't change. But the motivation in watching others push through and refuse to back down from the doubts is unlike any other. As much as this is possible, Muster will deliver exactly that spark and your team and community of fellow Musters will keep that fire burning.</p>
+      <p class="lede">Join the <strong>Muster Infil</strong>, our free inaugural competition.</p>
+      <p class="lede">We all want to make excuses, that won't change. <span class="lede-hl">But the motivation in watching others push through and refuse to back down from the doubts is unlike any other. As much as this is possible, Muster will deliver exactly that spark and your team and community of fellow Musters will keep that fire burning.</span></p>
       <p class="lede">Everyone who signs up for this inaugural and takes part earns <strong>Founder status</strong> — and <strong>Muster free for life</strong>. This is your chance to help shape the community from day one.</p>
       <div class="founder-meta">
         <div class="founder-fact"><span class="k">Length</span><span class="v">4 weeks</span></div>

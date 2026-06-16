@@ -670,6 +670,16 @@
   .founder-card h2 .accent { background: linear-gradient(135deg, var(--green-light), var(--green)); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .founder-card .lede { max-width: 620px; margin: 0 auto 30px; }
   .founder-card .lede strong { color: var(--green); }
+  .founder-card .lede + .lede { margin-top: 20px; }
+  .why-bubble { display: inline-flex; align-items: center; justify-content: center; flex-wrap: wrap; max-width: 100%; gap: 12px; padding: 10px 22px 10px 14px; margin: 4px 0 28px; border: 1px solid rgba(210,145,60,0.45); border-radius: 999px; background: rgba(210,145,60,0.12); color: var(--green); font-weight: 800; font-size: clamp(17px, 2.4vw, 23px); letter-spacing: -0.01em; }
+  .why-bubble .why-pushup { flex-shrink: 0; display: inline-flex; color: var(--green); filter: drop-shadow(0 0 5px rgba(210,145,60,0.4)); }
+  .why-bubble .why-pushup svg { width: 48px; height: auto; display: block; }
+  @media (max-width: 420px) { .why-bubble { gap: 9px; padding: 9px 16px 9px 12px; border-radius: 22px; } .why-bubble .why-pushup svg { width: 38px; } }
+  .objections { max-width: 540px; margin: 0 auto 30px; background: rgba(10,12,15,0.5); border: 1px solid var(--border); border-radius: 18px; padding: 22px 26px; text-align: left; }
+  .objections p { margin: 0 0 12px; color: var(--text-2); font-size: 16px; line-height: 1.5; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .objections p:last-child { margin-bottom: 0; }
+  .objections .obj-q { color: var(--text); font-weight: 700; }
+  .objections .obj-x { color: #E5534B; font-weight: 900; flex-shrink: 0; }
   .founder-meta { display: flex; justify-content: center; flex-wrap: wrap; gap: 14px; margin-bottom: 30px; }
   .founder-fact { background: rgba(10,12,15,0.5); border: 1px solid var(--border); border-radius: 14px; padding: 14px 22px; min-width: 120px; }
   .founder-fact .k { display: block; font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-3); font-weight: 700; margin-bottom: 6px; }
@@ -1099,9 +1109,18 @@
     </div>
 
     <div class="founder-card infil-card" id="infilCard">
-      <span class="eyebrow"><span class="dot"></span> The Muster Infil · Inaugural Competition · First 25–50 members</span>
-      <h2>Become a Muster <span class="accent">Founder</span></h2>
-      <p class="lede">Join the <strong>Muster Infil</strong>, our free inaugural competition. Everyone who signs up and takes part earns <strong>Founder status</strong> — and <strong>Muster free for life</strong>. This is your chance to help shape the platform from day one.</p>
+      <h2>Join the Inaugural Muster <span class="accent">Infil</span> Competition</h2>
+      <div class="why-bubble">
+        <span class="why-pushup" aria-hidden="true"><svg viewBox="0 0 52 30" aria-hidden="true"><g fill="currentColor" stroke="currentColor" stroke-width="3.8" stroke-linecap="round"><circle cx="11" cy="10" r="4.3" stroke="none"/><line x1="14" y1="12" x2="34" y2="17"/><line x1="34" y1="17" x2="48" y2="26"/><line x1="16" y1="13" x2="16" y2="26"/></g></svg></span>
+        <span>Why not you? Why not now?</span>
+      </div>
+      <div class="objections">
+        <p><span class="obj-q">Too busy?</span> <span class="obj-x" aria-hidden="true">✕</span> No you're not.</p>
+        <p><span class="obj-q">No motivation?</span> <span class="obj-x" aria-hidden="true">✕</span> Take the first step, then another.</p>
+        <p><span class="obj-q">Don't believe this will be different?</span> <span class="obj-x" aria-hidden="true">✕</span> It will.</p>
+      </div>
+      <p class="lede">Join the <strong>Muster Infil</strong>, our free inaugural competition. We all want to make excuses, that won't change. But the motivation in watching others push through and refuse to back down from the doubts is unlike any other. As much as this is possible, Muster will deliver exactly that spark and your team and community of fellow Musters will keep that fire burning.</p>
+      <p class="lede">Everyone who signs up for this inaugural and takes part earns <strong>Founder status</strong> — and <strong>Muster free for life</strong>. This is your chance to help shape the community from day one.</p>
       <div class="founder-meta">
         <div class="founder-fact"><span class="k">Length</span><span class="v">4 weeks</span></div>
         <div class="founder-fact"><span class="k">Entry</span><span class="v">Free</span></div>

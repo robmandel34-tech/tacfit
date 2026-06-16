@@ -1870,6 +1870,14 @@
     pulse(2150); pulse(2520);
     // the moment the route finishes drawing, the squad jumps the summit
     launchChuters(1950);
+    // Just before the loop restarts, fade the finished logo out so the markers
+    // are already hidden when the next cycle's reset fires — this leaves a clean
+    // blank frame at the seam instead of a leftover lone white dot (the M's
+    // bottom-right endpoint). fill:'forwards' so it has no effect until its delay.
+    ['.ia-trail', '.ia-start', '.ia-end', '.ia-left', '.ia-summit', '.ia-beacon'].forEach(function (s) {
+      var el = q(s);
+      if (el) A(el, [{ opacity: 1 }, { opacity: 0 }], { duration: 340, delay: 6000, easing: 'ease-in', fill: 'forwards' });
+    });
   }
 
   // Loop the drop-in: full sequence runs ~5.6s, then a short breather before it replays.

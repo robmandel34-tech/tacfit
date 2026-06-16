@@ -69,18 +69,6 @@
                                 <string>tacfitapp</string>
                         </array>
                 </dict>
-                <!-- Google Sign-In: the value below MUST be the REVERSED iOS OAuth client id
-                     (e.g. com.googleusercontent.apps.1234567890-abcdef). Replace the
-                     placeholder once the Google Cloud iOS client id is created, otherwise
-                     Google sign-in on the native app will not return to the app. -->
-                <dict>
-                        <key>CFBundleURLName</key>
-                        <string>google-signin</string>
-                        <key>CFBundleURLSchemes</key>
-                        <array>
-                                <string>REPLACE_WITH_REVERSED_GOOGLE_IOS_CLIENT_ID</string>
-                        </array>
-                </dict>
         </array>
 </dict>
 </plist>

@@ -26,30 +26,17 @@ author = "agent"
 task = "workflow.run"
 args = "Start application"
 
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Marketing Preview"
-
 [[workflows.workflow]]
 name = "Start application"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run dev"
+args = "python3 -m http.server 5000 --directory marketing-site"
 waitForPort = 5000
 
-[[workflows.workflow]]
-name = "Marketing Preview"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python3 -m http.server 8080 --directory marketing-site"
-waitForPort = 8080
-
 [workflows.workflow.metadata]
-outputType = "console"
+outputType = "webview"
 
 [[ports]]
 localPort = 5000

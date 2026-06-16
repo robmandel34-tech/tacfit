@@ -415,18 +415,18 @@
   .win-crew .spark { transform-box: fill-box; transform-origin: center; }
   /* the celebration only animates during the scripted reveal (.anim + .in-view) */
   .flow.anim .win-crew { opacity: 0; }
-  .flow.anim.in-view .s5 .flow-ic   { animation: winGlow 0.9s ease-out 5.3s; }
-  .flow.anim.in-view .win-burst i   { animation: confetti 0.9s ease-out forwards 5.5s; }
-  .flow.anim.in-view .win-crew      { animation: crewIn 0.5s ease forwards 5.6s; }
-  .flow.anim.in-view .win-crew .b1.up    { animation: armUp 1.1s ease forwards 6.0s; }
-  .flow.anim.in-view .win-crew .b1.rest  { animation: armTuck 1.1s ease forwards 6.0s; }
-  .flow.anim.in-view .win-crew .b1.spark { animation: sparkPop 0.9s ease forwards 6.25s; }
-  .flow.anim.in-view .win-crew .b2.up    { animation: armUp 1.1s ease forwards 6.6s; }
-  .flow.anim.in-view .win-crew .b2.rest  { animation: armTuck 1.1s ease forwards 6.6s; }
-  .flow.anim.in-view .win-crew .b2.spark { animation: sparkPop 0.9s ease forwards 6.85s; }
-  .flow.anim.in-view .win-crew .b3.up    { animation: armUp 1.1s ease forwards 7.2s; }
-  .flow.anim.in-view .win-crew .b3.rest  { animation: armTuck 1.1s ease forwards 7.2s; }
-  .flow.anim.in-view .win-crew .b3.spark { animation: sparkPop 0.9s ease forwards 7.45s; }
+  .flow.anim.in-view .s5 .flow-ic   { animation: winGlow 0.9s ease-out 2.8s; }
+  .flow.anim.in-view .win-burst i   { animation: confetti 0.9s ease-out forwards 3.0s; }
+  .flow.anim.in-view .win-crew      { animation: crewIn 0.5s ease forwards 3.1s; }
+  .flow.anim.in-view .win-crew .b1.up    { animation: armUp 1.1s ease forwards 3.5s; }
+  .flow.anim.in-view .win-crew .b1.rest  { animation: armTuck 1.1s ease forwards 3.5s; }
+  .flow.anim.in-view .win-crew .b1.spark { animation: sparkPop 0.9s ease forwards 3.75s; }
+  .flow.anim.in-view .win-crew .b2.up    { animation: armUp 1.1s ease forwards 4.1s; }
+  .flow.anim.in-view .win-crew .b2.rest  { animation: armTuck 1.1s ease forwards 4.1s; }
+  .flow.anim.in-view .win-crew .b2.spark { animation: sparkPop 0.9s ease forwards 4.35s; }
+  .flow.anim.in-view .win-crew .b3.up    { animation: armUp 1.1s ease forwards 4.7s; }
+  .flow.anim.in-view .win-crew .b3.rest  { animation: armTuck 1.1s ease forwards 4.7s; }
+  .flow.anim.in-view .win-crew .b3.spark { animation: sparkPop 0.9s ease forwards 4.95s; }
   @keyframes winGlow {
     0%   { border-color: rgba(210,145,60,0.35); box-shadow: 0 0 0 0 rgba(240,184,94,0);   color: var(--green); }
     30%  { border-color: #F0B85E;               box-shadow: 0 0 14px 2px rgba(240,184,94,0.6); color: #F0B85E; }
@@ -705,7 +705,7 @@
   .infil-anim { width: 100%; height: auto; display: block; overflow: hidden; }
   .infil-anim .ia-trail { stroke-dasharray: 240; stroke-dashoffset: 240; }
   .infil-anim .ia-pop, .infil-anim .ia-pulse { opacity: 0; transform-box: fill-box; transform-origin: center; }
-  .infil-anim .cPos { opacity: 0; }
+  .infil-anim .cPos { opacity: 0; transform: translate(260px, 260px); }
   /* card reveal is controlled by JS after the squad drops in (not the generic .reveal observer) */
   .infil-card { opacity: 0; transform: translateY(28px); transition: opacity .9s ease, transform .9s ease; }
   .infil-card.infil-in { opacity: 1; transform: translateY(0); }
@@ -1130,7 +1130,7 @@
         <p><span class="obj-q">Don't believe this will be different?</span> <span class="obj-x" aria-hidden="true">✕</span> <span class="obj-a">It will.</span></p>
       </div>
       <p class="lede">Join the <strong>Muster Infil</strong>, our free inaugural competition.</p>
-      <p class="lede">We all want to make excuses, that won't change. <span class="lede-hl">But the motivation in watching others push through and refuse to back down from the doubts is unlike any other. As much as this is possible, Muster will deliver exactly that spark and your team and community of fellow Musters will keep that fire burning.</span></p>
+      <p class="lede">We all want to make excuses, that won't change. <span class="lede-hl">But the motivation in watching others push through and refuse to back down from the doubts is unlike any other.</span> As much as this is possible, Muster will deliver exactly that spark and your team and community of fellow Musters will keep that fire burning.</p>
       <p class="lede">Everyone who signs up for this inaugural and takes part earns <strong>Founder status</strong> — and <strong>Muster free for life</strong>. This is your chance to help shape the community from day one.</p>
       <div class="founder-meta">
         <div class="founder-fact"><span class="k">Length</span><span class="v">4 weeks</span></div>
@@ -1143,7 +1143,7 @@
         <span class="act-chip">Muscle Building — any type</span>
       </div>
       <div class="hero-ctas" style="justify-content:center;">
-        <a href="https://tacfit.replit.app" class="btn btn-primary">Claim your Founder spot →</a>
+        <a href="https://tacfit.replit.app" class="btn btn-primary">Take the first step →</a>
       </div>
       <p class="founder-note"><svg class="founder-note-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D2913C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/></svg><span>Apple HealthKit integration arrives in the app version released before the inaugural competition.</span></p>
     </div>

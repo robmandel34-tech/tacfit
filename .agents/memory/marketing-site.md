@@ -16,6 +16,18 @@ hitting `/mission` on the dev workflow 404s.
 are pushed/deployed. The standing 3-step app deploy reminder does not apply to
 marketing-site changes.
 
+**Domain/DNS wiring (joinmuster.com, completed 2026-06-16):** DNS is run by
+**Netlify DNS** — the domain's nameservers at GoDaddy were switched to Netlify's
+(`dns{1-4}.p07.nsone.net`), so ALL records are managed in Netlify's DNS panel, NOT
+GoDaddy. Topology: `joinmuster.com` + `www` → the Netlify marketing site
+(`tacfit.netlify.app`); `app.joinmuster.com` → the Replit app deployment (A record
+to Replit's LB IP + `replit-verify=` TXT). **Why it matters:** the marketing site
+and the app live on the SAME domain but different hosts — root/www on Netlify, app
+on Replit. The web app is same-origin (Express serves its own frontend+API), so it
+needs NO `APP_ORIGIN` env var; `app.joinmuster.com` is already hardcoded in the CORS
+allowlist in `server/index.ts`. A common confusion: adding the domain in Replit/Netlify
+dashboards does NOT create the DNS pointer — the A/TXT record must be added in Netlify DNS.
+
 **Conventions:** the file uses vanilla CSS with custom `--green/--card/--border`
 CSS variables (NOT Tailwind), and SMIL `<animate>` SVGs for motion. Scroll-reveal
 uses an IntersectionObserver over `.reveal:not(.feature-row)`. Match these when

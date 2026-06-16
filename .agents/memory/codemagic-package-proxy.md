@@ -24,3 +24,13 @@ node_modules), and Codemagic does a fresh install from the corrected lockfile.
 **Why it recurs:** every time a NEW package is added via the Replit packager, its lockfile
 entry gets the internal proxy URL again. After adding deps in Replit, re-check
 `rg -c package-firewall.replit.local package-lock.json` before the next native build.
+
+# Related: CocoaPods "higher minimum deployment target" failure
+Adding a Capacitor plugin whose podspec `s.ios.deployment_target` is higher than
+the project's `platform :ios, 'X'` (Podfile) / `IPHONEOS_DEPLOYMENT_TARGET`
+(project.pbxproj) makes Codemagic's "Install CocoaPods" fail with
+"could not find compatible versions ... required a higher minimum deployment
+target." Fix: bump BOTH the Podfile platform line AND every
+IPHONEOS_DEPLOYMENT_TARGET in project.pbxproj to meet the plugin's minimum
+(Capacitor 6 baseline is iOS 14.0). Check a new plugin's podspec deployment_target
+before the next native build.

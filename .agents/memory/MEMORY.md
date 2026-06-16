@@ -7,3 +7,4 @@
 - [Capacitor dialog tap-close](capacitor-dialog-tap-close.md) — Radix Dialog self-closes on inside taps (e.g. Next) in iOS WKWebView; add onInteractOutside + onPointerDownOutside preventDefault.
 - [App icon pipeline](app-icon-pipeline.md) — all icons generated from the SVG brand mark onto #181B14; iOS app icon MUST be opaque (strip alpha or Apple rejects); icon filenames kept legacy tacfit-* to avoid manifest/HTML path edits.
 - [SSO auth](sso-auth.md) — Apple+Google sits beside email/password; only link by email when provider says it's VERIFIED (else account-takeover); password is nullable, guard every password path.
+- [Codemagic package proxy](codemagic-package-proxy.md) — Codemagic install fails ENOTFOUND package-firewall.replit.local; Replit bakes internal proxy URLs into package-lock resolved fields — sed them back to registry.npmjs.org (recurs on every new dep).

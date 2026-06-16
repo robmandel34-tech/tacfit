@@ -30,3 +30,9 @@ id = "g9CC0l9rB_DNng6GYp4Bs"
 uri = "file://marketing-screenshots/competition-map.png"
 type = "image"
 title = "Competition route map — clean cut-out (transparent corners)"
+
+[[outputs]]
+id = "W5TtePI32AiE2bLA9n9AZ"
+uri = "file://marketing-site.zip"
+type = "unspecified"
+title = "Muster marketing website (Netlify-ready)"

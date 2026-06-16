@@ -1882,7 +1882,7 @@
 
   // Loop the drop-in: full sequence runs ~5.6s, then a short breather before it replays.
   var CYCLE = 6500;
-  var loopId = null, inView = false, cardShown = false;
+  var loopId = null, rafId = null, inView = false, cardShown = false;
   // Hold the very first run until the "How it works" flow has finished appearing.
   var flowReady = !!window.__musterFlowDone, pendingStart = false;
 
@@ -1899,10 +1899,18 @@
   }
   function resetAndPlay() {
     clearAnims();
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
     hideMarks();
     trail.style.strokeDashoffset = L;
-    if (svg) { void svg.getBoundingClientRect(); } // flush the hidden state so no stale frame paints at the seam
-    play();
+    // Blank the whole drawing for one frame so any one-frame cancel-residual
+    // (e.g. the lone white dot at the M's bottom-right tip) can't paint at the
+    // loop seam. Restore + replay on the next frame, when everything starts hidden.
+    svg.style.opacity = '0';
+    rafId = requestAnimationFrame(function () {
+      rafId = null;
+      svg.style.opacity = '';
+      play();
+    });
   }
   function reallyStart() {
     if (loopId !== null) return;                 // guard against double-start
@@ -1917,8 +1925,10 @@
   }
   function stopLooping() {
     if (loopId !== null) { clearInterval(loopId); loopId = null; }
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
     pendingStart = false;
     clearAnims();                                // don't churn animations while paused
+    svg.style.opacity = '';                      // never leave the drawing blanked when paused
   }
   function syncLoop() {
     if (inView && !document.hidden) { try { startLooping(); } catch (err) { showCard(); } }

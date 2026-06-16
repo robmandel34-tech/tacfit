@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail } from "lucide-react";
-import logoPath from "@assets/tacfit-logo-no-bg.png";
+import logoPath from "@assets/muster-logo.png";
 import { useToast } from "@/hooks/use-toast";
 import { SsoButtons } from "@/components/sso-buttons";
 
@@ -59,7 +59,7 @@ export default function Register() {
       <Card className="w-full max-w-md card-modern">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-6">
-            <img src={logoPath} alt="Muster Logo" className="h-20 w-20 object-contain" />
+            <img src={logoPath} alt="Muster Logo" className="h-20 w-20 object-contain rounded-2xl" />
           </div>
           <CardTitle className="text-3xl font-bold text-heading tracking-tight">Join the Force</CardTitle>
           <CardDescription className="text-body text-lg">

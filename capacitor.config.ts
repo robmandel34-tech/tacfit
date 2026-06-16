@@ -12,7 +12,7 @@ const config: CapacitorConfig = {
   },
   ios: {
     contentInset: "automatic",
-    backgroundColor: "#0a0f0a",
+    backgroundColor: "#181B14",
     preferredContentMode: "mobile",
     limitsNavigationsToAppBoundDomains: true,
     scheme: "tacfit",
@@ -22,16 +22,16 @@ const config: CapacitorConfig = {
     SplashScreen: {
       launchShowDuration: 2000,
       launchAutoHide: true,
-      backgroundColor: "#0a0f0a",
+      backgroundColor: "#181B14",
       androidSplashResourceName: "splash",
       androidScaleType: "CENTER_CROP",
       showSpinner: false,
       iosSpinnerStyle: "small",
-      spinnerColor: "#4ade80",
+      spinnerColor: "#D2913C",
     },
     StatusBar: {
       style: "Dark",
-      backgroundColor: "#0a0f0a",
+      backgroundColor: "#181B14",
     },
     PushNotifications: {
       presentationOptions: ["badge", "sound", "alert"],

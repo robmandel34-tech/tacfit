@@ -4,8 +4,8 @@
   "description": "Teamwork, Fitness, Winning - Compete with your team in tactical fitness challenges",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1a1a1a",
-  "theme_color": "#7cb342",
+  "background_color": "#181B14",
+  "theme_color": "#D2913C",
   "orientation": "portrait",
   "scope": "/",
   "icons": [

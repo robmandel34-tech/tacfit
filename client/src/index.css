@@ -3,77 +3,79 @@
 @tailwind utilities;
 
 :root {
-  --background: hsl(0, 0%, 100%);
-  --foreground: hsl(20, 14.3%, 4.1%);
-  --muted: hsl(60, 4.8%, 95.9%);
-  --muted-foreground: hsl(25, 5.3%, 44.7%);
-  --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(20, 14.3%, 4.1%);
-  --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(20, 14.3%, 4.1%);
-  --border: hsl(20, 5.9%, 90%);
-  --input: hsl(20, 5.9%, 90%);
-  --primary: hsl(207, 90%, 54%);
-  --primary-foreground: hsl(211, 100%, 99%);
-  --secondary: hsl(60, 4.8%, 95.9%);
-  --secondary-foreground: hsl(24, 9.8%, 10%);
-  --accent: hsl(60, 4.8%, 95.9%);
-  --accent-foreground: hsl(24, 9.8%, 10%);
-  --destructive: hsl(0, 84.2%, 60.2%);
-  --destructive-foreground: hsl(60, 9.1%, 97.8%);
-  --ring: hsl(20, 14.3%, 4.1%);
+  /* Muster "earthen" palette — dark-only app, set on :root directly */
+  --background: hsl(86, 16%, 9%);        /* field olive  #181B14 */
+  --foreground: hsl(44, 37%, 88%);       /* map bone     #ECE6D6 */
+  --muted: hsl(84, 14%, 14%);
+  --muted-foreground: hsl(75, 11%, 58%); /* sage         #9AA088 */
+  --popover: hsl(84, 16%, 12%);          /* raised surface #20241A */
+  --popover-foreground: hsl(44, 37%, 88%);
+  --card: hsl(84, 16%, 12%);             /* raised surface #20241A */
+  --card-foreground: hsl(44, 37%, 88%);
+  --border: hsla(41, 32%, 76%, 0.14);    /* bone @ 14% */
+  --input: hsla(41, 32%, 76%, 0.18);
+  --primary: hsl(34, 62%, 53%);          /* ochre        #D2913C */
+  --primary-foreground: hsl(86, 22%, 9%);
+  --secondary: hsl(84, 14%, 16%);
+  --secondary-foreground: hsl(44, 37%, 88%);
+  --accent: hsl(84, 14%, 17%);
+  --accent-foreground: hsl(44, 37%, 88%);
+  --destructive: hsl(2, 65%, 52%);
+  --destructive-foreground: hsl(44, 37%, 92%);
+  --ring: hsl(34, 62%, 53%);             /* ochre focus ring */
   --radius: 0.125rem;
-  
-  /* Professional Military Theme Colors */
-  --military-green: hsl(118, 72%, 54%);
-  --military-green-light: hsl(118, 72%, 63%);
-  --military-green-dark: hsl(118, 72%, 43%);
-  --forest-green: hsl(118, 65%, 18%);
-  --tactical-gray: hsl(220, 18%, 5%);
-  --tactical-gray-light: hsl(220, 18%, 16%);
-  --tactical-gray-lighter: hsl(220, 18%, 22%);
-  --tactical-gray-lightest: hsl(220, 18%, 28%);
-  --combat-orange: hsl(25, 95%, 60%);
-  --steel-blue: hsl(210, 80%, 60%);
-  --success-green: hsl(142, 76%, 36%);
-  --warning-amber: hsl(43, 96%, 56%);
-  --danger-red: hsl(0, 84%, 60%);
-  --surface-elevated: hsl(220, 18%, 12%);
-  --surface-overlay: hsl(220, 18%, 18%);
-  --text-primary: hsl(0, 0%, 98%);
-  --text-secondary: hsl(0, 0%, 78%);
-  --text-muted: hsl(0, 0%, 65%);
-  --border-subtle: hsl(220, 13%, 24%);
-  --border-default: hsl(220, 13%, 30%);
-  --bubble-bg: hsl(168, 45%, 10%);
-  --bubble-accent: hsl(168, 65%, 50%);
-  --bubble-accent-rgb: 45, 177, 210;
+
+  /* Brand palette mapped onto the legacy "military" tokens so existing
+     usages adopt the earthen system automatically. */
+  --military-green: hsl(34, 62%, 53%);        /* ochre — the one bright accent */
+  --military-green-light: hsl(34, 64%, 61%);
+  --military-green-dark: hsl(34, 60%, 44%);
+  --forest-green: hsl(86, 22%, 10%);          /* dark ink for text on ochre */
+  --tactical-gray: hsl(86, 16%, 9%);          /* field olive base */
+  --tactical-gray-light: hsl(84, 16%, 12%);   /* raised surface */
+  --tactical-gray-lighter: hsl(84, 14%, 16%);
+  --tactical-gray-lightest: hsl(84, 12%, 21%);
+  --combat-orange: hsl(34, 62%, 53%);         /* ochre */
+  --steel-blue: hsl(200, 24%, 54%);           /* glacier slate #6E93A6 — human accent */
+  --success-green: hsl(125, 33%, 44%);
+  --warning-amber: hsl(38, 78%, 55%);
+  --danger-red: hsl(2, 65%, 55%);
+  --surface-elevated: hsl(84, 16%, 12%);      /* raised surface #20241A */
+  --surface-overlay: hsl(84, 14%, 16%);
+  --text-primary: hsl(44, 37%, 88%);          /* map bone */
+  --text-secondary: hsl(48, 18%, 78%);
+  --text-muted: hsl(75, 11%, 58%);            /* sage */
+  --border-subtle: hsla(41, 32%, 76%, 0.14);  /* bone hairline */
+  --border-default: hsla(41, 32%, 76%, 0.22);
+  --bubble-bg: hsl(200, 18%, 13%);
+  --bubble-accent: hsl(200, 30%, 56%);        /* glacier slate */
+  --bubble-accent-rgb: 110, 147, 166;
 }
 
 .dark {
-  --background: hsl(0, 0%, 10%);
-  --foreground: hsl(0, 0%, 98%);
-  --muted: hsl(0, 0%, 15%);
-  --muted-foreground: hsl(0, 0%, 65%);
-  --popover: hsl(0, 0%, 10%);
-  --popover-foreground: hsl(0, 0%, 98%);
-  --card: hsl(0, 0%, 20%);
-  --card-foreground: hsl(0, 0%, 98%);
-  --border: hsl(0, 0%, 30%);
-  --input: hsl(0, 0%, 30%);
-  --primary: hsl(207, 90%, 54%);
-  --primary-foreground: hsl(211, 100%, 99%);
-  --secondary: hsl(0, 0%, 15%);
-  --secondary-foreground: hsl(0, 0%, 98%);
-  --accent: hsl(0, 0%, 15%);
-  --accent-foreground: hsl(0, 0%, 98%);
-  --destructive: hsl(0, 62.8%, 30.6%);
-  --destructive-foreground: hsl(0, 0%, 98%);
-  --ring: hsl(0, 0%, 84%);
+  --background: hsl(86, 16%, 9%);
+  --foreground: hsl(44, 37%, 88%);
+  --muted: hsl(84, 14%, 14%);
+  --muted-foreground: hsl(75, 11%, 58%);
+  --popover: hsl(84, 16%, 12%);
+  --popover-foreground: hsl(44, 37%, 88%);
+  --card: hsl(84, 16%, 12%);
+  --card-foreground: hsl(44, 37%, 88%);
+  --border: hsla(41, 32%, 76%, 0.14);
+  --input: hsla(41, 32%, 76%, 0.18);
+  --primary: hsl(34, 62%, 53%);
+  --primary-foreground: hsl(86, 22%, 9%);
+  --secondary: hsl(84, 14%, 16%);
+  --secondary-foreground: hsl(44, 37%, 88%);
+  --accent: hsl(84, 14%, 17%);
+  --accent-foreground: hsl(44, 37%, 88%);
+  --destructive: hsl(2, 65%, 45%);
+  --destructive-foreground: hsl(44, 37%, 92%);
+  --ring: hsl(34, 62%, 53%);
   --radius: 0.125rem;
-  --bubble-bg: hsl(168, 45%, 10%);
-  --bubble-accent: hsl(168, 65%, 50%);
-  --bubble-accent-rgb: 45, 177, 210;
+  --bubble-bg: hsl(200, 18%, 13%);
+  --bubble-accent: hsl(200, 30%, 56%);
+  --bubble-accent-rgb: 110, 147, 166;
 }
 
 @layer base {
@@ -118,7 +120,7 @@
   
   body {
     @apply font-sans antialiased;
-    background: linear-gradient(135deg, var(--tactical-gray) 0%, hsl(220, 18%, 5%) 100%);
+    background: linear-gradient(135deg, var(--tactical-gray) 0%, hsl(86, 20%, 6%) 100%);
     color: var(--text-primary);
     min-height: 100vh;
   }
@@ -133,7 +135,7 @@
   }
 
   .card-hero-green {
-    background: radial-gradient(ellipse at 65% 48%, hsl(118, 50%, 32%) 0%, hsl(118, 45%, 22%) 100%) !important;
+    background: radial-gradient(ellipse at 65% 48%, hsl(84, 22%, 20%) 0%, hsl(86, 24%, 13%) 100%) !important;
     border: none !important;
     border-radius: 0.875rem !important;
     overflow: hidden;
@@ -271,7 +273,7 @@
   /* Section-level green band — same gradient + shield as card-hero-green
      but designed to sit inside a Card as the header or footer strip */
   .card-band-green {
-    background: radial-gradient(ellipse at 70% 50%, hsl(118, 50%, 30%) 0%, hsl(118, 45%, 20%) 100%) !important;
+    background: radial-gradient(ellipse at 70% 50%, hsl(84, 22%, 19%) 0%, hsl(86, 24%, 12%) 100%) !important;
     position: relative;
     overflow: hidden;
   }
@@ -417,7 +419,7 @@
   }
   
   .bg-tactical-gray {
-    background: linear-gradient(135deg, var(--tactical-gray) 0%, hsl(220, 18%, 8%) 100%);
+    background: linear-gradient(135deg, var(--tactical-gray) 0%, hsl(86, 18%, 11%) 100%);
   }
   
   .bg-surface-elevated {

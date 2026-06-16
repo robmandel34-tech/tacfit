@@ -3,7 +3,7 @@ import { uploadUrl } from "@/lib/queryClient";
 import { Link, useLocation } from "wouter";
 import { HamburgerMenu } from "@/components/hamburger-menu";
 import { Trophy } from "lucide-react";
-import logoPath from "@assets/tacfit-shield-logo.png";
+import logoPath from "@assets/muster-logo.png";
 import { useQuery } from "@tanstack/react-query";
 
 export default function Navigation() {
@@ -41,7 +41,7 @@ export default function Navigation() {
               <img
                 src={logoPath}
                 alt="Muster logo"
-                className="h-9 w-9 object-contain"
+                className="h-9 w-9 object-contain rounded-lg"
               />
               <span className="text-2xl font-bold text-heading tracking-tight">Muster</span>
             </div>

@@ -369,7 +369,7 @@
     .flow .c3 { margin-left: 49px; }
     .flow .c4 { margin-left: 67px; }
     .win-crew { margin-left: 7px; }
-    .win-crew svg { width: 88px; }
+    .win-crew svg { width: 92px; }
   }
   /* wider view: bigger icons/labels and a wider diagonal spread */
   @media (min-width: 600px) {
@@ -410,7 +410,7 @@
   .win-burst i:nth-child(3n+2) { background: #ECE6D6; }
   .win-burst i:nth-child(3n)   { background: #6E93A6; }
   .win-crew { margin-left: 10px; flex-shrink: 0; }
-  .win-crew svg { width: 104px; height: 40px; display: block; }
+  .win-crew svg { width: 110px; height: auto; display: block; overflow: visible; color: var(--green); filter: drop-shadow(0 0 5px rgba(210,145,60,0.4)); }
   .win-crew .up, .win-crew .spark { opacity: 0; }
   .win-crew .spark { transform-box: fill-box; transform-origin: center; }
   /* the celebration only animates during the scripted reveal (.anim + .in-view) */
@@ -1036,22 +1036,24 @@
     <div class="flow-step s5">
       <span class="flow-ic"><span class="win-burst" aria-hidden="true"><i style="--tx:-26px;--ty:-22px;--r:120deg"></i><i style="--tx:0px;--ty:-32px;--r:-90deg"></i><i style="--tx:26px;--ty:-22px;--r:200deg"></i><i style="--tx:32px;--ty:0px;--r:60deg"></i><i style="--tx:26px;--ty:24px;--r:-140deg"></i><i style="--tx:0px;--ty:32px;--r:160deg"></i><i style="--tx:-26px;--ty:24px;--r:-60deg"></i><i style="--tx:-32px;--ty:0px;--r:90deg"></i><i style="--tx:-14px;--ty:-28px;--r:-200deg"></i><i style="--tx:16px;--ty:-28px;--r:140deg"></i><i style="--tx:18px;--ty:18px;--r:-100deg"></i><i style="--tx:-18px;--ty:16px;--r:70deg"></i></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg></span>
       <span class="flow-label">Win</span>
-      <span class="win-crew" aria-hidden="true"><svg viewBox="0 0 108 40" aria-hidden="true">
-        <g stroke="#ECE6D6" stroke-width="1.5" stroke-linecap="round" fill="none">
-          <circle cx="12" cy="6" r="3" fill="#ECE6D6" stroke="none"/><circle cx="33" cy="6" r="3" fill="#ECE6D6" stroke="none"/><circle cx="54" cy="6" r="3" fill="#ECE6D6" stroke="none"/><circle cx="75" cy="6" r="3" fill="#ECE6D6" stroke="none"/><circle cx="96" cy="6" r="3" fill="#ECE6D6" stroke="none"/>
-          <path d="M12,9 L12,22 M33,9 L33,22 M54,9 L54,22 M75,9 L75,22 M96,9 L96,22"/>
-          <path d="M12,22 L8,32 M12,22 L16,32 M33,22 L29,32 M33,22 L37,32 M54,22 L50,32 M54,22 L58,32 M75,22 L71,32 M75,22 L79,32 M96,22 L92,32 M96,22 L100,32"/>
-          <path d="M12,11 L7,18 M33,11 L38,18 M54,11 L49,18 M96,11 L101,18"/>
-          <path class="rest b1" d="M12,11 L17,18"/><path class="rest b1" d="M33,11 L28,18"/>
-          <path class="rest b2" d="M54,11 L59,18"/><path class="rest b2" d="M75,11 L70,18"/>
-          <path class="rest b3" d="M75,11 L80,18"/><path class="rest b3" d="M96,11 L91,18"/>
-          <path class="up b1" d="M12,11 L22,7"/><path class="up b1" d="M33,11 L22,7"/>
-          <path class="up b2" d="M54,11 L64,7"/><path class="up b2" d="M75,11 L64,7"/>
-          <path class="up b3" d="M75,11 L85,7"/><path class="up b3" d="M96,11 L85,7"/>
+      <span class="win-crew" aria-hidden="true"><svg viewBox="0 0 120 48" aria-hidden="true">
+        <g fill="currentColor" stroke="none">
+          <circle cx="12" cy="9" r="5"/><circle cx="36" cy="9" r="5"/><circle cx="60" cy="9" r="5"/><circle cx="84" cy="9" r="5"/><circle cx="108" cy="9" r="5"/>
+          <rect x="7.5" y="14" width="9" height="15" rx="4.5"/><rect x="31.5" y="14" width="9" height="15" rx="4.5"/><rect x="55.5" y="14" width="9" height="15" rx="4.5"/><rect x="79.5" y="14" width="9" height="15" rx="4.5"/><rect x="103.5" y="14" width="9" height="15" rx="4.5"/>
         </g>
-        <g class="spark b1"><path d="M22,2 L22,4 M22,10 L22,12 M17,7 L19,7 M25,7 L27,7" stroke="#F0B85E" stroke-width="1" stroke-linecap="round"/></g>
-        <g class="spark b2"><path d="M64,2 L64,4 M64,10 L64,12 M59,7 L61,7 M67,7 L69,7" stroke="#F0B85E" stroke-width="1" stroke-linecap="round"/></g>
-        <g class="spark b3"><path d="M85,2 L85,4 M85,10 L85,12 M80,7 L82,7 M88,7 L90,7" stroke="#F0B85E" stroke-width="1" stroke-linecap="round"/></g>
+        <g stroke="currentColor" stroke-width="3.8" stroke-linecap="round" fill="none">
+          <path d="M12,28 L8,42 M12,28 L16,42 M36,28 L32,42 M36,28 L40,42 M60,28 L56,42 M60,28 L64,42 M84,28 L80,42 M84,28 L88,42 M108,28 L104,42 M108,28 L112,42"/>
+          <path d="M12,18 L5,27 M36,18 L43,27 M60,18 L53,27 M108,18 L115,27"/>
+          <path class="rest b1" d="M12,18 L19,27"/><path class="rest b1" d="M36,18 L29,27"/>
+          <path class="rest b2" d="M60,18 L67,27"/><path class="rest b2" d="M84,18 L77,27"/>
+          <path class="rest b3" d="M84,18 L91,27"/><path class="rest b3" d="M108,18 L101,27"/>
+          <path class="up b1" d="M12,18 L24,11"/><path class="up b1" d="M36,18 L24,11"/>
+          <path class="up b2" d="M60,18 L72,11"/><path class="up b2" d="M84,18 L72,11"/>
+          <path class="up b3" d="M84,18 L96,11"/><path class="up b3" d="M108,18 L96,11"/>
+        </g>
+        <g class="spark b1"><path d="M24,5 L24,7 M24,15 L24,17 M18,11 L20,11 M28,11 L30,11" stroke="#F0B85E" stroke-width="1.5" stroke-linecap="round"/></g>
+        <g class="spark b2"><path d="M72,5 L72,7 M72,15 L72,17 M66,11 L68,11 M76,11 L78,11" stroke="#F0B85E" stroke-width="1.5" stroke-linecap="round"/></g>
+        <g class="spark b3"><path d="M96,5 L96,7 M96,15 L96,17 M90,11 L92,11 M100,11 L102,11" stroke="#F0B85E" stroke-width="1.5" stroke-linecap="round"/></g>
       </svg></span>
     </div>
   </div>

@@ -25,17 +25,16 @@ app.use((req, res, next) => {
     'capacitor://localhost',
     'ionic://localhost',
     'http://localhost',
-    // MainLink custom domains (additive — current Replit URL still works)
-    // Primary: mainlinkapp.com. Others are owned too (redirect/backup), allowed
-    // so the app frontend works no matter which domain serves it.
-    'https://mainlinkapp.com',
-    'https://www.mainlinkapp.com',
-    'https://app.mainlinkapp.com',
-    'https://main-link.app',
-    'https://www.main-link.app',
-    'https://app.main-link.app',
-    'https://mainlinkapp.net',
-    'https://www.mainlinkapp.net',
+    // Muster custom domains (additive — current Replit URL still works).
+    // muster.com is taken; final pick pending among these candidates — all are
+    // allow-listed so the app works whichever the user buys. Prune after.
+    'https://joinmuster.com',
+    'https://www.joinmuster.com',
+    'https://muster.app',
+    'https://www.muster.app',
+    'https://app.muster.app',
+    'https://musterfit.com',
+    'https://www.musterfit.com',
   ].filter(Boolean);
   const origin = req.headers.origin;
   if (origin && allowedOrigins.includes(origin)) {

@@ -5976,7 +5976,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/sync/health", (req, res) => {
     res.json({
       status: "healthy",
-      service: "MainLink Data Sync API",
+      service: "Muster Data Sync API",
       timestamp: new Date().toISOString(),
       version: "1.0.0"
     });

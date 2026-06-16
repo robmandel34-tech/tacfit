@@ -95,9 +95,9 @@ export default function Login() {
       <Card className="w-full max-w-md card-modern">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-6">
-            <img src={logoPath} alt="MainLink Logo" className="h-16 w-16 object-contain" />
+            <img src={logoPath} alt="Muster Logo" className="h-16 w-16 object-contain" />
           </div>
-          <CardTitle className="text-3xl font-bold text-heading tracking-tight">MainLink</CardTitle>
+          <CardTitle className="text-3xl font-bold text-heading tracking-tight">Muster</CardTitle>
           <CardDescription className="text-body text-lg">
             Teamwork, Fitness, Winning
           </CardDescription>

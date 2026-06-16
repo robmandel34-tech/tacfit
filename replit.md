@@ -1,24 +1,25 @@
-# MainLink - Fitness Competition Platform
+# Muster - Fitness Competition Platform
 
-> **Rebrand in progress (2026-06-15): "TacFit" → "MainLink"** (tagline: "Find your team").
+> **Rebrand in progress (2026-06-15): "TacFit" → "Muster"** (tagline: "Find your team").
 > All user-facing text in the React app, PWA shell (title/manifest/service-worker
 > notifications), email display names, marketing/legal HTML pages, native app
 > display name (Info.plist `CFBundleDisplayName`), and demo assets now read
-> "MainLink". The military/tactical THEME and voice ("squad", "mission",
-> "Command Center", "Intel Feed") are intentionally kept.
+> "Muster". The military/tactical THEME and voice ("squad", "mission",
+> "Command Center", "Intel Feed") are intentionally kept — "Muster" (to assemble
+> a unit / "muster point") fits the theme directly. (Name history: the app pivoted
+> TacFit → MainLink → Muster on the same day; only "Muster" should remain.)
 > **Intentionally NOT changed** (would break things or are invisible): the bundle
 > id `com.tacfit.app` (permanent, invisible to users), the iOS custom scheme
 > `tacfit`, all `@tacfit.app` email ADDRESSES (domain still SendGrid-authenticated;
 > only display names changed), asset filenames containing `tacfit`, code
 > identifiers/localStorage keys, and the `X-Webhook-Source: TacFit-Points-Sync`
-> integration header. (`mainlink.app` was taken; user bought `mainlinkapp.com`
-> [recommended primary, no hyphen], `main-link.app`, and `mainlinkapp.net`.) CORS
-> now ALSO allows all owned domains — `mainlinkapp.com` / `www` / `app.` plus
-> `main-link.app` (+`www`/`app.`) and `mainlinkapp.net` (+`www`) — additive, so
-> the current Replit URL still works. The shield-and-cross logo has no
-> text, so it carries over unchanged. **User still owns:** buying the domain +
-> DNS records, App Store Connect display name, and a fresh TestFlight build for
-> the native name to take effect.
+> integration header. DOMAIN: `muster.com` is taken (existing software co.); the
+> user is choosing among `joinmuster.com`, `muster.app`, and `musterfit.com`.
+> `server/index.ts` CORS allow-lists all three (+ www/app variants), additive —
+> the current Replit URL still works; prune to the final pick once it's bought.
+> The shield-and-cross logo has no text, so it carries over unchanged.
+> **User still owns:** buying the domain + DNS records, App Store Connect display
+> name, and a fresh TestFlight build for the native name to take effect.
 
 ## Overview
 TacFit is a full-stack fitness competition platform designed for team-based fitness challenges. It enables users to create and join competitions, form teams, track various activities (Cardio, Strength, Mobility Training, Meditation), and engage through social features like chat and activity feeds. The platform incorporates a reward system for competition winners, activity submissions, and daily mood assessments, and integrates with external services for automated activity tracking. The vision is to provide a comprehensive wellness platform beyond just fitness, incorporating mental health aspects and fostering community engagement in a tactical-themed environment.

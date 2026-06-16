@@ -44,7 +44,7 @@ export function createDemoRouteMapSVG(workoutId: number): string {
   <text x="400" y="100" text-anchor="middle" class="text">Elevation Gain: 45m</text>
   
   <!-- TacFit branding -->
-  <text x="50" y="580" class="text" opacity="0.6">MainLink Route Tracking</text>
+  <text x="50" y="580" class="text" opacity="0.6">Muster Route Tracking</text>
 </svg>`.trim();
 
   // Save SVG to uploads directory

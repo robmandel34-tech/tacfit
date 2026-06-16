@@ -11,7 +11,7 @@ export default function NavigationHelp() {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-white mb-2">Navigation Guide</h1>
-          <p className="text-gray-400">Complete guide to navigating the MainLink platform efficiently</p>
+          <p className="text-gray-400">Complete guide to navigating the Muster platform efficiently</p>
         </div>
 
         <div className="space-y-6">
@@ -25,7 +25,7 @@ export default function NavigationHelp() {
             </CardHeader>
             <CardContent className="text-gray-300 space-y-4">
               <p>
-                MainLink uses a dual navigation system designed for both desktop and mobile users. 
+                Muster uses a dual navigation system designed for both desktop and mobile users. 
                 The main navigation adapts based on your participation status and provides quick 
                 access to all essential features.
               </p>
@@ -62,7 +62,7 @@ export default function NavigationHelp() {
                   <div className="bg-gray-700/50 p-3 rounded-lg">
                     <h5 className="font-medium text-military-green mb-2 flex items-center">
                       <Home className="h-4 w-4 mr-2" />
-                      MainLink Logo
+                      Muster Logo
                     </h5>
                     <p className="text-xs text-gray-400">
                       Click to return to the main Intel Feed (home page) from anywhere in the app

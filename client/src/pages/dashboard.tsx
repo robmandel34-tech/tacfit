@@ -80,7 +80,7 @@ export default function Dashboard() {
     },
     onSuccess: async () => {
       toast({
-        title: "Welcome to MainLink!",
+        title: "Welcome to Muster!",
         description: "You're now ready to start your tactical fitness journey.",
       });
       // Refresh user data to update onboarding status both in queries and auth context

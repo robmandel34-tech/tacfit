@@ -12,3 +12,21 @@ id = "_Qra6OVbNx8P75XemL4R9"
 uri = "file://client/public/marketing/og-image.jpg"
 type = "image"
 title = "Preview: new link share image"
+
+[[outputs]]
+id = "KiRdZXZMjZuXtUB2b5EEu"
+uri = "file://marketing-screenshots/readiness-callout.png"
+type = "image"
+title = "Readiness score callout (marketing)"
+
+[[outputs]]
+id = "3mtmVt-nYiBhEn27Lc0Vs"
+uri = "file://marketing-screenshots/competition-map-framed.png"
+type = "image"
+title = "Competition route map — framed"
+
+[[outputs]]
+id = "g9CC0l9rB_DNng6GYp4Bs"
+uri = "file://marketing-screenshots/competition-map.png"
+type = "image"
+title = "Competition route map — clean cut-out (transparent corners)"

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail } from "lucide-react";
-import logoPath from "@assets/muster-logo.png";
+import logoPath from "@assets/muster-mark_1781577670927.svg";
 import { useToast } from "@/hooks/use-toast";
 import { SsoButtons } from "@/components/sso-buttons";
 

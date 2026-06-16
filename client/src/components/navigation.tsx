@@ -3,7 +3,7 @@ import { uploadUrl } from "@/lib/queryClient";
 import { Link, useLocation } from "wouter";
 import { HamburgerMenu } from "@/components/hamburger-menu";
 import { Trophy } from "lucide-react";
-import logoPath from "@assets/muster-logo.png";
+import logoPath from "@assets/muster-mark_1781577670927.svg";
 import { useQuery } from "@tanstack/react-query";
 
 export default function Navigation() {

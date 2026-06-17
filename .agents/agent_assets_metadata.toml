@@ -48,3 +48,9 @@ id = "_AVbKlVh94bwyNj-nxP0G"
 uri = "file://marketing-screenshots/muster-fanfare-preview.mp3"
 type = "audio"
 title = "Muster victory fanfare — preview"
+
+[[outputs]]
+id = "ehSzy1HTKzeb2bjlmvpR0"
+uri = "file://marketing-screenshots/muster-stadium-sting-preview.mp3"
+type = "audio"
+title = "Muster stadium-anthem sting — preview (original, chant energy)"

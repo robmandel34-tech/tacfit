@@ -54,3 +54,21 @@ id = "ehSzy1HTKzeb2bjlmvpR0"
 uri = "file://marketing-screenshots/muster-stadium-sting-preview.mp3"
 type = "audio"
 title = "Muster stadium-anthem sting — preview (original, chant energy)"
+
+[[outputs]]
+id = "MPW1BaSPbsRHmNf92yudA"
+uri = "file://marketing-screenshots/muster-epic-orchestral-preview.mp3"
+type = "audio"
+title = "Epic orchestral hit — cinematic, choir + boom"
+
+[[outputs]]
+id = "n0LnL_KIAr3QUGjAq4ceu"
+uri = "file://marketing-screenshots/muster-edm-hype-preview.mp3"
+type = "audio"
+title = "EDM hype drop — modern, festival energy"
+
+[[outputs]]
+id = "HOFHUdNEtRhzTtb8-PETs"
+uri = "file://marketing-screenshots/muster-march-drums-preview.mp3"
+type = "audio"
+title = "Tactical march — snare cadence + trumpet flourish"

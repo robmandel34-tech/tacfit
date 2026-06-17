@@ -13,6 +13,7 @@ import { API_BASE, apiRequest } from "@/lib/queryClient";
 import { useAppleHealth } from "@/hooks/use-apple-health";
 import { mapHealthKitTypeToActivityName, MIN_PASSIVE_EXERCISE_MINUTES } from "@shared/healthkit";
 import { reconcileWorkoutDurationSec } from "@/lib/healthkit";
+import { celebrate } from "@/lib/celebrate";
 
 interface ActivitySubmissionModalProps {
   isOpen: boolean;
@@ -413,6 +414,8 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
         xhr.send(data);
       }),
     onSuccess: async (data: any) => {
+      // Fire the celebration moment: explosion, "Way to Muster up!", sound, buzz.
+      celebrate();
       toast({
         title: "Activity submitted!",
         description: "Your activity has been recorded successfully.",

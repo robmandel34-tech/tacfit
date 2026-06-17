@@ -33,8 +33,10 @@ import {
   Heart,
   RefreshCw,
   CheckCircle,
+  Volume2,
 } from "lucide-react";
 import { useAppleHealth } from "@/hooks/use-apple-health";
+import { isCelebrationSoundOn, setCelebrationSound } from "@/lib/celebrate";
 
 export default function SettingsPage() {
   const [, setLocation] = useLocation();
@@ -47,6 +49,7 @@ export default function SettingsPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [deletePassword, setDeletePassword] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [celebrationSoundOn, setCelebrationSoundOn] = useState(isCelebrationSoundOn());
 
   const appleHealth = useAppleHealth();
 
@@ -235,6 +238,33 @@ export default function SettingsPage() {
                   disabled={toggleNotifications.isPending}
                   className="data-[state=checked]:bg-military-green text-forest-green"
                 />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* ── Celebration ── */}
+          <Card className="bg-white/5 border-white/10 rounded-2xl">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-white flex items-center gap-2 text-base">
+                <Volume2 className="h-4 w-4 text-military-green" /> Celebration
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-white text-sm font-medium">Celebration Sound</p>
+                  <p className="text-gray-400 text-xs mt-0.5">Play a victory sting when you submit an activity</p>
+                </div>
+                <Switch
+                  checked={celebrationSoundOn}
+                  onCheckedChange={val => { setCelebrationSound(val); setCelebrationSoundOn(val); }}
+                  className="data-[state=checked]:bg-military-green text-forest-green"
+                />
+              </div>
+              <div className="mt-2 rounded-lg bg-white/5 border border-white/10 px-3 py-2.5 text-xs text-gray-400 leading-relaxed">
+                The explosion, the "Way to Muster up!" message, and the phone buzz
+                always play — this only controls the sound. On iPhone the sound also
+                follows your ringer's silent switch.
               </div>
             </CardContent>
           </Card>

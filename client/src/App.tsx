@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "./hooks/use-auth";
 import MusterSplash from "@/components/MusterSplash";
+import CelebrationOverlay from "@/components/celebration-overlay";
 
 // Class-based error boundary — must be a class component
 class ErrorBoundaryBase extends Component<
@@ -139,6 +140,7 @@ function AppContent() {
   return (
     <MoodTracker>
       <Toaster />
+      <CelebrationOverlay />
       <ErrorBoundary>
         <Router />
       </ErrorBoundary>

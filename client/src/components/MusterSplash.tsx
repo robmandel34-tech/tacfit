@@ -7,8 +7,8 @@ import { useEffect, useRef, useState } from "react";
  * first-paint mark in index.html; only the parachutists animate on top.
  *
  * Ported from the marketing site's drop-in animation (marketing-site/index.html),
- * trimmed to a single pass and re-aimed so the squad converges on the muster
- * point instead of looping off-frame.
+ * trimmed to a single pass: the squad jumps off the right peak and drifts down
+ * and off to the right (clear of the mark), just like the website.
  */
 
 const SVGNS = "http://www.w3.org/2000/svg";
@@ -72,7 +72,6 @@ export default function MusterSplash({ onDone }: { onDone: () => void }) {
     };
 
     const SUMMIT = { x: 117, y: 24 }; // the tall right-hand peak, in viewBox coords
-    const POINT = { x: 99, y: 68 }; // the muster point (beacon), in viewBox coords
     const NUM = 5;
 
     type Chuter = {
@@ -106,10 +105,11 @@ export default function MusterSplash({ onDone }: { onDone: () => void }) {
         canopy: pos.querySelector(".canopy") as SVGElement,
         jx: 3 + rnd() * 3,
         jh: 4 + rnd() * 3,
-        // converge on the muster point instead of drifting off-frame
-        ex: POINT.x - 14 + i * 6 + rnd() * 4,
-        ey: POINT.y + 8 + rnd() * 8,
-        wind: -2 + rnd() * 5,
+        // jump off the right peak and drift down-and-off to the right, clear of
+        // the mark — matches the marketing site instead of landing on the logo
+        ex: 150 + i * 16 + rnd() * 22,
+        ey: 84 + rnd() * 16,
+        wind: 3 + rnd() * 8,
         dur: 2100 + rnd() * 460,
         amp: 5 + rnd() * 5,
         stagger: i * 170 + (rnd() * 36 - 18),

@@ -24,8 +24,9 @@ could hide the native image before the web layer paints, causing a flash/blank.
 launch = fresh webview session → plays every launch; browser refreshes within a
 session skip it. Single pass (~4s), tap-to-skip, reduced-motion/no-WebAnimations
 falls back to a quick fade. The animation is a faithful port of the marketing
-site's drop-in (`marketing-site/index.html`), re-aimed so chuters converge on the
-muster point instead of drifting off-frame.
+site's drop-in (`marketing-site/index.html`): the squad jumps off the right peak
+and drifts down-and-off to the RIGHT, clear of the mark (do NOT aim them to land
+on the beacon — user explicitly disliked them falling over the logo).
 
 **Takes effect on iOS only via a new TestFlight build** (push → Codemagic), since
 the native launch image + capacitor config ship in the native binary.

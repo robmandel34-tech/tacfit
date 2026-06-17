@@ -14,6 +14,12 @@ import { useAppleHealth } from "@/hooks/use-apple-health";
 import { mapHealthKitTypeToActivityName, MIN_PASSIVE_EXERCISE_MINUTES } from "@shared/healthkit";
 import { reconcileWorkoutDurationSec } from "@/lib/healthkit";
 import { celebrate } from "@/lib/celebrate";
+import { Capacitor } from "@capacitor/core";
+
+// On native iOS, Radix's popup dropdown opens inside a scroll-locked WKWebView
+// dialog where it collapses to a thin sliver and won't scroll. There we fall
+// back to the OS-native <select> picker (a full-screen wheel) which always works.
+const isNativeApp = Capacitor.isNativePlatform();
 
 interface ActivitySubmissionModalProps {
   isOpen: boolean;
@@ -591,6 +597,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         className="max-w-2xl max-h-[90vh] overflow-y-auto bg-tactical-gray-dark border border-tactical-gray text-white"
+        style={{ WebkitOverflowScrolling: "touch", overscrollBehavior: "contain", touchAction: "pan-y" }}
         onInteractOutside={(e) => e.preventDefault()}
         onPointerDownOutside={(e) => e.preventDefault()}
       >
@@ -715,48 +722,36 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                         const selectedWorkout = loadedWorkouts.find((w) => w.healthKitWorkoutId === selectedWorkoutHkId);
                         return (
                           <div className="space-y-2">
-                            <Select
-                              value={selectedWorkoutHkId || ""}
-                              onValueChange={(id) => {
-                                const w = loadedWorkouts.find((x) => x.healthKitWorkoutId === id);
-                                if (w && w.eligible !== false) applyWorkout(w);
-                              }}
-                            >
-                              <SelectTrigger
-                                className="bg-tactical-gray-lighter border-2 border-tactical-gray text-white focus:border-white focus:ring-0 focus:ring-offset-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                            <div className="relative">
+                              <select
+                                value={selectedWorkoutHkId || ""}
+                                onChange={(e) => {
+                                  const w = loadedWorkouts.find((x) => x.healthKitWorkoutId === e.target.value);
+                                  if (w && w.eligible !== false) applyWorkout(w);
+                                }}
                                 data-testid="select-apple-health-workout"
+                                className="w-full h-10 appearance-none rounded-md bg-tactical-gray-lighter border-2 border-tactical-gray text-white pl-3 pr-9 text-sm focus:border-white focus:outline-none"
                               >
-                                <SelectValue placeholder="Choose a synced workout" />
-                              </SelectTrigger>
-                              <SelectContent className="bg-tactical-gray-light border-tactical-gray text-white z-50 max-h-72" position="popper" sideOffset={5}>
+                                <option value="" disabled>Choose a synced workout</option>
                                 {loadedWorkouts.map((w) => {
                                   const minutes = workoutMinutes(w);
                                   const km = w.distanceMeters ? (w.distanceMeters / 1000).toFixed(2) : null;
                                   const eligible = w.eligible !== false;
+                                  const label = `${w.activityType} · ${new Date(w.startTime).toLocaleDateString()} · ${minutes} min${km && Number(km) > 0 ? ` · ${km} km` : ""}${w.energyKcal ? ` · ${w.energyKcal} cal` : ""}${!eligible && w.ineligibleReason ? ` (can't use: ${w.ineligibleReason})` : ""}`;
                                   return (
-                                    <SelectItem
+                                    <option
                                       key={w.healthKitWorkoutId}
                                       value={w.healthKitWorkoutId}
                                       disabled={!eligible}
-                                      className="text-white"
                                       data-testid={`workout-${w.healthKitWorkoutId}`}
                                     >
-                                      <div className="flex items-start gap-2">
-                                        <Activity className={`w-4 h-4 mt-0.5 ${eligible ? "text-military-green" : "text-gray-500"}`} />
-                                        <div>
-                                          <div>
-                                            {w.activityType} · {new Date(w.startTime).toLocaleDateString()} · {minutes} min{km && Number(km) > 0 ? ` · ${km} km` : ""}{w.energyKcal ? ` · ${w.energyKcal} cal` : ""}
-                                          </div>
-                                          {!eligible && w.ineligibleReason && (
-                                            <div className="text-xs text-amber-400 mt-0.5">Can't use: {w.ineligibleReason}</div>
-                                          )}
-                                        </div>
-                                      </div>
-                                    </SelectItem>
+                                      {label}
+                                    </option>
                                   );
                                 })}
-                              </SelectContent>
-                            </Select>
+                              </select>
+                              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-60" />
+                            </div>
                             {selectedWorkout && selectedWorkout.eligible !== false && (
                               <div className="flex items-center gap-2 text-xs text-military-green">
                                 <CheckCircle className="w-3.5 h-3.5" />
@@ -777,24 +772,43 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
               {/* Activity Type Selection */}
               <div className="space-y-2">
                 <Label className="text-gray-300 font-medium">Activity Type</Label>
-                <Select value={type} onValueChange={setType}>
-                  <SelectTrigger className="bg-tactical-gray-lighter border-2 border-tactical-gray text-white focus:border-white focus:ring-0 focus:ring-offset-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
-                    <SelectValue placeholder="Choose an activity type" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-tactical-gray-light border-tactical-gray text-white z-50" position="popper" sideOffset={5}>
-                    {competitionActivityTypes.map((activityType) => (
-                      <SelectItem 
-                        key={activityType.name} 
-                        value={activityType.name}
-                        className="text-forest-green hover:bg-military-green focus:bg-military-green data-[highlighted]:bg-military-green data-[highlighted]:text-white cursor-pointer"
-                      >
-                        <div className="flex items-center justify-between w-full">
-                          <span>{activityType.displayName}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {isNativeApp ? (
+                  <div className="relative">
+                    <select
+                      value={type}
+                      onChange={(e) => setType(e.target.value)}
+                      data-testid="select-activity-type"
+                      className="w-full h-10 appearance-none rounded-md bg-tactical-gray-lighter border-2 border-tactical-gray text-white pl-3 pr-9 text-sm focus:border-white focus:outline-none"
+                    >
+                      <option value="" disabled>Choose an activity type</option>
+                      {competitionActivityTypes.map((activityType) => (
+                        <option key={activityType.name} value={activityType.name}>
+                          {activityType.displayName}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-60" />
+                  </div>
+                ) : (
+                  <Select value={type} onValueChange={setType}>
+                    <SelectTrigger className="bg-tactical-gray-lighter border-2 border-tactical-gray text-white focus:border-white focus:ring-0 focus:ring-offset-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
+                      <SelectValue placeholder="Choose an activity type" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-tactical-gray-light border-tactical-gray text-white z-50" position="popper" sideOffset={5}>
+                      {competitionActivityTypes.map((activityType) => (
+                        <SelectItem 
+                          key={activityType.name} 
+                          value={activityType.name}
+                          className="text-forest-green hover:bg-military-green focus:bg-military-green data-[highlighted]:bg-military-green data-[highlighted]:text-white cursor-pointer"
+                        >
+                          <div className="flex items-center justify-between w-full">
+                            <span>{activityType.displayName}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
                 
                 {/* Activity Description */}
                 {type && (

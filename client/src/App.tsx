@@ -1,10 +1,11 @@
-import { useEffect, Component, ReactNode } from "react";
+import { useEffect, useState, Component, ReactNode } from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "./hooks/use-auth";
+import MusterSplash from "@/components/MusterSplash";
 
 // Class-based error boundary — must be a class component
 class ErrorBoundaryBase extends Component<
@@ -152,7 +153,29 @@ function AppContent() {
 }
 
 function App() {
-  // Dismiss splash screen after React mounts
+  // The in-app animated splash (parachute drop-in). Renders on top of everything
+  // while the app loads, plays one pass, then fades to reveal the app. Gated per
+  // session: on native iOS every cold launch is a fresh webview session so it
+  // plays on each launch, while browser refreshes within a session skip it.
+  const [showSplash, setShowSplash] = useState(() => {
+    try {
+      return sessionStorage.getItem('muster_splash_shown') !== '1';
+    } catch {
+      return true;
+    }
+  });
+  const dismissSplash = () => {
+    try {
+      sessionStorage.setItem('muster_splash_shown', '1');
+    } catch {
+      /* ignore (private mode / unavailable storage) */
+    }
+    setShowSplash(false);
+  };
+
+  // Remove the instant first-paint splash from index.html once React has mounted.
+  // The animated MusterSplash overlay (rendered below) already covers the screen
+  // with the identical Muster mark, so this is just cleanup — no visible flash.
   useEffect(() => {
     const splash = document.getElementById('tacfit-splash');
     if (splash) {
@@ -176,13 +199,16 @@ function App() {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <AuthProvider>
-          <AppContent />
-        </AuthProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <>
+      {showSplash && <MusterSplash onDone={dismissSplash} />}
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <AuthProvider>
+            <AppContent />
+          </AuthProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </>
   );
 }
 

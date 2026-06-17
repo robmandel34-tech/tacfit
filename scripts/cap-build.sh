@@ -38,12 +38,12 @@ bash scripts/ios-permissions.sh
 echo "→ Patching HealthKit plugin for HRV support..."
 bash scripts/patch-healthkit-hrv.sh
 
-# Copy the TacFit splash master into the iOS asset catalog so the launch
-# screen shows the TacFit shield instead of the default Capacitor splash.
+# Copy the Muster splash master into the iOS asset catalog so the launch
+# screen shows the Muster mark instead of the default Capacitor splash.
 SPLASH_SRC="scripts/assets/ios-splash-master.png"
 SPLASH_DST_DIR="ios/App/App/Assets.xcassets/Splash.imageset"
 if [ -f "$SPLASH_SRC" ] && [ -d "$SPLASH_DST_DIR" ]; then
-  echo "→ Installing TacFit splash into iOS asset catalog..."
+  echo "→ Installing Muster splash into iOS asset catalog..."
   cp "$SPLASH_SRC" "$SPLASH_DST_DIR/splash-2732x2732.png"
   cp "$SPLASH_SRC" "$SPLASH_DST_DIR/splash-2732x2732-1.png"
   cp "$SPLASH_SRC" "$SPLASH_DST_DIR/splash-2732x2732-2.png"

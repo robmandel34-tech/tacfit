@@ -20,8 +20,11 @@ const config: CapacitorConfig = {
   },
   plugins: {
     SplashScreen: {
-      launchShowDuration: 2000,
-      launchAutoHide: true,
+      // Hidden explicitly from JS (main.tsx) once the web layer paints, so the
+      // static native launch image hands off seamlessly to the in-app animated
+      // splash. launchAutoHide is OFF so iOS never hides it before first paint.
+      launchShowDuration: 3000,
+      launchAutoHide: false,
       backgroundColor: "#181B14",
       androidSplashResourceName: "splash",
       androidScaleType: "CENTER_CROP",

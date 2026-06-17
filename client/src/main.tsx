@@ -1,4 +1,6 @@
 import { createRoot } from "react-dom/client";
+import { Capacitor } from "@capacitor/core";
+import { SplashScreen } from "@capacitor/splash-screen";
 import App from "./App";
 import "./index.css";
 import { installAuthFetchInterceptor, loadAuthToken } from "./lib/authToken";
@@ -29,3 +31,15 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
 }
 
 createRoot(document.getElementById("root")!).render(<App />);
+
+// On native iOS, hand the static launch image off to the in-app animated splash
+// as soon as the web layer paints. The web splash shows the identical Muster
+// mark, so revealing it produces no flash. A short fallback ensures the native
+// splash never sticks if first paint is delayed.
+if (Capacitor.isNativePlatform()) {
+  const hideNativeSplash = () => {
+    SplashScreen.hide({ fadeOutDuration: 250 }).catch(() => {});
+  };
+  requestAnimationFrame(() => requestAnimationFrame(hideNativeSplash));
+  window.setTimeout(hideNativeSplash, 2500);
+}

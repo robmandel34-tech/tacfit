@@ -15,7 +15,9 @@ const SOUNDS = [
   "/celebration/stadium-4.mp3",
 ];
 
-const GOLD = ["#D2913C", "#E2A551", "#ECE6D6", "#ffffff"];
+// Fiery explosion palette — flares of white/yellow through orange to deep red,
+// blended with the brand gold so the blast still feels like Muster.
+const FIRE = ["#FFFFFF", "#FFE08A", "#F5A623", "#E2A551", "#E8632A", "#B23A1E"];
 
 export function isCelebrationSoundOn(): boolean {
   try {
@@ -46,21 +48,29 @@ function playSound(): void {
   }
 }
 
-function fireConfetti(): void {
-  const base = { colors: GOLD, zIndex: 100000, disableForReducedMotion: true };
+function fireExplosion(): void {
+  // The flash / fireball / shockwave / smoke are drawn by CelebrationOverlay via
+  // CSS. Here we add the flying debris and sparks: an omnidirectional blast of
+  // fiery particles thrown out from the center of the screen.
+  const base = {
+    colors: FIRE,
+    zIndex: 100000,
+    disableForReducedMotion: true,
+    origin: { x: 0.5, y: 0.5 },
+  } as const;
   try {
-    // Main burst from a little above center.
-    confetti({ ...base, particleCount: 90, spread: 75, startVelocity: 55, origin: { y: 0.65 } });
-    confetti({ ...base, particleCount: 50, spread: 110, decay: 0.92, scalar: 1.2, origin: { y: 0.6 } });
-    // Two side cannons just after, for an "explosion" feel.
+    // Heavy debris hurled out in every direction.
+    confetti({ ...base, particleCount: 130, spread: 360, startVelocity: 48, gravity: 1.2, decay: 0.9, scalar: 1.1, ticks: 110 });
+    // Fast, bright sparks streaking outward.
+    confetti({ ...base, particleCount: 60, spread: 360, startVelocity: 75, gravity: 0.7, decay: 0.85, scalar: 0.7, ticks: 80 });
+    // A secondary puff a beat later as the blast settles.
     setTimeout(() => {
       try {
-        confetti({ ...base, particleCount: 60, angle: 60, spread: 70, origin: { x: 0, y: 0.85 } });
-        confetti({ ...base, particleCount: 60, angle: 120, spread: 70, origin: { x: 1, y: 0.85 } });
+        confetti({ ...base, particleCount: 45, spread: 360, startVelocity: 28, gravity: 1.5, decay: 0.92, scalar: 1.35, ticks: 100 });
       } catch {
         /* ignore */
       }
-    }, 160);
+    }, 130);
   } catch {
     /* ignore */
   }
@@ -97,12 +107,13 @@ async function buzz(): Promise<void> {
 }
 
 /**
- * Fire the full "Way to Muster up!" celebration: explosion of confetti, a random
- * stadium sting (if sound is on), a haptic buzz, and the on-screen banner.
+ * Fire the full "Way to Muster up!" celebration: an explosion (flash, fireball,
+ * shockwave, smoke + flying debris/sparks), a random stadium sting (if sound is
+ * on), a haptic buzz, and the on-screen banner.
  */
 export function celebrate(): void {
   playSound();
-  fireConfetti();
+  fireExplosion();
   void buzz();
   try {
     window.dispatchEvent(new CustomEvent("muster:celebrate"));

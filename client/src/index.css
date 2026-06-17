@@ -642,3 +642,88 @@
   82% { opacity: 1; transform: scale(1); }
   100% { opacity: 0; transform: scale(1.08); }
 }
+
+/* Explosion — a flash, fireball, expanding shockwave rings and a smoke puff,
+   all centered. The flying debris/sparks are drawn by canvas-confetti. */
+.muster-boom {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+}
+.muster-boom > span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translate(-50%, -50%);
+  border-radius: 9999px;
+  will-change: transform, opacity;
+}
+.muster-boom__flash {
+  width: 64vmax;
+  height: 64vmax;
+  background: radial-gradient(circle,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(255, 224, 138, 0.85) 16%,
+    rgba(245, 166, 35, 0.55) 34%,
+    rgba(232, 99, 42, 0.22) 54%,
+    rgba(0, 0, 0, 0) 70%);
+  animation: boomFlash 340ms ease-out forwards;
+}
+.muster-boom__fire {
+  width: 28vmax;
+  height: 28vmax;
+  background: radial-gradient(circle,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(255, 206, 92, 0.92) 26%,
+    rgba(232, 99, 42, 0.85) 56%,
+    rgba(178, 58, 30, 0.6) 80%,
+    rgba(0, 0, 0, 0) 100%);
+  filter: blur(1px);
+  animation: boomFire 560ms ease-out forwards;
+}
+.muster-boom__shock {
+  width: 12vmax;
+  height: 12vmax;
+  border: 0.7vmax solid rgba(255, 224, 138, 0.85);
+  box-shadow: 0 0 4vmax rgba(245, 166, 35, 0.5);
+  animation: boomShock 680ms ease-out forwards;
+}
+.muster-boom__shock--2 {
+  border-color: rgba(232, 99, 42, 0.6);
+  animation: boomShock 820ms 90ms ease-out forwards;
+}
+.muster-boom__smoke {
+  width: 32vmax;
+  height: 32vmax;
+  background: radial-gradient(circle,
+    rgba(60, 55, 48, 0.5) 0%,
+    rgba(40, 38, 32, 0.38) 45%,
+    rgba(0, 0, 0, 0) 72%);
+  animation: boomSmoke 1300ms 120ms ease-out forwards;
+}
+
+@keyframes boomFlash {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.1); }
+  12% { opacity: 1; transform: translate(-50%, -50%) scale(0.6); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.1); }
+}
+@keyframes boomFire {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.15); }
+  18% { opacity: 1; transform: translate(-50%, -50%) scale(0.9); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
+}
+@keyframes boomShock {
+  0% { opacity: 0.9; transform: translate(-50%, -50%) scale(0.2); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(6); }
+}
+@keyframes boomSmoke {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+  25% { opacity: 0.5; }
+  100% { opacity: 0; transform: translate(-50%, -60%) scale(2.2); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .muster-boom { display: none; }
+}

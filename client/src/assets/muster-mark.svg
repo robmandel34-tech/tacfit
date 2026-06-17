@@ -6,6 +6,9 @@
 <circle cx="84" cy="74" r="2.6" fill="#ECE6D6"/>
 <circle cx="32" cy="34" r="3.3" fill="#D2913C"/>
 <circle cx="67" cy="20" r="3.4" fill="#D2913C"/>
+<line x1="67" y1="18" x2="67" y2="2.8" stroke="#ECE6D6" stroke-width="2" stroke-linecap="round"/>
+<path d="M67.6 4.4 L79.5 8.6 L67.6 12.8 Z" fill="#D2913C"/>
+<circle cx="67" cy="2.6" r="2" fill="#ECE6D6"/>
 <circle cx="49" cy="64" r="6.5" fill="#181B14" stroke="#ECE6D6" stroke-width="2.2"/>
 <circle cx="49" cy="64" r="3.3" fill="#6E93A6"/>
 </g>

@@ -759,7 +759,7 @@
 <nav id="nav">
   <div class="container nav-row">
     <a href="#" class="brand">
-      <svg width="36" height="36" viewBox="0 0 100 100" role="img" aria-label="Muster" style="display:block;flex-shrink:0"><g transform="translate(-0.35,2.25)"><circle cx="49" cy="64" r="10" fill="none" stroke="#ECE6D6" stroke-width="1.2" opacity="0.32"/><path d="M17 76 L32 34 L49 64 L67 20 L84 74" fill="none" stroke="#ECE6D6" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="17" cy="76" r="2.9" fill="#ECE6D6"/><circle cx="84" cy="74" r="2.6" fill="#ECE6D6"/><circle cx="32" cy="34" r="3.3" fill="#D2913C"/><circle cx="67" cy="20" r="3.4" fill="#D2913C"/><circle cx="49" cy="64" r="6.5" fill="#181B14" stroke="#ECE6D6" stroke-width="2.2"/><circle cx="49" cy="64" r="3.3" fill="#6E93A6"/></g></svg>
+      <svg width="36" height="36" viewBox="0 0 100 100" role="img" aria-label="Muster" style="display:block;flex-shrink:0"><g transform="translate(-0.35,2.25)"><circle cx="49" cy="64" r="10" fill="none" stroke="#ECE6D6" stroke-width="1.2" opacity="0.32"/><path d="M17 76 L32 34 L49 64 L67 20 L84 74" fill="none" stroke="#ECE6D6" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="17" cy="76" r="2.9" fill="#ECE6D6"/><circle cx="84" cy="74" r="2.6" fill="#ECE6D6"/><circle cx="32" cy="34" r="3.3" fill="#D2913C"/><circle cx="67" cy="20" r="3.4" fill="#D2913C"/><line x1="67" y1="18" x2="67" y2="2.8" stroke="#ECE6D6" stroke-width="2" stroke-linecap="round"/><path d="M67.6 4.4 L79.5 8.6 L67.6 12.8 Z" fill="#D2913C"/><circle cx="67" cy="2.6" r="2" fill="#ECE6D6"/><circle cx="49" cy="64" r="6.5" fill="#181B14" stroke="#ECE6D6" stroke-width="2.2"/><circle cx="49" cy="64" r="3.3" fill="#6E93A6"/></g></svg>
       Muster
     </a>
     <div class="nav-links">
@@ -1108,6 +1108,11 @@
           <circle class="ia-pop ia-end"    cx="84" cy="74" r="2.6" fill="#ECE6D6"/>
           <circle class="ia-pop ia-left"   cx="32" cy="34" r="3.3" fill="#D2913C"/>
           <circle class="ia-pop ia-summit" cx="67" cy="20" r="3.4" fill="#D2913C"/>
+          <g class="ia-pop ia-summit-flag" style="transform-box:fill-box;transform-origin:67px 20px;">
+            <line x1="67" y1="18" x2="67" y2="2.8" stroke="#ECE6D6" stroke-width="2" stroke-linecap="round"/>
+            <path d="M67.6 4.4 L79.5 8.6 L67.6 12.8 Z" fill="#D2913C"/>
+            <circle cx="67" cy="2.6" r="2" fill="#ECE6D6"/>
+          </g>
           <!-- signal pulse from the muster point -->
           <circle class="ia-pulse" cx="49" cy="64" r="6.5" fill="none" stroke="#ECE6D6" stroke-width="1.5"/>
           <!-- the beacon: the muster point -->
@@ -1467,7 +1472,7 @@
 <footer>
   <div class="container foot-row">
     <div class="brand">
-      <svg width="28" height="28" viewBox="0 0 100 100" role="img" aria-label="Muster" style="display:block;flex-shrink:0"><g transform="translate(-0.35,2.25)"><circle cx="49" cy="64" r="10" fill="none" stroke="#ECE6D6" stroke-width="1.2" opacity="0.32"/><path d="M17 76 L32 34 L49 64 L67 20 L84 74" fill="none" stroke="#ECE6D6" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="17" cy="76" r="2.9" fill="#ECE6D6"/><circle cx="84" cy="74" r="2.6" fill="#ECE6D6"/><circle cx="32" cy="34" r="3.3" fill="#D2913C"/><circle cx="67" cy="20" r="3.4" fill="#D2913C"/><circle cx="49" cy="64" r="6.5" fill="#181B14" stroke="#ECE6D6" stroke-width="2.2"/><circle cx="49" cy="64" r="3.3" fill="#6E93A6"/></g></svg>
+      <svg width="28" height="28" viewBox="0 0 100 100" role="img" aria-label="Muster" style="display:block;flex-shrink:0"><g transform="translate(-0.35,2.25)"><circle cx="49" cy="64" r="10" fill="none" stroke="#ECE6D6" stroke-width="1.2" opacity="0.32"/><path d="M17 76 L32 34 L49 64 L67 20 L84 74" fill="none" stroke="#ECE6D6" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="17" cy="76" r="2.9" fill="#ECE6D6"/><circle cx="84" cy="74" r="2.6" fill="#ECE6D6"/><circle cx="32" cy="34" r="3.3" fill="#D2913C"/><circle cx="67" cy="20" r="3.4" fill="#D2913C"/><line x1="67" y1="18" x2="67" y2="2.8" stroke="#ECE6D6" stroke-width="2" stroke-linecap="round"/><path d="M67.6 4.4 L79.5 8.6 L67.6 12.8 Z" fill="#D2913C"/><circle cx="67" cy="2.6" r="2" fill="#ECE6D6"/><circle cx="49" cy="64" r="6.5" fill="#181B14" stroke="#ECE6D6" stroke-width="2.2"/><circle cx="49" cy="64" r="3.3" fill="#6E93A6"/></g></svg>
       <span style="font-size:15px;">© 2026 Muster</span>
     </div>
     <div class="foot-links">
@@ -1875,6 +1880,7 @@
     pop('.ia-left', 690);
     pop('.ia-beacon', 980);
     pop('.ia-summit', 1410);
+    pop('.ia-summit-flag', 1560);
     pop('.ia-end', 1900);
     // the muster point ignites
     pulse(2150); pulse(2520);
@@ -1884,7 +1890,7 @@
     // are already hidden when the next cycle's reset fires — this leaves a clean
     // blank frame at the seam instead of a leftover lone white dot (the M's
     // bottom-right endpoint). fill:'forwards' so it has no effect until its delay.
-    ['.ia-trail', '.ia-start', '.ia-end', '.ia-left', '.ia-summit', '.ia-beacon'].forEach(function (s) {
+    ['.ia-trail', '.ia-start', '.ia-end', '.ia-left', '.ia-summit', '.ia-summit-flag', '.ia-beacon'].forEach(function (s) {
       var el = q(s);
       if (el) A(el, [{ opacity: 1 }, { opacity: 0 }], { duration: 340, delay: 6000, easing: 'ease-in', fill: 'forwards' });
     });
@@ -1901,7 +1907,7 @@
   function hideMarks() {
     // Force every marker hidden at the loop seam so no "popped" frame (e.g. the
     // white dot at the bottom-right of the M) leaks for a frame between cycles.
-    ['.ia-start', '.ia-end', '.ia-left', '.ia-summit', '.ia-beacon', '.ia-pulse'].forEach(function (s) {
+    ['.ia-start', '.ia-end', '.ia-left', '.ia-summit', '.ia-summit-flag', '.ia-beacon', '.ia-pulse'].forEach(function (s) {
       var el = q(s); if (el) el.style.opacity = '0';
     });
   }

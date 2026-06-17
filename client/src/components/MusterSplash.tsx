@@ -227,6 +227,10 @@ export default function MusterSplash({ onDone }: { onDone: () => void }) {
           <circle cx="84" cy="74" r="2.6" fill="#ECE6D6" />
           <circle cx="32" cy="34" r="3.3" fill="#D2913C" />
           <circle cx="67" cy="20" r="3.4" fill="#D2913C" />
+          {/* summit flag */}
+          <line x1="67" y1="18" x2="67" y2="2.8" stroke="#ECE6D6" strokeWidth="2" strokeLinecap="round" />
+          <path d="M67.6 4.4 L79.5 8.6 L67.6 12.8 Z" fill="#D2913C" />
+          <circle cx="67" cy="2.6" r="2" fill="#ECE6D6" />
           {/* signal pulse from the muster point */}
           <circle
             className="ia-pulse"

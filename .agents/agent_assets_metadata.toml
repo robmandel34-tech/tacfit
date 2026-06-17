@@ -72,3 +72,21 @@ id = "HOFHUdNEtRhzTtb8-PETs"
 uri = "file://marketing-screenshots/muster-march-drums-preview.mp3"
 type = "audio"
 title = "Tactical march — snare cadence + trumpet flourish"
+
+[[outputs]]
+id = "T3vRD2LkXL_xUKNwX0Vle"
+uri = "file://marketing-screenshots/muster-stadium-v2-stomp.mp3"
+type = "audio"
+title = "Stadium v2 — stomp-stomp-clap arena rhythm"
+
+[[outputs]]
+id = "eCy118BwGyXxf13-65K-n"
+uri = "file://marketing-screenshots/muster-stadium-v3-doubletime.mp3"
+type = "audio"
+title = "Stadium v3 — double-time punk drive"
+
+[[outputs]]
+id = "Ez3HsxqmQNnevTd49aFgF"
+uri = "file://marketing-screenshots/muster-stadium-v4-gangshout.mp3"
+type = "audio"
+title = "Stadium v4 — half-time groove with crowd 'HEY!'"

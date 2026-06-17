@@ -42,3 +42,9 @@ id = "SxhD_0nRBtjtBKe8st8x8"
 uri = "file://muster-marketing-site.zip"
 type = "unspecified"
 title = "Muster marketing site (updated network diagram) — drop into Netlify"
+
+[[outputs]]
+id = "_AVbKlVh94bwyNj-nxP0G"
+uri = "file://marketing-screenshots/muster-fanfare-preview.mp3"
+type = "audio"
+title = "Muster victory fanfare — preview"

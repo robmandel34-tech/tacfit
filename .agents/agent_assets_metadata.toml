@@ -36,3 +36,9 @@ id = "W5TtePI32AiE2bLA9n9AZ"
 uri = "file://marketing-site.zip"
 type = "unspecified"
 title = "Muster marketing website (Netlify-ready)"
+
+[[outputs]]
+id = "SxhD_0nRBtjtBKe8st8x8"
+uri = "file://muster-marketing-site.zip"
+type = "unspecified"
+title = "Muster marketing site (updated logo + flag) — drop into Netlify"

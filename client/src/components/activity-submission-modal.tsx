@@ -139,18 +139,23 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     ? Math.ceil((new Date(competition.startDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24))
     : 0;
 
-  // When competition has ended switch to individual mode (all activity types)
-  // When active, only show competition-required types
+  // Only restrict the dropdown to the competition's required activities while the
+  // competition is actively running (started and not yet ended). Before it starts
+  // OR after it ends, the submission is an independent personal-points activity
+  // (see the notices below), so EVERY activity type must be available — otherwise
+  // a pre-start competition leaves the user with an empty dropdown.
+  // Matching is case-insensitive because requiredActivities (e.g. "cardio") and
+  // the activity-type names (e.g. "Cardio") are stored with different casing.
   const competitionActivityTypes = useMemo(() => {
-    if (competitionHasEnded) {
-      // Individual mode — offer all activity types
+    const competitionActive = competitionHasStarted && !competitionHasEnded;
+    const required = competition?.requiredActivities ?? [];
+    if (!competitionActive || required.length === 0) {
+      // Independent / individual mode — offer all activity types.
       return activityTypes;
     }
-    if (!competition?.requiredActivities || competition.requiredActivities.length === 0) {
-      return activityTypes;
-    }
-    return activityTypes.filter(at => competition.requiredActivities.includes(at.name));
-  }, [activityTypes, competition?.requiredActivities, competitionHasEnded]);
+    const requiredLower = required.map(name => name.toLowerCase());
+    return activityTypes.filter(at => requiredLower.includes(at.name.toLowerCase()));
+  }, [activityTypes, competition?.requiredActivities, competitionHasStarted, competitionHasEnded]);
 
   const resetForm = () => {
     setType("");

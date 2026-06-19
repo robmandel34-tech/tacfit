@@ -117,7 +117,7 @@
   const $=id=>document.getElementById(id);
 
   /* ---------- scene constants ---------- */
-  const GROUND=83, AMP=3.0, WL=88, CYCLE=7400, FLOAT_OFF=44;
+  const GROUND=83, AMP=3.0, WL=88, CYCLE=9500, FLOAT_OFF=44;
   const yAt = x => GROUND + AMP*Math.sin((x-94)/WL*2*Math.PI);
   function mk(tag,attrs){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);return e;}
 
@@ -212,7 +212,7 @@
     // splash-style drop params: jump up off the peak, then glide down-and-right
     const jx=3+Math.random()*3, jh=4+Math.random()*3, wind=3+Math.random()*8, amp=5+Math.random()*5;
     const landX=152+i*17+Math.random()*8, landY=yAt(landX);
-    const endX=448-i*6;                 // gather at the tent
+    const endX=440+i*7;                 // fan out and gather around the tent (~454)
     const apexX=SUMMIT_X+jx, apexY=SUMMIT_Y-jh;
     const midX=apexX+(landX-apexX)*0.55+wind, midY=apexY+(landY-apexY)*0.46;
     const g=mk('g',{class:'man'});

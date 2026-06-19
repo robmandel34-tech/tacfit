@@ -28,7 +28,7 @@
   <span class="kicker">Muster up · motion study</span>
 
   <div class="stage">
-    <svg id="scene" viewBox="0 0 496 104" role="img" aria-label="Five climbers parachute down into the middle of the word, then run to camp, while the word Muster up floats into place.">
+    <svg id="scene" viewBox="0 0 496 104" role="img" aria-label="Five climbers parachute off the summit, then run to camp, while the word Muster up floats into place.">
       <g id="content" transform="translate(10,8)">
 
         <!-- sky -->
@@ -109,7 +109,7 @@
     <button id="replay">Replay</button>
     <button id="loop" class="ghost">Loop: on</button>
   </div>
-  <p class="cap">Five jumpers drop in between the S and T, then run the route to camp &mdash; while <strong>Muster&nbsp;up</strong> floats into place.</p>
+  <p class="cap">Five jumpers drop in off the summit &mdash; same as the in-app splash &mdash; then run the route to camp while <strong>Muster&nbsp;up</strong> floats into place.</p>
 
 <script>
 (function(){
@@ -171,16 +171,29 @@
     dotEls.push({c:c, t:1300+(x-96)/348*4200});
   }
 
-  /* ---------- jumpers: parachute, then run ---------- */
+  /* ---------- jumpers: parachute (identical to the app splash), then run ----------
+     The parachutist figure + drop motion are ported verbatim from the in-app
+     splash (client/src/components/MusterSplash.tsx): a domed canopy that pops
+     open, suspension lines and a little figure, launched off the mark's right
+     peak with a swaying glide. Once each lands, it swaps to the running figure
+     and heads to camp. */
+  const FIGURE=
+    '<g class="canopy" style="transform-box:fill-box;transform-origin:50% 100%;">'+
+      '<path d="M-7,-8 Q0,-16 7,-8 Q0,-11 -7,-8 Z" fill="#D2913C"/>'+
+      '<path d="M-3.4,-9.7 Q0,-13.4 3.4,-9.7" fill="none" stroke="#181B14" stroke-width="0.5" opacity="0.4"/>'+
+    '</g>'+
+    '<path d="M-6,-8.2 L-0.6,-2.6 M6,-8.2 L0.6,-2.6 M0,-9.7 L0,-2.8" stroke="#ECE6D6" stroke-width="0.5" opacity="0.9" fill="none" stroke-linecap="round"/>'+
+    '<g stroke="#ECE6D6" stroke-width="0.95" stroke-linecap="round" fill="none">'+
+      '<circle cx="0" cy="-1.7" r="1.05" fill="#ECE6D6" stroke="none"/>'+
+      '<path d="M0,-0.7 L0,1.9"/>'+
+      '<path d="M0,-0.2 L-1.5,-1.2 M0,-0.2 L1.5,-1.2"/>'+
+      '<path d="M0,1.9 L-1.4,3.8 M0,1.9 L1.4,3.8"/>'+
+    '</g>';
   const CHUTE=
     '<g class="chute">'+
-      '<polygon points="-7,-13 -7.5,-18 -4,-20.5 0,-21 4,-20.5 7.5,-18 7,-13 3.5,-11.5 2.5,-12.5 0,-11 -2.5,-12.5 -3.5,-11.5" fill="#D2913C"/>'+
-      '<path d="M0,-21 L0,-12" stroke="#a86f28" stroke-width="0.5" fill="none"/>'+
-      '<path d="M-1.6,-7.2 L-7,-13 M-1.6,-7.2 L-2.5,-12 M1.6,-7.2 L2.5,-12 M1.6,-7.2 L7,-13" stroke="#9AA088" stroke-width="0.5" fill="none"/>'+
-      '<path d="M-1.2,0 L0,-2.6 M1.2,0 L0,-2.6" stroke="#ECE6D6" stroke-width="1.2" stroke-linecap="round" fill="none"/>'+
-      '<path d="M0,-2.6 L0,-5.2" stroke="#ECE6D6" stroke-width="1.2" stroke-linecap="round" fill="none"/>'+
-      '<path d="M0,-4.6 L-1.6,-7.2 M0,-4.6 L1.6,-7.2" stroke="#ECE6D6" stroke-width="1.2" stroke-linecap="round" fill="none"/>'+
-      '<circle cx="0" cy="-6.3" r="1.15" fill="#ECE6D6"/>'+
+      '<g class="sway" style="transform-box:fill-box;transform-origin:50% 6%;">'+
+        '<g transform="scale(0.9)">'+FIGURE+'</g>'+
+      '</g>'+
     '</g>';
   const RUN=
     '<g class="run">'+
@@ -190,29 +203,40 @@
       '<circle cx="0.5" cy="-6" r="1.15" fill="#ECE6D6"/>'+
     '</g>';
 
-  const LAND_OFF=0.4423;     // 2300ms descent / 5200ms total
+  const SUMMIT_X=67, SUMMIT_Y=20;       // the mark's tall right peak (content coords)
+  const LAND_OFF=0.4423;                // 2300ms descent / 5200ms total
+  const DESCENT_MS=Math.round(5200*LAND_OFF);
   const menData=[];
   for(let i=0;i<5;i++){
-    const ds=350+i*330, land=ds+2300, endX=448-i*6, landX=230-i*3, landY=yAt(landX), startX=landX-10, startY=13;
-    const g=mk('g',{class:'man'}); g.style.transform='translate('+startX.toFixed(2)+'px,'+startY+'px)';
-    const figs=mk('g',{class:'figs'}); figs.style.opacity='0';
+    const ds=350+i*280, land=ds+DESCENT_MS;
+    // splash-style drop params: jump up off the peak, then glide down-and-right
+    const jx=3+Math.random()*3, jh=4+Math.random()*3, wind=3+Math.random()*8, amp=5+Math.random()*5;
+    const landX=152+i*17+Math.random()*8, landY=yAt(landX);
+    const endX=448-i*6;                 // gather at the tent
+    const apexX=SUMMIT_X+jx, apexY=SUMMIT_Y-jh;
+    const midX=apexX+(landX-apexX)*0.55+wind, midY=apexY+(landY-apexY)*0.46;
+    const g=mk('g',{class:'man'});
+    g.style.transform='translate('+SUMMIT_X+'px,'+SUMMIT_Y+'px)'; g.style.opacity='0';
+    const figs=mk('g',{class:'figs'});
     figs.innerHTML=CHUTE+RUN;
     g.appendChild(figs); $('menG').appendChild(g);
     const chuteEl=figs.querySelector('.chute'); chuteEl.style.opacity='1';
+    const canopyEl=figs.querySelector('.canopy');
+    const swayEl=figs.querySelector('.sway');
     const runEl=figs.querySelector('.run'); runEl.style.opacity='0';
-    const kf=[];
-    const D=6;                                  // descent w/ canopy sway
-    for(let s=0;s<=D;s++){
-      const t=s/D, sway=4*Math.sin(t*Math.PI*3)*(1-t);
-      const x=startX+(landX-startX)*t+sway, y=startY+(landY-startY)*t;
-      kf.push({offset:LAND_OFF*t, transform:'translate('+x.toFixed(2)+'px,'+y.toFixed(2)+'px)', easing:'linear'});
-    }
-    const R=14;                                 // run along winding trail
+    // descent (offsets 0..LAND_OFF) mirrors the splash trajectory, then the run
+    const kf=[
+      {offset:0,             transform:'translate('+SUMMIT_X+'px,'+SUMMIT_Y+'px)', opacity:0, easing:'cubic-bezier(.2,.7,.3,1)'},
+      {offset:LAND_OFF*0.07, transform:'translate('+apexX.toFixed(2)+'px,'+apexY.toFixed(2)+'px)', opacity:1, easing:'cubic-bezier(.4,.45,.6,1)'},
+      {offset:LAND_OFF*0.5,  transform:'translate('+midX.toFixed(2)+'px,'+midY.toFixed(2)+'px)', easing:'linear'},
+      {offset:LAND_OFF,      transform:'translate('+landX.toFixed(2)+'px,'+landY.toFixed(2)+'px)', easing:'cubic-bezier(.35,0,.5,1)'}
+    ];
+    const R=14;                         // run along the winding trail to camp
     for(let s=1;s<=R;s++){
       const fx=landX+(endX-landX)*s/R, fy=yAt(fx);
-      kf.push({offset:LAND_OFF+(1-LAND_OFF)*s/R, transform:'translate('+fx.toFixed(2)+'px,'+fy.toFixed(2)+'px)', easing:s===1?'cubic-bezier(.35,0,.5,1)':'linear'});
+      kf.push({offset:LAND_OFF+(1-LAND_OFF)*s/R, transform:'translate('+fx.toFixed(2)+'px,'+fy.toFixed(2)+'px)', easing:'linear'});
     }
-    menData.push({g:g,figs:figs,chuteEl:chuteEl,runEl:runEl,ds:ds,land:land,endX:endX,landY:landY,kf:kf});
+    menData.push({g:g,figs:figs,chuteEl:chuteEl,canopyEl:canopyEl,swayEl:swayEl,runEl:runEl,ds:ds,land:land,endX:endX,amp:amp,kf:kf});
   }
 
   /* ---------- engine ---------- */
@@ -231,7 +255,22 @@
       {duration:180,delay:o.t,fill:'both',easing:'cubic-bezier(.3,1.4,.5,1)'}));});
     menData.forEach(function(m){
       add(m.g.animate(m.kf,{duration:5200,delay:m.ds,fill:'both'}));
-      add(m.figs.animate([{opacity:0},{opacity:1}],{duration:250,delay:m.ds,fill:'both'}));
+      // canopy pops open — verbatim from the splash
+      add(m.canopyEl.animate([
+        {transform:'scale(0.10)'},
+        {transform:'scale(0.12)',offset:0.4},
+        {transform:'scale(1.12)',offset:0.75},
+        {transform:'scale(1)'}
+      ],{duration:860,delay:m.ds,easing:'cubic-bezier(.3,.7,.25,1)',fill:'both'}));
+      // canopy sway during the glide — verbatim from the splash
+      add(m.swayEl.animate([
+        {transform:'rotate(0deg)'},
+        {transform:'rotate(0deg)',offset:0.12},
+        {transform:'rotate('+m.amp.toFixed(2)+'deg)',offset:0.34},
+        {transform:'rotate('+(-m.amp*0.78).toFixed(2)+'deg)',offset:0.56},
+        {transform:'rotate('+(m.amp*0.5).toFixed(2)+'deg)',offset:0.78},
+        {transform:'rotate('+(-m.amp*0.28).toFixed(2)+'deg)'}
+      ],{duration:DESCENT_MS,delay:m.ds,easing:'ease-in-out',fill:'both'}));
       add(m.chuteEl.animate([{opacity:1},{opacity:0}],{duration:160,delay:m.land,fill:'both'}));
       add(m.runEl.animate([{opacity:0},{opacity:1}],{duration:160,delay:m.land,fill:'both'}));
     });
@@ -243,7 +282,7 @@
     floatItems.forEach(function(o){ o.el.style.transform='translateY(0px)'; o.el.style.opacity=1; });
     dotEls.forEach(function(o){o.c.style.opacity=1;o.c.style.transform='scale(1)';});
     menData.forEach(function(m){
-      m.figs.style.opacity=1; m.chuteEl.style.opacity=0; m.runEl.style.opacity=1;
+      m.figs.style.opacity=1; m.g.style.opacity=1; m.chuteEl.style.opacity=0; m.runEl.style.opacity=1;
       m.g.style.transform='translate('+m.endX.toFixed(2)+'px,'+yAt(m.endX).toFixed(2)+'px)';
     });
   }

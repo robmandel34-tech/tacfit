@@ -25,7 +25,7 @@ export default function ActivityTrackingHelp() {
             </CardHeader>
             <CardContent className="text-gray-300 space-y-4">
               <p>
-                Activity tracking is the core of Muster competitions. Every workout, training session, 
+                Activity tracking is the core of Muster Up competitions. Every workout, training session, 
                 and fitness activity you complete contributes to your team's success. The more evidence 
                 you provide, the more points you earn for your team.
               </p>

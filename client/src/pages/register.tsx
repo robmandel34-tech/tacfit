@@ -59,7 +59,7 @@ export default function Register() {
       <Card className="w-full max-w-md card-modern">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-6">
-            <img src={logoPath} alt="Muster Logo" className="h-20 w-20 object-contain rounded-2xl" />
+            <img src={logoPath} alt="Muster Up Logo" className="h-20 w-20 object-contain rounded-2xl" />
           </div>
           <CardTitle className="text-3xl font-bold text-heading tracking-tight">Join the Force</CardTitle>
           <CardDescription className="text-body text-lg">

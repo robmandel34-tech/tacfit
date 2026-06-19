@@ -21,7 +21,7 @@ export default function PointSystemHelp() {
             <div>
               <p className="text-amber-300 font-semibold mb-1">Early Adopter Advantage</p>
               <p className="text-gray-300 text-sm">
-                All competitions on Muster are <strong className="text-white">currently free</strong> to enter. 
+                All competitions on Muster Up are <strong className="text-white">currently free</strong> to enter. 
                 In the future, premium paid competitions will be available — and they can be entered using 
                 your accumulated points. The more points you earn now as an early user, the longer you'll 
                 be able to compete completely free. Start stacking points today.
@@ -41,7 +41,7 @@ export default function PointSystemHelp() {
             </CardHeader>
             <CardContent className="text-gray-300 space-y-4">
               <p>
-                Tactical points are Muster's currency system that rewards your fitness activities, 
+                Tactical points are Muster Up's currency system that rewards your fitness activities, 
                 competition performance, and platform engagement. Points serve multiple purposes: 
                 individual recognition, team contribution, and access to platform features.
               </p>
@@ -51,8 +51,8 @@ export default function PointSystemHelp() {
                   <li>• <strong>Individual Recognition:</strong> Track your fitness commitment and progress</li>
                   <li>• <strong>Team Contribution:</strong> Your points directly impact team competition rankings</li>
                   <li>• <strong>Platform Access:</strong> Create competitions and unlock premium features</li>
-                  <li>• <strong>Social Status:</strong> Display your dedication to the Muster community</li>
-                  <li>• <strong>Exclusive Rewards:</strong> Use points to earn slick Muster swag</li>
+                  <li>• <strong>Social Status:</strong> Display your dedication to the Muster Up community</li>
+                  <li>• <strong>Exclusive Rewards:</strong> Use points to earn slick Muster Up swag</li>
                 </ul>
               </div>
             </CardContent>
@@ -153,7 +153,7 @@ export default function PointSystemHelp() {
                       <span className="font-bold text-blue-300">200 pts</span>
                     </div>
                     <p className="text-xs text-gray-400 mt-1">
-                      Earned when someone joins Muster using your phone invitation link
+                      Earned when someone joins Muster Up using your phone invitation link
                     </p>
                   </div>
                 </div>
@@ -172,7 +172,7 @@ export default function PointSystemHelp() {
             <CardContent className="space-y-6">
               <p className="text-gray-300">
                 Points aren't just for show - they unlock important platform features and 
-                demonstrate your commitment to the Muster community.
+                demonstrate your commitment to the Muster Up community.
               </p>
 
               <div className="grid md:grid-cols-2 gap-6">
@@ -256,7 +256,7 @@ export default function PointSystemHelp() {
                     <div className="bg-gray-700/50 p-3 rounded-lg">
                       <h5 className="font-medium text-military-green mb-2">Build Your Reputation</h5>
                       <p className="text-xs text-gray-400">
-                        Higher point totals demonstrate your commitment to the Muster community 
+                        Higher point totals demonstrate your commitment to the Muster Up community 
                         and help establish you as a dedicated fitness enthusiast.
                       </p>
                     </div>
@@ -264,13 +264,13 @@ export default function PointSystemHelp() {
                       <h5 className="font-medium text-military-green mb-2">Team Leadership</h5>
                       <p className="text-xs text-gray-400">
                         High-point users often become natural team captains and leaders 
-                        in the Muster community, earning respect and bonus rewards.
+                        in the Muster Up community, earning respect and bonus rewards.
                       </p>
                     </div>
                     <div className="bg-gray-700/50 p-3 rounded-lg">
                       <h5 className="font-medium text-military-green mb-2">Invite Buddies</h5>
                       <p className="text-xs text-gray-400">
-                        Use phone invitations to bring buddies to Muster. Each successful 
+                        Use phone invitations to bring buddies to Muster Up. Each successful 
                         invitation earns 200 points and grows the community.
                       </p>
                     </div>

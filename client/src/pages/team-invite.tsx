@@ -103,7 +103,7 @@ export default function TeamInvite() {
       
       toast({
         title: "Account Created!",
-        description: `Welcome to Muster! You've been invited to join ${invitation?.team?.name}.`,
+        description: `Welcome to Muster Up! You've been invited to join ${invitation?.team?.name}.`,
       });
       
       // User will be redirected to dashboard by auth system
@@ -172,7 +172,7 @@ export default function TeamInvite() {
               onClick={() => setLocation("/")}
               className="sharp-button bg-military-green hover:bg-military-green-dark text-forest-green"
             >
-              Go to Muster
+              Go to Muster Up
             </Button>
           </CardContent>
         </Card>
@@ -198,7 +198,7 @@ export default function TeamInvite() {
               onClick={() => setLocation("/")}
               className="sharp-button bg-military-green hover:bg-military-green-dark text-forest-green"
             >
-              Go to Muster
+              Go to Muster Up
             </Button>
           </CardContent>
         </Card>

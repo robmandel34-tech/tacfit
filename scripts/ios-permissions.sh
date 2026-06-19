@@ -34,22 +34,22 @@ set_plist_entry() {
 add_plist_entry() { set_plist_entry "$@"; }
 
 set_plist_entry "NSCameraUsageDescription" \
-  "TacFit uses your camera to capture activity evidence photos and videos."
+  "Muster Up uses your camera to capture activity evidence photos and videos."
 
 set_plist_entry "NSPhotoLibraryUsageDescription" \
-  "TacFit accesses your photo library so you can choose activity evidence from your existing photos."
+  "Muster Up accesses your photo library so you can choose activity evidence from your existing photos."
 
 set_plist_entry "NSPhotoLibraryAddUsageDescription" \
-  "TacFit can save activity evidence photos to your photo library."
+  "Muster Up can save activity evidence photos to your photo library."
 
 set_plist_entry "NSMicrophoneUsageDescription" \
-  "TacFit uses your microphone when recording activity evidence videos."
+  "Muster Up uses your microphone when recording activity evidence videos."
 
 set_plist_entry "NSHealthShareUsageDescription" \
-  "TacFit reads your Apple Health data to automatically import workout activities."
+  "Muster Up reads your Apple Health data to automatically import workout activities."
 
 set_plist_entry "NSHealthUpdateUsageDescription" \
-  "TacFit can write completed workouts back to Apple Health."
+  "Muster Up can write completed workouts back to Apple Health."
 
 # NOTE: NSUserNotificationsUsageDescription is NOT a real iOS key — push
 # notifications are handled via the system permission prompt, no Info.plist

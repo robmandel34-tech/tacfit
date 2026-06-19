@@ -25,7 +25,7 @@ export default function TeamFormationHelp() {
             </CardHeader>
             <CardContent className="text-gray-300 space-y-4">
               <p>
-                Teams are the foundation of Muster competitions. Every participant must be part of a team 
+                Teams are the foundation of Muster Up competitions. Every participant must be part of a team 
                 to compete in tactical operations. Teams provide accountability, motivation, and shared goals 
                 that drive individual and collective success.
               </p>
@@ -191,7 +191,7 @@ export default function TeamFormationHelp() {
             </CardHeader>
             <CardContent className="text-gray-300 space-y-4">
               <p>
-                Effective communication is crucial for team success. Muster provides multiple tools 
+                Effective communication is crucial for team success. Muster Up provides multiple tools 
                 to help teams coordinate their efforts and stay connected throughout competitions.
               </p>
 

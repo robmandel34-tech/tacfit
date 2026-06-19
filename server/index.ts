@@ -25,7 +25,7 @@ app.use((req, res, next) => {
     'capacitor://localhost',
     'ionic://localhost',
     'http://localhost',
-    // Muster custom domain (additive — current Replit URL still works).
+    // Muster Up custom domain (additive — current Replit URL still works).
     // Final domain: joinmuster.com (purchased 2026-06-16). www + app covered.
     'https://joinmuster.com',
     'https://www.joinmuster.com',

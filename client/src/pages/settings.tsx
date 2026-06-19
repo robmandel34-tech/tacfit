@@ -567,7 +567,7 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          <p className="text-center text-gray-600 text-xs pb-4">Muster · Version 1.0.0</p>
+          <p className="text-center text-gray-600 text-xs pb-4">Muster Up · Version 1.0.0</p>
         </div>
       </div>
     </div>

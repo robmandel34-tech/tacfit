@@ -40,10 +40,10 @@ export default function Navigation() {
             <div className="flex items-center space-x-3 flex-shrink-0">
               <img
                 src={logoPath}
-                alt="Muster logo"
+                alt="Muster Up logo"
                 className="h-9 w-9 object-contain rounded-lg"
               />
-              <span className="text-2xl font-bold text-heading tracking-tight">Muster</span>
+              <span className="text-2xl font-bold text-heading tracking-tight">Muster Up</span>
             </div>
             <nav className="hidden md:flex space-x-4 lg:space-x-8 flex-shrink">
               <Link 

@@ -1,30 +1,35 @@
-# Muster - Fitness Competition Platform
+# Muster Up - Fitness Competition Platform
 
-> **Rebrand in progress (2026-06-15): "TacFit" → "Muster"** (tagline: "Find your team").
-> All user-facing text in the React app, PWA shell (title/manifest/service-worker
-> notifications), email display names, marketing/legal HTML pages, native app
-> display name (Info.plist `CFBundleDisplayName`), and demo assets now read
-> "Muster". The military/tactical THEME and voice ("squad", "mission",
-> "Command Center", "Intel Feed") are intentionally kept — "Muster" (to assemble
-> a unit / "muster point") fits the theme directly. (Name history: the app pivoted
-> TacFit → MainLink → Muster on the same day; only "Muster" should remain.)
-> **Intentionally NOT changed** (would break things or are invisible): the bundle
-> id `com.tacfit.app` (permanent, invisible to users), the iOS custom scheme
-> `tacfit`, all `@tacfit.app` email ADDRESSES (domain still SendGrid-authenticated;
-> only display names changed), asset filenames containing `tacfit`, code
-> identifiers/localStorage keys, and the `X-Webhook-Source: TacFit-Points-Sync`
-> integration header. DOMAIN: `muster.com` was taken (existing software co.), so
-> the user bought **`joinmuster.com`** (2026-06-16) as the final domain.
-> `server/index.ts` CORS allow-lists `joinmuster.com` (+ `www.` + `app.`),
-> additive — the current Replit URL still works. Once the domain points at the
-> deployment, set the `APP_ORIGIN` env var to `https://joinmuster.com` so
-> credentialed auth/CORS uses the real origin. The shield-and-cross logo has no
-> text, so it carries over unchanged. **User still owns:** wiring DNS records (see
-> below), App Store Connect display name, and a fresh TestFlight build for the
-> native name to take effect.
+> **Display name (2026-06-17): "Muster Up"** (tagline: "Find your team").
+> Name history: TacFit → MainLink → Muster → **Muster Up** (the final, current
+> name — "Muster" alone read as confusing, so it was renamed to "Muster Up").
+> Every user-facing place now reads "Muster Up": the React app UI, PWA shell
+> (title/manifest `name`+`short_name`/service-worker notifications), email display
+> names + subjects, marketing/legal HTML pages (both `marketing-site/` and
+> `client/public/`), native app display name (Info.plist `CFBundleDisplayName`,
+> `capacitor.config.ts` `appName`), and demo assets. The military/tactical THEME
+> and voice ("squad", "mission", "Command Center", "Intel Feed") are kept — and
+> the celebration banner **"Way to Muster up!"** is an intentional verb pun that
+> is LEFT lowercase (do NOT turn it into "Muster Up up!").
+> **Intentionally NOT changed** (would break things, are invisible, or are
+> deliberately verb puns): the bundle id `com.tacfit.app` (permanent, invisible),
+> the iOS custom scheme `tacfit`, all `@tacfit.app` email ADDRESSES (domain still
+> SendGrid-authenticated; only display names changed), asset filenames containing
+> `tacfit`, code identifiers/localStorage keys, the `MusterSplash` component name,
+> the `X-Webhook-Source: TacFit-Points-Sync` integration header, the community
+> noun "Musters" (members), the "Way to Muster up!" pun, and the
+> **`joinmuster.com` domain** (kept as-is per the user's 2026-06-17 decision — no
+> domain change; `musterup.life` was floated but NOT adopted). `server/index.ts`
+> CORS allow-lists `joinmuster.com` (+ `www.` + `app.`), additive — the current
+> Replit URL still works. Once the domain points at the deployment, set the
+> `APP_ORIGIN` env var to `https://joinmuster.com`. The shield-and-cross logo has
+> no text, so it carries over unchanged. **User still owns:** wiring DNS records,
+> the App Store Connect display name, and a fresh TestFlight build for the native
+> name to take effect. (The Muster build was never submitted to the App Store, so
+> there is no live app name to keep in sync.)
 
 ## Overview
-TacFit is a full-stack fitness competition platform designed for team-based fitness challenges. It enables users to create and join competitions, form teams, track various activities (Cardio, Strength, Mobility Training, Meditation), and engage through social features like chat and activity feeds. The platform incorporates a reward system for competition winners, activity submissions, and daily mood assessments, and integrates with external services for automated activity tracking. The vision is to provide a comprehensive wellness platform beyond just fitness, incorporating mental health aspects and fostering community engagement in a tactical-themed environment.
+Muster Up is a full-stack fitness competition platform designed for team-based fitness challenges. It enables users to create and join competitions, form teams, track various activities (Cardio, Strength, Mobility Training, Meditation), and engage through social features like chat and activity feeds. The platform incorporates a reward system for competition winners, activity submissions, and daily mood assessments, and integrates with external services for automated activity tracking. The vision is to provide a comprehensive wellness platform beyond just fitness, incorporating mental health aspects and fostering community engagement in a tactical-themed environment.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.

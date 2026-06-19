@@ -33,7 +33,7 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
 createRoot(document.getElementById("root")!).render(<App />);
 
 // On native iOS, hand the static launch image off to the in-app animated splash
-// as soon as the web layer paints. The web splash shows the identical Muster
+// as soon as the web layer paints. The web splash shows the identical Muster Up
 // mark, so revealing it produces no flash. A short fallback ensures the native
 // splash never sticks if first paint is delayed.
 if (Capacitor.isNativePlatform()) {

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Muster "drop-in" splash — the squad parachutes onto the muster point, then the
- * screen fades to the app. The static Muster mark (peak line + beacon) is shown
+ * Muster Up "drop-in" splash — the squad parachutes onto the muster point, then the
+ * screen fades to the app. The static Muster Up mark (peak line + beacon) is shown
  * immediately so it lines up seamlessly with the native iOS launch image and the
  * first-paint mark in index.html; only the parachutists animate on top.
  *
@@ -192,7 +192,7 @@ export default function MusterSplash({ onDone }: { onDone: () => void }) {
     <div
       onClick={finish}
       role="img"
-      aria-label="Muster"
+      aria-label="Muster Up"
       style={{
         position: "fixed",
         inset: 0,

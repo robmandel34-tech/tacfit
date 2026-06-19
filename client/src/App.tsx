@@ -177,7 +177,7 @@ function App() {
 
   // Remove the instant first-paint splash from index.html once React has mounted.
   // The animated MusterSplash overlay (rendered below) already covers the screen
-  // with the identical Muster mark, so this is just cleanup — no visible flash.
+  // with the identical Muster Up mark, so this is just cleanup — no visible flash.
   useEffect(() => {
     const splash = document.getElementById('tacfit-splash');
     if (splash) {

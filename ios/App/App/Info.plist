@@ -5,7 +5,7 @@
         <key>CFBundleDevelopmentRegion</key>
         <string>en</string>
         <key>CFBundleDisplayName</key>
-        <string>Muster</string>
+        <string>Muster Up</string>
         <key>CFBundleExecutable</key>
         <string>$(EXECUTABLE_NAME)</string>
         <key>CFBundleIdentifier</key>
@@ -46,17 +46,17 @@
         <key>UIViewControllerBasedStatusBarAppearance</key>
         <true/>
         <key>NSCameraUsageDescription</key>
-        <string>TacFit uses your camera to capture activity evidence photos and videos.</string>
+        <string>Muster Up uses your camera to capture activity evidence photos and videos.</string>
         <key>NSPhotoLibraryUsageDescription</key>
-        <string>TacFit accesses your photo library so you can choose activity evidence from your existing photos.</string>
+        <string>Muster Up accesses your photo library so you can choose activity evidence from your existing photos.</string>
         <key>NSPhotoLibraryAddUsageDescription</key>
-        <string>TacFit can save activity evidence photos to your photo library.</string>
+        <string>Muster Up can save activity evidence photos to your photo library.</string>
         <key>NSMicrophoneUsageDescription</key>
-        <string>TacFit uses your microphone when recording activity evidence videos.</string>
+        <string>Muster Up uses your microphone when recording activity evidence videos.</string>
         <key>NSHealthShareUsageDescription</key>
-        <string>TacFit reads your Apple Health data to automatically import workout activities.</string>
+        <string>Muster Up reads your Apple Health data to automatically import workout activities.</string>
         <key>NSHealthUpdateUsageDescription</key>
-        <string>TacFit can write completed workouts back to Apple Health.</string>
+        <string>Muster Up can write completed workouts back to Apple Health.</string>
         <key>ITSAppUsesNonExemptEncryption</key>
         <false/>
         <key>CFBundleURLTypes</key>

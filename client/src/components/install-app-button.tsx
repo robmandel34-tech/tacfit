@@ -38,10 +38,10 @@ export function InstallAppButton() {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-heading">
             <Smartphone className="h-5 w-5 text-military-green" />
-            Install Muster App
+            Install Muster Up App
           </DialogTitle>
           <DialogDescription className="text-text-secondary">
-            Get the best Muster experience by installing the app on your device.
+            Get the best Muster Up experience by installing the app on your device.
           </DialogDescription>
         </DialogHeader>
         
@@ -62,7 +62,7 @@ export function InstallAppButton() {
                 className="w-full bg-military-green hover:bg-military-green/90 text-forest-green"
               >
                 <Download className="h-4 w-4 mr-2" />
-                Install Muster App
+                Install Muster Up App
               </Button>
             </div>
           ) : isIOS ? (
@@ -72,7 +72,7 @@ export function InstallAppButton() {
                 <div>
                   <p className="font-medium text-heading">iOS Installation</p>
                   <p className="text-sm text-text-secondary">
-                    Follow these steps to add Muster to your home screen
+                    Follow these steps to add Muster Up to your home screen
                   </p>
                 </div>
               </div>

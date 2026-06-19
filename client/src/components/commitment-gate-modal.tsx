@@ -23,7 +23,7 @@ const CAPTAIN_POINTS = [
 const MEMBER_POINTS = [
   "Show up and do my best, even on the hard days.",
   "Share, collaborate, encourage, and support my teammates.",
-  "Remember Muster is different from any other fitness app.",
+  "Remember Muster Up is different from any other fitness app.",
   "Understand that quitting on myself also means quitting on my team.",
 ];
 

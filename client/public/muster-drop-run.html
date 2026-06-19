@@ -216,18 +216,22 @@
     const apexX=SUMMIT_X+jx, apexY=SUMMIT_Y-jh;
     const midX=apexX+(landX-apexX)*0.55+wind, midY=apexY+(landY-apexY)*0.46;
     const g=mk('g',{class:'man'});
-    g.style.transform='translate('+SUMMIT_X+'px,'+SUMMIT_Y+'px)'; g.style.opacity='0';
-    const figs=mk('g',{class:'figs'});
+    g.style.transform='translate('+SUMMIT_X+'px,'+SUMMIT_Y+'px)';
+    const figs=mk('g',{class:'figs'}); figs.style.opacity='0';
     figs.innerHTML=CHUTE+RUN;
     g.appendChild(figs); $('menG').appendChild(g);
     const chuteEl=figs.querySelector('.chute'); chuteEl.style.opacity='1';
     const canopyEl=figs.querySelector('.canopy');
     const swayEl=figs.querySelector('.sway');
     const runEl=figs.querySelector('.run'); runEl.style.opacity='0';
-    // descent (offsets 0..LAND_OFF) mirrors the splash trajectory, then the run
+    // descent (offsets 0..LAND_OFF) mirrors the splash trajectory, then the run.
+    // NOTE: visibility is handled by the figs fade-in (below) — NOT by opacity
+    // keyframes here. A partial opacity track (set only on early frames) would
+    // make the browser interpolate back to the element's underlying opacity at
+    // offset 1, fading each runner out just as it reaches the tent.
     const kf=[
-      {offset:0,             transform:'translate('+SUMMIT_X+'px,'+SUMMIT_Y+'px)', opacity:0, easing:'cubic-bezier(.2,.7,.3,1)'},
-      {offset:LAND_OFF*0.07, transform:'translate('+apexX.toFixed(2)+'px,'+apexY.toFixed(2)+'px)', opacity:1, easing:'cubic-bezier(.4,.45,.6,1)'},
+      {offset:0,             transform:'translate('+SUMMIT_X+'px,'+SUMMIT_Y+'px)', easing:'cubic-bezier(.2,.7,.3,1)'},
+      {offset:LAND_OFF*0.07, transform:'translate('+apexX.toFixed(2)+'px,'+apexY.toFixed(2)+'px)', easing:'cubic-bezier(.4,.45,.6,1)'},
       {offset:LAND_OFF*0.5,  transform:'translate('+midX.toFixed(2)+'px,'+midY.toFixed(2)+'px)', easing:'linear'},
       {offset:LAND_OFF,      transform:'translate('+landX.toFixed(2)+'px,'+landY.toFixed(2)+'px)', easing:'cubic-bezier(.35,0,.5,1)'}
     ];
@@ -255,6 +259,8 @@
       {duration:180,delay:o.t,fill:'both',easing:'cubic-bezier(.3,1.4,.5,1)'}));});
     menData.forEach(function(m){
       add(m.g.animate(m.kf,{duration:5200,delay:m.ds,fill:'both'}));
+      // fade the figure in once (both ends set) so it never fades back out
+      add(m.figs.animate([{opacity:0},{opacity:1}],{duration:250,delay:m.ds,fill:'both'}));
       // canopy pops open — verbatim from the splash
       add(m.canopyEl.animate([
         {transform:'scale(0.10)'},

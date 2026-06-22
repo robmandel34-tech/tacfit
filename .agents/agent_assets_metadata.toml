@@ -90,3 +90,9 @@ id = "Ez3HsxqmQNnevTd49aFgF"
 uri = "file://marketing-screenshots/muster-stadium-v4-gangshout.mp3"
 type = "audio"
 title = "Stadium v4 — half-time groove with crowd 'HEY!'"
+
+[[outputs]]
+id = "bpaprxH7DETLZw3VJzONX"
+uri = "file://exports/marketing-site-20260622-2143.zip"
+type = "unspecified"
+title = "Muster Up marketing site (fresh export 2026-06-22)"

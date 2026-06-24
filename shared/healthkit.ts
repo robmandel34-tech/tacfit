@@ -69,6 +69,79 @@ export const HEALTHKIT_TO_TACFIT: Record<string, string> = {
   skatingsports: "ice_skate",
 };
 
+// Broad activity CATEGORIES. The platform has umbrella activity types that act
+// as categories ("cardio" = Cardio Training, "strength" = Strength Operations,
+// "flexibility" = Mobility Training, "mindfulness"). When a competition's
+// requiredActivities lists one of these umbrella names, any specific activity in
+// that category should count too — e.g. a competition that requires "cardio"
+// should accept a synced "Running" workout (which maps to the specific "run"
+// type), because running IS cardio. This map relates each specific activity-type
+// `name` to its umbrella category name. Keys and values are lowercase to match
+// how names are stored.
+export const ACTIVITY_CATEGORY: Record<string, string> = {
+  // Cardio family
+  run: "cardio",
+  trail_run: "cardio",
+  virtual_run: "cardio",
+  walk: "cardio",
+  hike: "cardio",
+  "bike ride": "cardio",
+  ride: "cardio",
+  virtual_ride: "cardio",
+  e_bike_ride: "cardio",
+  gravel_ride: "cardio",
+  mountain_bike_ride: "cardio",
+  e_mountain_bike_ride: "cardio",
+  velomobile: "cardio",
+  handcycle: "cardio",
+  wheelchair: "cardio",
+  swim: "cardio",
+  rowing: "cardio",
+  elliptical: "cardio",
+  stair_stepper: "cardio",
+  cardio: "cardio",
+
+  // Strength family
+  strength: "strength",
+  weight_training: "strength",
+  crossfit: "strength",
+
+  // Mobility / flexibility family
+  flexibility: "flexibility",
+  yoga: "flexibility",
+
+  // Mind / meditation family
+  mindfulness: "mindfulness",
+  "meditation/prayer": "mindfulness",
+  breathing_exercises: "mindfulness",
+  body_scan: "mindfulness",
+  loving_kindness: "mindfulness",
+};
+
+// True if `activityName` satisfies a competition's `required` activity list.
+// An activity is allowed when its own name is required, OR when the broad
+// category it belongs to is required (so requiring "cardio" accepts "run",
+// "swim", etc.). Case-insensitive. An empty `required` means no restriction.
+export function isActivityAllowed(activityName: string, required: string[]): boolean {
+  if (!required || required.length === 0) return true;
+  const name = (activityName || "").toString().trim().toLowerCase();
+  if (!name) return false;
+  const requiredLower = required.map((r) => (r || "").toString().trim().toLowerCase());
+  if (requiredLower.includes(name)) return true;
+  const category = ACTIVITY_CATEGORY[name];
+  return !!category && requiredLower.includes(category);
+}
+
+// True if a synced HealthKit workout (raw type) is eligible for a competition
+// with the given `required` activity list. Maps the workout to its activity-type
+// name first, then applies category-aware matching.
+export function isHealthKitWorkoutEligible(rawType: string, required: string[]): boolean {
+  if (!required || required.length === 0) return true;
+  const mappedName = mapHealthKitTypeToActivityName(rawType);
+  if (!mappedName) return false;
+  return isActivityAllowed(mappedName, required);
+}
+
 // Minimum exercise minutes in a single passive burst for it to count as real
 // exercise worth logging as an "Unspecified Activity". Anything shorter is
 // treated as incidental daily movement and is not surfaced or accepted.

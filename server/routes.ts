@@ -12,7 +12,7 @@ import {
   insertAdminPostSchema, insertMoodLogSchema, friendships, type User,
 } from "@shared/schema";
 import { getCompetitionPricing } from "@shared/pricing";
-import { mapHealthKitTypeToActivityName, MIN_PASSIVE_EXERCISE_MINUTES } from "@shared/healthkit";
+import { MIN_PASSIVE_EXERCISE_MINUTES, isActivityAllowed, isHealthKitWorkoutEligible } from "@shared/healthkit";
 import { recomputeReadinessForUser, isReadinessTestAccount, sampleReadiness } from "./readiness-service";
 import { verifyGoogleIdToken, verifyAppleIdToken, isGoogleConfigured, isAppleConfigured, type SsoIdentity } from "./sso-auth";
 import { z } from "zod";
@@ -3324,7 +3324,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // HealthKit imports, so ineligible workouts can't be force-submitted.
       if (isInActiveCompetition && competition) {
         const required = competition.requiredActivities || [];
-        if (required.length > 0 && !required.includes(req.body.type)) {
+        if (required.length > 0 && !isActivityAllowed(req.body.type, required)) {
           return res.status(400).json({ message: "That activity type isn't part of this competition." });
         }
         if (healthWorkout) {
@@ -3332,11 +3332,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (when < new Date(competition.startDate) || when > new Date(competition.endDate)) {
             return res.status(400).json({ message: "That workout is outside the competition dates." });
           }
-          if (required.length > 0) {
-            const mappedName = mapHealthKitTypeToActivityName(healthWorkout.activityType);
-            if (!mappedName || !required.includes(mappedName)) {
-              return res.status(400).json({ message: "That workout isn't a required activity for this competition." });
-            }
+          if (required.length > 0 && !isHealthKitWorkoutEligible(healthWorkout.activityType, required)) {
+            return res.status(400).json({ message: "That workout isn't a required activity for this competition." });
           }
         }
         // Passive activity is "unspecified" — the user labels its type (already

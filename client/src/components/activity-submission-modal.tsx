@@ -11,7 +11,7 @@ import { Camera, X, HelpCircle, ChevronDown, ChevronUp, Smartphone, RefreshCw, A
 import { useToast } from "@/hooks/use-toast";
 import { API_BASE, apiRequest } from "@/lib/queryClient";
 import { useAppleHealth } from "@/hooks/use-apple-health";
-import { mapHealthKitTypeToActivityName, MIN_PASSIVE_EXERCISE_MINUTES } from "@shared/healthkit";
+import { mapHealthKitTypeToActivityName, MIN_PASSIVE_EXERCISE_MINUTES, isActivityAllowed } from "@shared/healthkit";
 import { reconcileWorkoutDurationSec } from "@/lib/healthkit";
 import { celebrate } from "@/lib/celebrate";
 import { Capacitor } from "@capacitor/core";
@@ -153,8 +153,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
       // Independent / individual mode — offer all activity types.
       return activityTypes;
     }
-    const requiredLower = required.map(name => name.toLowerCase());
-    return activityTypes.filter(at => requiredLower.includes(at.name.toLowerCase()));
+    return activityTypes.filter(at => isActivityAllowed(at.name, required));
   }, [activityTypes, competition?.requiredActivities, competitionHasStarted, competitionHasEnded]);
 
   const resetForm = () => {

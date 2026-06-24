@@ -22,7 +22,7 @@ import {
 import { db } from "./db";
 import { eq, and, or, desc, isNull, gt, gte, lte, inArray, sql } from "drizzle-orm";
 import { IStorage } from "./storage";
-import { mapHealthKitTypeToActivityName } from "@shared/healthkit";
+import { isHealthKitWorkoutEligible } from "@shared/healthkit";
 
 export class DatabaseStorage implements IStorage {
   // User operations
@@ -1419,10 +1419,7 @@ export class DatabaseStorage implements IStorage {
     const required = competition.requiredActivities || [];
     if (required.length === 0) return workouts; // no restriction -> all in-window workouts
 
-    return workouts.filter((w) => {
-      const mappedName = mapHealthKitTypeToActivityName(w.activityType);
-      return mappedName != null && required.includes(mappedName);
-    });
+    return workouts.filter((w) => isHealthKitWorkoutEligible(w.activityType, required));
   }
 
   async getWorkoutsWithEligibility(
@@ -1461,15 +1458,12 @@ export class DatabaseStorage implements IStorage {
           ineligibleReason: `Outside the competition dates (${startLabel} – ${endLabel})`,
         };
       }
-      if (required.length > 0) {
-        const mappedName = mapHealthKitTypeToActivityName(w.activityType);
-        if (!mappedName || !required.includes(mappedName)) {
-          return {
-            ...w,
-            eligible: false,
-            ineligibleReason: `${w.activityType} isn't a required activity for this competition`,
-          };
-        }
+      if (required.length > 0 && !isHealthKitWorkoutEligible(w.activityType, required)) {
+        return {
+          ...w,
+          eligible: false,
+          ineligibleReason: `${w.activityType} isn't a required activity for this competition`,
+        };
       }
       return { ...w, eligible: true, ineligibleReason: null };
     });

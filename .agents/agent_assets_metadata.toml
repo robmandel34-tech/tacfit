@@ -96,3 +96,9 @@ id = "bpaprxH7DETLZw3VJzONX"
 uri = "file://exports/marketing-site-20260622-2143.zip"
 type = "unspecified"
 title = "Muster Up marketing site (fresh export 2026-06-22)"
+
+[[outputs]]
+id = "qvfBWTxx7X0gjkQYm--jQ"
+uri = "file://exports/muster-up-drop-and-run.zip"
+type = "unspecified"
+title = "Muster up — Drop & Run animation (latest, open the HTML in a browser)"

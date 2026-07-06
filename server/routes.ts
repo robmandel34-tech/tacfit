@@ -4826,7 +4826,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.setHeader('Content-Type', 'video/mp4');
       res.setHeader('Accept-Ranges', 'bytes');
     } else if (ext === '.mov') {
-      res.setHeader('Content-Type', 'video/quicktime');
+      // iOS WKWebView refuses to play files served as video/quicktime, so serve
+      // .mov as video/mp4 (the container is compatible). Kept in sync with the
+      // object-storage fallback below, which does the same remap.
+      res.setHeader('Content-Type', 'video/mp4');
+      res.setHeader('Accept-Ranges', 'bytes');
     } else if (['.jpg', '.jpeg'].includes(ext)) {
       res.setHeader('Content-Type', 'image/jpeg');
     } else if (ext === '.png') {
@@ -4834,7 +4838,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     next();
-  }, express.static('uploads'));
+  }, express.static('uploads'), async (req, res) => {
+    // Fallback: the file was not found on the local disk. Large videos are
+    // uploaded DIRECTLY to object storage (GCS) and never touch local disk, and
+    // the deployment's local `uploads/` disk is ephemeral (wiped on every
+    // publish/restart). So serve from object storage here — downloadObject
+    // handles HTTP Range requests and remaps .mov -> video/mp4 for iOS.
+    try {
+      const fileName = path.basename(req.path);
+      if (!fileName) {
+        return res.status(404).json({ message: "File not found" });
+      }
+      const uploadsObjStorage = new ObjectStorageService();
+      const file = await uploadsObjStorage.getUploadedFile(fileName);
+      if (!file) {
+        return res.status(404).json({ message: "File not found" });
+      }
+      return uploadsObjStorage.downloadObject(file, res);
+    } catch (err) {
+      console.error("Error serving /uploads from object storage:", err);
+      if (!res.headersSent) {
+        res.status(500).json({ message: "Error serving file" });
+      }
+    }
+  });
 
   // Competition entry with points payment
   // Authz: userId is derived from the session, NEVER from req.body, so users

@@ -108,3 +108,9 @@ id = "RU_EBDgaSttjL0WdkHKyP"
 uri = "file://muster-up-marketing-2026-07-11.zip"
 type = "unspecified"
 title = "Muster Up marketing site (2026-07-11) — drop into Netlify"
+
+[[outputs]]
+id = "12kmV8GnO2MHCRDwgKb0F"
+uri = "file://muster-up-marketing-2026-07-12.zip"
+type = "unspecified"
+title = "Muster Up marketing site — 2026-07-12 (orbit figures, clean screenshots, intro splash)"

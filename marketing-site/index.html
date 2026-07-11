@@ -753,10 +753,272 @@
   /* SCROLL REVEALS */
   .reveal { opacity: 0; transform: translateY(24px); transition: opacity .9s ease, transform .9s ease; }
   .reveal.in { opacity: 1; transform: translateY(0); }
+
+  /* ---- Intro splash overlay (Muster "M" mark + parachute drop-and-run, ported
+         from the in-app splash). Shows once per browser session on first load. ---- */
+  /* Default hidden so the page is NEVER blocked if JS is disabled or errors;
+     the intro script adds .on to reveal it only when it should actually play. */
+  #site-splash{
+    position:fixed; inset:0; z-index:99999;
+    display:none; flex-direction:column; align-items:center; justify-content:center;
+    padding:24px;
+    background:radial-gradient(125% 130% at 50% 0%, #20241A, #181B14 60%, #101307);
+    transition:opacity .5s ease;
+  }
+  #site-splash.on{ display:flex; }
+  #site-splash.hide{ opacity:0; pointer-events:none; }
+  #site-splash .splash-stage{ width:min(92vw, 720px); }
+  #site-splash svg{ width:100%; height:auto; display:block; overflow:visible; }
+  #site-splash .splash-skip{
+    position:absolute; top:18px; right:20px;
+    font:600 11px/1 ui-monospace,Menlo,monospace; letter-spacing:.18em; text-transform:uppercase;
+    color:#9AA088; background:transparent; border:1px solid rgba(214,202,176,.28);
+    border-radius:999px; padding:9px 16px; cursor:pointer; -webkit-tap-highlight-color:transparent;
+    transition:color .15s, border-color .15s;
+  }
+  #site-splash .splash-skip:hover{ color:#ECE6D6; border-color:rgba(214,202,176,.5); }
 </style>
 <noscript><style>#infilCard{opacity:1 !important;transform:none !important}</style></noscript>
 </head>
 <body>
+
+<!-- ===== Intro splash: Muster "M" mark + parachute drop-and-run (once per session) ===== -->
+<div id="site-splash" role="presentation">
+  <button class="splash-skip" type="button" id="splashSkip" aria-label="Skip intro">Skip</button>
+  <div class="splash-stage">
+    <svg id="spScene" viewBox="0 0 496 104" aria-hidden="true" focusable="false">
+      <g id="spContent" transform="translate(10,8)">
+        <g id="spClouds"></g>
+        <g id="spBirds"></g>
+        <path d="M20,94 Q100,80 180,94 Z" fill="#36412c" opacity="0.30"/>
+        <path d="M205,95 Q335,78 475,95 Z" fill="#2f3925" opacity="0.30"/>
+        <path d="M150,86 Q172,83 196,86 Q220,89 250,86" fill="none" stroke="#6E93A6" stroke-width="1.5" stroke-linecap="round" opacity="0.42"/>
+        <path d="M154,88 Q176,85 200,88 Q224,91 252,88" fill="none" stroke="#6E93A6" stroke-width="1.0" stroke-linecap="round" opacity="0.28"/>
+        <g id="spTreesBack"></g>
+        <g id="spMark">
+          <circle cx="49" cy="64" r="10" fill="none" stroke="#ECE6D6" stroke-width="1.2" opacity="0.28"/>
+          <circle id="spPulse" cx="49" cy="64" r="6.5" fill="none" stroke="#6E93A6" stroke-width="1.4"/>
+          <path d="M17 76 L32 34 L49 64 L67 20 L84 74" fill="none" stroke="#ECE6D6" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="17" cy="76" r="2.9" fill="#ECE6D6"/>
+          <circle cx="84" cy="74" r="2.6" fill="#ECE6D6"/>
+          <circle cx="32" cy="34" r="3.3" fill="#D2913C"/>
+          <circle cx="67" cy="20" r="3.4" fill="#D2913C"/>
+          <line x1="67" y1="20" x2="67" y2="4" stroke="#ECE6D6" stroke-width="2.4" stroke-linecap="round"/>
+          <path d="M67 4 L80 8 L67 11.5 Z" fill="#D2913C"/>
+          <circle cx="49" cy="64" r="6.5" fill="#181B14" stroke="#ECE6D6" stroke-width="2.2"/>
+          <circle cx="49" cy="64" r="3.3" fill="#6E93A6"/>
+        </g>
+        <g id="spDots"></g>
+        <g id="spLetters" fill="#ECE6D6">
+          <g class="lt"><path d="M723 -20Q432 -20 277.5 122.0Q123 264 123 528V1409H418V551Q418 384 497.5 297.5Q577 211 731 211Q889 211 974.0 301.5Q1059 392 1059 561V1409H1354V543Q1354 275 1188.5 127.5Q1023 -20 723 -20Z" transform="translate(100.00,76) scale(0.03974,-0.03974)"/></g>
+          <g class="lt"><path d="M1286 406Q1286 199 1132.5 89.5Q979 -20 682 -20Q411 -20 257.0 76.0Q103 172 59 367L344 414Q373 302 457.0 251.5Q541 201 690 201Q999 201 999 389Q999 449 963.5 488.0Q928 527 863.5 553.0Q799 579 616 616Q458 653 396.0 675.5Q334 698 284.0 728.5Q234 759 199.0 802.0Q164 845 144.5 903.0Q125 961 125 1036Q125 1227 268.5 1328.5Q412 1430 686 1430Q948 1430 1079.5 1348.0Q1211 1266 1249 1077L963 1038Q941 1129 873.5 1175.0Q806 1221 680 1221Q412 1221 412 1053Q412 998 440.5 963.0Q469 928 525.0 903.5Q581 879 752 842Q955 799 1042.5 762.5Q1130 726 1181.0 677.5Q1232 629 1259.0 561.5Q1286 494 1286 406Z" transform="translate(170.18,76) scale(0.03974,-0.03974)"/></g>
+          <g class="lt"><path d="M773 1181V0H478V1181H23V1409H1229V1181Z" transform="translate(235.86,76) scale(0.03974,-0.03974)"/></g>
+          <g class="lt"><path d="M137 0V1409H1245V1181H432V827H1184V599H432V228H1286V0Z" transform="translate(296.98,76) scale(0.03974,-0.03974)"/></g>
+          <g class="lt"><path d="M1105 0 778 535H432V0H137V1409H841Q1093 1409 1230.0 1300.5Q1367 1192 1367 989Q1367 841 1283.0 733.5Q1199 626 1056 592L1437 0ZM1070 977Q1070 1180 810 1180H432V764H818Q942 764 1006.0 820.0Q1070 876 1070 977Z" transform="translate(362.67,76) scale(0.03974,-0.03974)"/></g>
+        </g>
+        <g id="spCamp">
+          <polygon points="443.8,83 453.8,83 453.8,68" fill="#d7d0bc"/>
+          <polygon points="453.8,83 463.8,83 453.8,68" fill="#9AA088"/>
+          <polygon points="450.3,83 457.3,83 453.8,75.5" fill="#181B14"/>
+          <path d="M443.8,83 L453.8,68 L463.8,83" fill="none" stroke="#ECE6D6" stroke-width="0.9" stroke-linejoin="round"/>
+          <line x1="453.8" y1="68" x2="453.8" y2="83" stroke="#ECE6D6" stroke-width="0.7"/>
+          <line x1="435.3" y1="83" x2="440.3" y2="81.4" stroke="#5a4a32" stroke-width="1.3" stroke-linecap="round"/>
+          <line x1="435.3" y1="81.4" x2="440.3" y2="83" stroke="#5a4a32" stroke-width="1.3" stroke-linecap="round"/>
+          <g id="spFire">
+            <path d="M437.8,82 C435.3,79 436.9,75.5 437.8,73 C438.7,75.5 440.3,79 437.8,82 Z" fill="#D2913C"/>
+            <path d="M437.8,82 C436.6,80 437.4,77.6 437.8,76.2 C438.2,77.6 439.0,80 437.8,82 Z" fill="#f0c46a"/>
+          </g>
+        </g>
+        <g id="spUp" fill="#ECE6D6">
+          <path d="M408 1082V475Q408 190 600 190Q702 190 764.5 277.5Q827 365 827 502V1082H1108V242Q1108 104 1116 0H848Q836 144 836 215H831Q775 92 688.5 36.0Q602 -20 483 -20Q311 -20 219.0 85.5Q127 191 127 395V1082Z" transform="translate(436.73,59) scale(0.01386,-0.01386)"/>
+          <path d="M1167 546Q1167 275 1058.5 127.5Q950 -20 752 -20Q638 -20 553.5 29.5Q469 79 424 172H418Q424 142 424 -10V-425H143V833Q143 986 135 1082H408Q413 1064 416.5 1011.0Q420 958 420 906H424Q519 1105 770 1105Q959 1105 1063.0 959.5Q1167 814 1167 546ZM874 546Q874 910 651 910Q539 910 479.5 812.0Q420 714 420 538Q420 363 479.5 267.5Q539 172 649 172Q874 172 874 546Z" transform="translate(454.65,59) scale(0.01386,-0.01386)"/>
+        </g>
+        <g id="spTreesFront"></g>
+        <g id="spMen"></g>
+      </g>
+    </svg>
+  </div>
+</div>
+<script>
+/* Intro splash: play the drop-and-run once per session, then fade to the page. */
+(function(){
+  var root=document.getElementById('site-splash');
+  if(!root) return;
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var seen=false; try{ seen=!!sessionStorage.getItem('musterSplashSeen'); }catch(e){}
+  var removeSplash=function(){
+    root.classList.add('hide');
+    document.documentElement.style.overflow='';
+    var done=function(){ if(root&&root.parentNode) root.parentNode.removeChild(root); };
+    root.addEventListener('transitionend', done, {once:true});
+    setTimeout(done, 700);
+  };
+  if(seen||reduce){ removeSplash(); return; }
+  try{ sessionStorage.setItem('musterSplashSeen','1'); }catch(e){}
+  root.classList.add('on');
+  document.documentElement.style.overflow='hidden';
+  // Hard failsafe: no matter what happens below (even a thrown error), the
+  // overlay is guaranteed to come down and never permanently block the page.
+  var hardFailsafe=setTimeout(removeSplash, 9000);
+
+  var NS="http://www.w3.org/2000/svg";
+  var $=function(id){return document.getElementById(id);};
+  var GROUND=83, AMP=3.0, WL=88, FLOAT_OFF=44;
+  var yAt=function(x){return GROUND + AMP*Math.sin((x-94)/WL*2*Math.PI);};
+  function mk(tag,attrs){var e=document.createElementNS(NS,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);return e;}
+
+  function cloud(cx,cy,s,op){
+    var g=mk('g',{});
+    [[-7,0,5,4],[0,-3,7,5.5],[7,0,5.5,4.2],[0,1.6,9,4]].forEach(function(a){
+      g.appendChild(mk('ellipse',{cx:cx+a[0]*s,cy:cy+a[1]*s,rx:a[2]*s,ry:a[3]*s,fill:'#ECE6D6',opacity:op}));});
+    return g;
+  }
+  [[78,15,1.0,0.12],[250,11,1.25,0.10],[430,16,0.95,0.12]].forEach(function(c){$('spClouds').appendChild(cloud(c[0],c[1],c[2],c[3]));});
+
+  [[150,26,1.0],[162,30,0.8],[355,21,1.0],[368,26,0.9]].forEach(function(b){
+    var bx=b[0],by=b[1],s=b[2];
+    $('spBirds').appendChild(mk('path',{
+      d:'M'+(bx-4*s)+','+by+' Q'+(bx-2*s)+','+(by-2.6*s)+' '+bx+','+(by-0.6*s)+' Q'+(bx+2*s)+','+(by-2.6*s)+' '+(bx+4*s)+','+by,
+      fill:'none',stroke:'#9AA088','stroke-width':0.8,'stroke-linecap':'round',opacity:0.7}));
+  });
+
+  function pine(into,bx,by,h,op){
+    var g=mk('g',{opacity:op});
+    g.appendChild(mk('line',{x1:bx,y1:by,x2:bx,y2:by-h*0.2,stroke:'#5a4a32','stroke-width':h*0.12,'stroke-linecap':'round'}));
+    function tri(w,y0,y1){return mk('polygon',{points:(bx-w)+','+(by-y0)+' '+(bx+w)+','+(by-y0)+' '+bx+','+(by-y1),fill:'#4d5b35'});}
+    g.appendChild(tri(h*0.30, h*0.15, h*0.62));
+    g.appendChild(tri(h*0.24, h*0.38, h*0.80));
+    g.appendChild(tri(h*0.18, h*0.60, h*1.00));
+    into.appendChild(g);
+  }
+  pine($('spTreesBack'),11,83,12,0.6);
+  pine($('spTreesBack'),178,83,11,0.5);
+  pine($('spTreesBack'),320,83,10,0.5);
+  pine($('spTreesFront'),466.8,83,13,0.85);
+  pine($('spTreesFront'),474.8,83,12,0.8);
+  pine($('spTreesFront'),459.8,83,15,0.78);
+
+  var floatItems=[];
+  var ltStart=[1350,2225,3050,3813,4638];
+  document.querySelectorAll('#spLetters .lt').forEach(function(g,i){ floatItems.push({el:g, start:ltStart[i]}); });
+  floatItems.push({el:$('spUp'), start:5600});
+
+  var dotEls=[];
+  for(var x=96;x<=444;x+=9){
+    var c=mk('circle',{cx:x,cy:yAt(x),r:1.7,fill:'#D2913C'});
+    c.style.opacity='0'; c.style.transformBox='fill-box';
+    c.style.transformOrigin='center'; c.style.transform='scale(0.3)';
+    $('spDots').appendChild(c);
+    dotEls.push({c:c, t:1300+(x-96)/348*4200});
+  }
+
+  var FIGURE=
+    '<g class="canopy" style="transform-box:fill-box;transform-origin:50% 100%;">'+
+      '<path d="M-7,-8 Q0,-16 7,-8 Q0,-11 -7,-8 Z" fill="#D2913C"/>'+
+      '<path d="M-3.4,-9.7 Q0,-13.4 3.4,-9.7" fill="none" stroke="#181B14" stroke-width="0.5" opacity="0.4"/>'+
+    '</g>'+
+    '<path d="M-6,-8.2 L-0.6,-2.6 M6,-8.2 L0.6,-2.6 M0,-9.7 L0,-2.8" stroke="#ECE6D6" stroke-width="0.5" opacity="0.9" fill="none" stroke-linecap="round"/>'+
+    '<g stroke="#ECE6D6" stroke-width="0.95" stroke-linecap="round" fill="none">'+
+      '<circle cx="0" cy="-1.7" r="1.05" fill="#ECE6D6" stroke="none"/>'+
+      '<path d="M0,-0.7 L0,1.9"/>'+
+      '<path d="M0,-0.2 L-1.5,-1.2 M0,-0.2 L1.5,-1.2"/>'+
+      '<path d="M0,1.9 L-1.4,3.8 M0,1.9 L1.4,3.8"/>'+
+    '</g>';
+  var CHUTE=
+    '<g class="chute">'+
+      '<g class="sway" style="transform-box:fill-box;transform-origin:50% 6%;">'+
+        '<g transform="scale(0.9)">'+FIGURE+'</g>'+
+      '</g>'+
+    '</g>';
+  var RUN=
+    '<g class="run">'+
+      '<path d="M0,-5.2 L-0.3,-2.2" stroke="#ECE6D6" stroke-width="1.2" stroke-linecap="round" fill="none"/>'+
+      '<path d="M-0.3,-2.2 L1.7,0 M-0.3,-2.2 L-1.6,0.2" stroke="#ECE6D6" stroke-width="1.2" stroke-linecap="round" fill="none"/>'+
+      '<path d="M0,-4.4 L1.4,-3.4 M0,-4.4 L-1.4,-5.2" stroke="#ECE6D6" stroke-width="1.2" stroke-linecap="round" fill="none"/>'+
+      '<circle cx="0.5" cy="-6" r="1.15" fill="#ECE6D6"/>'+
+    '</g>';
+
+  var SUMMIT_X=67, SUMMIT_Y=20, LAND_OFF=0.4423, DESCENT_MS=Math.round(5200*LAND_OFF);
+  var menData=[];
+  for(var i=0;i<5;i++){
+    var ds=350+i*280, land=ds+DESCENT_MS;
+    var jx=3+Math.random()*3, jh=4+Math.random()*3, wind=3+Math.random()*8, amp=5+Math.random()*5;
+    var landX=152+i*17+Math.random()*8, landY=yAt(landX);
+    var endX=440+i*7;
+    var apexX=SUMMIT_X+jx, apexY=SUMMIT_Y-jh;
+    var midX=apexX+(landX-apexX)*0.55+wind, midY=apexY+(landY-apexY)*0.46;
+    var g=mk('g',{class:'man'});
+    g.style.transform='translate('+SUMMIT_X+'px,'+SUMMIT_Y+'px)';
+    var figs=mk('g',{class:'figs'}); figs.style.opacity='0';
+    figs.innerHTML=CHUTE+RUN;
+    g.appendChild(figs); $('spMen').appendChild(g);
+    var chuteEl=figs.querySelector('.chute'); chuteEl.style.opacity='1';
+    var canopyEl=figs.querySelector('.canopy');
+    var swayEl=figs.querySelector('.sway');
+    var runEl=figs.querySelector('.run'); runEl.style.opacity='0';
+    var kf=[
+      {offset:0,             transform:'translate('+SUMMIT_X+'px,'+SUMMIT_Y+'px)', easing:'cubic-bezier(.2,.7,.3,1)'},
+      {offset:LAND_OFF*0.07, transform:'translate('+apexX.toFixed(2)+'px,'+apexY.toFixed(2)+'px)', easing:'cubic-bezier(.4,.45,.6,1)'},
+      {offset:LAND_OFF*0.5,  transform:'translate('+midX.toFixed(2)+'px,'+midY.toFixed(2)+'px)', easing:'linear'},
+      {offset:LAND_OFF,      transform:'translate('+landX.toFixed(2)+'px,'+landY.toFixed(2)+'px)', easing:'cubic-bezier(.35,0,.5,1)'}
+    ];
+    var R=14;
+    for(var s=1;s<=R;s++){
+      var fx=landX+(endX-landX)*s/R, fy=yAt(fx);
+      kf.push({offset:LAND_OFF+(1-LAND_OFF)*s/R, transform:'translate('+fx.toFixed(2)+'px,'+fy.toFixed(2)+'px)', easing:'linear'});
+    }
+    menData.push({g:g,figs:figs,chuteEl:chuteEl,canopyEl:canopyEl,swayEl:swayEl,runEl:runEl,ds:ds,land:land,endX:endX,amp:amp,kf:kf});
+  }
+
+  var canAnimate = typeof Element!=='undefined' && Element.prototype && typeof Element.prototype.animate==='function';
+  function build(){
+    if(!canAnimate) return;
+    floatItems.forEach(function(o){o.el.animate([
+      {transform:'translateY('+FLOAT_OFF+'px)',opacity:0,easing:'cubic-bezier(.18,.7,.28,1)'},
+      {transform:'translateY(-1.5px)',opacity:1,offset:0.82},
+      {transform:'translateY(0px)',opacity:1}
+    ],{duration:680,delay:o.start,fill:'both'});});
+    dotEls.forEach(function(o){o.c.animate(
+      [{opacity:0,transform:'scale(0.3)'},{opacity:1,transform:'scale(1)'}],
+      {duration:180,delay:o.t,fill:'both',easing:'cubic-bezier(.3,1.4,.5,1)'});});
+    menData.forEach(function(m){
+      m.g.animate(m.kf,{duration:5200,delay:m.ds,fill:'both'});
+      m.figs.animate([{opacity:0},{opacity:1}],{duration:250,delay:m.ds,fill:'both'});
+      m.canopyEl.animate([
+        {transform:'scale(0.10)'},{transform:'scale(0.12)',offset:0.4},
+        {transform:'scale(1.12)',offset:0.75},{transform:'scale(1)'}
+      ],{duration:860,delay:m.ds,easing:'cubic-bezier(.3,.7,.25,1)',fill:'both'});
+      m.swayEl.animate([
+        {transform:'rotate(0deg)'},{transform:'rotate(0deg)',offset:0.12},
+        {transform:'rotate('+m.amp.toFixed(2)+'deg)',offset:0.34},
+        {transform:'rotate('+(-m.amp*0.78).toFixed(2)+'deg)',offset:0.56},
+        {transform:'rotate('+(m.amp*0.5).toFixed(2)+'deg)',offset:0.78},
+        {transform:'rotate('+(-m.amp*0.28).toFixed(2)+'deg)'}
+      ],{duration:DESCENT_MS,delay:m.ds,easing:'ease-in-out',fill:'both'});
+      m.chuteEl.animate([{opacity:1},{opacity:0}],{duration:160,delay:m.land,fill:'both'});
+      m.runEl.animate([{opacity:0},{opacity:1}],{duration:160,delay:m.land,fill:'both'});
+    });
+  }
+
+  $('spBirds').style.transformBox='fill-box'; $('spBirds').style.transformOrigin='center';
+  var fireEl=$('spFire'); fireEl.style.transformBox='fill-box'; fireEl.style.transformOrigin='bottom center';
+  var pulseEl=$('spPulse'); pulseEl.style.transformBox='fill-box'; pulseEl.style.transformOrigin='center';
+  if(canAnimate){
+    $('spBirds').animate([{transform:'translate(0px,0px)'},{transform:'translate(10px,-1.5px)'}],
+      {duration:9000,direction:'alternate',iterations:Infinity,easing:'ease-in-out'});
+    fireEl.animate([{transform:'scale(1,1)',opacity:1},{transform:'scale(1.12,0.9)',opacity:0.82},{transform:'scale(0.94,1.06)',opacity:1}],
+      {duration:520,direction:'alternate',iterations:Infinity,easing:'ease-in-out'});
+    pulseEl.animate([{transform:'scale(0.7)',opacity:0.5},{transform:'scale(2.0)',opacity:0}],
+      {duration:2600,iterations:Infinity,easing:'ease-out'});
+  }
+
+  try{ build(); }catch(e){ removeSplash(); return; }
+  var dismissTimer=setTimeout(removeSplash, 6900); // after the wordmark settles
+  function skipNow(){ clearTimeout(dismissTimer); clearTimeout(hardFailsafe); removeSplash(); }
+  $('splashSkip').addEventListener('click', function(ev){ ev.stopPropagation(); skipNow(); });
+  root.addEventListener('click', skipNow);
+})();
+</script>
 
 <nav id="nav">
   <div class="container nav-row">
@@ -1282,23 +1544,59 @@
               <animate attributeName="opacity" values="0;0.78;0.78;0" keyTimes="0;0.2;0.78;1" dur="5.6s" begin="0.7s" repeatCount="indefinite"/>
             </g>
           </g>
-          <!-- teammate figures — natural avatar silhouettes (one female), orange on black -->
+          <!-- teammate figures — a variety of natural avatar silhouettes (different
+               hairstyles / builds, men and women) so every node reads as a distinct
+               person; orange on black, each trimmed inside its avatar circle -->
           <defs>
+            <!-- man, short hair (also used by the glowing core) -->
             <g id="tmFig">
               <circle cx="0" cy="-7" r="6.6"/>
               <path d="M0 1 C -8.5 1 -14.5 7.5 -16 22 L 16 22 C 14.5 7.5 8.5 1 0 1 Z"/>
             </g>
-            <g id="tmFigF">
-              <path d="M0 -13.5 C -8.5 -13.5 -11 -7 -10.5 0 C -10 7 -8.5 12 -7 15.5 L 7 15.5 C 8.5 12 10 7 10.5 0 C 11 -7 8.5 -13.5 0 -13.5 Z"/>
-              <path d="M0 4 C -8.5 4 -14 10 -15.5 22 L 15.5 22 C 14 10 8.5 4 0 4 Z"/>
+            <!-- man, tousled hair -->
+            <g id="tmFig2">
+              <ellipse cx="0" cy="-11.8" rx="6.2" ry="2.9"/>
+              <ellipse cx="-2.6" cy="-12.7" rx="2.5" ry="2.2"/>
+              <ellipse cx="2.5" cy="-12.4" rx="2.1" ry="1.9"/>
+              <circle cx="0" cy="-7" r="6.4"/>
+              <path d="M0 1 C -8.5 1 -14.5 7.5 -16 22 L 16 22 C 14.5 7.5 8.5 1 0 1 Z"/>
+            </g>
+            <!-- woman, chin-length bob -->
+            <g id="tmFig3">
+              <ellipse cx="0" cy="-6.8" rx="8.8" ry="8.6"/>
+              <ellipse cx="-6.6" cy="-2.2" rx="3.0" ry="5.2"/>
+              <ellipse cx="6.6" cy="-2.2" rx="3.0" ry="5.2"/>
+              <circle cx="0" cy="-6.6" r="6.2"/>
+              <path d="M0 3 C -8 3 -13.5 9 -15 22 L 15 22 C 13.5 9 8 3 0 3 Z"/>
+            </g>
+            <!-- woman, long hair -->
+            <g id="tmFig4">
+              <ellipse cx="-7.6" cy="4" rx="3.3" ry="11"/>
+              <ellipse cx="7.6" cy="4" rx="3.3" ry="11"/>
+              <ellipse cx="0" cy="-6.4" rx="8.6" ry="8.4"/>
+              <circle cx="0" cy="-6.4" r="6.2"/>
+              <path d="M0 3 C -8 3 -13.5 9 -15 22 L 15 22 C 13.5 9 8 3 0 3 Z"/>
+            </g>
+            <!-- woman, shoulder-length hair -->
+            <g id="tmFig5">
+              <path d="M-8.4 -4 C-8.4 4 -7.6 8.2 -6.6 10.4 L6.6 10.4 C7.6 8.2 8.4 4 8.4 -4 C8.4 -11 4.6 -14.6 0 -14.6 C-4.6 -14.6 -8.4 -11 -8.4 -4 Z"/>
+              <circle cx="0" cy="-6.6" r="6.2"/>
+              <path d="M0 6 C -8 6 -13.5 10.5 -15 22 L 15 22 C 13.5 10.5 8 6 0 6 Z"/>
+            </g>
+            <!-- woman, bob with a fringe -->
+            <g id="tmFig6">
+              <path d="M-8.2 -3 C-8.2 3 -7.4 6.4 -6.4 8.2 L6.4 8.2 C7.4 6.4 8.2 3 8.2 -3 C8.2 -10.4 4.4 -14.2 0 -14.2 C-4.4 -14.2 -8.2 -10.4 -8.2 -3 Z"/>
+              <rect x="-6.8" y="-12.4" width="13.6" height="4.8" rx="1.6"/>
+              <circle cx="0" cy="-5.6" r="6.0"/>
+              <path d="M0 5 C -8 5 -13.5 10 -15 22 L 15 22 C 13.5 10 8 5 0 5 Z"/>
             </g>
           </defs>
           <g>
-            <g transform="translate(385,210)"><circle r="22" fill="#181B14" stroke="#D2913C" stroke-width="1.6" stroke-opacity="0.7"/><use href="#tmFig" fill="#E2A551" clip-path="url(#nodeClip)"/></g>
-            <g transform="translate(275,323)"><circle r="22" fill="#181B14" stroke="#D2913C" stroke-width="1.6" stroke-opacity="0.7"/><use href="#tmFig" fill="#E2A551" clip-path="url(#nodeClip)"/></g>
-            <g transform="translate(130,349)"><circle r="22" fill="#181B14" stroke="#D2913C" stroke-width="1.6" stroke-opacity="0.7"/><use href="#tmFig" fill="#E2A551" clip-path="url(#nodeClip)"/></g>
-            <g transform="translate(90,210)"><circle r="22" fill="#181B14" stroke="#D2913C" stroke-width="1.6" stroke-opacity="0.7"/><use href="#tmFigF" fill="#E2A551" clip-path="url(#nodeClip)"/></g>
-            <g transform="translate(120,54)"><circle r="22" fill="#181B14" stroke="#D2913C" stroke-width="1.6" stroke-opacity="0.7"/><use href="#tmFig" fill="#E2A551" clip-path="url(#nodeClip)"/></g>
+            <g transform="translate(385,210)"><circle r="22" fill="#181B14" stroke="#D2913C" stroke-width="1.6" stroke-opacity="0.7"/><use href="#tmFig2" fill="#E2A551" clip-path="url(#nodeClip)"/></g>
+            <g transform="translate(275,323)"><circle r="22" fill="#181B14" stroke="#D2913C" stroke-width="1.6" stroke-opacity="0.7"/><use href="#tmFig3" fill="#E2A551" clip-path="url(#nodeClip)"/></g>
+            <g transform="translate(130,349)"><circle r="22" fill="#181B14" stroke="#D2913C" stroke-width="1.6" stroke-opacity="0.7"/><use href="#tmFig4" fill="#E2A551" clip-path="url(#nodeClip)"/></g>
+            <g transform="translate(90,210)"><circle r="22" fill="#181B14" stroke="#D2913C" stroke-width="1.6" stroke-opacity="0.7"/><use href="#tmFig5" fill="#E2A551" clip-path="url(#nodeClip)"/></g>
+            <g transform="translate(120,54)"><circle r="22" fill="#181B14" stroke="#D2913C" stroke-width="1.6" stroke-opacity="0.7"/><use href="#tmFig6" fill="#E2A551" clip-path="url(#nodeClip)"/></g>
             <g transform="translate(283,84)"><circle r="22" fill="#181B14" stroke="#D2913C" stroke-width="1.6" stroke-opacity="0.7"/><use href="#tmFig" fill="#E2A551" clip-path="url(#nodeClip)"/></g>
           </g>
           <!-- core node: the individual whose strength radiates outward (silhouette fills the circle, matching the teammate nodes) -->
@@ -1327,7 +1625,7 @@
       </div>
       <div class="feature-shot">
         <div class="feature-pill top-left"><span class="dot"></span> +12 buddies cheered</div>
-        <div class="phone-frame"><img src="/marketing/screen-intel.png?v=20260711" alt="Intel Feed" /></div>
+        <div class="phone-frame"><img src="/marketing/screen-intel.png?v=20260712" alt="Intel Feed" /></div>
         <div class="feature-pill bottom-right"><span class="info">i</span> See every win and get inspired</div>
       </div>
     </div>
@@ -1340,7 +1638,7 @@
       </div>
       <div class="feature-shot">
         <div class="feature-pill top-left"><span class="info">i</span> 2–4 week competitions</div>
-        <div class="phone-frame"><img src="/marketing/screen-competition.png?v=20260711" alt="Competition details" /></div>
+        <div class="phone-frame"><img src="/marketing/screen-competition.png?v=20260712" alt="Competition details" /></div>
         <div class="feature-pill bottom-right"><span class="info">i</span> Goal quantities completed as a team</div>
       </div>
     </div>
@@ -1353,7 +1651,7 @@
       </div>
       <div class="feature-shot">
         <div class="feature-pill top-left"><span class="dot"></span> 2 team members completed run this morning</div>
-        <div class="phone-frame"><img src="/marketing/screen-team.png?v=20260711" alt="Team page" /></div>
+        <div class="phone-frame"><img src="/marketing/screen-team.png?v=20260712" alt="Team page" /></div>
         <div class="feature-pill bottom-right"><span class="dot"></span> Team has reached 24% of the competition goal</div>
       </div>
     </div>
@@ -1379,7 +1677,7 @@
       </div>
       <div class="feature-shot">
         <div class="feature-pill top-left"><span class="dot"></span> Approaching Victory Point</div>
-        <div class="phone-frame"><img src="/marketing/screen-map.png?v=20260711" alt="Team Progress Map" /></div>
+        <div class="phone-frame"><img src="/marketing/screen-map.png?v=20260712" alt="Team Progress Map" /></div>
         <div class="feature-pill bottom-right"><span class="dot"></span> Your team is in 1st place</div>
       </div>
     </div>
@@ -1393,7 +1691,7 @@
       </div>
       <div class="feature-shot">
         <div class="feature-pill top-left"><span class="dot"></span> +5 points earned</div>
-        <div class="phone-frame"><img src="/marketing/screen-profile.png?v=20260711" alt="Your Profile" /></div>
+        <div class="phone-frame"><img src="/marketing/screen-profile.png?v=20260712" alt="Your Profile" /></div>
         <div class="feature-pill bottom-right"><span class="info">i</span> Activities, competitions &amp; wins</div>
       </div>
     </div>

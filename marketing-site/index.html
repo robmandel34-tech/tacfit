@@ -338,7 +338,9 @@
   @keyframes drop { 0% { transform: scaleY(0); transform-origin: top; } 50% { transform: scaleY(1); transform-origin: top; } 51% { transform-origin: bottom; } 100% { transform: scaleY(0); transform-origin: bottom; } }
 
   /* STRIP */
-  .strip { padding: 30px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.015); overflow: hidden; }
+  .strip { padding: 30px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.015); overflow: hidden; position: relative; }
+  .strip::before { content: ''; position: absolute; inset: 0; background: url('/marketing/flow-map-bg.jpg') center/cover no-repeat; opacity: 0.10; filter: saturate(0.85); -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent); mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent); pointer-events: none; }
+  .strip .container { position: relative; z-index: 1; }
   /* base (phone-first): a centered descending staircase with elbow connectors.
      width:max-content + margin auto centres the whole block; px indents give the spread. */
   .flow { display: flex; flex-direction: column; align-items: flex-start; gap: 0; width: max-content; max-width: 100%; margin: 0 auto; }
@@ -765,7 +767,7 @@
     <div class="nav-links">
       <a href="#showcase">The App</a>
       <a href="#why">Why Muster Up</a>
-      <a href="#founder">Founder Offer</a>
+      <a href="#founder">Zero Day</a>
       <a href="/partners.html">Partners</a>
       <a href="/contact-us.html">Contact</a>
     </div>
@@ -781,7 +783,7 @@
   <div class="nav-drawer" id="navDrawer">
     <a href="#showcase">The App</a>
     <a href="#why">Why Muster Up</a>
-    <a href="#founder">Founder Offer</a>
+    <a href="#founder">Zero Day</a>
     <a href="https://tacfit.replit.app">Join the Inaugural Competition</a>
     <a href="/partners.html">Partners</a>
     <a href="/contact-us.html">Contact</a>
@@ -1080,7 +1082,7 @@
   </div>
 </div>
 
-<!-- FOUNDER OFFER — the Muster Up Infil (inaugural competition) -->
+<!-- ZERO DAY — the recurring Muster Up Infil competition (new drop every 2 weeks) -->
 <section class="founder" id="founder">
   <div class="container">
 
@@ -1129,7 +1131,7 @@
     </div>
 
     <div class="founder-card infil-card" id="infilCard">
-      <h2>Join the Inaugural Muster Up <span class="accent">Infil</span> Competition</h2>
+      <h2>Join the Next Muster Up <span class="accent">Zero Day</span> Competition</h2>
       <div class="why-bubble">
         <span class="why-pushup" aria-hidden="true"><svg viewBox="0 0 48 28" aria-hidden="true"><g class="pu-fig" fill="currentColor" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><g class="pu-up"><circle cx="8" cy="8" r="3.9" stroke="none"/><line x1="11" y1="10" x2="44" y2="24"/><line x1="12" y1="11" x2="13" y2="24"/></g><g class="pu-down"><circle cx="8" cy="14" r="3.9" stroke="none"/><line x1="11" y1="16" x2="44" y2="24"/><polyline points="12,16 18,21 13,24" fill="none"/></g></g></svg></span>
         <span>Why not you? Why not now?</span>
@@ -1139,23 +1141,22 @@
         <p><span class="obj-q">No motivation?</span> <span class="obj-x" aria-hidden="true">✕</span> <span class="obj-a">Just take that first step.</span></p>
         <p><span class="obj-q">Don't believe this will be different?</span> <span class="obj-x" aria-hidden="true">✕</span> <span class="obj-a">It will.</span></p>
       </div>
-      <p class="lede">Join the <strong>Muster Up Infil</strong>, our free inaugural competition.</p>
+      <p class="lede">A brand-new <strong>Zero Day</strong> competition drops every two weeks, kicking off on a Monday. Two weeks long, all cardio, your team beside you.</p>
       <p class="lede">We all want to make excuses, that won't change. <span class="lede-hl">But there's an unmatched motivation you get from watching others push through and refuse to back down from their doubts and daily struggles.</span> As much as this is possible, Muster Up will deliver exactly that spark and your team and community of fellow Musters will keep that fire burning.</p>
-      <p class="lede">Everyone who signs up for this inaugural and takes part earns <strong>Founder status</strong> — and <strong>Muster Up free for life</strong>. This is your chance to help shape the community from day one.</p>
+      <p class="lede">There's a fresh start waiting every two weeks, so there's no reason to hold out for "someday." Jump into the next drop and bring your team with you.</p>
       <div class="founder-meta">
-        <div class="founder-fact"><span class="k">Length</span><span class="v">4 weeks</span></div>
+        <div class="founder-fact"><span class="k">Length</span><span class="v">2 weeks</span></div>
+        <div class="founder-fact"><span class="k">Starts</span><span class="v">Every 2 weeks · Mondays</span></div>
         <div class="founder-fact"><span class="k">Entry</span><span class="v">Free</span></div>
-        <div class="founder-fact"><span class="k">Spots</span><span class="v">25–50</span></div>
       </div>
       <p class="founder-activities-label">Activities included</p>
       <div class="founder-activities">
         <span class="act-chip">Cardio — any type</span>
-        <span class="act-chip">Muscle Building — any type</span>
       </div>
       <div class="hero-ctas" style="justify-content:center;">
         <a href="https://tacfit.replit.app" class="btn btn-primary">Take the first step →</a>
       </div>
-      <p class="founder-note"><svg class="founder-note-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D2913C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/></svg><span>Apple HealthKit integration arrives in the app version released before the inaugural competition.</span></p>
+      <p class="founder-note"><svg class="founder-note-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D2913C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/></svg><span>Log any cardio — runs, rides, rucks or walks — and sync it automatically with Apple Health.</span></p>
     </div>
   </div>
 </section>
@@ -1288,9 +1289,8 @@
               <path d="M0 1 C -8.5 1 -14.5 7.5 -16 22 L 16 22 C 14.5 7.5 8.5 1 0 1 Z"/>
             </g>
             <g id="tmFigF">
-              <path d="M-7.6 -5 C -7.6 -13.6 7.6 -13.6 7.6 -5 C 8.7 1.2 8.2 6.4 6 9.4 L 5.3 4 C 5.3 -0.2 3.3 -2.2 0 -2.2 C -3.3 -2.2 -5.3 -0.2 -5.3 4 L -6 9.4 C -8.2 6.4 -8.7 1.2 -7.6 -5 Z"/>
-              <circle cx="0" cy="-6.5" r="6.1"/>
-              <path d="M0 1.6 C -8 1.6 -13.5 7.6 -15 22 L 15 22 C 13.5 7.6 8 1.6 0 1.6 Z"/>
+              <path d="M0 -13.5 C -8.5 -13.5 -11 -7 -10.5 0 C -10 7 -8.5 12 -7 15.5 L 7 15.5 C 8.5 12 10 7 10.5 0 C 11 -7 8.5 -13.5 0 -13.5 Z"/>
+              <path d="M0 4 C -8.5 4 -14 10 -15.5 22 L 15.5 22 C 14 10 8.5 4 0 4 Z"/>
             </g>
           </defs>
           <g>
@@ -1389,7 +1389,7 @@
         <span class="step">06 — Your Profile</span>
         <h3>Stack Wins &amp; <span class="accent">Buddies.</span></h3>
         <p>Compete, stay active, build your stats and your network of comrades.</p>
-        <p><strong style="color: var(--green);">Free while we’re getting started.</strong> Every competition right now is on the house — and Founders who join the inaugural competition keep Muster Up free for life. Get in early and help shape what it becomes.</p>
+        <p><strong style="color: var(--green);">Free while we’re getting started.</strong> Every competition right now is on the house. Get in early and help shape what it becomes.</p>
       </div>
       <div class="feature-shot">
         <div class="feature-pill top-left"><span class="dot"></span> +5 points earned</div>
@@ -1483,7 +1483,7 @@
     <div class="foot-links">
       <a href="/privacy.html">Privacy</a>
       <a href="/partners.html">Partners</a>
-      <a href="#founder">Founder Offer</a>
+      <a href="#founder">Zero Day</a>
       <a href="/contact-us.html">Contact</a>
       <a href="#showcase">The App</a>
       <a href="#download">Download</a>

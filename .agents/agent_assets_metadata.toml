@@ -102,3 +102,9 @@ id = "qvfBWTxx7X0gjkQYm--jQ"
 uri = "file://exports/muster-up-drop-and-run.zip"
 type = "unspecified"
 title = "Muster up — Drop & Run animation (latest, open the HTML in a browser)"
+
+[[outputs]]
+id = "RU_EBDgaSttjL0WdkHKyP"
+uri = "file://muster-up-marketing-2026-07-11.zip"
+type = "unspecified"
+title = "Muster Up marketing site (2026-07-11) — drop into Netlify"

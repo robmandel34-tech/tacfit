@@ -21,8 +21,10 @@
 > **`joinmuster.com` domain** (kept as-is per the user's 2026-06-17 decision — no
 > domain change; `musterup.life` was floated but NOT adopted). `server/index.ts`
 > CORS allow-lists `joinmuster.com` (+ `www.` + `app.`), additive — the current
-> Replit URL still works. Once the domain points at the deployment, set the
-> `APP_ORIGIN` env var to `https://joinmuster.com`. The shield-and-cross logo has
+> Replit URL still works. The app subdomain `app.joinmuster.com` was
+> connected to the Replit deployment (DNS lives in Netlify; verified working
+> 2026-07-12) and the production `APP_ORIGIN` env var is set to
+> `https://app.joinmuster.com`, which drives invite links and email links. The shield-and-cross logo has
 > no text, so it carries over unchanged. **User still owns:** wiring DNS records,
 > the App Store Connect display name, and a fresh TestFlight build for the native
 > name to take effect. (The Muster build was never submitted to the App Store, so

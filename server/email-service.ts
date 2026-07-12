@@ -149,7 +149,7 @@ export const sendVerificationEmail = async (
   username: string,
   token: string
 ): Promise<void> => {
-  const baseUrl = process.env.APP_URL || 'http://localhost:5000';
+  const baseUrl = process.env.APP_ORIGIN || process.env.APP_URL || 'http://localhost:5000';
   const verificationUrl = `${baseUrl}/verify-email?token=${token}`;
   console.log('Generated verification URL:', verificationUrl);
 
@@ -209,7 +209,7 @@ export const sendPasswordResetEmail = async (
   username: string,
   token: string
 ): Promise<void> => {
-  const baseUrl = process.env.APP_URL || 'http://localhost:5000';
+  const baseUrl = process.env.APP_ORIGIN || process.env.APP_URL || 'http://localhost:5000';
   const resetUrl = `${baseUrl}/reset-password?token=${token}`;
   console.log('Generated password reset URL:', resetUrl);
 
@@ -260,9 +260,8 @@ export const sendWelcomeEmail = async (
   email: string,
   username: string
 ): Promise<void> => {
-  // For Replit deployments, use HTTP instead of HTTPS to avoid SSL issues
-  const baseUrl = process.env.APP_URL || 'http://localhost:5000';
-  const correctedUrl = baseUrl.replace('https://', 'http://');
+  const baseUrl = process.env.APP_ORIGIN || process.env.APP_URL || 'http://localhost:5000';
+  const correctedUrl = baseUrl;
 
   const emailHtml = renderEmailShell({
     preheader: 'Your Muster Up command access is active. Here\u2019s your mission briefing.',

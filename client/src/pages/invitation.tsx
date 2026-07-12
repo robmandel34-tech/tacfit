@@ -39,7 +39,7 @@ export default function Invitation() {
       } else {
         toast({
           title: "Success!",
-          description: "You've joined the competition! Your first competition is free.",
+          description: "You've joined the competition!",
         });
         setLocation("/competitions");
       }
@@ -229,15 +229,6 @@ export default function Invitation() {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="bg-military-green/20 border border-military-green/50 rounded-lg p-4">
-                  <p className="text-military-green-light text-sm font-medium">
-                    🎯 First Competition Free!
-                  </p>
-                  <p className="text-gray-300 text-sm">
-                    Your first competition entry is completely free. After that, you'll need to pay to join additional competitions.
-                  </p>
-                </div>
-                
                 <Button
                   onClick={() => acceptInvitation.mutate()}
                   disabled={acceptInvitation.isPending}

@@ -4101,8 +4101,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         expiresAt
       });
       
-      // Generate invite URL
-      const inviteUrl = `${req.protocol}://${req.get('host')}/invite/${inviteToken}`;
+      // Generate invite URL — prefer APP_ORIGIN (the public web address) so
+      // links shared from the native app never point at the API host.
+      const inviteBase = process.env.APP_ORIGIN || `${req.protocol}://${req.get('host')}`;
+      const inviteUrl = `${inviteBase}/invite/${inviteToken}`;
       
       res.json({
         ...invitation,
@@ -4220,7 +4222,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: 'pending'
       });
       
-      const inviteUrl = `${req.protocol}://${req.get('host')}/team-invite/${inviteToken}`;
+      const teamInviteBase = process.env.APP_ORIGIN || `${req.protocol}://${req.get('host')}`;
+      const inviteUrl = `${teamInviteBase}/team-invite/${inviteToken}`;
 
       const phoneInviter = invitedBy ? await storage.getUser(invitedBy) : null;
       notifySlack(

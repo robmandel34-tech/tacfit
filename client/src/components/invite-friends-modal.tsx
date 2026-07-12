@@ -181,11 +181,6 @@ export default function InviteFriendsModal({
                     Reset
                   </Button>
                 </div>
-
-                <div className="text-xs text-gray-400 mt-2">
-                  💡 Your friend will get their first competition free! 
-                  After that, they'll need to pay to join additional competitions.
-                </div>
               </CardContent>
             </Card>
           )}

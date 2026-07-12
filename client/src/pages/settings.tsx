@@ -459,7 +459,7 @@ export default function SettingsPage() {
               </a>
               <div className="border-t border-white/5" />
               <a
-                href="https://tacfit.app/privacy"
+                href="/privacy.html"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-between px-6 py-3 hover:bg-white/5 transition-colors"

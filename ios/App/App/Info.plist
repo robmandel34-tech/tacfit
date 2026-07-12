@@ -46,13 +46,13 @@
         <key>UIViewControllerBasedStatusBarAppearance</key>
         <true/>
         <key>NSCameraUsageDescription</key>
-        <string>Muster Up uses your camera to capture activity evidence photos and videos.</string>
+        <string>Muster Up uses your camera to capture activity evidence photos and videos, and for team video calls.</string>
         <key>NSPhotoLibraryUsageDescription</key>
         <string>Muster Up accesses your photo library so you can choose activity evidence from your existing photos.</string>
         <key>NSPhotoLibraryAddUsageDescription</key>
         <string>Muster Up can save activity evidence photos to your photo library.</string>
         <key>NSMicrophoneUsageDescription</key>
-        <string>Muster Up uses your microphone when recording activity evidence videos.</string>
+        <string>Muster Up uses your microphone when recording activity evidence videos and during team video calls.</string>
         <key>NSHealthShareUsageDescription</key>
         <string>Muster Up reads your Apple Health data to automatically import workout activities.</string>
         <key>NSHealthUpdateUsageDescription</key>

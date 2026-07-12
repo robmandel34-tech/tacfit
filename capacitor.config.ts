@@ -14,7 +14,10 @@ const config: CapacitorConfig = {
     contentInset: "automatic",
     backgroundColor: "#181B14",
     preferredContentMode: "mobile",
-    limitsNavigationsToAppBoundDomains: true,
+    // Must stay FALSE: there is no WKAppBoundDomains list in Info.plist, and
+    // App-Bound Domain limits can block camera/microphone (WebRTC) access for
+    // the embedded team video call at fairmeeting.net inside the WKWebView.
+    limitsNavigationsToAppBoundDomains: false,
     scheme: "tacfit",
     minVersion: "16.0",
   },

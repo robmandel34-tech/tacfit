@@ -34,7 +34,7 @@ set_plist_entry() {
 add_plist_entry() { set_plist_entry "$@"; }
 
 set_plist_entry "NSCameraUsageDescription" \
-  "Muster Up uses your camera to capture activity evidence photos and videos."
+  "Muster Up uses your camera to capture activity evidence photos and videos, and for team video calls."
 
 set_plist_entry "NSPhotoLibraryUsageDescription" \
   "Muster Up accesses your photo library so you can choose activity evidence from your existing photos."
@@ -43,7 +43,7 @@ set_plist_entry "NSPhotoLibraryAddUsageDescription" \
   "Muster Up can save activity evidence photos to your photo library."
 
 set_plist_entry "NSMicrophoneUsageDescription" \
-  "Muster Up uses your microphone when recording activity evidence videos."
+  "Muster Up uses your microphone when recording activity evidence videos and during team video calls."
 
 set_plist_entry "NSHealthShareUsageDescription" \
   "Muster Up reads your Apple Health data to automatically import workout activities."

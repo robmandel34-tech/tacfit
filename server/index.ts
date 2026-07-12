@@ -166,4 +166,15 @@ app.use((req, res, next) => {
     // Start the per-competition Slack digest scheduler
     startDigestScheduler();
   });
+
+  // Graceful shutdown: without this, a restart can leave the old process
+  // alive holding port 5000, and the new one crashes with EADDRINUSE.
+  const shutdown = (signal: string) => {
+    log(`received ${signal}, shutting down`);
+    server.close(() => process.exit(0));
+    // Force-exit if connections keep the server from closing in time
+    setTimeout(() => process.exit(0), 5000).unref();
+  };
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
 })();

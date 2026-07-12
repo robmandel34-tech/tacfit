@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Plus, X, Edit2, Check, Trash2, Calendar, ChevronDown, ChevronUp, Clipboard } from "lucide-react";
@@ -233,13 +232,6 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
     });
   };
 
-  const handleStatusChange = (taskId: string, newStatus: string) => {
-    updateTaskMutation.mutate({
-      id: taskId,
-      status: newStatus,
-    });
-  };
-
   const startEditing = (task: MissionTask) => {
     setEditingTaskId(task.id);
     setEditTask({
@@ -250,177 +242,212 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
     });
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusPill = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-[var(--bubble-accent)]';
-      case 'in-progress': return 'bg-[var(--bubble-accent)]/60';
-      default: return 'bg-[var(--bubble-bg)] border border-[var(--bubble-accent)]/30';
+      case 'completed':
+        return { text: 'Completed', className: 'bg-green-500/15 text-green-400 ring-1 ring-green-500/30' };
+      case 'in-progress':
+        return { text: 'In Progress', className: 'bg-amber-500/15 text-amber-400 ring-1 ring-amber-500/30' };
+      default:
+        return { text: 'Pending', className: 'bg-white/10 text-gray-300 ring-1 ring-white/15' };
     }
   };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'completed': return 'Completed';
-      case 'in-progress': return 'In Progress';
-      default: return 'Pending';
-    }
+  // Parse a due date in the user's LOCAL timezone. "YYYY-MM-DD" strings are
+  // otherwise parsed as UTC midnight, which flags tasks overdue a day early
+  // for users west of UTC.
+  const parseDueDate = (value: string) => {
+    const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
+    if (match) return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+    return new Date(value);
   };
+
+  const isOverdue = (task: MissionTask) =>
+    !!task.dueDate && !task.completed && parseDueDate(task.dueDate) < new Date(new Date().toDateString());
+
+  const completedCount = (tasks as MissionTask[]).filter((t) => t.completed).length;
+
+  const inputStyles =
+    "rounded-lg border-white/10 bg-black/30 text-white placeholder-gray-500 focus-visible:ring-green-600";
 
   return (
-    <Card className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl shadow-xl text-white">
+    <Card className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl shadow-xl text-white overflow-hidden">
       <Collapsible open={!isCollapsed} onOpenChange={(open) => setIsCollapsed(!open)}>
         <CollapsibleTrigger asChild>
-          <CardHeader className="cursor-pointer hover:bg-white/10 transition-colors">
+          <CardHeader className="cursor-pointer hover:bg-white/10 transition-colors py-4">
             <CardTitle className="flex items-center justify-between text-lg text-white">
-              <div className="flex items-center space-x-2">
-                <Clipboard className="w-5 h-5" />
-                <span>Mission Planning Board</span>
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-green-700 to-green-900 ring-1 ring-green-500/40">
+                  <Clipboard className="w-5 h-5 text-green-300" />
+                </span>
+                <span className="font-semibold tracking-wide">Mission Planning Board</span>
+                {(tasks as MissionTask[]).length > 0 && (
+                  <span
+                    className="rounded-full bg-white/10 px-2 py-0.5 text-[11px] font-semibold text-gray-300 ring-1 ring-white/15"
+                    data-testid="badge-task-progress"
+                  >
+                    {completedCount}/{(tasks as MissionTask[]).length} done
+                  </span>
+                )}
               </div>
-              {isCollapsed ? <ChevronDown className="w-5 h-5" /> : <ChevronUp className="w-5 h-5" />}
+              {isCollapsed ? <ChevronDown className="w-5 h-5 text-gray-400" /> : <ChevronUp className="w-5 h-5 text-gray-400" />}
             </CardTitle>
           </CardHeader>
         </CollapsibleTrigger>
         
         <CollapsibleContent>
           <CardContent className="p-4 pt-0">
-            <div className="space-y-4">
-              <div className="flex justify-start">
+            <div className="space-y-4 border-t border-white/10 pt-4">
+              {!isAddingTask && (
                 <Button
                   onClick={() => setIsAddingTask(true)}
-                  className="bg-military-green hover:bg-military-green-dark text-forest-green"
+                  className="rounded-full bg-gradient-to-br from-green-600 to-green-800 text-white shadow-md hover:from-green-500 hover:to-green-700"
                   size="sm"
+                  data-testid="button-add-task"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Add Task
+                  New Mission Task
                 </Button>
-              </div>
+              )}
               
               {/* Add Task Form */}
               {isAddingTask && (
-                <Card className="backdrop-blur-sm bg-white/5 border border-white/10 rounded-xl">
-              <CardHeader>
-                <CardTitle className="text-white text-sm">Create New Task</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Input
-                  placeholder="Task title"
-                  value={newTask.title}
-                  onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                  className="bg-slate-700 border-slate-600 text-white"
-                />
-                <Input
-                  placeholder="Description (optional)"
-                  value={newTask.description}
-                  onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                  className="bg-slate-700 border-slate-600 text-white"
-                />
-                <Select
-                  value={newTask.assignedTo}
-                  onValueChange={(value) => setNewTask({ ...newTask, assignedTo: value })}
-                >
-                  <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                    <SelectValue placeholder="Assign to team member" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {teamMembers.map((member) => (
-                      <SelectItem key={member.user?.id} value={member.user?.id?.toString()}>
-                        {member.user?.username}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <div className="flex items-center space-x-2">
-                  <Calendar className="h-4 w-4 text-gray-400" />
-                  <Input
-                    type="date"
-                    value={newTask.dueDate}
-                    onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
-                    className="bg-slate-700 border-slate-600 text-white"
-                    placeholder="Due date (optional)"
-                  />
+                <div className="rounded-xl border border-green-500/20 bg-black/30 p-4">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-green-400">
+                    New Mission Task
+                  </p>
+                  <div className="space-y-3">
+                    <Input
+                      placeholder="Task title"
+                      value={newTask.title}
+                      onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                      className={inputStyles}
+                      data-testid="input-task-title"
+                    />
+                    <Input
+                      placeholder="Description (optional)"
+                      value={newTask.description}
+                      onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                      className={inputStyles}
+                    />
+                    <Select
+                      value={newTask.assignedTo}
+                      onValueChange={(value) => setNewTask({ ...newTask, assignedTo: value })}
+                    >
+                      <SelectTrigger className={inputStyles}>
+                        <SelectValue placeholder="Assign to team member" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {teamMembers.map((member) => (
+                          <SelectItem key={member.user?.id} value={member.user?.id?.toString()}>
+                            {member.user?.username}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 shrink-0 text-gray-400" />
+                      <Input
+                        type="date"
+                        value={newTask.dueDate}
+                        onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+                        className={inputStyles}
+                        placeholder="Due date (optional)"
+                      />
+                    </div>
+                    <div className="flex gap-2 pt-1">
+                      <Button
+                        onClick={handleCreateTask}
+                        className="rounded-full bg-gradient-to-br from-green-600 to-green-800 text-white shadow-md hover:from-green-500 hover:to-green-700"
+                        size="sm"
+                        disabled={createTaskMutation.isPending || !newTask.title.trim() || !newTask.assignedTo}
+                        data-testid="button-create-task"
+                      >
+                        <Check className="h-4 w-4 mr-2" />
+                        Create
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setIsAddingTask(false);
+                          setNewTask({ title: '', description: '', assignedTo: '', dueDate: '' });
+                        }}
+                        variant="ghost"
+                        size="sm"
+                        className="rounded-full text-gray-400 hover:bg-white/10 hover:text-white"
+                      >
+                        <X className="h-4 w-4 mr-2" />
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex space-x-2">
-                  <Button
-                    onClick={handleCreateTask}
-                    className="bg-military-green hover:bg-military-green-dark text-forest-green"
-                    size="sm"
-                    disabled={createTaskMutation.isPending}
-                  >
-                    <Check className="h-4 w-4 mr-2" />
-                    Create
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      setIsAddingTask(false);
-                      setNewTask({ title: '', description: '', assignedTo: '', dueDate: '' });
-                    }}
-                    variant="outline"
-                    size="sm"
-                  >
-                    <X className="h-4 w-4 mr-2" />
-                    Cancel
-                  </Button>
-                </div>
-              </CardContent>
-                </Card>
               )}
 
               {/* Task List */}
               <div className="space-y-3">
                 {tasks.length === 0 ? (
-                  <div className="text-center py-8 text-gray-400">
-                    <p>No tasks assigned yet</p>
-                    <p className="text-sm">Create your first mission task to get started</p>
+                  <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/5 ring-1 ring-white/10">
+                      <Clipboard className="h-6 w-6 text-green-400" />
+                    </span>
+                    <p className="text-gray-300 font-medium">No missions on the board</p>
+                    <p className="text-sm text-gray-500">Create the first task to rally your squad.</p>
                   </div>
                 ) : (
                   tasks.map((task: MissionTask) => (
-              <Card key={task.id} className="backdrop-blur-sm bg-white/5 border border-white/10 rounded-xl">
+              <Card
+                key={task.id}
+                className={`rounded-xl border bg-black/30 transition-colors ${
+                  task.completed
+                    ? "border-white/5 opacity-60"
+                    : "border-white/10 hover:border-green-500/30"
+                }`}
+                data-testid={`task-card-${task.id}`}
+              >
                 <CardContent className="p-4">
               {editingTaskId === task.id ? (
                 /* Edit Mode */
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Badge variant="outline" className="text-[var(--bubble-accent)] border-[var(--bubble-accent)]/40 bg-[var(--bubble-bg)]">
-                        TASK
-                      </Badge>
-                      <div className="flex items-center space-x-2">
-                        <Avatar className="h-6 w-6">
-                          <AvatarImage src={uploadUrl(teamMembers.find(m => m.user?.id?.toString() === editTask.assignedTo)?.user?.avatar)} />
-                          <AvatarFallback className="bg-military-green text-forest-green text-xs">
-                            {teamMembers.find(m => m.user?.id?.toString() === editTask.assignedTo)?.user?.username?.charAt(0)?.toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <Select
-                          value={editTask.assignedTo}
-                          onValueChange={(value) => setEditTask({ ...editTask, assignedTo: value })}
-                        >
-                          <SelectTrigger className="w-40 bg-slate-700 border-slate-600 text-white">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {teamMembers.map((member) => (
-                              <SelectItem key={member.user?.id} value={member.user?.id?.toString()}>
-                                {member.user?.username}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src={uploadUrl(teamMembers.find(m => m.user?.id?.toString() === editTask.assignedTo)?.user?.avatar)} />
+                        <AvatarFallback className="bg-green-900 text-green-300 text-[10px] font-bold">
+                          {teamMembers.find(m => m.user?.id?.toString() === editTask.assignedTo)?.user?.username?.charAt(0)?.toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <Select
+                        value={editTask.assignedTo}
+                        onValueChange={(value) => setEditTask({ ...editTask, assignedTo: value })}
+                      >
+                        <SelectTrigger className={`w-40 ${inputStyles}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {teamMembers.map((member) => (
+                            <SelectItem key={member.user?.id} value={member.user?.id?.toString()}>
+                              {member.user?.username}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center gap-1">
                       <Button
                         onClick={() => handleUpdateTask(task.id)}
-                        size="sm"
-                        className="bg-military-green hover:bg-military-green-dark text-forest-green"
+                        size="icon"
+                        className="h-8 w-8 rounded-full bg-gradient-to-br from-green-600 to-green-800 text-white hover:from-green-500 hover:to-green-700"
                         disabled={updateTaskMutation.isPending}
+                        aria-label="Save task"
                       >
                         <Check className="h-4 w-4" />
                       </Button>
                       <Button
                         onClick={() => setEditingTaskId(null)}
-                        variant="outline"
-                        size="sm"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 rounded-full text-gray-400 hover:bg-white/10 hover:text-white"
+                        aria-label="Cancel editing"
                       >
                         <X className="h-4 w-4" />
                       </Button>
@@ -429,96 +456,93 @@ export default function MissionPlanningBoard({ teamId, teamMembers }: MissionPla
                   <Input
                     value={editTask.title}
                     onChange={(e) => setEditTask({ ...editTask, title: e.target.value })}
-                    className="bg-slate-700 border-slate-600 text-white font-medium"
+                    className={`${inputStyles} font-medium`}
                   />
                   <Input
                     value={editTask.description}
                     onChange={(e) => setEditTask({ ...editTask, description: e.target.value })}
                     placeholder="Description (optional)"
-                    className="bg-slate-700 border-slate-600 text-white"
+                    className={inputStyles}
                   />
-                  <div className="flex items-center space-x-2">
-                    <Calendar className="h-4 w-4 text-gray-400" />
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 shrink-0 text-gray-400" />
                     <Input
                       type="date"
                       value={editTask.dueDate}
                       onChange={(e) => setEditTask({ ...editTask, dueDate: e.target.value })}
-                      className="bg-slate-700 border-slate-600 text-white"
+                      className={inputStyles}
                       placeholder="Due date (optional)"
                     />
                   </div>
                 </div>
               ) : (
                 /* View Mode */
-                <div className="relative">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        checked={task.completed}
-                        disabled={!canCompleteTask(task)}
-                        onCheckedChange={(checked) => 
-                          toggleCompletionMutation.mutate({ id: task.id, completed: !!checked })
-                        }
-                        className="data-[state=checked]:bg-military-green data-[state=checked]:border-military-green disabled:opacity-50 disabled:cursor-not-allowed text-forest-green"
-                      />
-                      <div className="flex items-center space-x-0.5">
-                        <Badge variant="outline" className="text-[var(--bubble-accent)] border-[var(--bubble-accent)]/40 bg-[var(--bubble-bg)]">
-                          TASK
-                        </Badge>
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    checked={task.completed}
+                    disabled={!canCompleteTask(task)}
+                    onCheckedChange={(checked) => 
+                      toggleCompletionMutation.mutate({ id: task.id, completed: !!checked })
+                    }
+                    className="mt-1 h-5 w-5 rounded-md border-white/30 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600 data-[state=checked]:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    data-testid={`checkbox-task-${task.id}`}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <h4 className={`font-medium leading-snug text-white ${task.completed ? 'line-through text-gray-400' : ''}`}>
+                        {task.title}
+                      </h4>
+                      <div className="flex shrink-0 items-center">
                         <Button
                           onClick={() => startEditing(task)}
                           variant="ghost"
-                          size="sm"
-                          className="text-gray-400 hover:text-white hover:bg-slate-700"
+                          size="icon"
+                          className="h-7 w-7 rounded-full text-gray-500 hover:bg-white/10 hover:text-white"
+                          aria-label="Edit task"
                         >
-                          <Edit2 className="h-4 w-4" />
+                          <Edit2 className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          onClick={() => deleteTaskMutation.mutate(task.id)}
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 rounded-full text-gray-500 hover:bg-red-500/10 hover:text-red-400"
+                          aria-label="Delete task"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Avatar className="h-6 w-6">
-                        <AvatarImage src={uploadUrl(teamMembers.find(m => m.user?.id?.toString() === task.assignedTo)?.user?.avatar)} />
-                        <AvatarFallback className="bg-military-green text-forest-green text-xs">
-                          {task.assignedToUsername?.charAt(0)?.toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-gray-300 text-sm">{task.assignedToUsername}</span>
-                    </div>
-                  </div>
-                  <div className="mb-3">
-                    <h4 className={`text-white font-medium ${task.completed ? 'line-through opacity-75' : ''}`}>
-                      {task.title}
-                    </h4>
                     {task.description && (
-                      <p className={`text-gray-300 text-sm mt-1 ${task.completed ? 'line-through opacity-75' : ''}`}>
+                      <p className={`mt-0.5 text-sm text-gray-400 ${task.completed ? 'line-through' : ''}`}>
                         {task.description}
                       </p>
                     )}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="flex items-center space-x-2">
-                        <div className={`w-3 h-3 rounded-full ${getStatusColor(task.status)}`} />
-                        <span className="text-gray-400 text-sm">{getStatusText(task.status)}</span>
-                      </div>
+                    <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                      <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${getStatusPill(task.status).className}`}>
+                        {getStatusPill(task.status).text}
+                      </span>
                       {task.dueDate && (
-                        <div className="flex items-center space-x-1">
-                          <Calendar className="h-3 w-3 text-gray-400" />
-                          <span className="text-gray-400 text-sm">
-                            {format(new Date(task.dueDate), 'MMM d, yyyy')}
-                          </span>
-                        </div>
+                        <span
+                          className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ${
+                            isOverdue(task)
+                              ? "bg-red-500/15 text-red-400 ring-red-500/30"
+                              : "bg-white/5 text-gray-400 ring-white/10"
+                          }`}
+                        >
+                          <Calendar className="h-3 w-3" />
+                          {isOverdue(task) ? "Overdue — " : ""}{format(parseDueDate(task.dueDate), 'MMM d')}
+                        </span>
                       )}
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Button
-                        onClick={() => deleteTaskMutation.mutate(task.id)}
-                        variant="ghost"
-                        size="sm"
-                        className="text-red-400 hover:text-red-300 hover:bg-slate-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <span className="ml-auto flex items-center gap-1.5">
+                        <Avatar className="h-5 w-5">
+                          <AvatarImage src={uploadUrl(teamMembers.find(m => m.user?.id?.toString() === task.assignedTo)?.user?.avatar)} />
+                          <AvatarFallback className="bg-green-900 text-green-300 text-[9px] font-bold">
+                            {task.assignedToUsername?.charAt(0)?.toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-xs text-gray-400">{task.assignedToUsername}</span>
+                      </span>
                     </div>
                   </div>
                 </div>

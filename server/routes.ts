@@ -10,6 +10,7 @@ import {
   insertChatMessageSchema, insertFriendshipSchema, insertCompetitionInvitationSchema,
   insertCompetitionEntrySchema, insertMissionTaskSchema, insertActivityTypeSchema,
   insertAdminPostSchema, insertMoodLogSchema, friendships, type User,
+  scheduleTeamCallSchema,
 } from "@shared/schema";
 import { getCompetitionPricing } from "@shared/pricing";
 import { MIN_PASSIVE_EXERCISE_MINUTES, isActivityAllowed, isHealthKitWorkoutEligible } from "@shared/healthkit";
@@ -2007,6 +2008,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create new team for competition
+  // ---- Team calls (free, in-app scheduled video calls) ----
+  app.get("/api/teams/:teamId/calls", async (req, res) => {
+    try {
+      const teamId = parseInt(req.params.teamId);
+      const userId = (req.session as any)?.userId;
+      if (!userId) return res.status(401).json({ message: "Not authenticated" });
+      const membership = await storage.getTeamMember(teamId, userId);
+      if (!membership) return res.status(403).json({ message: "You are not on this team" });
+      const calls = await storage.getTeamCalls(teamId);
+      res.json(calls);
+    } catch (err) {
+      console.error("Error fetching team calls:", err);
+      res.status(500).json({ message: "Failed to load calls" });
+    }
+  });
+
+  app.post("/api/teams/:teamId/calls", async (req, res) => {
+    try {
+      const teamId = parseInt(req.params.teamId);
+      const userId = (req.session as any)?.userId;
+      if (!userId) return res.status(401).json({ message: "Not authenticated" });
+      const membership = await storage.getTeamMember(teamId, userId);
+      if (!membership) return res.status(403).json({ message: "You are not on this team" });
+
+      const parsed = scheduleTeamCallSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: parsed.error.errors[0]?.message || "Invalid call details" });
+      }
+      const { title, scheduledFor } = parsed.data;
+
+      const roomName = `musterup-${teamId}-${crypto.randomUUID().replace(/-/g, "").slice(0, 10)}`;
+      const call = await storage.createTeamCall({
+        teamId,
+        createdBy: userId,
+        title,
+        scheduledFor,
+        roomName,
+        status: "scheduled",
+      });
+
+      // Best-effort: announce the call in the team chat so everyone sees it.
+      try {
+        const scheduler = await storage.getUser(userId);
+        const when = scheduledFor.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
+        await storage.createChatMessage({
+          senderId: userId,
+          teamId,
+          type: "team",
+          content: `${scheduler?.username || "A teammate"} scheduled a team call: "${title}" for ${when}. Open Team to join when it's time.`,
+        });
+      } catch (msgErr) {
+        console.error("Failed to post call chat message:", msgErr);
+      }
+
+      res.status(201).json(call);
+    } catch (err) {
+      console.error("Error scheduling team call:", err);
+      res.status(500).json({ message: "Failed to schedule call" });
+    }
+  });
+
+  app.patch("/api/teams/:teamId/calls/:callId", async (req, res) => {
+    try {
+      const teamId = parseInt(req.params.teamId);
+      const callId = parseInt(req.params.callId);
+      const userId = (req.session as any)?.userId;
+      if (!userId) return res.status(401).json({ message: "Not authenticated" });
+      const membership = await storage.getTeamMember(teamId, userId);
+      if (!membership) return res.status(403).json({ message: "You are not on this team" });
+      const call = await storage.getTeamCall(callId);
+      if (!call || call.teamId !== teamId) return res.status(404).json({ message: "Call not found" });
+      const team = await storage.getTeam(teamId);
+      const isCaptain = team?.captainId === userId;
+      if (call.createdBy !== userId && !isCaptain) {
+        return res.status(403).json({ message: "Only the organizer or captain can change this call" });
+      }
+      const updated = await storage.updateTeamCall(callId, { status: "cancelled" });
+      res.json(updated);
+    } catch (err) {
+      console.error("Error cancelling team call:", err);
+      res.status(500).json({ message: "Failed to update call" });
+    }
+  });
+
+  app.get("/api/calls/:callId", async (req, res) => {
+    try {
+      const callId = parseInt(req.params.callId);
+      const userId = (req.session as any)?.userId;
+      if (!userId) return res.status(401).json({ message: "Not authenticated" });
+      const call = await storage.getTeamCall(callId);
+      if (!call) return res.status(404).json({ message: "Call not found" });
+      const membership = await storage.getTeamMember(call.teamId, userId);
+      if (!membership) return res.status(403).json({ message: "You are not on this team" });
+      res.json(call);
+    } catch (err) {
+      console.error("Error fetching call:", err);
+      res.status(500).json({ message: "Failed to load call" });
+    }
+  });
+
   app.post("/api/competitions/:id/create-team", async (req, res) => {
     try {
       const competitionId = parseInt(req.params.id);

@@ -142,6 +142,18 @@ export const teamMembers = pgTable("team_members", {
   joinedAt: timestamp("joined_at").defaultNow(),
 });
 
+// Scheduled team video calls (free in-app Jitsi rooms)
+export const teamCalls = pgTable("team_calls", {
+  id: serial("id").primaryKey(),
+  teamId: integer("team_id").references(() => teams.id).notNull(),
+  createdBy: integer("created_by").references(() => users.id).notNull(),
+  title: text("title").notNull(),
+  scheduledFor: timestamp("scheduled_for").notNull(),
+  roomName: text("room_name").notNull(), // unique Jitsi room slug
+  status: text("status").default("scheduled"), // scheduled, cancelled
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const activityTypes = pgTable("activity_types", {
   id: serial("id").primaryKey(),
   name: text("name").notNull().unique(),
@@ -385,6 +397,13 @@ export const insertTeamMemberSchema = createInsertSchema(teamMembers).omit({
   joinedAt: true,
 });
 
+// Request body validator for scheduling a team call (server sets teamId,
+// createdBy, roomName, status).
+export const scheduleTeamCallSchema = z.object({
+  title: z.string().trim().min(1, "Please add a short title").max(120),
+  scheduledFor: z.coerce.date(),
+});
+
 export const insertActivitySchema = createInsertSchema(activities).omit({
   id: true,
   createdAt: true,
@@ -474,6 +493,9 @@ export type Team = typeof teams.$inferSelect;
 export type InsertTeam = z.infer<typeof insertTeamSchema>;
 export type TeamMember = typeof teamMembers.$inferSelect;
 export type InsertTeamMember = z.infer<typeof insertTeamMemberSchema>;
+export type TeamCall = typeof teamCalls.$inferSelect;
+export type InsertTeamCall = typeof teamCalls.$inferInsert;
+export type ScheduleTeamCall = z.infer<typeof scheduleTeamCallSchema>;
 export type Activity = typeof activities.$inferSelect;
 export type InsertActivity = z.infer<typeof insertActivitySchema>;
 export type ActivityComment = typeof activityComments.$inferSelect;

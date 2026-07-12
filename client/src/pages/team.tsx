@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Users, Crown, Target, Camera, Send, MessageCircle, Edit2, Check, X, ChevronDown, ChevronUp, UserPlus, Trophy, Flag } from "lucide-react";
 import ChatCard from "@/components/chat-card";
+import TeamCallsCard from "@/components/team-calls-card";
 import MissionPlanningBoard from "@/components/mission-planning-board";
 import TeamInviteModal from "@/components/team-invite-modal";
 import { ReportTeammateModal } from "@/components/report-teammate-modal";
@@ -750,6 +751,13 @@ export default function Team() {
         )}
 
 
+
+        {/* Upcoming team calls */}
+        <TeamCallsCard
+          teamId={userTeamMember?.[0]?.teamId}
+          userId={user?.id}
+          isCaptain={userTeamMember?.[0]?.role === 'captain' || team?.captainId === user?.id}
+        />
 
         {/* Team Chat - Collapsible */}
         <div className="mb-6">

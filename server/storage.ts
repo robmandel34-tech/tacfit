@@ -6,6 +6,7 @@ import {
   InsertCompetitionInvitation, CompetitionEntry, InsertCompetitionEntry,
   PhoneInvitation, InsertPhoneInvitation, WhiteboardItem, InsertWhiteboardItem, 
   MissionTask, InsertMissionTask, ActivityType, InsertActivityType,
+  TeamCall, InsertTeamCall,
   AdminPost, InsertAdminPost, MoodLog, InsertMoodLog,
   TeammateReport, InsertTeammateReport,
   AppleHealthConnection, InsertAppleHealthConnection,
@@ -51,6 +52,12 @@ export interface IStorage {
   addTeamMember(member: InsertTeamMember): Promise<TeamMember>;
   updateTeamMember(teamId: number, userId: number, updates: Partial<TeamMember>): Promise<TeamMember | undefined>;
   removeTeamMember(teamId: number, userId: number): Promise<boolean>;
+
+  // Team call (scheduled video call) operations
+  getTeamCalls(teamId: number): Promise<TeamCall[]>;
+  getTeamCall(id: number): Promise<TeamCall | undefined>;
+  createTeamCall(call: InsertTeamCall): Promise<TeamCall>;
+  updateTeamCall(id: number, updates: Partial<TeamCall>): Promise<TeamCall | undefined>;
   
   // Activity operations
   getActivities(): Promise<Activity[]>;

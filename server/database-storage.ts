@@ -6,13 +6,14 @@ import {
   CompetitionInvitation, InsertCompetitionInvitation, CompetitionEntry, 
   InsertCompetitionEntry, PhoneInvitation, InsertPhoneInvitation, WhiteboardItem, 
   InsertWhiteboardItem, MissionTask, InsertMissionTask, ActivityType, InsertActivityType,
+  TeamCall, InsertTeamCall,
   AdminPost, InsertAdminPost, Advertisement, InsertAdvertisement, MoodLog, InsertMoodLog,
   UserInvitation, InsertUserInvitation, UserBlock,
   TeammateReport, InsertTeammateReport,
   AppleHealthConnection, InsertAppleHealthConnection,
   AppleHealthWorkout, InsertAppleHealthWorkout,
   HealthMetric, InsertHealthMetric, ReadinessScore, InsertReadinessScore,
-  users, competitions, teams, teamMembers, activities, activityTypes,
+  users, competitions, teams, teamMembers, teamCalls, activities, activityTypes,
   activityComments, activityLikes, activityFlags, chatMessages, friendships, 
   competitionHistory, competitionInvitations, competitionEntries, phoneInvitations, 
   whiteboardItems, missionTasks, adminPosts, advertisements, moodLogs, userInvitations,
@@ -308,6 +309,34 @@ export class DatabaseStorage implements IStorage {
   async deleteTeam(id: number): Promise<boolean> {
     const result = await db.delete(teams).where(eq(teams.id, id));
     return (result.rowCount ?? 0) > 0;
+  }
+
+  // Team call (scheduled video call) operations
+  async getTeamCalls(teamId: number): Promise<TeamCall[]> {
+    return await db
+      .select()
+      .from(teamCalls)
+      .where(eq(teamCalls.teamId, teamId))
+      .orderBy(teamCalls.scheduledFor);
+  }
+
+  async getTeamCall(id: number): Promise<TeamCall | undefined> {
+    const [call] = await db.select().from(teamCalls).where(eq(teamCalls.id, id));
+    return call || undefined;
+  }
+
+  async createTeamCall(call: InsertTeamCall): Promise<TeamCall> {
+    const [created] = await db.insert(teamCalls).values(call).returning();
+    return created;
+  }
+
+  async updateTeamCall(id: number, updates: Partial<TeamCall>): Promise<TeamCall | undefined> {
+    const [updated] = await db
+      .update(teamCalls)
+      .set(updates)
+      .where(eq(teamCalls.id, id))
+      .returning();
+    return updated || undefined;
   }
 
   // Team member operations

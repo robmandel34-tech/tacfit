@@ -81,6 +81,7 @@ import ResetPassword from "@/pages/reset-password";
 import Competitions from "@/pages/competitions";
 import CompetitionStatus from "@/pages/competition-status";
 import Team from "@/pages/team";
+import Call from "@/pages/call";
 import TeamPublic from "@/pages/team-public";
 import ActivityFeed from "@/pages/activity-feed";
 import Profile from "@/pages/profile";
@@ -113,6 +114,7 @@ function Router() {
         <Route path="/competitions" component={Competitions} />
         <Route path="/competition-status" component={CompetitionStatus} />
         <Route path="/team" component={Team} />
+        <Route path="/call/:callId" component={Call} />
         <Route path="/team/:teamId" component={TeamPublic} />
         <Route path="/activity-feed" component={ActivityFeed} />
         <Route path="/profile" component={Profile} />

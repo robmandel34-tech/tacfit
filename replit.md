@@ -60,6 +60,15 @@ honor-system. Agreed shape of the idea:
   break (revoking app-blocking, leaving camera frame, quitting early, using the
   phone) voids the session: no points, no competition credit. Freedom to quit +
   zero credit = the game mechanic.
+- **GPS-verified traveling exercises (added 2026-07-12 — now the EASIEST
+  stage, do first):** running/biking/walking/rucking validated by GPS trail +
+  time. Standard tech (Strava-style), no special Apple entitlement, and the app
+  already ingests Apple Health workouts with GPS routes. Anti-cheat via sanity
+  checks: sustained speed caps (car/bike vs run), teleport/straight-line
+  detection, motionless stretches pause the clock, implausible pace = no
+  credit. Pair GPS with motion sensors (step cadence) to counter
+  phone-handed-to-a-buddy; Apple Watch workouts (wrist heart rate) are the
+  strongest evidence tier.
 - **Stage 1 (most feasible):** "verified focus sessions" for timed activities —
   meditation, reading, stretching, journaling. Camera verifies a person stays in
   frame and settled; phone untouched; apps blocked; timer pauses/voids on break.

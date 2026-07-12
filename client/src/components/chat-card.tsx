@@ -32,7 +32,15 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
   const [isOpen, setIsOpen] = useState(false);
   const [lastViewedCount, setLastViewedCount] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollRootRef = useRef<HTMLDivElement>(null);
+
+  // Scroll only the chat box's own viewport — never the page.
+  const scrollToBottom = () => {
+    const viewport = scrollRootRef.current?.querySelector(
+      "[data-radix-scroll-area-viewport]"
+    ) as HTMLDivElement | null;
+    if (viewport) viewport.scrollTop = viewport.scrollHeight;
+  };
 
   const { data: messages = [], refetch } = useQuery({
     queryKey: ["/api/chat", { teamId, competitionId }],
@@ -68,6 +76,8 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
     onSuccess: () => {
       setMessage("");
       refetch();
+      inputRef.current?.focus();
+      requestAnimationFrame(scrollToBottom);
     },
     onError: () => {
       toast({
@@ -180,7 +190,7 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
   // Keep the view pinned to the newest message when opening or receiving.
   useEffect(() => {
     if (isOpen) {
-      bottomRef.current?.scrollIntoView({ block: "end" });
+      requestAnimationFrame(scrollToBottom);
     }
   }, [isOpen, messages.length]);
 
@@ -222,7 +232,7 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
         <CollapsibleContent>
           <CardContent className="p-0">
             <div className="flex flex-col h-96 border-t border-white/10">
-              <ScrollArea className="flex-1 bg-black/30 px-3 py-4">
+              <ScrollArea ref={scrollRootRef} className="flex-1 bg-black/30 px-3 py-4">
                 <div className="space-y-1">
                   {ordered.length === 0 ? (
                     <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
@@ -299,7 +309,6 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
                       );
                     })
                   )}
-                  <div ref={bottomRef} />
                 </div>
               </ScrollArea>
 

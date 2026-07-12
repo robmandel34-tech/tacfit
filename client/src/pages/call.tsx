@@ -41,11 +41,13 @@ export default function Call() {
       apiRef.current = new window.JitsiMeetExternalAPI(JITSI_DOMAIN, {
         roomName: call!.roomName,
         parentNode: containerRef.current,
+        lang: "en",
         userInfo: { displayName: user!.username },
         configOverwrite: {
           prejoinPageEnabled: false,
           startWithAudioMuted: true,
           disableDeepLinking: true,
+          defaultLanguage: "en",
         },
         interfaceConfigOverwrite: {
           MOBILE_APP_PROMO: false,

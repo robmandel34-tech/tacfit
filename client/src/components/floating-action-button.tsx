@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Target } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
@@ -8,6 +9,7 @@ import ActivitySubmissionModal from "@/components/activity-submission-modal";
 export default function FloatingActionButton() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { user } = useAuth();
+  const [location] = useLocation();
 
   // Always call hooks in the same order - but only enable queries when user exists
   const { data: userTeamMembership } = useQuery({
@@ -27,6 +29,9 @@ export default function FloatingActionButton() {
 
   // Don't show the button if user is not authenticated - moved after all hooks
   if (!user) return null;
+
+  // Hide during video calls so the meeting fills the whole screen
+  if (location.startsWith("/call/")) return null;
 
   // Check if the competition is active (for display purposes only)
   const isCompetitionActive = () => {

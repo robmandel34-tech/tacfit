@@ -16,6 +16,9 @@ export default function BottomNavigation() {
   // Only show bottom nav if user is logged in
   if (!user) return null;
 
+  // Hide during video calls so the meeting fills the whole screen
+  if (location.startsWith("/call/")) return null;
+
   // Show different nav items based on whether user is in a competition
   const hasActiveMembership = userTeamMember && Array.isArray(userTeamMember) && userTeamMember.length > 0;
   

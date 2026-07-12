@@ -134,7 +134,9 @@ export default function TeamInviteModal({
   };
 
   const shareViaSMS = () => {
-    const message = `Join my team "${teamName}" in the ${competitionName} competition! Click here to join: ${inviteUrl}`;
+    const message = competitionName
+      ? `Join my team "${teamName}" in the ${competitionName} competition! Click here to join: ${inviteUrl}`
+      : `Join my team "${teamName}" on Muster Up! Click here to join: ${inviteUrl}`;
     const smsUrl = `sms:${phoneNumber}?body=${encodeURIComponent(message)}`;
     window.open(smsUrl, '_blank');
   };
@@ -160,9 +162,17 @@ export default function TeamInviteModal({
         <DialogHeader>
           <DialogTitle className="text-white flex items-center gap-2">
             <UserPlus className="h-5 w-5" />
-            Invite to {teamName}
+            Invite Buddies to {teamName}
           </DialogTitle>
         </DialogHeader>
+
+        <div className="rounded-lg bg-military-green/15 border border-military-green/30 px-3 py-2 text-sm text-gray-300">
+          Your buddy will join <span className="text-white font-medium">{teamName}</span>
+          {competitionName && (
+            <> in the <span className="text-white font-medium">{competitionName}</span> competition</>
+          )}
+          .
+        </div>
 
         <Tabs defaultValue="app-users" className="space-y-4">
           <TabsList className="grid w-full grid-cols-2 bg-tactical-gray-light">

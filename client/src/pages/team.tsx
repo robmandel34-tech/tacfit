@@ -782,7 +782,7 @@ export default function Team() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-white">Team Members</CardTitle>
-              {(userTeamMember?.[0]?.role === 'captain' || team?.captainId === user?.id) && competition && (
+              {team && (
                 <Button
                   size="sm"
                   onClick={() => setIsInviteModalOpen(true)}
@@ -881,18 +881,14 @@ export default function Team() {
                           <UserPlus className="h-6 w-6 text-gray-500" />
                         </div>
                         <p className="text-gray-400 text-sm font-medium mb-2">Open Slot</p>
-                        {(userTeamMember?.[0]?.role === 'captain' || team?.captainId === user?.id) ? (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setIsInviteModalOpen(true)}
-                            className="border-military-green text-military-green hover:bg-military-green hover:text-white"
-                          >
-                            Invite Member
-                          </Button>
-                        ) : (
-                          <p className="text-xs text-gray-500">Captain can invite</p>
-                        )}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setIsInviteModalOpen(true)}
+                          className="border-military-green text-military-green hover:bg-military-green hover:text-white"
+                        >
+                          Invite Member
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -926,13 +922,13 @@ export default function Team() {
       </main>
       
       {/* Team Invite Modal */}
-      {team && competition && (
+      {team && (
         <TeamInviteModal
           isOpen={isInviteModalOpen}
           onClose={() => setIsInviteModalOpen(false)}
           teamId={team.id}
           teamName={team.name}
-          competitionName={competition.name}
+          competitionName={competition?.name ?? ""}
         />
       )}
 

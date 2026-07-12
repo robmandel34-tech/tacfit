@@ -47,7 +47,13 @@ export default function Call() {
         configOverwrite: {
           prejoinPageEnabled: false,
           startWithAudioMuted: true,
+          // Legacy flag (older Jitsi versions)
           disableDeepLinking: true,
+          // Modern equivalent — fairmeeting.net's own config sets
+          // deeplinking.disabled = false, which wins over the legacy flag,
+          // so we must override the new-style object too or mobile users get
+          // the "How do you want to join this meeting?" app-promo screen.
+          deeplinking: { disabled: true },
           defaultLanguage: "en",
         },
         interfaceConfigOverwrite: {

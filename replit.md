@@ -34,6 +34,8 @@ Muster Up is a full-stack fitness competition platform designed for team-based f
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
+Team video calls: refer to them as "the video call system on fairmeeting.net" when talking to the user — do NOT call it "Jitsi" (the user associates "Jitsi" with the old meet.jit.si site we moved away from). Technically the feature still embeds Jitsi Meet software hosted at fairmeeting.net via `external_api.js` in `client/src/pages/call.tsx`.
+
 **Standing rule — end every change with this deployment reminder:**
 After ANY code change (no matter how small), always close the response with:
 1. **Replit Workspace (dev preview):** auto-updated, no action.

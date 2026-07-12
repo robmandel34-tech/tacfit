@@ -187,8 +187,10 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
   // Calculate unread messages
   const unreadCount = Math.max(0, messages.length - lastViewedCount);
 
-  // Oldest first for display
-  const ordered = [...messages].reverse();
+  // Oldest first for display (sort defensively — the API returns them oldest-first)
+  const ordered = [...messages].sort(
+    (a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  );
 
   return (
     <Card className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl shadow-xl text-white overflow-hidden">

@@ -1,37 +1,39 @@
 # Muster Up - Fitness Competition Platform
 
-> **Display name (2026-06-17): "Muster Up"** (tagline: "Find your team").
-> Name history: TacFit → MainLink → Muster → **Muster Up** (the final, current
-> name — "Muster" alone read as confusing, so it was renamed to "Muster Up").
-> Every user-facing place now reads "Muster Up": the React app UI, PWA shell
-> (title/manifest `name`+`short_name`/service-worker notifications), email display
-> names + subjects, marketing/legal HTML pages (both `marketing-site/` and
-> `client/public/`), native app display name (Info.plist `CFBundleDisplayName`,
-> `capacitor.config.ts` `appName`), and demo assets. The military/tactical THEME
-> and voice ("squad", "mission", "Command Center", "Intel Feed") are kept — and
-> the celebration banner **"Way to Muster up!"** is an intentional verb pun that
-> is LEFT lowercase (do NOT turn it into "Muster Up up!").
-> **Intentionally NOT changed** (would break things, are invisible, or are
-> deliberately verb puns): the bundle id `com.tacfit.app` (permanent, invisible),
-> the iOS custom scheme `tacfit`, all `@tacfit.app` email ADDRESSES (domain still
-> SendGrid-authenticated; only display names changed), asset filenames containing
-> `tacfit`, code identifiers/localStorage keys, the `MusterSplash` component name,
-> the `X-Webhook-Source: TacFit-Points-Sync` integration header, the community
-> noun "Musters" (members), the "Way to Muster up!" pun, and the
-> **`joinmuster.com` domain** (kept as-is per the user's 2026-06-17 decision — no
-> domain change; `musterup.life` was floated but NOT adopted). `server/index.ts`
-> CORS allow-lists `joinmuster.com` (+ `www.` + `app.`), additive — the current
-> Replit URL still works. The app subdomain `app.joinmuster.com` was
-> connected to the Replit deployment (DNS lives in Netlify; verified working
-> 2026-07-12) and the production `APP_ORIGIN` env var is set to
-> `https://app.joinmuster.com`, which drives invite links and email links. The shield-and-cross logo has
-> no text, so it carries over unchanged. **User still owns:** wiring DNS records,
-> the App Store Connect display name, and a fresh TestFlight build for the native
-> name to take effect. (The Muster build was never submitted to the App Store, so
-> there is no live app name to keep in sync.)
+> **Display name: "Muster Up"** (tagline: "Find your team"). Name history:
+> TacFit → MainLink → Muster → **Muster Up** (final, renamed 2026-06-17).
+> The military/tactical THEME and voice ("squad", "mission", "Command Center",
+> "Intel Feed") are kept. The celebration banner **"Way to Muster up!"** is an
+> intentional verb pun — LEFT lowercase (do NOT turn it into "Muster Up up!").
+>
+> **Intentionally NOT renamed** (would break things, are invisible, or are
+> deliberate puns): bundle id `com.tacfit.app` (permanent), the iOS custom
+> scheme `tacfit`, all `@tacfit.app` email ADDRESSES (domain still
+> SendGrid-authenticated; only display names changed), asset filenames
+> containing `tacfit`, code identifiers/localStorage keys, the `MusterSplash`
+> component name, the `X-Webhook-Source: TacFit-Points-Sync` header, the
+> community noun "Musters" (members), and the **`joinmuster.com` domain**
+> (kept per the user's 2026-06-17 decision).
+>
+> **Domains (verified working 2026-07-12):** `app.joinmuster.com` is connected
+> to the Replit deployment (DNS lives in Netlify). Production `APP_ORIGIN` env
+> var = `https://app.joinmuster.com` — it drives invite links and email links
+> (email code prefers `APP_ORIGIN` over the legacy `APP_URL` secret).
+> `server/index.ts` CORS allow-lists `joinmuster.com` + `www.` + `app.`,
+> additive — the old `tacfit.replit.app` URL still works (TestFlight builds
+> point at it via `VITE_API_URL`). The marketing site is a SEPARATE static
+> Netlify site (`marketing-site/`), deployed via Netlify, not Replit.
+> **User still owns:** App Store Connect display name + a fresh TestFlight
+> build for the native name (no Muster-era build was ever submitted).
 
 ## Overview
-Muster Up is a full-stack fitness competition platform designed for team-based fitness challenges. It enables users to create and join competitions, form teams, track various activities (Cardio, Strength, Mobility Training, Meditation), and engage through social features like chat and activity feeds. The platform incorporates a reward system for competition winners, activity submissions, and daily mood assessments, and integrates with external services for automated activity tracking. The vision is to provide a comprehensive wellness platform beyond just fitness, incorporating mental health aspects and fostering community engagement in a tactical-themed environment.
+Muster Up is a full-stack fitness competition platform for team-based fitness
+challenges. Users create and join competitions, form teams, track activities
+(Cardio, Strength, Mobility Training, Meditation), and engage through chat,
+activity feeds, team video calls, buddy requests, and daily mood check-ins.
+Competition winners and activity submissions earn points. Apple Health syncs
+workouts automatically. The vision is a wellness platform beyond fitness,
+fostering community in a tactical-themed environment.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -73,296 +75,110 @@ honor-system. Agreed shape of the idea:
 ## System Architecture
 
 ### Core Design Principles
-The platform follows a military/tactical theme across its UI/UX, language, and iconography, emphasizing sharp edges, green gradients, and consistent branding. It focuses on a single-competition-at-a-time model for users and prioritizes visual consistency across all components.
+Military/tactical theme across UI/UX, language, and iconography — sharp edges,
+green gradients, consistent branding. Single-competition-at-a-time model per
+user. Tactical language throughout: "buddies," "Intel Feed," "Command Center."
 
-### Frontend Architecture
-- **Framework**: React 18 with TypeScript.
-- **Styling**: Tailwind CSS with a custom military/tactical theme, utilizing Radix UI primitives and shadcn/ui components.
-- **State Management**: TanStack Query for server state and React Context for authentication.
-- **Routing**: Wouter for client-side routing.
-- **Build Tool**: Vite.
-- **UI/UX Decisions**: Consistent tactical language ("buddies," "Intel Feed," "Command Center"), redesigned headers and cards with green gradients, interactive elements (onboarding walkthroughs, progress maps), video-first media display, enhanced chat, and improved accessibility.
+### Frontend
+- React 18 + TypeScript, Vite, Tailwind CSS (custom tactical theme), Radix UI /
+  shadcn/ui, TanStack Query (server state), React Context (auth), Wouter (routing).
 
-### Backend Architecture
-- **Runtime**: Node.js with Express.js.
-- **Language**: TypeScript with ES modules.
-- **API Design**: RESTful API.
-- **File Upload**: Multer for evidence uploads.
-- **Security**: Admin-only access for critical functions, session-based authentication with protected routes, email verification system.
-- **Core Features**:
-    - **User Management**: Registration, login, profile customization, suspension, deletion.
-    - **Competition Management**: Creation, joining, and automatic completion with reward distribution (configurable activity types, goals, join windows). All competitions — free and paid — award completion rewards (1st place: 1,000 pts captain / 500 pts members; 2nd place: 500 pts captain / 250 pts members). Individual activity submissions also award points throughout the competition. Only the admin (single-admin setup) can create competitions, so the points economy stays controlled.
-    - **Activity Tracking**: Submission of various activity types with photo evidence, point-based scoring (including bonus points for verified evidence), and configurable text input requirements with validation.
-    - **Social Features**: Buddy requests, activity feed with likes/comments, team and direct messaging chat, mission task notifications, PWA push notifications with granular control.
-    - **Wellness**: Daily mood assessment system.
-    - **Admin Tools**: Comprehensive admin portal for managing competitions, users, activity types, and creating Intel Feed announcements.
+### Backend
+- Node.js + Express, TypeScript ES modules, RESTful API, Multer for evidence
+  uploads. Session-based auth (+ native bearer tokens) with protected routes,
+  email verification, admin-only access for critical functions.
 
-### Database Layer
-- **Database**: PostgreSQL.
-- **ORM**: Drizzle ORM for type-safe operations.
-- **Schema**: Defined in a shared directory, managed with Drizzle Kit migrations.
+### Core Features
+- **User Management**: registration, login (email/password + Apple/Google SSO),
+  profiles, suspension, deletion.
+- **Competitions**: creation (admin-only — single-admin setup keeps the points
+  economy controlled), joining, automatic completion with rewards. ALL
+  competitions (free and paid) award completion rewards: 1st place 1,000 pts
+  captain / 500 pts members; 2nd place 500/250. Activity submissions also earn
+  points throughout.
+- **Payments**: Stripe card checkout OR points entry for paid competitions.
+  Pricing derives from duration in `shared/pricing.ts` (2 weeks: $7 / 1000 pts;
+  4 weeks: $14 / 2000 pts). Currently Stripe TEST mode.
+  **TODO before live mode:** add a Stripe webhook on `payment_intent.succeeded`
+  as server-side reconciliation (today the client confirms then calls
+  `enter-with-payment`).
+- **Activity Tracking**: submissions with photo/video evidence, point scoring
+  with evidence bonuses, configurable text requirements. Apple HealthKit syncs
+  workouts (incl. GPS route maps via Google Maps Static API).
+- **Social**: buddy requests, activity feed (likes/comments), team + direct
+  chat (Giphy GIFs), team video calls (fairmeeting.net embed), mission tasks,
+  PWA push notifications (VAPID, granular per-type preferences).
+- **Wellness**: daily mood assessments (5 bonus pts).
+- **Admin Tools**: portal for competitions, users, activity types, Intel Feed
+  announcements.
 
-## External Dependencies
+### Database
+- PostgreSQL + Drizzle ORM; schema in `shared/`, managed with Drizzle Kit.
+- Media files live in Replit object storage (GCS), not the deploy bundle.
 
-### Frontend Dependencies
-- **UI Framework**: React, Radix UI, Tailwind CSS.
-- **State Management**: TanStack Query, React Hook Form.
-- **Utilities**: date-fns, clsx, class-variance-authority, emoji-picker-react.
-- **Icons**: Lucide React icons.
+### Email
+- SendGrid (SMTP fallback). Link base URL: `APP_ORIGIN` → `APP_URL` → localhost.
 
-### Backend Dependencies
-- **Web Framework**: Express.js.
-- **Database**: Drizzle ORM, @neondatabase/serverless.
-- **File Handling**: Multer.
-- **APIs**: Giphy API (for GIF integration), Google Maps Static API (for route visualization).
-- **External Services**: Apple HealthKit (for activity syncing, workout conversion, GPS route maps).
-- **Email Service**: SendGrid.
+## iOS Native App (Capacitor + Codemagic)
 
-### Development Tools
-- **Build**: Vite.
-- **TypeScript**: Strict type checking.
-- **Linting**: ESLint.
-- **Database**: Drizzle Kit.
-## Capacitor iOS Setup (2026-04-02)
+### Pipeline
+Push to GitHub → Codemagic (`codemagic.yaml`) builds from the **committed
+`ios/` folder** → uploads to TestFlight. Codemagic runs `npx vite build`,
+`npx cap copy ios` (NEVER `cap sync`), `scripts/ios-permissions.sh` (verifies
+Info.plist usage strings, fails loudly if missing), a "force fresh provisioning
+profile" step, then archives. Manual Mac builds use `scripts/cap-build.sh`.
 
-### What was configured
-- ✅ Installed `@capacitor/core`, `@capacitor/ios`, `@capacitor/cli`, `@capacitor/status-bar`, `@capacitor/splash-screen`
-- ✅ Created `capacitor.config.ts` — appId: `com.tacfit.app`, webDir: `dist/public`, dark bg `#0a0f0a`
-- ✅ `client/src/lib/queryClient.ts` now prefixes all API calls with `VITE_API_URL` env var (empty string = relative, set to deployed backend URL for native builds)
-- ✅ CORS updated to allow `capacitor://localhost`, `ionic://localhost`, `http://localhost`
-- ✅ Session cookie: `sameSite` is `'none'` in production (required for cross-origin Capacitor ↔ backend requests), `'lax'` in development
-- ✅ Build script: `scripts/cap-build.sh` — builds Vite, adds iOS, patches Info.plist, syncs Capacitor
-- ✅ Permissions script: `scripts/ios-permissions.sh` — patches `Info.plist` with all required NSUsageDescription strings (camera, photos, microphone, health, notifications)
+### Rules that keep breaking if forgotten
+1. **Every new Capacitor plugin's pod must be added to `ios/App/Podfile` by
+   hand** — `cap copy` never does it, and a missing pod means the plugin
+   silently fails only in TestFlight builds (bit us for HealthKit, Preferences,
+   SocialLogin).
+2. `ios/App/App/capacitor.config.json` is generated by `cap copy` — edit
+   `capacitor.config.ts` instead, then run `npx cap copy ios`.
+3. `capacitor.config.ts` must keep `limitsNavigationsToAppBoundDomains: false`
+   or the embedded video call can lose camera/mic access (2026-07-12).
+4. `App.entitlements` contains ONLY `com.apple.developer.healthkit = true` —
+   adding the `.access` key breaks signing (needs special Apple approval).
+5. Bump `MARKETING_VERSION` in `project.pbxproj` for each new App Store
+   submission (currently 1.0.4).
+6. `VITE_`-prefixed env vars used by the frontend must ALSO be set in Codemagic
+   for native builds (e.g. `VITE_API_URL`, SSO client ids).
+- Fine-grained history of resolved build incidents (provisioning profile
+  gotchas, HealthKit "not available", 401-on-native, camera-crash rejection)
+  lives in the agent memory file `.agents/memory/ios-build-lessons.md`.
 
-### To build for iOS (on Mac)
-1. Set env var `VITE_API_URL` to your deployed backend URL (e.g. `https://tacfit.yourname.replit.app`)
-2. Run: `VITE_API_URL=https://... bash scripts/cap-build.sh`
-3. The script runs `scripts/ios-permissions.sh` on EVERY build now (not just the first one). It patches Info.plist with all required NSUsageDescription strings and aborts the build if any are missing — this prevents the "crash on Take Photo" rejection from Apple, which is caused by a missing `NSCameraUsageDescription`.
-4. Open in Xcode: `npx cap open ios`
-5. Set your Team + Bundle ID, then Archive → Distribute
-
-### Apple Health "not available on this device" on TestFlight — native build fix (2026-05-29)
-The Apple Health UI (Settings card + activity-submission prompt) showed up
-correctly in the TestFlight build, but tapping **Connect** failed with
-"Apple Health is not available on this device." Cause: the native HealthKit
-plugin was never compiled into the iOS binary.
-- `codemagic.yaml` only runs `npx cap copy ios` (web assets), never
-  `npx cap sync`, so the plugin's CocoaPod was never added to the Podfile and
-  `pod install` never built the native side. Calling the plugin then throws,
-  which the app reports as "not available."
-- There was also NO entitlements file, so HealthKit capability was off.
-Fix applied (all committed under `ios/`, picked up by Codemagic's `pod install`):
-1. Added `pod 'PerfoodCapacitorHealthkit', :path => '../../node_modules/@perfood/capacitor-healthkit'`
-   to `ios/App/Podfile` (capacitor_pods).
-2. Created `ios/App/App/App.entitlements` with ONLY `com.apple.developer.healthkit = true`.
-   IMPORTANT: do NOT add `com.apple.developer.healthkit.access` — that key is the
-   "HealthKit Access (Verifiable/Clinical Health Records)" capability, which needs
-   special per-team approval from Apple and made the Codemagic archive fail with
-   `Provisioning profile "TacFit" doesn't include the HealthKit Access (Verifiable
-   Health Records) capability`. TacFit only reads workouts, so the plain
-   `com.apple.developer.healthkit` boolean is all that's needed.
-3. Wired `CODE_SIGN_ENTITLEMENTS = App/App.entitlements` into BOTH the Debug and
-   Release App build configs in `ios/App/App.xcodeproj/project.pbxproj`.
-Info.plist already has NSHealthShare/NSHealthUpdate usage strings (good).
-**MANUAL step required by the user (one-time, in Apple Developer portal):**
-enable the **HealthKit** capability on the App ID `com.tacfit.app`
-(Certificates, Identifiers & Profiles → Identifiers → com.tacfit.app →
-check **HealthKit** ONLY — leave "Recalibrate Estimates" / health records off →
-Save). Codemagic (App Store Connect API integration) then regenerates the
-"TacFit" provisioning profile to include HealthKit on the next build. Without the
-App ID capability, signing fails with `Provisioning profile "TacFit" doesn't
-include the HealthKit capability`.
-To ship: push to GitHub → Codemagic builds → TestFlight (new native build).
-
-### Provisioning profile force-recreate in Codemagic (2026-05-29)
-Symptom: builds kept signing with a stale provisioning profile that had the
-correct App ID but NO `com.apple.developer.healthkit` entitlement, so the
-archive failed even after the App ID's HealthKit capability was enabled. Root
-cause: Codemagic automatic signing reused an old profile (and a build-machine
-cached copy) instead of minting a fresh one. Manually deleting the profile in
-the Apple portal was unreliable.
-Fix (in `codemagic.yaml`, step "Force a fresh provisioning profile with
-HealthKit", runs before signing): it (1) clears locally cached
-`.mobileprovision` files on the build machine, (2) looks up the Bundle ID
-resource id and the EXISTING distribution certificate id(s) via
-`app-store-connect bundle-ids list` / `certificates list` (it does NOT create a
-certificate), (3) deletes stale App Store profiles via `app-store-connect
-profiles delete`, (4) creates a fresh profile with `app-store-connect profiles
-create <bundleResId> --certificate-ids <certIds> --type IOS_APP_STORE --save`
-(a fresh profile automatically inherits whatever capabilities the App ID
-currently has, including HealthKit), then (5) HARD-FAILS the build with a clear
-message if the new profile still lacks the HealthKit entitlement. The user never
-has to touch the Apple portal for profiles again. The App ID must still have the
-HealthKit capability enabled (one-time, already done).
-
-IMPORTANT lesson — do NOT use `fetch-signing-files ... --create` here: that
-command also tries to CREATE a distribution certificate, which collides with the
-existing Cert1 and fails with Apple 409 "you already have a current Distribution
-certificate." Always reuse the existing cert and only create the PROFILE
-(`profiles create`). Codemagic CLI uses grouped subcommands (`profiles list`,
-`profiles delete`, `bundle-ids list`, `certificates list`), not flat names.
-
-IMPORTANT lesson #2 — `profiles create --save` WITHOUT `--profiles-dir` saves to
-`$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles`, NOT
-`$HOME/Library/MobileDevice/Provisioning Profiles`. The first build with this
-step PASSED cert creation and minted a profile correctly, but the HealthKit
-verification loop checked the MobileDevice dir, found nothing, and false-failed
-with "profile does NOT include HealthKit." Fix: pass
-`--profiles-dir "$HOME/Library/MobileDevice/Provisioning Profiles"` to
-`profiles create` so the saved profile, the verification loop, and
-`xcode-project use-profiles` all read the same folder. (Verification now also
-scans the Xcode UserData dir as a fallback.) Deleting profiles in the portal
-never disables the App ID's HealthKit capability, so a freshly minted profile
-DOES inherit HealthKit — a "missing HealthKit" report from this step almost
-always means the wrong dir was checked, not a real capability problem.
-
-### Apple rejection "crashed when taking a photo" — REAL root cause (2026-05-29 fix)
-The earlier theory (below, 2026-05-19) blamed `cap-build.sh` not running the
-Info.plist patcher. That script is only used for MANUAL Mac builds. The actual
-TestFlight/App Store builds are produced by **Codemagic** (`codemagic.yaml`),
-which builds from the **committed `ios/` folder** and only ran `npx cap copy`
-(web assets) — it NEVER ran the permission patcher. The committed
-`ios/App/App/Info.plist` had ZERO usage-description keys, so every shipped
-build was missing `NSCameraUsageDescription` and hard-crashed the moment the
-camera opened (this is why the camera also failed on iPad).
-Fix applied:
-1. Added all usage-description keys directly to the committed
-   `ios/App/App/Info.plist` (NSCamera/NSPhotoLibrary/NSPhotoLibraryAdd/
-   NSMicrophone/NSHealthShare/NSHealthUpdate + ITSAppUsesNonExemptEncryption=false).
-2. Added an "Ensure iOS permission usage descriptions" step to `codemagic.yaml`
-   that runs `scripts/ios-permissions.sh` on every build as a belt-and-suspenders
-   guarantee (it fails the build loudly if any key is missing).
-To resubmit: push to GitHub → Codemagic builds → uploads to TestFlight, then
-submit for review. No web/server change is involved.
-
-### If Apple rejected with "crashed on Take Photo" (2026-05-19 fix — superseded, see above)
-Cause: prior `cap-build.sh` only ran the Info.plist patcher on the first
-`npx cap add ios`. Any subsequent build on an `ios/` folder that was
-created before the patcher existed shipped without `NSCameraUsageDescription`,
-which iOS treats as a hard crash the instant the camera UI launches.
-Fix: the patcher now runs on every build AND fails loudly if any required
-key is missing. To resubmit, just re-run `bash scripts/cap-build.sh`,
-re-archive in Xcode, and upload — the new build will have all the
-required keys.
-
-### Native "authentication error" on Apple Health connect — missing Preferences pod (2026-05-30)
-Symptom: TestFlight build signed fine and the HealthKit permission sheet
-appeared, but tapping Approve/Connect failed with an authentication error.
-Production logs showed `GET /api/auth/me 401 Not logged in` and
-`POST /api/apple-health/connect 401 Not authenticated`, while public endpoints
-(`/api/users/:id`, `/api/activities`) returned 200/304. So the native app looked
-logged in (the `user` object is cached in localStorage) but sent NO valid bearer
-token to the backend.
-Root cause: the native bearer token is persisted via `@capacitor/preferences`,
-but `ios/App/Podfile` was MISSING `pod 'CapacitorPreferences'`. Codemagic only
-runs `npx cap copy ios` (never `cap sync`), so any Capacitor plugin that isn't
-listed in the committed Podfile is never compiled into the binary. With no native
-Preferences plugin, `Preferences.set/get` no-op/throw, the token is never saved,
-and every auth-gated request 401s on native. (Same class of bug as the HealthKit
-pod omission — ALWAYS add a new Capacitor plugin's pod to `ios/App/Podfile`
-manually; `cap copy` will not do it.)
-Fix:
-1. Added `pod 'CapacitorPreferences', :path => '../../node_modules/@capacitor/preferences'`
-   to `ios/App/Podfile` (capacitor_pods).
-2. `client/src/hooks/use-auth.tsx` `validateUser` now treats an explicit 401 from
-   `/api/auth/me` as "stale/invalid auth": it clears the stored token + cached
-   user and redirects to /login. This self-heals already-installed apps that have
-   a cached user but no persisted token (they re-login, mint a fresh token that
-   now persists, and Apple Health connect works). Network errors still keep the
-   local user (offline-friendly).
-Note: `npm run check` reports pre-existing TS errors only in dead files
-(`server/routes_clean_start.ts`, `server/routes_mood_section.ts`) that nothing
-imports — unrelated to this change.
-
-### iOS splash screen
-- Master splash lives at `scripts/assets/ios-splash-master.png` (2732×2732, TacFit shield centered on `#0a0f0a`).
-- `scripts/cap-build.sh` copies it into `ios/App/App/Assets.xcassets/Splash.imageset/` (all three @1x/@2x/@3x slots) before `npx cap sync`, so every native build picks it up automatically.
-- To change the splash: replace `scripts/assets/ios-splash-master.png` with a new 2732×2732 PNG, then rebuild and re-upload to TestFlight. Splash updates only take effect with a new native build — reinstalling the same TestFlight build will keep showing the old splash.
+### Native app facts
+- appId `com.tacfit.app`, display name "Muster Up" (Info.plist
+  `CFBundleDisplayName`), scheme `tacfit`, min iOS 16.
+- Session cookie `sameSite: 'none'` in production (cross-origin Capacitor →
+  backend); native bearer token persisted via `@capacitor/preferences`; a 401
+  from `/api/auth/me` clears stale auth and redirects to login.
+- Splash: replace `scripts/assets/ios-splash-master.png` (2732×2732), rebuild —
+  splash/icon changes require a NEW native build to show up.
+- API calls prefix `VITE_API_URL` (empty = relative for web).
 
 ### Single Sign-On — Apple + Google (2026-06-14)
-Added "Continue with Apple" and "Continue with Google" alongside the existing
-email/password login (email/password still works unchanged). One code path for
-web and native iOS via `@capgo/capacitor-social-login` (native sheet on iOS,
-Google Identity Services / Apple JS on web).
+"Continue with Apple" / "Continue with Google" beside email/password (which
+still works). One code path web + native via `@capgo/capacitor-social-login`.
+Backend verifies provider tokens in `server/sso-auth.ts`, then find-or-creates
+the user and issues the normal session cookie + bearer token. Matching: provider
+id first, then VERIFIED provider email links to an existing account (never
+unverified — account-takeover risk). `users.password` is nullable; all password
+paths guard against null. Buttons stay hidden until client ids are configured:
+- Apple native: nothing to configure beyond the "Sign in with Apple" capability
+  on the App ID (Apple portal, one-time).
+- Google native: iOS OAuth client → `VITE_GOOGLE_IOS_CLIENT_ID` +
+  `GOOGLE_IOS_CLIENT_ID`, and replace `REPLACE_WITH_REVERSED_GOOGLE_IOS_CLIENT_ID`
+  in `ios/App/App/Info.plist` with the reversed client id (never ship the
+  placeholder — upload rejection).
+- Google web: web OAuth client → `VITE_GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_ID`.
+- Apple web (optional): Services ID → `VITE_APPLE_SERVICES_ID` +
+  `VITE_APPLE_REDIRECT_URI` + `APPLE_SERVICES_ID`.
 
-How it works:
-- Provider returns a signed identity token → frontend posts it to
-  `POST /api/auth/google` or `POST /api/auth/apple` → backend verifies it
-  (`server/sso-auth.ts`: Google via google-auth-library, Apple via Apple JWKS),
-  then find-or-creates the user and issues the SAME session cookie + bearer
-  token as normal login.
-- Matching order: provider id (`users.appleUserId` / `users.googleUserId`,
-  unique) first, then a VERIFIED provider email links to an existing account.
-  SECURITY: linking by email only happens when the provider says the email is
-  verified, to prevent account takeover via an unverified address.
-- `users.password` is now nullable (SSO accounts have no password). Login,
-  change-password, and reset-password paths all guard against null passwords.
-- Buttons only appear once the matching client ids are configured, so nothing
-  shows/breaks until setup is done.
-
-Config needed (client ids are PUBLIC, not secrets — set them as env vars; the
-buttons stay hidden until set). Frontend uses `VITE_`-prefixed vars, which must
-ALSO be added to Codemagic for native builds (same as `VITE_API_URL`):
-- Apple on iPhone (native): NO values needed from anyone — just enable the
-  "Sign in with Apple" capability on App ID `com.tacfit.app` in the Apple
-  Developer portal (one-time). The native entitlement + audience (bundle id
-  `com.tacfit.app`, backend default) are already wired.
-- Google on iPhone (native): create an iOS OAuth client in Google Cloud →
-  set `VITE_GOOGLE_IOS_CLIENT_ID` (frontend) + `GOOGLE_IOS_CLIENT_ID` (backend),
-  and replace `REPLACE_WITH_REVERSED_GOOGLE_IOS_CLIENT_ID` in
-  `ios/App/App/Info.plist` with the REVERSED iOS client id
-  (`com.googleusercontent.apps.<...>`).
-- Google on web: create a Web OAuth client → `VITE_GOOGLE_CLIENT_ID` +
-  `GOOGLE_CLIENT_ID`.
-- Apple on web (optional): create a Services ID + return URL in the Apple portal
-  → `VITE_APPLE_SERVICES_ID` + `VITE_APPLE_REDIRECT_URI` + `APPLE_SERVICES_ID`.
-
-Native gotcha (same class as HealthKit/Preferences pods): the plugin's pod
-`CapgoCapacitorSocialLogin` was added to `ios/App/Podfile` manually because
-Codemagic only runs `npx cap copy` (never `cap sync`), so unlisted plugin pods
-never compile. The plugin also pulls in Google/Facebook/Alamofire pods (Facebook
-unused but a required transitive dep of this plugin).
-
-## Recent Optimizations (2025-08-21)
-
-### Deployment Optimization
-- ✅ Set up object storage for media files
-- ✅ Removed 88 large media files from deployment bundle
-- ✅ Reduced deployment size by 116.50 MB
-- ✅ Removed 62 unused dependencies
-- ✅ Optimized build process for faster deployments
-
-### Object Storage Integration
-- Media files now served from cloud storage
-- Faster deployments and better performance
-- Automatic CDN caching for media assets
-
-### Competition Payments (2026-05-19) — Dev / Stripe Test Mode
-- ✅ Reactivated points-based competition entry (was inactive in v1)
-- ✅ Added Stripe card checkout via Stripe Elements (`@stripe/react-stripe-js`)
-- ✅ Pricing is derived from competition duration in `shared/pricing.ts`:
-    - 2-week competition: $7.00 or 1000 points
-    - 4-week competition: $14.00 or 2000 points
-- ✅ `CompetitionPaymentModal` shows both options; user picks Card or Points
-- ✅ `competitions.tsx` `handleJoin` now opens the payment modal for any
-     competition where `paymentType !== "free"`; free comps still skip
-     straight to team selection
-- ✅ Backend: `/api/create-payment-intent` and `/api/competitions/:id/enter-with-points`
-     now both pull the price from `getCompetitionPricing()` — no more hardcoded
-     1000 / no more client-supplied amount
-- ✅ Removed a duplicate generic `/api/create-payment-intent` route that was
-     shadowing the competition-specific one
-- Env: dev uses `STRIPE_SECRET_KEY` (server) + `VITE_STRIPE_PUBLIC_KEY` (client)
-     test-mode keys already configured in Replit Secrets
-- TODO before live mode: add Stripe webhook reconciliation (currently the
-     client confirms then calls `enter-with-payment`; a server webhook on
-     `payment_intent.succeeded` is the belt-and-suspenders backup)
-
-### Push Notification System (2025-08-21)
-- ✅ Implemented comprehensive PWA push notification system
-- ✅ VAPID authentication for secure push messaging
-- ✅ Granular notification preferences for users
-- ✅ Test notification functionality working
-- ✅ Support for activity updates, competition events, team messages, mission tasks, and admin announcements
-- ✅ Automatic fallback handling for media file loading
-- ✅ Service worker integration for offline PWA capabilities
+## External Dependencies
+- **Frontend**: React, Radix UI, Tailwind CSS, TanStack Query, React Hook Form,
+  date-fns, emoji-picker-react, Lucide icons.
+- **Backend**: Express, Drizzle ORM, @neondatabase/serverless, Multer.
+- **Services**: SendGrid (email), Stripe (payments), Giphy (chat GIFs), Google
+  Maps Static API (route maps), Apple HealthKit (workout sync), Replit object
+  storage / GCS (media), fairmeeting.net (team video calls).

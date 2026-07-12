@@ -12,7 +12,11 @@ declare global {
   }
 }
 
-const JITSI_DOMAIN = "meet.jit.si";
+// meet.jit.si now forces the first participant to log in with a Google/GitHub
+// account before the meeting can start ("waiting for moderator"). Framatalk is
+// a free public Jitsi server run by the Framasoft nonprofit that still allows
+// fully anonymous rooms and permits embedding.
+const JITSI_DOMAIN = "framatalk.org";
 const JITSI_SCRIPT = `https://${JITSI_DOMAIN}/external_api.js`;
 
 export default function Call() {

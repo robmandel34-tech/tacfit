@@ -12,11 +12,12 @@ declare global {
   }
 }
 
-// meet.jit.si now forces the first participant to log in with a Google/GitHub
-// account before the meeting can start ("waiting for moderator"). Framatalk is
-// a free public Jitsi server run by the Framasoft nonprofit that still allows
-// fully anonymous rooms and permits embedding.
-const JITSI_DOMAIN = "framatalk.org";
+// meet.jit.si and framatalk.org both force the first participant to log in
+// before the meeting starts ("waiting for a moderator"). fairmeeting.net
+// (run by the fairkom cooperative) is a free public Jitsi server with fully
+// anonymous rooms (no authdomain/anonymousdomain split in its config) and no
+// iframe-embedding restrictions.
+const JITSI_DOMAIN = "fairmeeting.net";
 const JITSI_SCRIPT = `https://${JITSI_DOMAIN}/external_api.js`;
 
 export default function Call() {

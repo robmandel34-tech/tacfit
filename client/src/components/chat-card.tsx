@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { format, isToday, isYesterday, isSameDay } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,10 +9,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Send, ImageIcon, Search, ChevronDown, ChevronUp, Radio } from "lucide-react";
+import { Send, ImageIcon, Search, ChevronDown, ChevronUp, Radio, MessageSquare } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-// @ts-ignore
-import GiphyApi from 'giphy-api';
 
 const API_BASE = (import.meta.env.VITE_API_URL as string) ?? "";
 
@@ -33,6 +32,7 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
   const [isOpen, setIsOpen] = useState(false);
   const [lastViewedCount, setLastViewedCount] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   const { data: messages = [], refetch } = useQuery({
     queryKey: ["/api/chat", { teamId, competitionId }],
@@ -40,7 +40,7 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
       const params = new URLSearchParams();
       if (teamId) params.append("teamId", teamId.toString());
       if (competitionId) params.append("competitionId", competitionId.toString());
-      
+
       const response = await fetch(`${API_BASE}/api/chat?${params}`, { credentials: "include" });
       if (!response.ok) throw new Error("Failed to fetch messages");
       return response.json();
@@ -85,7 +85,6 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
     }
   };
 
-
   const handleGifClick = (gifUrl: string) => {
     sendMessage.mutate(`[GIF] ${gifUrl}`);
     setShowGifPicker(false);
@@ -97,18 +96,14 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
-  // Initialize Giphy API
-  const giphy = new GiphyApi('sXpGFDGZs0Dv1mmNFvYaGUvYwKX0PWIh');
-
   const searchGifs = async (query: string) => {
     if (!query.trim()) {
       setGifs([]);
       return;
     }
-    
+
     setIsSearchingGifs(true);
     try {
-      // Use fetch instead of giphy-api library to avoid callback issues
       const response = await fetch(`https://api.giphy.com/v1/gifs/search?api_key=sXpGFDGZs0Dv1mmNFvYaGUvYwKX0PWIh&q=${encodeURIComponent(query)}&limit=12&rating=pg`);
       const data = await response.json();
       setGifs(data.data || []);
@@ -121,21 +116,31 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
   };
 
   // Render message content (handle GIFs and regular text)
-  const renderMessageContent = (content: string) => {
+  const renderMessageContent = (content: string, isOwn: boolean) => {
     if (content.startsWith('[GIF] ')) {
       const gifUrl = content.substring(6);
       return (
-        <img 
-          src={gifUrl} 
-          alt="GIF" 
-          className="max-w-48 max-h-48 rounded-lg object-cover"
+        <img
+          src={gifUrl}
+          alt="GIF"
+          className="max-w-48 max-h-48 rounded-xl object-cover"
           onError={(e) => {
             e.currentTarget.style.display = 'none';
           }}
         />
       );
     }
-    return <p className="text-white text-sm">{content}</p>;
+    return (
+      <p className={`text-sm leading-relaxed break-words ${isOwn ? "text-white" : "text-gray-100"}`}>
+        {content}
+      </p>
+    );
+  };
+
+  const dayLabel = (date: Date) => {
+    if (isToday(date)) return "Today";
+    if (isYesterday(date)) return "Yesterday";
+    return format(date, "EEE, MMM d");
   };
 
   // Handle GIF search input
@@ -145,7 +150,7 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
         searchGifs(gifSearch);
       }
     }, 500);
-    
+
     return () => clearTimeout(delayedSearch);
   }, [gifSearch]);
 
@@ -154,7 +159,7 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
     const interval = setInterval(() => {
       refetch();
     }, 5000);
-    
+
     return () => clearInterval(interval);
   }, [refetch]);
 
@@ -172,134 +177,199 @@ export default function ChatCard({ teamId, competitionId, title }: ChatCardProps
     }
   }, [messages.length, lastViewedCount]);
 
+  // Keep the view pinned to the newest message when opening or receiving.
+  useEffect(() => {
+    if (isOpen) {
+      bottomRef.current?.scrollIntoView({ block: "end" });
+    }
+  }, [isOpen, messages.length]);
+
   // Calculate unread messages
   const unreadCount = Math.max(0, messages.length - lastViewedCount);
 
+  // Oldest first for display
+  const ordered = [...messages].reverse();
+
   return (
-    <Card className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl shadow-xl text-white">
+    <Card className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl shadow-xl text-white overflow-hidden">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
-          <CardHeader className="cursor-pointer hover:bg-white/10 transition-colors">
+          <CardHeader className="cursor-pointer hover:bg-white/10 transition-colors py-4">
             <CardTitle className="flex items-center justify-between text-lg text-white">
-              <div className="flex items-center space-x-2">
-                <Radio className="w-5 h-5" />
-                <span>{title || (teamId ? "Team Comms" : "Competition Chat")}</span>
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-green-700 to-green-900 ring-1 ring-green-500/40">
+                  <Radio className="w-5 h-5 text-green-300" />
+                </span>
+                <span className="font-semibold tracking-wide">
+                  {title || (teamId ? "Team Comms" : "Competition Chat")}
+                </span>
                 {unreadCount > 0 && (
-                  <span className="bg-military-green text-forest-green text-xs px-2 py-1 rounded-full">
+                  <span
+                    className="flex h-5 min-w-5 items-center justify-center rounded-full bg-green-500 px-1.5 text-[11px] font-bold text-black"
+                    data-testid="badge-unread-count"
+                  >
                     {unreadCount}
                   </span>
                 )}
               </div>
-              {isOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+              {isOpen ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
             </CardTitle>
           </CardHeader>
         </CollapsibleTrigger>
-        
+
         <CollapsibleContent>
-          <CardContent className="p-4 pt-0">
-            <div className="flex flex-col h-80">
-              <ScrollArea className="flex-1 bg-tactical-gray-lighter rounded-lg p-4 mb-4">
-                <div className="space-y-3">
-                  {messages.length === 0 ? (
-                    <div className="text-center text-gray-400 py-8">
-                      <p>No messages yet</p>
-                      <p className="text-sm">Start the conversation!</p>
+          <CardContent className="p-0">
+            <div className="flex flex-col h-96 border-t border-white/10">
+              <ScrollArea className="flex-1 bg-black/30 px-3 py-4">
+                <div className="space-y-1">
+                  {ordered.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+                      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/5 ring-1 ring-white/10">
+                        <MessageSquare className="h-6 w-6 text-green-400" />
+                      </span>
+                      <p className="text-gray-300 font-medium">Radio silence</p>
+                      <p className="text-sm text-gray-500">Be the first to check in with your squad.</p>
                     </div>
                   ) : (
-                    [...messages].reverse().map((msg: any) => {
+                    ordered.map((msg: any, i: number) => {
+                      const prev = ordered[i - 1];
+                      const created = new Date(msg.createdAt);
+                      const isOwn = msg.senderId === user?.id || msg.user?.id === user?.id;
+                      const newDay = !prev || !isSameDay(new Date(prev.createdAt), created);
+                      // Group consecutive messages from the same sender within the same day
+                      const grouped =
+                        !newDay &&
+                        prev &&
+                        (prev.senderId ?? prev.user?.id) === (msg.senderId ?? msg.user?.id);
                       const avatarUrl = msg.user?.avatar ? `${API_BASE}/uploads/${msg.user.avatar}` : undefined;
-                      
+                      const isGif = typeof msg.content === "string" && msg.content.startsWith("[GIF] ");
+
                       return (
-                        <div key={msg.id} className="flex items-start space-x-3">
-                          <Avatar className="w-8 h-8 flex-shrink-0">
-                            <AvatarImage 
-                              src={avatarUrl}
-                              alt={msg.user?.username || "User"}
-                            />
-                            <AvatarFallback className="bg-military-green text-forest-green text-xs">
-                              {getInitials(msg.user?.username || "U")}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1">
-                            <div className="bg-tactical-gray-light rounded-lg p-2">
-                              <div className="flex items-center space-x-2 mb-1">
-                                <span className="text-white font-bold text-sm">{msg.user?.username || "Unknown"}</span>
-                                <span className="text-gray-400 text-xs">
-                                  {new Date(msg.createdAt).toLocaleTimeString()}
-                                </span>
+                        <div key={msg.id}>
+                          {newDay && (
+                            <div className="flex items-center gap-3 py-3">
+                              <div className="h-px flex-1 bg-white/10" />
+                              <span className="text-[11px] font-medium uppercase tracking-wider text-gray-500">
+                                {dayLabel(created)}
+                              </span>
+                              <div className="h-px flex-1 bg-white/10" />
+                            </div>
+                          )}
+                          <div
+                            className={`flex items-end gap-2 ${isOwn ? "justify-end" : "justify-start"} ${grouped ? "mt-0.5" : "mt-3"}`}
+                            data-testid={`chat-message-${msg.id}`}
+                          >
+                            {!isOwn && (
+                              <div className="w-7 shrink-0">
+                                {!grouped && (
+                                  <Avatar className="h-7 w-7">
+                                    <AvatarImage src={avatarUrl} alt={msg.user?.username || "User"} />
+                                    <AvatarFallback className="bg-green-900 text-green-300 text-[10px] font-bold">
+                                      {getInitials(msg.user?.username || "U")}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                )}
                               </div>
-                              {renderMessageContent(msg.content)}
+                            )}
+                            <div className={`max-w-[75%] ${isOwn ? "items-end" : "items-start"} flex flex-col`}>
+                              {!isOwn && !grouped && (
+                                <span className="mb-0.5 ml-1 text-xs font-semibold text-green-400">
+                                  {msg.user?.username || "Unknown"}
+                                </span>
+                              )}
+                              <div
+                                className={
+                                  isGif
+                                    ? "overflow-hidden rounded-2xl"
+                                    : isOwn
+                                      ? "rounded-2xl rounded-br-sm bg-gradient-to-br from-green-700 to-green-800 px-3 py-2 shadow-md"
+                                      : "rounded-2xl rounded-bl-sm bg-white/10 px-3 py-2 shadow-md ring-1 ring-white/5"
+                                }
+                              >
+                                {renderMessageContent(msg.content, isOwn)}
+                              </div>
+                              <span className={`mt-0.5 text-[10px] text-gray-500 ${isOwn ? "mr-1" : "ml-1"}`}>
+                                {format(created, "h:mm a")}
+                              </span>
                             </div>
                           </div>
                         </div>
                       );
                     })
                   )}
+                  <div ref={bottomRef} />
                 </div>
               </ScrollArea>
-              
-              <form onSubmit={handleSubmit} className="flex space-x-2">
-                <div className="flex space-x-2">
-                  {/* GIF Picker */}
-                  <Popover open={showGifPicker} onOpenChange={setShowGifPicker}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="bg-tactical-gray-lighter border-tactical-gray text-white hover:bg-tactical-gray"
-                      >
-                        <ImageIcon className="w-4 h-4" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-80 bg-tactical-gray-light border-tactical-gray">
-                      <div className="space-y-3">
-                        <div className="flex items-center space-x-2">
-                          <Search className="w-4 h-4 text-gray-400" />
-                          <Input
-                            placeholder="Search GIFs..."
-                            value={gifSearch}
-                            onChange={(e) => setGifSearch(e.target.value)}
-                            className="bg-tactical-gray-lighter border-tactical-gray text-white placeholder-gray-400"
-                          />
-                        </div>
-                        <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
-                          {isSearchingGifs ? (
-                            <div className="col-span-3 text-center text-gray-400 py-4">
-                              Searching...
-                            </div>
-                          ) : (
-                            gifs.map((gif) => (
-                              <button
-                                key={gif.id}
-                                onClick={() => handleGifClick(gif.images.fixed_height.url)}
-                                className="relative group hover:opacity-80 transition-opacity"
-                              >
-                                <img
-                                  src={gif.images.fixed_height_small.url}
-                                  alt={gif.title}
-                                  className="w-full h-20 object-cover rounded"
-                                />
-                              </button>
-                            ))
-                          )}
-                        </div>
+
+              <form
+                onSubmit={handleSubmit}
+                className="flex items-center gap-2 border-t border-white/10 bg-white/5 px-3 py-3"
+              >
+                {/* GIF Picker */}
+                <Popover open={showGifPicker} onOpenChange={setShowGifPicker}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-10 w-10 shrink-0 rounded-full text-gray-400 hover:bg-white/10 hover:text-green-400"
+                      aria-label="Send a GIF"
+                      data-testid="button-gif-picker"
+                    >
+                      <ImageIcon className="w-5 h-5" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80 bg-tactical-gray-light border-tactical-gray">
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-2">
+                        <Search className="w-4 h-4 text-gray-400" />
+                        <Input
+                          placeholder="Search GIFs..."
+                          value={gifSearch}
+                          onChange={(e) => setGifSearch(e.target.value)}
+                          className="bg-tactical-gray-lighter border-tactical-gray text-white placeholder-gray-400"
+                        />
                       </div>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                
+                      <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+                        {isSearchingGifs ? (
+                          <div className="col-span-3 text-center text-gray-400 py-4">
+                            Searching...
+                          </div>
+                        ) : (
+                          gifs.map((gif) => (
+                            <button
+                              key={gif.id}
+                              onClick={() => handleGifClick(gif.images.fixed_height.url)}
+                              className="relative group hover:opacity-80 transition-opacity"
+                            >
+                              <img
+                                src={gif.images.fixed_height_small.url}
+                                alt={gif.title}
+                                className="w-full h-20 object-cover rounded"
+                              />
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+
                 <Input
                   ref={inputRef}
-                  placeholder="Type a message..."
+                  placeholder="Message your squad..."
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  className="flex-1 bg-tactical-gray-lighter border-tactical-gray text-white placeholder-gray-400"
+                  className="h-10 flex-1 rounded-full border-white/10 bg-black/30 px-4 text-white placeholder-gray-500 focus-visible:ring-green-600"
+                  data-testid="input-chat-message"
                 />
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
+                  size="icon"
                   disabled={!message.trim() || sendMessage.isPending}
-                  className="bg-military-green hover:bg-military-green-dark text-forest-green"
+                  className="h-10 w-10 shrink-0 rounded-full bg-gradient-to-br from-green-600 to-green-800 text-white shadow-md hover:from-green-500 hover:to-green-700 disabled:opacity-40"
+                  aria-label="Send message"
+                  data-testid="button-send-message"
                 >
                   <Send className="w-4 h-4" />
                 </Button>

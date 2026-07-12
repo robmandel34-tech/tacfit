@@ -2108,6 +2108,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Presence heartbeat: called when a user joins a call and every ~30s while
+  // they stay in it. A participant counts as "in the call" while their last
+  // heartbeat is fresh (see CALL_PRESENCE_WINDOW_MS below), so closed tabs and
+  // killed apps drop off automatically even if they never say goodbye.
+  const CALL_PRESENCE_WINDOW_MS = 75_000;
+
+  app.post("/api/calls/:callId/presence", async (req, res) => {
+    try {
+      const callId = parseInt(req.params.callId);
+      if (!Number.isFinite(callId)) return res.status(400).json({ message: "Invalid call id" });
+      const userId = (req.session as any)?.userId;
+      if (!userId) return res.status(401).json({ message: "Not authenticated" });
+      const call = await storage.getTeamCall(callId);
+      if (!call || call.status === "cancelled") return res.status(404).json({ message: "Call not found" });
+      const membership = await storage.getTeamMember(call.teamId, userId);
+      if (!membership) return res.status(403).json({ message: "You are not on this team" });
+      await storage.upsertCallPresence(callId, userId);
+      res.status(204).end();
+    } catch (err) {
+      console.error("Error updating call presence:", err);
+      res.status(500).json({ message: "Failed to update presence" });
+    }
+  });
+
+  app.delete("/api/calls/:callId/presence", async (req, res) => {
+    try {
+      const callId = parseInt(req.params.callId);
+      if (!Number.isFinite(callId)) return res.status(400).json({ message: "Invalid call id" });
+      const userId = (req.session as any)?.userId;
+      if (!userId) return res.status(401).json({ message: "Not authenticated" });
+      const call = await storage.getTeamCall(callId);
+      if (!call) return res.status(404).json({ message: "Call not found" });
+      const membership = await storage.getTeamMember(call.teamId, userId);
+      if (!membership) return res.status(403).json({ message: "You are not on this team" });
+      await storage.markCallLeft(callId, userId);
+      res.status(204).end();
+    } catch (err) {
+      console.error("Error clearing call presence:", err);
+      res.status(500).json({ message: "Failed to clear presence" });
+    }
+  });
+
+  app.get("/api/calls/:callId/participants", async (req, res) => {
+    try {
+      const callId = parseInt(req.params.callId);
+      if (!Number.isFinite(callId)) return res.status(400).json({ message: "Invalid call id" });
+      const userId = (req.session as any)?.userId;
+      if (!userId) return res.status(401).json({ message: "Not authenticated" });
+      const call = await storage.getTeamCall(callId);
+      if (!call) return res.status(404).json({ message: "Call not found" });
+      const membership = await storage.getTeamMember(call.teamId, userId);
+      if (!membership) return res.status(403).json({ message: "You are not on this team" });
+      const activeSince = new Date(Date.now() - CALL_PRESENCE_WINDOW_MS);
+      const participants = await storage.getActiveCallParticipants(callId, activeSince);
+      res.json(participants);
+    } catch (err) {
+      console.error("Error fetching call participants:", err);
+      res.status(500).json({ message: "Failed to load participants" });
+    }
+  });
+
   app.post("/api/competitions/:id/create-team", async (req, res) => {
     try {
       const competitionId = parseInt(req.params.id);

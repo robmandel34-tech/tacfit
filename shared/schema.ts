@@ -154,6 +154,20 @@ export const teamCalls = pgTable("team_calls", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Live presence for team calls: who is currently in the video room.
+// Rows are upserted on join, refreshed by a heartbeat while in the call,
+// and considered stale (not "in the call") once lastSeenAt is too old.
+export const callParticipants = pgTable("call_participants", {
+  id: serial("id").primaryKey(),
+  callId: integer("call_id").references(() => teamCalls.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  joinedAt: timestamp("joined_at").defaultNow(),
+  lastSeenAt: timestamp("last_seen_at").defaultNow(),
+  leftAt: timestamp("left_at"),
+}, (table) => [
+  uniqueIndex("call_participants_call_user_idx").on(table.callId, table.userId),
+]);
+
 export const activityTypes = pgTable("activity_types", {
   id: serial("id").primaryKey(),
   name: text("name").notNull().unique(),
@@ -496,6 +510,13 @@ export type InsertTeamMember = z.infer<typeof insertTeamMemberSchema>;
 export type TeamCall = typeof teamCalls.$inferSelect;
 export type InsertTeamCall = typeof teamCalls.$inferInsert;
 export type ScheduleTeamCall = z.infer<typeof scheduleTeamCallSchema>;
+export type CallParticipant = typeof callParticipants.$inferSelect;
+// A participant currently in a call, with display info for the team tab.
+export type ActiveCallParticipant = {
+  userId: number;
+  username: string;
+  avatar: string | null;
+};
 export type Activity = typeof activities.$inferSelect;
 export type InsertActivity = z.infer<typeof insertActivitySchema>;
 export type ActivityComment = typeof activityComments.$inferSelect;

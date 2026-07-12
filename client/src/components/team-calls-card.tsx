@@ -17,7 +17,33 @@ import {
 } from "@/components/ui/dialog";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import type { TeamCall } from "@shared/schema";
+import type { TeamCall, ActiveCallParticipant } from "@shared/schema";
+
+function LiveParticipants({ callId }: { callId: number }) {
+  // Refreshes every 15s so the Team tab stays close to live without hammering
+  // the server. Anyone whose heartbeat goes silent drops off automatically.
+  const { data: participants = [] } = useQuery<ActiveCallParticipant[]>({
+    queryKey: [`/api/calls/${callId}/participants`],
+    refetchInterval: 15_000,
+  });
+
+  if (participants.length === 0) return null;
+
+  return (
+    <p
+      className="mt-1 flex items-center gap-1.5 text-xs text-green-400"
+      data-testid={`text-call-participants-${callId}`}
+    >
+      <span className="relative flex h-2 w-2 shrink-0">
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
+      </span>
+      <span className="truncate">
+        In the call now: {participants.map((p) => p.username).join(", ")}
+      </span>
+    </p>
+  );
+}
 
 interface TeamCallsCardProps {
   teamId?: number;
@@ -143,6 +169,7 @@ export default function TeamCallsCard({ teamId, userId, isCaptain }: TeamCallsCa
                       {" \u2022 "}
                       {past ? "in progress / started" : `in ${formatDistanceToNow(start)}`}
                     </p>
+                    <LiveParticipants callId={call.id} />
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <Button

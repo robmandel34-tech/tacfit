@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthRequired } from "@/lib/auth";
+import { apiRequest } from "@/lib/queryClient";
 import type { TeamCall } from "@shared/schema";
 
 declare global {
@@ -26,6 +27,7 @@ export default function Call() {
   const [, navigate] = useLocation();
   const containerRef = useRef<HTMLDivElement>(null);
   const apiRef = useRef<any>(null);
+  const heartbeatRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { data: call, isLoading, error } = useQuery<TeamCall>({
     queryKey: [`/api/calls/${callId}`],
@@ -63,6 +65,27 @@ export default function Call() {
       apiRef.current.addEventListener("readyToClose", () => {
         navigate("/team");
       });
+
+      // Report presence so teammates can see who's in the call on the Team
+      // tab. Heartbeat every 30s; the server treats anyone silent for ~75s
+      // as gone, so a killed app drops off on its own.
+      const reportPresence = () => {
+        apiRequest("POST", `/api/calls/${callId}/presence`).catch(() => {
+          /* best-effort; never disturb the call */
+        });
+      };
+      apiRef.current.addEventListener("videoConferenceJoined", () => {
+        reportPresence();
+        if (heartbeatRef.current) clearInterval(heartbeatRef.current);
+        heartbeatRef.current = setInterval(reportPresence, 30_000);
+      });
+      apiRef.current.addEventListener("videoConferenceLeft", () => {
+        if (heartbeatRef.current) {
+          clearInterval(heartbeatRef.current);
+          heartbeatRef.current = null;
+        }
+        apiRequest("DELETE", `/api/calls/${callId}/presence`).catch(() => {});
+      });
     }
 
     if (window.JitsiMeetExternalAPI) {
@@ -82,6 +105,11 @@ export default function Call() {
 
     return () => {
       cancelled = true;
+      if (heartbeatRef.current) {
+        clearInterval(heartbeatRef.current);
+        heartbeatRef.current = null;
+      }
+      apiRequest("DELETE", `/api/calls/${callId}/presence`).catch(() => {});
       try {
         apiRef.current?.dispose();
       } catch {
@@ -89,7 +117,7 @@ export default function Call() {
       }
       apiRef.current = null;
     };
-  }, [call?.roomName, user, navigate]);
+  }, [call?.roomName, user, navigate, callId]);
 
   const leave = () => navigate("/team");
 

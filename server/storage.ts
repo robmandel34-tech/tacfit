@@ -6,7 +6,7 @@ import {
   InsertCompetitionInvitation, CompetitionEntry, InsertCompetitionEntry,
   PhoneInvitation, InsertPhoneInvitation, WhiteboardItem, InsertWhiteboardItem, 
   MissionTask, InsertMissionTask, ActivityType, InsertActivityType,
-  TeamCall, InsertTeamCall,
+  TeamCall, InsertTeamCall, ActiveCallParticipant,
   AdminPost, InsertAdminPost, MoodLog, InsertMoodLog,
   TeammateReport, InsertTeammateReport,
   AppleHealthConnection, InsertAppleHealthConnection,
@@ -58,6 +58,9 @@ export interface IStorage {
   getTeamCall(id: number): Promise<TeamCall | undefined>;
   createTeamCall(call: InsertTeamCall): Promise<TeamCall>;
   updateTeamCall(id: number, updates: Partial<TeamCall>): Promise<TeamCall | undefined>;
+  upsertCallPresence(callId: number, userId: number): Promise<void>;
+  markCallLeft(callId: number, userId: number): Promise<void>;
+  getActiveCallParticipants(callId: number, activeSince: Date): Promise<ActiveCallParticipant[]>;
   
   // Activity operations
   getActivities(): Promise<Activity[]>;

@@ -6,14 +6,14 @@ import {
   CompetitionInvitation, InsertCompetitionInvitation, CompetitionEntry, 
   InsertCompetitionEntry, PhoneInvitation, InsertPhoneInvitation, WhiteboardItem, 
   InsertWhiteboardItem, MissionTask, InsertMissionTask, ActivityType, InsertActivityType,
-  TeamCall, InsertTeamCall,
+  TeamCall, InsertTeamCall, ActiveCallParticipant,
   AdminPost, InsertAdminPost, Advertisement, InsertAdvertisement, MoodLog, InsertMoodLog,
   UserInvitation, InsertUserInvitation, UserBlock,
   TeammateReport, InsertTeammateReport,
   AppleHealthConnection, InsertAppleHealthConnection,
   AppleHealthWorkout, InsertAppleHealthWorkout,
   HealthMetric, InsertHealthMetric, ReadinessScore, InsertReadinessScore,
-  users, competitions, teams, teamMembers, teamCalls, activities, activityTypes,
+  users, competitions, teams, teamMembers, teamCalls, callParticipants, activities, activityTypes,
   activityComments, activityLikes, activityFlags, chatMessages, friendships, 
   competitionHistory, competitionInvitations, competitionEntries, phoneInvitations, 
   whiteboardItems, missionTasks, adminPosts, advertisements, moodLogs, userInvitations,
@@ -337,6 +337,45 @@ export class DatabaseStorage implements IStorage {
       .where(eq(teamCalls.id, id))
       .returning();
     return updated || undefined;
+  }
+
+  // Call presence: one row per (call, user); join/heartbeat upserts it,
+  // leaving stamps leftAt, and staleness is judged by lastSeenAt.
+  async upsertCallPresence(callId: number, userId: number): Promise<void> {
+    const now = new Date();
+    await db
+      .insert(callParticipants)
+      .values({ callId, userId, joinedAt: now, lastSeenAt: now, leftAt: null })
+      .onConflictDoUpdate({
+        target: [callParticipants.callId, callParticipants.userId],
+        set: { lastSeenAt: now, leftAt: null },
+      });
+  }
+
+  async markCallLeft(callId: number, userId: number): Promise<void> {
+    await db
+      .update(callParticipants)
+      .set({ leftAt: new Date() })
+      .where(and(eq(callParticipants.callId, callId), eq(callParticipants.userId, userId)));
+  }
+
+  async getActiveCallParticipants(callId: number, activeSince: Date): Promise<ActiveCallParticipant[]> {
+    const rows = await db
+      .select({
+        userId: callParticipants.userId,
+        username: users.username,
+        avatar: users.avatar,
+      })
+      .from(callParticipants)
+      .innerJoin(users, eq(users.id, callParticipants.userId))
+      .where(
+        and(
+          eq(callParticipants.callId, callId),
+          isNull(callParticipants.leftAt),
+          gte(callParticipants.lastSeenAt, activeSince),
+        ),
+      );
+    return rows;
   }
 
   // Team member operations

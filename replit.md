@@ -45,6 +45,31 @@ After ANY code change (no matter how small), always close the response with:
 3. **TestFlight (iOS):** push to GitHub → Codemagic builds → uploads to TestFlight (~15-25 min).
 Never omit this. The user is non-technical and relies on this list to know what to do.
 
+## Future Feature Idea — Camera-Verified Activity Sessions (discussed 2026-07-12, not yet built)
+User's vision: activities are completed "live" in front of the phone camera with
+distracting apps blocked, so competition follow-through is verified instead of
+honor-system. Agreed shape of the idea:
+- **NOT possible:** locking the phone itself — iOS never allows it. The real
+  mechanism is Apple's Screen Time / Family Controls API: block nearly all apps
+  the user would doomscroll during a session (calls, texts, emergency always
+  stay available — Apple enforces that). Requires applying to Apple for the
+  Family Controls entitlement (approval process, needs justification).
+- **Enforcement model (user's decision):** opt-in, always revocable — but ANY
+  break (revoking app-blocking, leaving camera frame, quitting early, using the
+  phone) voids the session: no points, no competition credit. Freedom to quit +
+  zero credit = the game mechanic.
+- **Stage 1 (most feasible):** "verified focus sessions" for timed activities —
+  meditation, reading, stretching, journaling. Camera verifies a person stays in
+  frame and settled; phone untouched; apps blocked; timer pauses/voids on break.
+  Do NOT attempt page-turn / "is it really a book" detection — flaky verification
+  angers users; presence + no-phone + full time is the product.
+- **Stage 2 (harder):** on-device pose detection to count reps for 2-3
+  big-movement exercises (squats, push-ups). All camera processing on-device,
+  no video uploaded (privacy + App Store).
+- **Stage 3:** Family Controls app-blocking (needs the Apple entitlement).
+- **Technical caveat:** the app is web-in-Capacitor; real-time pose tracking is
+  native-level work — the largest technical lift the app would have taken on.
+
 ## System Architecture
 
 ### Core Design Principles

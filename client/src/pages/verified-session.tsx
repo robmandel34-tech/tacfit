@@ -63,6 +63,8 @@ export default function VerifiedSessionPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [snapshotBlob, setSnapshotBlob] = useState<Blob | null>(null);
   const [snapshotUrl, setSnapshotUrl] = useState<string | null>(null);
+  const [snapCountdown, setSnapCountdown] = useState<number | null>(null);
+  const snapTimerRef = useRef<number | null>(null);
   const [awardedPoints, setAwardedPoints] = useState(0);
 
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -298,7 +300,34 @@ export default function VerifiedSessionPage() {
     // Keep the camera running for the optional victory snapshot.
   }
 
+  // 3-2-1 countdown so you can sit back and pose before the shot.
+  function cancelSnapshotCountdown() {
+    if (snapTimerRef.current !== null) {
+      window.clearInterval(snapTimerRef.current);
+      snapTimerRef.current = null;
+    }
+    setSnapCountdown(null);
+  }
+
+  function startSnapshotCountdown() {
+    if (snapTimerRef.current !== null) return;
+    setSnapCountdown(3);
+    let n = 3;
+    snapTimerRef.current = window.setInterval(() => {
+      n -= 1;
+      if (n <= 0) {
+        cancelSnapshotCountdown();
+        takeSnapshot();
+      } else {
+        setSnapCountdown(n);
+      }
+    }, 1000);
+    timersRef.current.push(snapTimerRef.current);
+  }
+
   function takeSnapshot() {
+    // Never fire after the photo gate is gone (e.g. user skipped mid-countdown).
+    if (phaseRef.current !== "gate") return;
     const video = videoRef.current;
     if (!video) return;
     const canvas = document.createElement("canvas");
@@ -324,6 +353,7 @@ export default function VerifiedSessionPage() {
   async function completeSession(withPhoto: boolean) {
     const session = sessionRef.current;
     if (!session) return;
+    cancelSnapshotCountdown();
     setPhase("submitting");
     phaseRef.current = "submitting";
     try {
@@ -348,9 +378,16 @@ export default function VerifiedSessionPage() {
       setPhase("done");
       phaseRef.current = "done";
       celebrate();
-      queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
+      // Refresh everything the new activity affects — feed, points, team
+      // stats, competition progress, history (mirrors the submission modal).
       queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/teams"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/users", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/history", user?.id] });
+      const prefixes = ["/api/activities", "/api/teams", "/api/team-members", "/api/competitions"];
+      queryClient.invalidateQueries({
+        predicate: (query) =>
+          prefixes.some((p) => query.queryKey[0]?.toString()?.includes(p)),
+      });
     } catch (error) {
       console.error("Verified session completion failed:", error);
       setPhase("gate");
@@ -503,6 +540,13 @@ export default function VerifiedSessionPage() {
                 Come back into frame or the session will be voided!
               </div>
             )}
+            {phase === "gate" && snapCountdown !== null && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                <span className="text-8xl font-bold text-white drop-shadow-lg tabular-nums">
+                  {snapCountdown}
+                </span>
+              </div>
+            )}
           </div>
 
           {phase === "active" && (
@@ -553,11 +597,12 @@ export default function VerifiedSessionPage() {
                 </div>
               ) : (
                 <Button
-                  onClick={takeSnapshot}
-                  disabled={phase === "submitting"}
+                  onClick={startSnapshotCountdown}
+                  disabled={phase === "submitting" || snapCountdown !== null}
                   className="w-full bg-military-green text-forest-green font-bold"
                 >
-                  <Camera className="w-4 h-4 mr-2" /> Take photo
+                  <Camera className="w-4 h-4 mr-2" />
+                  {snapCountdown !== null ? `Get ready... ${snapCountdown}` : "Take photo (3s timer)"}
                 </Button>
               )}
               <Button

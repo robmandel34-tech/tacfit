@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ThumbsUp, MessageCircle, Flag, Users, Image, Mountain, Trash2, ChevronDown, ChevronUp, BadgeCheck, Check } from "lucide-react";
+import { ThumbsUp, MessageCircle, Flag, Users, Image, Mountain, Trash2, ChevronDown, ChevronUp, BadgeCheck, Check, Brain, BookOpenCheck, HeartPulse, Flame, Sparkles, Wind } from "lucide-react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -163,6 +163,18 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
       wheelchair: '♿',
     };
     return icons[type] || '🏃';
+  };
+
+  // Positive-impact achievement icon stamped on verified session photos.
+  // Different from the plain activity icon — this one celebrates the benefit.
+  const getAchievementIcon = (type: string) => {
+    const t = type.toLowerCase();
+    if (/(meditat|prayer|pray|mindful|body_scan|loving_kindness|sleep)/.test(t)) return Brain;
+    if (/(read|book|journal|study|learn)/.test(t)) return BookOpenCheck;
+    if (/(breath|yoga|stretch|flexib|mobility)/.test(t)) return Wind;
+    if (/(run|walk|hike|ride|bike|cardio|swim|row)/.test(t)) return HeartPulse;
+    if (/(strength|weight|crossfit|workout|lift)/.test(t)) return Flame;
+    return Sparkles;
   };
 
   const getActivityTypeDisplayName = (type: string) => {
@@ -534,7 +546,7 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
         
         {/* Full-width media slideshow */}
         {(activity.evidenceUrl || activity.imageUrl || (activity.imageUrls && activity.imageUrls.length > 0)) && (
-          <div className="mb-0 border-t border-b border-gray-600">
+          <div className="mb-0 border-t border-b border-gray-600 relative">
 
             <MediaDisplay 
               imageUrls={
@@ -549,6 +561,21 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
               videoUrl={activity.evidenceUrl && isVideoFile(activity.evidenceUrl) ? activity.evidenceUrl : undefined}
               thumbnailUrl={activity.thumbnailUrl}
             />
+            {activity.isVerified &&
+              (activity.imageUrl ||
+                (activity.imageUrls && activity.imageUrls.length > 0) ||
+                (activity.evidenceUrl && !isVideoFile(activity.evidenceUrl))) &&
+              (() => {
+              const AchievementIcon = getAchievementIcon(activity.type);
+              return (
+                <div
+                  className="absolute bottom-3 right-3 z-10 w-10 h-10 rounded-full bg-black/60 backdrop-blur-sm border border-military-green/70 flex items-center justify-center pointer-events-none"
+                  title="Verified achievement"
+                >
+                  <AchievementIcon className="w-5 h-5 text-military-green" />
+                </div>
+              );
+            })()}
           </div>
         )}
         

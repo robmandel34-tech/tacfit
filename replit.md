@@ -47,10 +47,21 @@ After ANY code change (no matter how small), always close the response with:
 3. **TestFlight (iOS):** push to GitHub → Codemagic builds → uploads to TestFlight (~15-25 min).
 Never omit this. The user is non-technical and relies on this list to know what to do.
 
-## Future Feature Idea — Camera-Verified Activity Sessions (discussed 2026-07-12, not yet built)
-User's vision: activities are completed "live" in front of the phone camera with
-distracting apps blocked, so competition follow-through is verified instead of
-honor-system. Agreed shape of the idea:
+## Camera-Verified Activity Sessions (Stage 1 BUILT 2026-07-13)
+User's vision: activities are completed "live" in front of the phone camera,
+so competition follow-through is verified instead of honor-system.
+**Stage 1 is now live** — "Verified Focus Sessions": timed activities
+(meditation, reading, ...) verified by on-device face detection
+(`client/src/pages/verified-session.tsx`); 1-120 min, 50 pts flat, any break
+voids (out of frame 10s warn/25s void, backgrounding, quitting), optional
+end-of-session feed photo, competitions can mandate verification per type,
+admin toggles per activity type. Server anti-cheat: heartbeat coverage +
+atomic completion (see `.agents/memory/verified-sessions.md`).
+**Stage 3 (Family Controls app-blocking) DROPPED 2026-07-13 per user:** the
+camera presence requirement already prevents phone use during a session
+(switching apps voids instantly; using the phone takes you out of frame), so
+the Apple entitlement application isn't worth it. Original idea shape kept
+below for reference:
 - **NOT possible:** locking the phone itself — iOS never allows it. The real
   mechanism is Apple's Screen Time / Family Controls API: block nearly all apps
   the user would doomscroll during a session (calls, texts, emergency always

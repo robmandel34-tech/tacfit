@@ -29,14 +29,43 @@ const DETECT_INTERVAL_MS = 600;
 // just has to stay in view. No audio check either (workouts are noisy).
 const QUICK_REPS = [10, 15, 20, 30, 50];
 const REP_DETECT_INTERVAL_MS = 150; // faster loop so no rep is missed
-const REP_DOWN_ANGLE = 100; // elbow angle (degrees) that counts as "down"
-const REP_UP_ANGLE = 150; // elbow angle that counts as back "up"
 const REP_MIN_INTERVAL_MS = 900; // fastest plausible rep — filters jitter
 const REP_SESSION_MAX_MINUTES = 20; // finish the set within this window
-// Pose landmark indices (MediaPipe): shoulders, elbows, wrists.
+// Pose landmark indices (MediaPipe): shoulders/elbows/wrists and hips/knees/ankles.
 const L_SHOULDER = 11, R_SHOULDER = 12, L_ELBOW = 13, R_ELBOW = 14, L_WRIST = 15, R_WRIST = 16;
+const L_HIP = 23, R_HIP = 24, L_KNEE = 25, R_KNEE = 26, L_ANKLE = 27, R_ANKLE = 28;
 
-function elbowAngle(lm: any[], s: number, e: number, w: number): number | null {
+// Which joint each exercise bends, and the angles that count as "down" and
+// back "up". Push-ups watch the elbows; squats watch the knees.
+interface RepTracking {
+  joints: [number, number, number][]; // [top, middle (the bending joint), bottom]
+  downAngle: number;
+  upAngle: number;
+  placementHint: string;
+}
+const REP_TRACKING: Record<string, RepTracking> = {
+  push_ups: {
+    joints: [
+      [L_SHOULDER, L_ELBOW, L_WRIST],
+      [R_SHOULDER, R_ELBOW, R_WRIST],
+    ],
+    downAngle: 100,
+    upAngle: 150,
+    placementHint: "a side angle works best for push-ups",
+  },
+  squats: {
+    joints: [
+      [L_HIP, L_KNEE, L_ANKLE],
+      [R_HIP, R_KNEE, R_ANKLE],
+    ],
+    downAngle: 110,
+    upAngle: 160,
+    placementHint: "stand back so your whole body is in view — a side angle works best for squats",
+  },
+};
+const DEFAULT_REP_TRACKING = REP_TRACKING.push_ups;
+
+function jointAngle(lm: any[], s: number, e: number, w: number): number | null {
   const a = lm[s], b = lm[e], c = lm[w];
   if (!a || !b || !c) return null;
   const vis = Math.min(a.visibility ?? 1, b.visibility ?? 1, c.visibility ?? 1);
@@ -388,18 +417,19 @@ export default function VerifiedSessionPage() {
           const now = Date.now();
           let present = false;
           if (isReps) {
+            const tracking = REP_TRACKING[activityType] || DEFAULT_REP_TRACKING;
             const result = detector.detectForVideo(video, performance.now());
             const lm = result.landmarks?.[0];
-            if (lm && lm.length > R_WRIST) {
-              const left = elbowAngle(lm, L_SHOULDER, L_ELBOW, L_WRIST);
-              const right = elbowAngle(lm, R_SHOULDER, R_ELBOW, R_WRIST);
-              const angles = [left, right].filter((x): x is number => x !== null);
+            if (lm && lm.length > 0) {
+              const angles = tracking.joints
+                .map(([a, b, c]) => jointAngle(lm, a, b, c))
+                .filter((x): x is number => x !== null);
               if (angles.length > 0) {
                 present = true;
                 const angle = angles.length === 2 ? (angles[0] + angles[1]) / 2 : angles[0];
-                if (armPhaseRef.current === "up" && angle <= REP_DOWN_ANGLE) {
+                if (armPhaseRef.current === "up" && angle <= tracking.downAngle) {
                   armPhaseRef.current = "down";
-                } else if (armPhaseRef.current === "down" && angle >= REP_UP_ANGLE) {
+                } else if (armPhaseRef.current === "down" && angle >= tracking.upAngle) {
                   armPhaseRef.current = "up";
                   if (now - lastRepAtRef.current >= REP_MIN_INTERVAL_MS) {
                     lastRepAtRef.current = now;
@@ -686,9 +716,10 @@ export default function VerifiedSessionPage() {
             {selectedType?.verifiedSessionMode === "reps" ? (
               <p className="text-sm text-gray-400">
                 Do your set live on camera — the app tracks your body and counts every rep.
-                Prop your phone so your whole upper body is in view (a side angle works best
-                for push-ups). Leaving the frame or the app voids the set. Nothing is recorded;
-                the camera only tracks your movement on the device.
+                Prop your phone so it can see you clearly (
+                {(REP_TRACKING[activityType] || DEFAULT_REP_TRACKING).placementHint}). Leaving
+                the frame or the app voids the set. Nothing is recorded; the camera only tracks
+                your movement on the device.
               </p>
             ) : (
               <p className="text-sm text-gray-400">

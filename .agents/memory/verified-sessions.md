@@ -22,7 +22,7 @@ Audio noise verification (added after the user beat the camera check by sitting 
 
 Reps mode (movement-verified sets, first: push-ups — added 2026-07-13):
 - The activity type decides the mode (`activity_types.verified_session_mode = 'reps'`), never the client — otherwise a client could pick the easier check.
-- Reps are counted on-device (MediaPipe PoseLandmarker lite, elbow-angle state machine: down ≤100°, up ≥150°, 900ms debounce). No face requirement (user's explicit call: "forget about the face thing" for push-ups) and NO mic check — workouts are naturally noisy.
+- Reps are counted on-device (MediaPipe PoseLandmarker lite, joint-angle state machine with a 900ms debounce). Each exercise declares which joint bends and its down/up angles in a per-activity tracking map (push-ups: elbows; squats: knees) — adding a new rep exercise is one DB row + one map entry, no server change. No face requirement (user's explicit call: "forget about the face thing") and NO mic check — workouts are naturally noisy.
 - Server backstops for a client-claimed rep count: target floor, physical plausibility (elapsed ≥ reps × 1200ms), 20-min max window, heartbeats.
 - **Heartbeat coverage in reps mode must NOT use wall-clock elapsed at /complete** — the client stops pinging when the target is reached, so lingering at the optional photo gate would void legit sets (architect caught this). Use a server-derived window instead (minimum plausible set time = reps × min-ms-per-rep); never a client-influenced window like "last heartbeat time" (a cheater shrinks it by not pinging).
 - **Why:** any variable-duration verified flow breaks the fixed-duration coverage math; recompute coverage from server-derived quantities only.

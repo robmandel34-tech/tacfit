@@ -52,7 +52,7 @@
         <key>NSPhotoLibraryAddUsageDescription</key>
         <string>Muster Up can save activity evidence photos to your photo library.</string>
         <key>NSMicrophoneUsageDescription</key>
-        <string>Muster Up uses your microphone when recording activity evidence videos and during team video calls.</string>
+        <string>Muster Up uses your microphone when recording activity evidence videos, during team video calls, and to check the noise level during camera-verified sessions (sound is never recorded).</string>
         <key>NSHealthShareUsageDescription</key>
         <string>Muster Up reads your Apple Health data to automatically import workout activities.</string>
         <key>NSHealthUpdateUsageDescription</key>

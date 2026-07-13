@@ -23,6 +23,27 @@ const OUT_OF_FRAME_WARN_MS = 10_000; // show "come back" warning
 const OUT_OF_FRAME_VOID_MS = 25_000; // void the session
 const DETECT_INTERVAL_MS = 600;
 
+// Audio verification: the mic samples room loudness (never recorded). The
+// first seconds establish the room's baseline; the noise threshold sits well
+// above it, so quiet background hum passes. Sustained talking-level sound
+// (TV, work call, conversation) keeps the rolling window "loud" — brief
+// one-off sounds (cough, door, siren) don't.
+const AUDIO_SAMPLE_MS = 500; // loudness sample rate
+const AUDIO_CALIBRATION_MS = 12_000; // learn the room baseline, no enforcement
+const AUDIO_WINDOW_MS = 10_000; // rolling window for the loud fraction
+const AUDIO_LOUD_FRACTION = 0.3; // window is "noisy" if >30% of it is loud
+const NOISE_WARN_MS = 20_000; // sustained noise before the warning shows
+const NOISE_VOID_MS = 45_000; // sustained noise before the session voids
+const AUDIO_ABS_FLOOR = 0.045; // absolute RMS floor for "talking-level" sound
+const AUDIO_BASELINE_MULT = 3; // ... or 3x the room baseline, whichever is higher
+// Cap on how far a noisy calibration can raise the threshold — starting the
+// session mid-call/mid-show can't "train away" the check, because talking-level
+// sound always lands above this cap.
+const AUDIO_MAX_THRESHOLD = 0.09;
+// Noisy time accumulates while the room is loud and only drains at half speed
+// while quiet, so briefly muting every so often can't dodge the void forever.
+const NOISE_DECAY_RATE = 0.5;
+
 interface ActivityTypeRow {
   id: number;
   name: string;
@@ -59,6 +80,7 @@ export default function VerifiedSessionPage() {
   const [minutes, setMinutes] = useState<string>("10");
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [outOfFrame, setOutOfFrame] = useState(false);
+  const [tooNoisy, setTooNoisy] = useState(false);
   const [voidReason, setVoidReason] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [snapshotBlob, setSnapshotBlob] = useState<Blob | null>(null);
@@ -74,6 +96,12 @@ export default function VerifiedSessionPage() {
   const phaseRef = useRef<Phase>("setup");
   const lastFaceSeenRef = useRef<number>(0);
   const timersRef = useRef<number[]>([]);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const audioSamplesRef = useRef<{ t: number; loud: boolean }[]>([]);
+  const baselineSamplesRef = useRef<number[]>([]);
+  const noiseThresholdRef = useRef<number>(AUDIO_ABS_FLOOR);
+  const noisyMsRef = useRef<number>(0);
   const listenerRef = useRef<PluginListenerHandle | null>(null);
 
   useEffect(() => {
@@ -115,6 +143,11 @@ export default function VerifiedSessionPage() {
         /* already closed */
       }
       detectorRef.current = null;
+    }
+    if (audioCtxRef.current) {
+      audioCtxRef.current.close().catch(() => {});
+      audioCtxRef.current = null;
+      analyserRef.current = null;
     }
   }
 
@@ -182,16 +215,34 @@ export default function VerifiedSessionPage() {
       const session = await res.json();
       sessionRef.current = { id: session.id, durationMinutes: mins, startedAtMs: Date.now() };
 
-      // 2. Open the front camera.
+      // 2. Open the front camera + microphone. Audio processing is disabled so
+      // we hear the room as-is (noise suppression would hide the TV we're
+      // trying to detect). Sound is only measured for loudness, never recorded.
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
-        audio: false,
+        audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
       });
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
       }
+
+      // 2b. Loudness meter on the mic (on-device, nothing recorded).
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      const audioCtx = new AudioCtx();
+      await audioCtx.resume().catch(() => {});
+      const source = audioCtx.createMediaStreamSource(stream);
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 1024;
+      source.connect(analyser);
+      audioCtxRef.current = audioCtx;
+      analyserRef.current = analyser;
+      audioSamplesRef.current = [];
+      baselineSamplesRef.current = [];
+      noiseThresholdRef.current = AUDIO_ABS_FLOOR;
+      noisyMsRef.current = 0;
+      setTooNoisy(false);
 
       // 3. Load the on-device face detector (GPU first, CPU fallback).
       const { FaceDetector, FilesetResolver } = await import("@mediapipe/tasks-vision");
@@ -257,6 +308,70 @@ export default function VerifiedSessionPage() {
       }, DETECT_INTERVAL_MS);
       timersRef.current.push(detect);
 
+      // Noise check loop: calibrate to the room first, then void only on
+      // SUSTAINED talking-level sound (TV, call, conversation).
+      const audioStarted = Date.now();
+      const audioData = new Uint8Array(analyser.fftSize);
+      const audioLoop = window.setInterval(() => {
+        if (phaseRef.current !== "active") return;
+        const a = analyserRef.current;
+        if (!a) return;
+        a.getByteTimeDomainData(audioData);
+        let sumSquares = 0;
+        for (let i = 0; i < audioData.length; i++) {
+          const v = (audioData[i] - 128) / 128;
+          sumSquares += v * v;
+        }
+        const rms = Math.sqrt(sumSquares / audioData.length);
+        const now = Date.now();
+
+        if (now - audioStarted < AUDIO_CALIBRATION_MS) {
+          // Learn how loud this room normally is; no enforcement yet.
+          baselineSamplesRef.current.push(rms);
+          return;
+        }
+        if (baselineSamplesRef.current.length > 0) {
+          const sorted = [...baselineSamplesRef.current].sort((x, y) => x - y);
+          const median = sorted[Math.floor(sorted.length / 2)];
+          // Bounded on both ends: a quiet room can't lower it below the floor,
+          // and a deliberately loud calibration can't raise it past the cap.
+          noiseThresholdRef.current = Math.min(
+            AUDIO_MAX_THRESHOLD,
+            Math.max(AUDIO_ABS_FLOOR, median * AUDIO_BASELINE_MULT),
+          );
+          baselineSamplesRef.current = [];
+        }
+
+        const samples = audioSamplesRef.current;
+        samples.push({ t: now, loud: rms >= noiseThresholdRef.current });
+        while (samples.length > 0 && now - samples[0].t > AUDIO_WINDOW_MS) {
+          samples.shift();
+        }
+        const loudCount = samples.filter((s) => s.loud).length;
+        const windowNoisy =
+          samples.length >= 4 && loudCount / samples.length > AUDIO_LOUD_FRACTION;
+
+        // Cumulative with slow decay: loud time adds up in full; quiet time
+        // only drains it at half speed, so alternating noise and short quiet
+        // gaps still marches toward the void.
+        if (windowNoisy) {
+          noisyMsRef.current += AUDIO_SAMPLE_MS;
+        } else {
+          noisyMsRef.current = Math.max(0, noisyMsRef.current - AUDIO_SAMPLE_MS * NOISE_DECAY_RATE);
+        }
+
+        if (noisyMsRef.current >= NOISE_VOID_MS) {
+          voidSession(
+            "Too much talking or background noise — a verified session needs a reasonably quiet space.",
+          );
+        } else if (noisyMsRef.current >= NOISE_WARN_MS) {
+          setTooNoisy(true);
+        } else if (noisyMsRef.current < NOISE_WARN_MS / 2) {
+          setTooNoisy(false);
+        }
+      }, AUDIO_SAMPLE_MS);
+      timersRef.current.push(audioLoop);
+
       // Presence heartbeat: the server requires steady pings (only counted
       // ~30s apart) to accept the session, so completion can't be faked from
       // outside this page. Only ping while the person is actually in frame.
@@ -283,7 +398,7 @@ export default function VerifiedSessionPage() {
       const denied = error?.name === "NotAllowedError" || error?.name === "PermissionDeniedError";
       setErrorMessage(
         denied
-          ? "Camera access was denied. Verified sessions need the camera to confirm you're present — allow camera access in your settings and try again."
+          ? "Camera or microphone access was denied. Verified sessions need both — the camera confirms you're present and the mic confirms it stays quiet. Allow access in your settings and try again."
           : "Could not start the verified session. Check your connection and try again.",
       );
       setPhase("error");
@@ -296,6 +411,7 @@ export default function VerifiedSessionPage() {
     phaseRef.current = "gate";
     clearTimers();
     setOutOfFrame(false);
+    setTooNoisy(false);
     setPhase("gate");
     // Keep the camera running for the optional victory snapshot.
   }
@@ -432,9 +548,10 @@ export default function VerifiedSessionPage() {
         {(phase === "setup" || phase === "starting" || phase === "error") && (
           <div className="space-y-5">
             <p className="text-sm text-gray-400">
-              Complete your activity live in front of the camera. Stay in frame and keep the app
-              open for the full time — leaving voids the session. Nothing is recorded; the camera
-              only checks that you're there.
+              Complete your activity live in front of the camera. Stay in frame, keep the app open,
+              and keep the room reasonably quiet — leaving, or sustained talking and TV noise,
+              voids the session. Nothing is recorded; the camera only checks that you're there and
+              the mic only checks the noise level.
             </p>
 
             {phase === "error" && (
@@ -538,6 +655,11 @@ export default function VerifiedSessionPage() {
             {phase === "active" && outOfFrame && (
               <div className="absolute inset-x-0 bottom-0 p-3 bg-red-900/80 text-center text-sm font-semibold">
                 Come back into frame or the session will be voided!
+              </div>
+            )}
+            {phase === "active" && !outOfFrame && tooNoisy && (
+              <div className="absolute inset-x-0 bottom-0 p-3 bg-amber-900/85 text-center text-sm font-semibold">
+                Too much talking or background noise — quiet things down or the session will be voided!
               </div>
             )}
             {phase === "gate" && snapCountdown !== null && (

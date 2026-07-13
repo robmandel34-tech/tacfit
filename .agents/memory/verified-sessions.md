@@ -14,6 +14,12 @@ Rule: never trust the client for a verified session's outcome. Two server-side g
 
 **How to apply:** any future "server pays points for client-reported work" feature needs the same two ingredients: continuous liveness proof (rate-limited heartbeats or equivalent) and an atomic one-shot state transition guarding the payout.
 
+Audio noise verification (added after the user beat the camera check by sitting on a work call during a "meditation"):
+- Mic loudness only, never recorded; audio processing (noiseSuppression etc.) must be DISABLED in getUserMedia or the browser hides exactly the TV/call noise being detected.
+- Threshold must be bounded on BOTH ends: absolute floor (quiet rooms) AND a hard cap on the room-baseline multiplier — otherwise starting the session mid-call "trains away" the check during calibration.
+- Use cumulative noisy time with slow decay (quiet drains at half speed), never a "reset on any calm window" timer — otherwise periodic short mutes dodge the void forever.
+- **Why:** first implementation had both holes (architect review); calibration-relative-only thresholds and resettable timers are the classic bypasses for any client-side environment check.
+
 Other decisions:
 - Any break voids: out of frame 10s warn / 25s void, app backgrounded, quit. Freedom to quit + zero credit is the game mechanic.
 - Competition mandates (`competitions.verifiedActivities`) are enforced BOTH in the normal-activity route (rejects with `requiresVerifiedSession: true`) and in the submission modal UI (form hidden, steering panel shown). Mandate only applies while the competition is actively running.

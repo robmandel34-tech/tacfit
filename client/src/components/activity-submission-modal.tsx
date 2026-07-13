@@ -15,6 +15,8 @@ import { mapHealthKitTypeToActivityName, MIN_PASSIVE_EXERCISE_MINUTES, isActivit
 import { reconcileWorkoutDurationSec } from "@/lib/healthkit";
 import { celebrate } from "@/lib/celebrate";
 import { Capacitor } from "@capacitor/core";
+import { useLocation } from "wouter";
+import { ShieldCheck } from "lucide-react";
 
 // On native iOS, Radix's popup dropdown opens inside a scroll-locked WKWebView
 // dialog where it collapses to a thin sliver and won't scroll. There we fall
@@ -37,6 +39,7 @@ interface ActivityType {
   requiresTextInput?: boolean;
   textInputDescription?: string;
   textInputMinWords?: number;
+  supportsVerifiedSessions?: boolean;
 }
 
 interface Competition {
@@ -48,6 +51,7 @@ interface Competition {
   requiredActivities?: string[];
   reflectionActivities?: string[];
   requireActivityReflection?: boolean;
+  verifiedActivities?: string[];
 }
 
 interface Team {
@@ -92,6 +96,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, navigate] = useLocation();
   const [type, setType] = useState("");
   const [description, setDescription] = useState("");
   const [quantity, setQuantity] = useState("");
@@ -311,6 +316,19 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
   const currentWordCount = countWords(textInput);
   const isTextInputValid = !requiresTextInput || (currentWordCount >= minWords && currentWordCount <= maxWords);
 
+  // Verified focus sessions: while the competition is running, types listed in
+  // its verifiedActivities can ONLY be completed via a camera-verified session
+  // (the server enforces this too). Types that merely support verification get
+  // an optional shortcut instead.
+  const competitionActiveNow = competitionHasStarted && !competitionHasEnded;
+  const requiresVerifiedSession =
+    competitionActiveNow && !!type && (competition?.verifiedActivities ?? []).includes(type);
+  const supportsVerifiedSession = selectedActivityType?.supportsVerifiedSessions || false;
+  const goToVerifiedSession = () => {
+    onClose();
+    navigate(`/verified-session?type=${encodeURIComponent(type)}`);
+  };
+
   // Step 1: upload a video file directly to Google Cloud Storage via a signed URL.
   // This bypasses the Replit deployment proxy (which has a small body-size limit).
   // Returns the /uploads/<file> path the server should use as evidenceUrl.
@@ -483,6 +501,12 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     }
 
     // Removed competition start check - users can now submit activities anytime
+
+    // Mandated verified-session types can't be submitted through this form.
+    if (requiresVerifiedSession) {
+      goToVerifiedSession();
+      return;
+    }
 
     if (!isTextInputValid && requiresTextInput) {
       toast({
@@ -827,10 +851,56 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                     </div>
                   </div>
                 )}
+
+                {/* This competition mandates camera verification for this type */}
+                {type && requiresVerifiedSession && (
+                  <div className="mt-3 p-4 bg-military-green/15 border border-military-green/40 rounded-lg space-y-3">
+                    <div className="flex items-start gap-2">
+                      <ShieldCheck className="w-5 h-5 text-military-green shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-white">Verified session required</p>
+                        <p className="text-sm text-gray-300 mt-1">
+                          This competition requires {selectedActivityType?.displayName || type} to be
+                          completed live in front of your camera. Stay in frame for the full time and
+                          it posts automatically — 50 points.
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      onClick={goToVerifiedSession}
+                      className="w-full bg-military-green hover:bg-military-green-dark text-forest-green font-medium"
+                      data-testid="button-start-verified-session"
+                    >
+                      <ShieldCheck className="w-4 h-4 mr-2" />
+                      Start Verified Session
+                    </Button>
+                  </div>
+                )}
+
+                {/* Optional verified-session shortcut for types that support it */}
+                {type && !requiresVerifiedSession && supportsVerifiedSession && (
+                  <div className="mt-3 p-3 bg-tactical-gray-lighter rounded-lg border border-military-green/30 flex items-center justify-between gap-3">
+                    <p className="text-xs text-gray-300">
+                      <ShieldCheck className="w-3.5 h-3.5 text-military-green inline mr-1" />
+                      Prefer proof over photos? Do this as a camera-verified session (50 pts).
+                    </p>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={goToVerifiedSession}
+                      className="shrink-0 border-military-green/50 text-military-green hover:bg-military-green/20"
+                      data-testid="button-optional-verified-session"
+                    >
+                      Verify live
+                    </Button>
+                  </div>
+                )}
               </div>
 
               {/* Quantity Input */}
-              {type && (
+              {type && !requiresVerifiedSession && (
                 <div className="space-y-2">
                   <Label className="text-gray-300 font-medium">
                     Quantity ({selectedActivityType?.measurementUnit || "minutes"}) <span className="text-red-400">*</span>
@@ -847,7 +917,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
               )}
 
               {/* Description Input */}
-              {type && (
+              {type && !requiresVerifiedSession && (
                 <div className="space-y-2">
                   <Label className="text-gray-300 font-medium">Description <span className="text-red-400">*</span></Label>
                   <Textarea
@@ -862,7 +932,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
               )}
 
               {/* Activity Reflection / Text Input */}
-              {type && requiresTextInput && (
+              {type && !requiresVerifiedSession && requiresTextInput && (
                 <div className="space-y-2">
                   <Label className="text-gray-300 font-medium">
                     Activity Reflection {minWords && `(${minWords}-${maxWords} words)`}
@@ -895,6 +965,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
               )}
 
               {/* Photo Evidence */}
+              {!requiresVerifiedSession && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                   <Label className="text-gray-300 font-medium">Photo Evidence {(selectedWorkoutHkId || passiveMetricDate) ? <span className="text-gray-400">(optional — Apple Health is the evidence)</span> : <><span className="text-red-400">*</span> <span className="text-gray-400">(at least 1 image required)</span></>}</Label>
@@ -1017,6 +1088,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
                   </div>
                 )}
               </div>
+              )}
 
           {/* Upload progress bar */}
           {submitActivity.isPending && (
@@ -1037,7 +1109,8 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
             </div>
           )}
 
-          {/* Submit Button */}
+          {/* Submit Button — hidden when the type must go through a verified session */}
+          {!requiresVerifiedSession && (
           <Button
             type="submit"
             className="w-full bg-military-green hover:bg-military-green-dark text-forest-green font-medium py-3"
@@ -1047,6 +1120,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
               ? uploadProgress > 0 ? `Uploading ${uploadProgress}%` : "Preparing..."
               : "Submit Activity"}
           </Button>
+          )}
         </form>
       </DialogContent>
     </Dialog>

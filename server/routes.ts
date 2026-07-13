@@ -10,7 +10,7 @@ import {
   insertChatMessageSchema, insertFriendshipSchema, insertCompetitionInvitationSchema,
   insertCompetitionEntrySchema, insertMissionTaskSchema, insertActivityTypeSchema,
   insertAdminPostSchema, insertMoodLogSchema, friendships, type User,
-  scheduleTeamCallSchema,
+  scheduleTeamCallSchema, startVerifiedSessionSchema,
 } from "@shared/schema";
 import { getCompetitionPricing } from "@shared/pricing";
 import { MIN_PASSIVE_EXERCISE_MINUTES, isActivityAllowed, isHealthKitWorkoutEligible } from "@shared/healthkit";
@@ -3489,6 +3489,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (required.length > 0 && !isActivityAllowed(req.body.type, required)) {
           return res.status(400).json({ message: "That activity type isn't part of this competition." });
         }
+        // Types marked verification-required in this competition can only be
+        // earned through a camera-verified session (which creates its activity
+        // through the verified-sessions endpoints, never through this route).
+        const mustVerify = competition.verifiedActivities || [];
+        if (mustVerify.includes(req.body.type)) {
+          return res.status(400).json({
+            message: "This competition requires a verified session for that activity. Start one from the activity screen.",
+            requiresVerifiedSession: true,
+          });
+        }
         if (healthWorkout) {
           const when = new Date(healthWorkout.startTime);
           if (when < new Date(competition.startDate) || when > new Date(competition.endDate)) {
@@ -3705,6 +3715,262 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting activity:", error);
       res.status(500).json({ message: "Error deleting activity" });
+    }
+  });
+
+  // ---------- Verified focus sessions (camera-verified meditation/reading) ----------
+  // Flat award decided by the owner: verification itself is worth 50 pts,
+  // regardless of duration or evidence.
+  const VERIFIED_SESSION_POINTS = 50;
+
+  // Find the user's team and (if currently running) active competition —
+  // same rules the normal activity submission uses.
+  async function getUserTeamAndActiveCompetition(userId: number) {
+    const allTeams = await storage.getTeams();
+    let userTeam = null;
+    for (const team of allTeams) {
+      const members = await storage.getTeamMembers(team.id);
+      if (members.some(m => m.userId === userId)) {
+        userTeam = team;
+        break;
+      }
+    }
+    let competition = null;
+    let isInActiveCompetition = false;
+    if (userTeam && userTeam.competitionId) {
+      competition = await storage.getCompetition(userTeam.competitionId);
+      if (competition) {
+        const now = new Date();
+        if (!competition.isCompleted && now >= new Date(competition.startDate) && now <= new Date(competition.endDate)) {
+          isInActiveCompetition = true;
+        }
+      }
+    }
+    return { userTeam, competition, isInActiveCompetition };
+  }
+
+  // Start a session. The server records the start time; completion is only
+  // accepted after the full duration has genuinely elapsed.
+  app.post("/api/verified-sessions", async (req, res) => {
+    try {
+      const userId = req.session?.userId || req.session?.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Please log in first." });
+      }
+
+      const parsed = startVerifiedSessionSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: "Invalid session details." });
+      }
+      const { activityType, durationMinutes } = parsed.data;
+
+      // The type must exist, be active, and support verified sessions.
+      const types = await storage.getActivityTypes();
+      const typeRow = types.find(t => t.name === activityType);
+      if (!typeRow || typeRow.isActive === false) {
+        return res.status(400).json({ message: "Unknown activity type." });
+      }
+      if (!typeRow.supportsVerifiedSessions) {
+        return res.status(400).json({ message: "That activity doesn't support verified sessions." });
+      }
+
+      const { userTeam, competition, isInActiveCompetition } = await getUserTeamAndActiveCompetition(userId);
+      if (isInActiveCompetition && competition) {
+        const required = competition.requiredActivities || [];
+        if (required.length > 0 && !isActivityAllowed(activityType, required)) {
+          return res.status(400).json({ message: "That activity type isn't part of this competition." });
+        }
+      }
+
+      // One live session at a time — starting a new one voids any leftovers.
+      await storage.voidActiveVerifiedSessions(userId);
+
+      const session = await storage.createVerifiedSession({
+        userId,
+        activityType,
+        durationMinutes,
+        competitionId: isInActiveCompetition ? userTeam?.competitionId : null,
+        teamId: isInActiveCompetition ? userTeam?.id : null,
+      });
+
+      res.json(session);
+    } catch (error) {
+      console.error("Verified session start error:", error);
+      res.status(500).json({ message: "Could not start the session." });
+    }
+  });
+
+  // Presence heartbeat — the session page pings every ~30s while the user is
+  // in frame. The server only counts a beat if the previous one is ≥20s old,
+  // and completion requires enough beats to cover the duration. This stops a
+  // scripted "start, wait, complete" from minting verified activities.
+  app.post("/api/verified-sessions/:id/heartbeat", async (req, res) => {
+    try {
+      const userId = req.session?.userId || req.session?.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Please log in first." });
+      }
+      const session = await storage.getVerifiedSession(parseInt(req.params.id));
+      if (!session || session.userId !== userId) {
+        return res.status(404).json({ message: "Session not found." });
+      }
+      if (session.status !== "active") {
+        return res.status(409).json({ message: "That session has already ended." });
+      }
+      // Too-frequent beats are ignored (not an error) — the count just doesn't move.
+      const updated = await storage.recordVerifiedSessionHeartbeat(session.id, 20 * 1000);
+      res.json({ ok: true, heartbeatCount: (updated || session).heartbeatCount });
+    } catch (error) {
+      console.error("Verified session heartbeat error:", error);
+      res.status(500).json({ message: "Could not record the heartbeat." });
+    }
+  });
+
+  // Void a session (user quit, left frame too long, backgrounded the app...).
+  app.post("/api/verified-sessions/:id/void", async (req, res) => {
+    try {
+      const userId = req.session?.userId || req.session?.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Please log in first." });
+      }
+      const session = await storage.getVerifiedSession(parseInt(req.params.id));
+      if (!session || session.userId !== userId) {
+        return res.status(404).json({ message: "Session not found." });
+      }
+      if (session.status !== "active") {
+        return res.json(session); // already ended — nothing to do
+      }
+      const updated = await storage.updateVerifiedSession(session.id, {
+        status: "voided",
+        endedAt: new Date(),
+      });
+      res.json(updated);
+    } catch (error) {
+      console.error("Verified session void error:", error);
+      res.status(500).json({ message: "Could not update the session." });
+    }
+  });
+
+  // Complete a session: validates real elapsed time server-side, then creates
+  // the verified activity (50 pts, optional feed photo) and updates points.
+  app.post("/api/verified-sessions/:id/complete", (req, res, next) => {
+    upload.any()(req, res, (err) => {
+      if (err) {
+        return res.status(400).json({ message: `Upload error: ${err.message}` });
+      }
+      next();
+    });
+  }, async (req, res) => {
+    try {
+      const userId = req.session?.userId || req.session?.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Please log in first." });
+      }
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found." });
+      }
+
+      const session = await storage.getVerifiedSession(parseInt(req.params.id));
+      if (!session || session.userId !== userId) {
+        return res.status(404).json({ message: "Session not found." });
+      }
+      if (session.status !== "active") {
+        return res.status(409).json({ message: "That session has already ended." });
+      }
+
+      // Anti-forgery: the full duration must actually have passed (5s network
+      // tolerance), and completion can't arrive absurdly late — the client
+      // voids on any interruption, so a stale "active" session is not a
+      // legitimate completion.
+      const startedAt = session.startedAt ? new Date(session.startedAt).getTime() : 0;
+      const elapsedMs = Date.now() - startedAt;
+      const requiredMs = session.durationMinutes * 60 * 1000;
+      if (elapsedMs < requiredMs - 5000) {
+        return res.status(400).json({ message: "The session isn't finished yet." });
+      }
+      if (elapsedMs > requiredMs + 60 * 60 * 1000) {
+        await storage.updateVerifiedSession(session.id, { status: "voided", endedAt: new Date() });
+        return res.status(400).json({ message: "That session expired. Start a new one." });
+      }
+
+      // Anti-forgery: the session page must have pinged heartbeats throughout.
+      // Beats are only counted ≥20s apart, so a script that just waits (or
+      // bursts pings at the end) can't reach the required coverage.
+      const expectedBeats = Math.floor(requiredMs / 30000);
+      const requiredBeats = Math.max(1, Math.floor(expectedBeats * 0.7));
+      if ((session.heartbeatCount || 0) < requiredBeats) {
+        await storage.updateVerifiedSession(session.id, { status: "voided", endedAt: new Date() });
+        return res.status(400).json({ message: "The session lost contact with the camera page and can't be verified. Start a new one." });
+      }
+
+      // Atomically flip active -> completed. If another request got here first,
+      // this returns nothing and we bail — one session can never pay out twice.
+      const claimed = await storage.claimVerifiedSessionCompletion(session.id);
+      if (!claimed) {
+        return res.status(409).json({ message: "That session has already ended." });
+      }
+
+      // Optional feed photo from the end-of-session gate.
+      const files = (req.files as Express.Multer.File[]) || [];
+      const photoFiles = files.filter(f => f.fieldname === "photo" || f.fieldname === "images");
+      const imageUrls: string[] = [];
+      if (photoFiles.length > 0) {
+        const objStorage = new ObjectStorageService();
+        for (let i = 0; i < photoFiles.length; i++) {
+          const f = photoFiles[i];
+          const fileName = `${Date.now()}_verified${i}${path.extname(f.originalname) || ".jpg"}`;
+          imageUrls.push(await objStorage.uploadFile(f.path, fileName, f.mimetype));
+        }
+      }
+
+      // Team/competition credit is decided NOW (not at start) so a competition
+      // that ended mid-session doesn't get points, mirroring normal submissions.
+      const { userTeam, isInActiveCompetition } = await getUserTeamAndActiveCompetition(userId);
+
+      const types = await storage.getActivityTypes();
+      const typeRow = types.find(t => t.name === session.activityType);
+      const displayName = typeRow?.displayName || session.activityType;
+
+      const activityData = insertActivitySchema.parse({
+        userId,
+        competitionId: isInActiveCompetition ? userTeam?.competitionId : null,
+        teamId: isInActiveCompetition ? userTeam?.id : null,
+        type: session.activityType,
+        description: `Verified ${displayName} session`,
+        quantity: `${session.durationMinutes} minutes`,
+        textInput: typeof req.body.note === "string" && req.body.note.trim() ? req.body.note.trim() : null,
+        points: VERIFIED_SESSION_POINTS,
+        evidenceType: imageUrls.length > 0 ? "photo" : null,
+        evidenceUrl: "",
+        thumbnailUrl: "",
+        imageUrls,
+        fromAppleHealth: false,
+        isVerified: true,
+      });
+
+      const activity = await storage.createActivity(activityData);
+      await storage.updateVerifiedSession(session.id, { activityId: activity.id });
+
+      if (activity.userId && activity.points) {
+        await updateUserPointsWithWebhook(activity.userId, activity.points, "Activity submission");
+      }
+      if (activity.teamId && activity.points && isInActiveCompetition) {
+        const team = await storage.getTeam(activity.teamId);
+        if (team) {
+          await storage.updateTeam(activity.teamId, { points: (team.points || 0) + activity.points });
+        }
+      }
+
+      notifySlack(
+        `🧘 *Verified session completed* — ${user.username} finished ${session.durationMinutes} min of ${displayName} (camera-verified) · ${VERIFIED_SESSION_POINTS} pts${userTeam ? ` · ${userTeam.name}` : ""}`,
+        "activity",
+      );
+
+      res.json(activity);
+    } catch (error) {
+      console.error("Verified session completion error:", error);
+      res.status(500).json({ message: "Could not complete the session." });
     }
   });
 

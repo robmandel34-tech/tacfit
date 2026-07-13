@@ -13,6 +13,7 @@ import {
   AppleHealthConnection, InsertAppleHealthConnection,
   AppleHealthWorkout, InsertAppleHealthWorkout,
   HealthMetric, InsertHealthMetric, ReadinessScore, InsertReadinessScore,
+  VerifiedSession, verifiedSessions,
   users, competitions, teams, teamMembers, teamCalls, callParticipants, activities, activityTypes,
   activityComments, activityLikes, activityFlags, chatMessages, friendships, 
   competitionHistory, competitionInvitations, competitionEntries, phoneInvitations, 
@@ -21,7 +22,7 @@ import {
   healthMetrics, readinessScores
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, or, desc, isNull, gt, gte, lte, inArray, sql } from "drizzle-orm";
+import { eq, and, or, desc, isNull, gt, gte, lt, lte, inArray, sql } from "drizzle-orm";
 import { IStorage } from "./storage";
 import { isHealthKitWorkoutEligible } from "@shared/healthkit";
 
@@ -1253,6 +1254,71 @@ export class DatabaseStorage implements IStorage {
     twoDaysAgo.setHours(0, 0, 0, 0);
     
     return new Date(latestLog.loggedAt || new Date()) > twoDaysAgo; // True if logged within 2 days
+  }
+
+  // Verified focus session operations
+  async createVerifiedSession(session: { userId: number; activityType: string; durationMinutes: number; competitionId?: number | null; teamId?: number | null }): Promise<VerifiedSession> {
+    const [row] = await db
+      .insert(verifiedSessions)
+      .values({
+        userId: session.userId,
+        activityType: session.activityType,
+        durationMinutes: session.durationMinutes,
+        competitionId: session.competitionId ?? null,
+        teamId: session.teamId ?? null,
+        status: "active",
+      })
+      .returning();
+    return row;
+  }
+
+  async getVerifiedSession(id: number): Promise<VerifiedSession | undefined> {
+    const [row] = await db.select().from(verifiedSessions).where(eq(verifiedSessions.id, id));
+    return row || undefined;
+  }
+
+  async updateVerifiedSession(id: number, updates: Partial<VerifiedSession>): Promise<VerifiedSession | undefined> {
+    const [row] = await db
+      .update(verifiedSessions)
+      .set(updates)
+      .where(eq(verifiedSessions.id, id))
+      .returning();
+    return row || undefined;
+  }
+
+  async recordVerifiedSessionHeartbeat(id: number, minIntervalMs: number): Promise<VerifiedSession | undefined> {
+    // Only counts a beat if the previous one is old enough — a burst of pings
+    // right before completing can't fake sustained presence.
+    const cutoff = new Date(Date.now() - minIntervalMs);
+    const [row] = await db
+      .update(verifiedSessions)
+      .set({
+        heartbeatCount: sql`${verifiedSessions.heartbeatCount} + 1`,
+        lastHeartbeatAt: new Date(),
+      })
+      .where(and(
+        eq(verifiedSessions.id, id),
+        eq(verifiedSessions.status, "active"),
+        or(isNull(verifiedSessions.lastHeartbeatAt), lt(verifiedSessions.lastHeartbeatAt, cutoff)),
+      ))
+      .returning();
+    return row || undefined;
+  }
+
+  async claimVerifiedSessionCompletion(id: number): Promise<VerifiedSession | undefined> {
+    const [row] = await db
+      .update(verifiedSessions)
+      .set({ status: "completed", endedAt: new Date() })
+      .where(and(eq(verifiedSessions.id, id), eq(verifiedSessions.status, "active")))
+      .returning();
+    return row || undefined;
+  }
+
+  async voidActiveVerifiedSessions(userId: number): Promise<void> {
+    await db
+      .update(verifiedSessions)
+      .set({ status: "voided", endedAt: new Date() })
+      .where(and(eq(verifiedSessions.userId, userId), eq(verifiedSessions.status, "active")));
   }
 
   async blockUser(blockerId: number, blockedId: number): Promise<void> {

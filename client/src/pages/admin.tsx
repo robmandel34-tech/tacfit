@@ -38,6 +38,8 @@ interface Competition {
   paymentType?: string;
   entryFee?: number;
   requireActivityReflection?: boolean;
+  reflectionActivities?: string[];
+  verifiedActivities?: string[];
   createdAt: string;
 }
 
@@ -66,6 +68,7 @@ interface ActivityType {
   textInputDescription?: string;
   textInputMinWords: number;
   requiresHealthKit: boolean;
+  supportsVerifiedSessions?: boolean;
   createdAt: string;
 }
 
@@ -214,6 +217,7 @@ export default function AdminPage() {
     entryFee: 0,
     requireActivityReflection: false,
     reflectionActivities: [] as string[],
+    verifiedActivities: [] as string[],
   });
 
   // Activity type form state
@@ -227,7 +231,8 @@ export default function AdminPage() {
     requiresTextInput: false,
     textInputDescription: '',
     textInputMinWords: 50,
-    requiresHealthKit: false
+    requiresHealthKit: false,
+    supportsVerifiedSessions: false
   });
 
   const [editingActivityType, setEditingActivityType] = useState<ActivityType | null>(null);
@@ -533,6 +538,7 @@ export default function AdminPage() {
       entryFee: 0,
       requireActivityReflection: false,
       reflectionActivities: [] as string[],
+      verifiedActivities: [] as string[],
     });
   };
 
@@ -547,7 +553,8 @@ export default function AdminPage() {
       requiresTextInput: false,
       textInputDescription: '',
       textInputMinWords: 50,
-      requiresHealthKit: false
+      requiresHealthKit: false,
+      supportsVerifiedSessions: false
     });
   };
 
@@ -903,7 +910,8 @@ export default function AdminPage() {
       requiresTextInput: activityType.requiresTextInput || false,
       textInputDescription: activityType.textInputDescription || '',
       textInputMinWords: activityType.textInputMinWords || 50,
-      requiresHealthKit: activityType.requiresHealthKit || false
+      requiresHealthKit: activityType.requiresHealthKit || false,
+      supportsVerifiedSessions: activityType.supportsVerifiedSessions || false
     });
     setIsCreateActivityTypeOpen(true);
   };
@@ -955,6 +963,7 @@ export default function AdminPage() {
       entryFee: competition.entryFee || 0,
       requireActivityReflection: competition.requireActivityReflection || false,
       reflectionActivities: competition.reflectionActivities || [],
+      verifiedActivities: competition.verifiedActivities || [],
     });
     setIsCreateCompetitionOpen(true);
   };
@@ -1311,6 +1320,28 @@ export default function AdminPage() {
                                   Require written reflection for this activity
                                 </Label>
                               </div>
+                              {activityType.supportsVerifiedSessions && (
+                                <div className="flex items-center space-x-2 pl-32">
+                                  <input
+                                    type="checkbox"
+                                    id={`verified-${activity}`}
+                                    checked={competitionForm.verifiedActivities.includes(activity)}
+                                    onChange={(e) => {
+                                      setCompetitionForm(prev => ({
+                                        ...prev,
+                                        verifiedActivities: e.target.checked
+                                          ? [...prev.verifiedActivities, activity]
+                                          : prev.verifiedActivities.filter(a => a !== activity)
+                                      }));
+                                    }}
+                                    className="w-4 h-4 text-military-green bg-tactical-gray-lighter border-tactical-gray rounded"
+                                    data-testid={`checkbox-verified-${activity}`}
+                                  />
+                                  <Label htmlFor={`verified-${activity}`} className="text-gray-400 text-xs cursor-pointer">
+                                    Require camera-verified session for this activity
+                                  </Label>
+                                </div>
+                              )}
                             </div>
                           );
                         })}
@@ -2049,6 +2080,21 @@ export default function AdminPage() {
                           </div>
                         </>
                       )}
+                    </div>
+
+                    {/* Verified Sessions */}
+                    <div className="border-t border-tactical-gray pt-4">
+                      <h3 className="text-white text-sm font-medium mb-3">Verified Sessions</h3>
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="supportsVerifiedSessions"
+                          checked={activityTypeForm.supportsVerifiedSessions}
+                          onCheckedChange={(checked) => setActivityTypeForm(prev => ({ ...prev, supportsVerifiedSessions: checked }))}
+                          data-testid="switch-supports-verified-sessions"
+                        />
+                        <Label htmlFor="supportsVerifiedSessions" className="text-gray-300">Supports camera-verified sessions</Label>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">Best for timed, stationary activities (meditation, reading, stretching). Users stay in frame for the full time and earn 50 points. Competitions can make this the only way to complete the activity.</p>
                     </div>
 
                     <div className="border-t border-tactical-gray pt-4">

@@ -11,7 +11,8 @@ import {
   TeammateReport, InsertTeammateReport,
   AppleHealthConnection, InsertAppleHealthConnection,
   AppleHealthWorkout, InsertAppleHealthWorkout, Competition as CompetitionType,
-  HealthMetric, InsertHealthMetric, ReadinessScore, InsertReadinessScore
+  HealthMetric, InsertHealthMetric, ReadinessScore, InsertReadinessScore,
+  VerifiedSession
 } from "@shared/schema";
 
 export interface IStorage {
@@ -191,6 +192,19 @@ export interface IStorage {
   getReadiness(userId: number): Promise<ReadinessScore | undefined>;
   upsertReadiness(userId: number, data: Omit<InsertReadinessScore, "userId">): Promise<ReadinessScore>;
   getReadinessForUsers(userIds: number[]): Promise<ReadinessScore[]>;
+
+  // Verified focus session operations
+  createVerifiedSession(session: { userId: number; activityType: string; durationMinutes: number; competitionId?: number | null; teamId?: number | null }): Promise<VerifiedSession>;
+  getVerifiedSession(id: number): Promise<VerifiedSession | undefined>;
+  updateVerifiedSession(id: number, updates: Partial<VerifiedSession>): Promise<VerifiedSession | undefined>;
+  // Record a presence heartbeat; only counts if enough time passed since the last one.
+  recordVerifiedSessionHeartbeat(id: number, minIntervalMs: number): Promise<VerifiedSession | undefined>;
+  // Atomically claim an active session for completion (active -> completed).
+  // Returns the updated row only if THIS call made the transition — prevents
+  // two concurrent completes from both awarding points.
+  claimVerifiedSessionCompletion(id: number): Promise<VerifiedSession | undefined>;
+  // Mark all of a user's still-active sessions as voided (one live session at a time).
+  voidActiveVerifiedSessions(userId: number): Promise<void>;
 
   // User block operations
   blockUser(blockerId: number, blockedId: number): Promise<void>;

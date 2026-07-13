@@ -120,6 +120,7 @@ export const competitions = pgTable("competitions", {
   stripePriceId: text("stripe_price_id"), // Stripe price ID for paid competitions
   requireActivityReflection: boolean("require_activity_reflection").default(false), // legacy: kept for backward compat
   reflectionActivities: text("reflection_activities").array().default([]), // Per-activity reflection requirements
+  verifiedActivities: text("verified_activities").array().default([]), // Activity types that MUST be submitted via a verified session in this competition
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -180,6 +181,7 @@ export const activityTypes = pgTable("activity_types", {
   requiresTextInput: boolean("requires_text_input").default(false),
   textInputDescription: text("text_input_description"), // What should be entered in the text box
   textInputMinWords: integer("text_input_min_words").default(50), // Minimum word count required
+  supportsVerifiedSessions: boolean("supports_verified_sessions").default(false), // Can be completed as a camera-verified focus session
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -199,7 +201,29 @@ export const activities = pgTable("activities", {
   points: integer("points").default(10),
   isFlagged: boolean("is_flagged").default(false),
   fromAppleHealth: boolean("from_apple_health").default(false), // submitted via an Apple Health import
+  isVerified: boolean("is_verified").default(false), // completed via a camera-verified focus session
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Camera-verified focus sessions (meditation, reading, ...). A row is created
+// when the session starts; the server validates elapsed real time on
+// completion before awarding points — the client can't fake a finished session.
+export const verifiedSessions = pgTable("verified_sessions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  activityType: text("activity_type").notNull(),
+  durationMinutes: integer("duration_minutes").notNull(),
+  status: text("status").default("active"), // active, completed, voided
+  competitionId: integer("competition_id").references(() => competitions.id),
+  teamId: integer("team_id").references(() => teams.id),
+  activityId: integer("activity_id").references(() => activities.id), // set on completion
+  // Anti-abuse: the session page pings a heartbeat every ~30s while the user is
+  // in frame. Completion requires enough heartbeats to cover the duration, so a
+  // scripted "start, wait, complete" call can't mint verified activities.
+  heartbeatCount: integer("heartbeat_count").default(0),
+  lastHeartbeatAt: timestamp("last_heartbeat_at"),
+  startedAt: timestamp("started_at").defaultNow(),
+  endedAt: timestamp("ended_at"),
 });
 
 export const activityComments = pgTable("activity_comments", {
@@ -430,6 +454,16 @@ export const insertActivityTypeSchema = createInsertSchema(activityTypes).omit({
   id: true,
   createdAt: true,
 });
+
+// Request body for starting a verified focus session (server sets userId,
+// competitionId, teamId, status, timestamps).
+export const startVerifiedSessionSchema = z.object({
+  activityType: z.string().trim().min(1),
+  durationMinutes: z.coerce.number().int().min(1).max(120),
+});
+
+export type VerifiedSession = typeof verifiedSessions.$inferSelect;
+export type StartVerifiedSession = z.infer<typeof startVerifiedSessionSchema>;
 
 export const insertActivityCommentSchema = createInsertSchema(activityComments).omit({
   id: true,

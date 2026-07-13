@@ -27,6 +27,7 @@ interface ActivityCardProps {
     thumbnailUrl?: string; // Add thumbnailUrl field
     points?: number;
     fromAppleHealth?: boolean;
+    isVerified?: boolean;
     createdAt: string;
 
     user: {
@@ -399,7 +400,16 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
             backgroundImage: `url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzNDAgMzAwIj48cGF0aCBkPSJNMjEwIDE4IEwxNDAgNDggTDE0MCAxNTIgUTE0MCAyMTAgMjEwIDIzNSBRMjgwIDIxMCAyODAgMTUyIEwyODAgNDggWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIzIiBvcGFjaXR5PSIwLjIwIi8+PHBhdGggZD0iTTE1NSA1IEw4MiAzOCBMODIgMTUwIFE4MiAyMTIgMTU1IDIzOCBRMjI4IDIxMiAyMjggMTUwIEwyMjggMzggWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIzIiBvcGFjaXR5PSIwLjEzIi8+PHBhdGggZD0iTTI3OCAxMiBMMjA1IDQ1IEwyMDUgMTU4IFEyMDUgMjIwIDI3OCAyNDYgUTM1MSAyMjAgMzUxIDE1OCBMMzUxIDQ1IFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMyIgb3BhY2l0eT0iMC4wOCIvPjwvc3ZnPg==")`,
             backgroundRepeat: 'no-repeat', backgroundSize: 'contain', backgroundPosition: 'center right',
           }} />
-          {(activity.fromAppleHealth || isHealthKitActivity()) && (
+          {activity.isVerified ? (
+            <div
+              className="absolute top-2.5 right-2.5 z-10 inline-flex items-center gap-1 rounded-full bg-military-green px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm"
+              title="Completed live on camera — verified session"
+              data-testid="badge-verified-corner"
+            >
+              <BadgeCheck className="w-3 h-3" strokeWidth={3} />
+              Verified
+            </div>
+          ) : (activity.fromAppleHealth || isHealthKitActivity()) && (
             <div
               className="absolute top-2.5 right-2.5 z-10 inline-flex items-center gap-1 rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm"
               title="Synced from Apple Health"

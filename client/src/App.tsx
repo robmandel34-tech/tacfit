@@ -90,6 +90,7 @@ import Invitation from "@/pages/invitation";
 import JoinCompetition from "@/pages/join-competition";
 import TeamInvite from "@/pages/team-invite";
 import AdminPage from "@/pages/admin";
+import VerifiedSessionPage from "@/pages/verified-session";
 import CompetitionSystemHelp from "@/pages/help/competition-system";
 import TeamFormationHelp from "@/pages/help/team-formation";
 import ActivityTrackingHelp from "@/pages/help/activity-tracking";
@@ -123,6 +124,7 @@ function Router() {
         <Route path="/join/:code" component={JoinCompetition} />
         <Route path="/team-invite/:token" component={TeamInvite} />
         <Route path="/admin" component={AdminPage} />
+        <Route path="/verified-session" component={VerifiedSessionPage} />
         <Route path="/help/competition-system" component={CompetitionSystemHelp} />
         <Route path="/help/team-formation" component={TeamFormationHelp} />
         <Route path="/help/activity-tracking" component={ActivityTrackingHelp} />

@@ -182,6 +182,9 @@ export const activityTypes = pgTable("activity_types", {
   textInputDescription: text("text_input_description"), // What should be entered in the text box
   textInputMinWords: integer("text_input_min_words").default(50), // Minimum word count required
   supportsVerifiedSessions: boolean("supports_verified_sessions").default(false), // Can be completed as a camera-verified focus session
+  // How the camera verifies: "time" = stay in frame for the duration (face
+  // detection); "reps" = movement verification (pose detection counts reps).
+  verifiedSessionMode: text("verified_session_mode").default("time"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -212,7 +215,10 @@ export const verifiedSessions = pgTable("verified_sessions", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id).notNull(),
   activityType: text("activity_type").notNull(),
-  durationMinutes: integer("duration_minutes").notNull(),
+  durationMinutes: integer("duration_minutes").notNull(), // reps mode: the max time window
+  mode: text("mode").default("time"), // "time" or "reps"
+  targetReps: integer("target_reps"), // reps mode only
+  completedReps: integer("completed_reps"), // reps mode only, set on completion
   status: text("status").default("active"), // active, completed, voided
   competitionId: integer("competition_id").references(() => competitions.id),
   teamId: integer("team_id").references(() => teams.id),
@@ -459,7 +465,10 @@ export const insertActivityTypeSchema = createInsertSchema(activityTypes).omit({
 // competitionId, teamId, status, timestamps).
 export const startVerifiedSessionSchema = z.object({
   activityType: z.string().trim().min(1),
-  durationMinutes: z.coerce.number().int().min(1).max(120),
+  // Time mode sends durationMinutes; reps mode sends targetReps. The server
+  // decides which one is required based on the activity type's mode.
+  durationMinutes: z.coerce.number().int().min(1).max(120).optional(),
+  targetReps: z.coerce.number().int().min(5).max(200).optional(),
 });
 
 export type VerifiedSession = typeof verifiedSessions.$inferSelect;

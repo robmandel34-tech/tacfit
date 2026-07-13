@@ -194,7 +194,7 @@ export interface IStorage {
   getReadinessForUsers(userIds: number[]): Promise<ReadinessScore[]>;
 
   // Verified focus session operations
-  createVerifiedSession(session: { userId: number; activityType: string; durationMinutes: number; competitionId?: number | null; teamId?: number | null }): Promise<VerifiedSession>;
+  createVerifiedSession(session: { userId: number; activityType: string; durationMinutes: number; mode?: string; targetReps?: number | null; competitionId?: number | null; teamId?: number | null }): Promise<VerifiedSession>;
   getVerifiedSession(id: number): Promise<VerifiedSession | undefined>;
   updateVerifiedSession(id: number, updates: Partial<VerifiedSession>): Promise<VerifiedSession | undefined>;
   // Record a presence heartbeat; only counts if enough time passed since the last one.

@@ -3722,6 +3722,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Flat award decided by the owner: verification itself is worth 50 pts,
   // regardless of duration or evidence.
   const VERIFIED_SESSION_POINTS = 50;
+  // Reps mode: max time window to finish the set, and the plausibility floor —
+  // no real push-up takes less than ~1.2s, so N reps can't be claimed faster
+  // than N * 1.2s of real elapsed time.
+  const REP_SESSION_MAX_MINUTES = 20;
+  const MIN_MS_PER_REP = 1200;
 
   // Find the user's team and (if currently running) active competition —
   // same rules the normal activity submission uses.
@@ -3762,7 +3767,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!parsed.success) {
         return res.status(400).json({ message: "Invalid session details." });
       }
-      const { activityType, durationMinutes } = parsed.data;
+      const { activityType, durationMinutes, targetReps } = parsed.data;
 
       // The type must exist, be active, and support verified sessions.
       const types = await storage.getActivityTypes();
@@ -3772,6 +3777,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       if (!typeRow.supportsVerifiedSessions) {
         return res.status(400).json({ message: "That activity doesn't support verified sessions." });
+      }
+
+      // The activity type decides the verification mode, not the client.
+      const mode = typeRow.verifiedSessionMode === "reps" ? "reps" : "time";
+      if (mode === "reps" && !targetReps) {
+        return res.status(400).json({ message: "Pick a rep target for this activity." });
+      }
+      if (mode === "time" && !durationMinutes) {
+        return res.status(400).json({ message: "Pick a duration for this activity." });
       }
 
       const { userTeam, competition, isInActiveCompetition } = await getUserTeamAndActiveCompetition(userId);
@@ -3788,7 +3802,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const session = await storage.createVerifiedSession({
         userId,
         activityType,
-        durationMinutes,
+        // Reps mode gets a fixed max window instead of a chosen duration.
+        durationMinutes: mode === "reps" ? REP_SESSION_MAX_MINUTES : durationMinutes!,
+        mode,
+        targetReps: mode === "reps" ? targetReps : null,
         competitionId: isInActiveCompetition ? userTeam?.competitionId : null,
         teamId: isInActiveCompetition ? userTeam?.id : null,
       });
@@ -3879,25 +3896,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(409).json({ message: "That session has already ended." });
       }
 
-      // Anti-forgery: the full duration must actually have passed (5s network
-      // tolerance), and completion can't arrive absurdly late — the client
-      // voids on any interruption, so a stale "active" session is not a
-      // legitimate completion.
+      const isRepsMode = session.mode === "reps";
       const startedAt = session.startedAt ? new Date(session.startedAt).getTime() : 0;
       const elapsedMs = Date.now() - startedAt;
-      const requiredMs = session.durationMinutes * 60 * 1000;
-      if (elapsedMs < requiredMs - 5000) {
-        return res.status(400).json({ message: "The session isn't finished yet." });
-      }
-      if (elapsedMs > requiredMs + 60 * 60 * 1000) {
-        await storage.updateVerifiedSession(session.id, { status: "voided", endedAt: new Date() });
-        return res.status(400).json({ message: "That session expired. Start a new one." });
+
+      let completedReps = 0;
+      if (isRepsMode) {
+        // Anti-forgery (reps): the claimed rep count must at least hit the
+        // target, and the real elapsed time must make the count physically
+        // plausible — nobody does N push-ups faster than N * 1.2 seconds.
+        completedReps = parseInt(String(req.body.reps ?? ""), 10);
+        if (!Number.isFinite(completedReps) || completedReps < (session.targetReps || 1)) {
+          return res.status(400).json({ message: "The rep target wasn't reached." });
+        }
+        completedReps = Math.min(completedReps, 500); // sanity cap
+        if (elapsedMs < completedReps * MIN_MS_PER_REP) {
+          await storage.updateVerifiedSession(session.id, { status: "voided", endedAt: new Date() });
+          return res.status(400).json({ message: "That set finished implausibly fast and can't be verified." });
+        }
+        if (elapsedMs > REP_SESSION_MAX_MINUTES * 60 * 1000 + 60 * 60 * 1000) {
+          await storage.updateVerifiedSession(session.id, { status: "voided", endedAt: new Date() });
+          return res.status(400).json({ message: "That session expired. Start a new one." });
+        }
+      } else {
+        // Anti-forgery (time): the full duration must actually have passed
+        // (5s network tolerance), and completion can't arrive absurdly late —
+        // the client voids on any interruption, so a stale "active" session
+        // is not a legitimate completion.
+        const requiredMs = session.durationMinutes * 60 * 1000;
+        if (elapsedMs < requiredMs - 5000) {
+          return res.status(400).json({ message: "The session isn't finished yet." });
+        }
+        if (elapsedMs > requiredMs + 60 * 60 * 1000) {
+          await storage.updateVerifiedSession(session.id, { status: "voided", endedAt: new Date() });
+          return res.status(400).json({ message: "That session expired. Start a new one." });
+        }
       }
 
       // Anti-forgery: the session page must have pinged heartbeats throughout.
       // Beats are only counted ≥20s apart, so a script that just waits (or
-      // bursts pings at the end) can't reach the required coverage.
-      const expectedBeats = Math.floor(requiredMs / 30000);
+      // bursts pings at the end) can't reach the required coverage. Reps mode
+      // measures coverage against the minimum plausible set time (reps × the
+      // fastest plausible rep) — the client stops pinging once the target is
+      // reached, so time lingering at the optional photo step must not count
+      // against it, and this floor can't be shrunk by a client that skips pings.
+      const coverageMs = isRepsMode
+        ? completedReps * MIN_MS_PER_REP
+        : session.durationMinutes * 60 * 1000;
+      const expectedBeats = Math.floor(coverageMs / 30000);
       const requiredBeats = Math.max(1, Math.floor(expectedBeats * 0.7));
       if ((session.heartbeatCount || 0) < requiredBeats) {
         await storage.updateVerifiedSession(session.id, { status: "voided", endedAt: new Date() });
@@ -3937,8 +3983,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         competitionId: isInActiveCompetition ? userTeam?.competitionId : null,
         teamId: isInActiveCompetition ? userTeam?.id : null,
         type: session.activityType,
-        description: `Verified ${displayName} session`,
-        quantity: `${session.durationMinutes} minutes`,
+        description: isRepsMode
+          ? `Verified ${displayName} set — every rep counted on camera`
+          : `Verified ${displayName} session`,
+        quantity: isRepsMode ? `${completedReps} reps` : `${session.durationMinutes} minutes`,
         textInput: typeof req.body.note === "string" && req.body.note.trim() ? req.body.note.trim() : null,
         points: VERIFIED_SESSION_POINTS,
         evidenceType: imageUrls.length > 0 ? "photo" : null,
@@ -3950,7 +3998,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const activity = await storage.createActivity(activityData);
-      await storage.updateVerifiedSession(session.id, { activityId: activity.id });
+      await storage.updateVerifiedSession(session.id, {
+        activityId: activity.id,
+        ...(isRepsMode ? { completedReps } : {}),
+      });
 
       if (activity.userId && activity.points) {
         await updateUserPointsWithWebhook(activity.userId, activity.points, "Activity submission");
@@ -3963,7 +4014,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       notifySlack(
-        `🧘 *Verified session completed* — ${user.username} finished ${session.durationMinutes} min of ${displayName} (camera-verified) · ${VERIFIED_SESSION_POINTS} pts${userTeam ? ` · ${userTeam.name}` : ""}`,
+        isRepsMode
+          ? `💪 *Verified set completed* — ${user.username} knocked out ${completedReps} ${displayName} (camera-counted) · ${VERIFIED_SESSION_POINTS} pts${userTeam ? ` · ${userTeam.name}` : ""}`
+          : `🧘 *Verified session completed* — ${user.username} finished ${session.durationMinutes} min of ${displayName} (camera-verified) · ${VERIFIED_SESSION_POINTS} pts${userTeam ? ` · ${userTeam.name}` : ""}`,
         "activity",
       );
 

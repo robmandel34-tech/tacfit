@@ -1,6 +1,6 @@
 ---
 name: Verified focus sessions
-description: Anti-abuse design for camera-verified timed sessions (meditation/reading) and how the mandate flow gates submissions.
+description: Anti-abuse design for camera-verified sessions — timed (face presence + noise) and reps mode (pose-counted push-ups) — and how the mandate flow gates submissions.
 ---
 
 # Verified focus sessions — anti-abuse design
@@ -19,6 +19,13 @@ Audio noise verification (added after the user beat the camera check by sitting 
 - Threshold must be bounded on BOTH ends: absolute floor (quiet rooms) AND a hard cap on the room-baseline multiplier — otherwise starting the session mid-call "trains away" the check during calibration.
 - Use cumulative noisy time with slow decay (quiet drains at half speed), never a "reset on any calm window" timer — otherwise periodic short mutes dodge the void forever.
 - **Why:** first implementation had both holes (architect review); calibration-relative-only thresholds and resettable timers are the classic bypasses for any client-side environment check.
+
+Reps mode (movement-verified sets, first: push-ups — added 2026-07-13):
+- The activity type decides the mode (`activity_types.verified_session_mode = 'reps'`), never the client — otherwise a client could pick the easier check.
+- Reps are counted on-device (MediaPipe PoseLandmarker lite, elbow-angle state machine: down ≤100°, up ≥150°, 900ms debounce). No face requirement (user's explicit call: "forget about the face thing" for push-ups) and NO mic check — workouts are naturally noisy.
+- Server backstops for a client-claimed rep count: target floor, physical plausibility (elapsed ≥ reps × 1200ms), 20-min max window, heartbeats.
+- **Heartbeat coverage in reps mode must NOT use wall-clock elapsed at /complete** — the client stops pinging when the target is reached, so lingering at the optional photo gate would void legit sets (architect caught this). Use a server-derived window instead (minimum plausible set time = reps × min-ms-per-rep); never a client-influenced window like "last heartbeat time" (a cheater shrinks it by not pinging).
+- **Why:** any variable-duration verified flow breaks the fixed-duration coverage math; recompute coverage from server-derived quantities only.
 
 Other decisions:
 - Any break voids: out of frame 10s warn / 25s void, app backgrounded, quit. Freedom to quit + zero credit is the game mechanic.

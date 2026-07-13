@@ -1257,13 +1257,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Verified focus session operations
-  async createVerifiedSession(session: { userId: number; activityType: string; durationMinutes: number; competitionId?: number | null; teamId?: number | null }): Promise<VerifiedSession> {
+  async createVerifiedSession(session: { userId: number; activityType: string; durationMinutes: number; mode?: string; targetReps?: number | null; competitionId?: number | null; teamId?: number | null }): Promise<VerifiedSession> {
     const [row] = await db
       .insert(verifiedSessions)
       .values({
         userId: session.userId,
         activityType: session.activityType,
         durationMinutes: session.durationMinutes,
+        mode: session.mode ?? "time",
+        targetReps: session.targetReps ?? null,
         competitionId: session.competitionId ?? null,
         teamId: session.teamId ?? null,
         status: "active",

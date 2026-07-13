@@ -23,6 +23,34 @@ const OUT_OF_FRAME_WARN_MS = 10_000; // show "come back" warning
 const OUT_OF_FRAME_VOID_MS = 25_000; // void the session
 const DETECT_INTERVAL_MS = 600;
 
+// Movement verification (reps mode, e.g. push-ups): on-device pose detection
+// tracks the body and counts a rep each time the elbows bend past the "down"
+// angle and extend back past the "up" angle. No face requirement — the body
+// just has to stay in view. No audio check either (workouts are noisy).
+const QUICK_REPS = [10, 15, 20, 30, 50];
+const REP_DETECT_INTERVAL_MS = 150; // faster loop so no rep is missed
+const REP_DOWN_ANGLE = 100; // elbow angle (degrees) that counts as "down"
+const REP_UP_ANGLE = 150; // elbow angle that counts as back "up"
+const REP_MIN_INTERVAL_MS = 900; // fastest plausible rep — filters jitter
+const REP_SESSION_MAX_MINUTES = 20; // finish the set within this window
+// Pose landmark indices (MediaPipe): shoulders, elbows, wrists.
+const L_SHOULDER = 11, R_SHOULDER = 12, L_ELBOW = 13, R_ELBOW = 14, L_WRIST = 15, R_WRIST = 16;
+
+function elbowAngle(lm: any[], s: number, e: number, w: number): number | null {
+  const a = lm[s], b = lm[e], c = lm[w];
+  if (!a || !b || !c) return null;
+  const vis = Math.min(a.visibility ?? 1, b.visibility ?? 1, c.visibility ?? 1);
+  if (vis < 0.5) return null;
+  const v1 = { x: a.x - b.x, y: a.y - b.y };
+  const v2 = { x: c.x - b.x, y: c.y - b.y };
+  const dot = v1.x * v2.x + v1.y * v2.y;
+  const m1 = Math.hypot(v1.x, v1.y);
+  const m2 = Math.hypot(v2.x, v2.y);
+  if (m1 === 0 || m2 === 0) return null;
+  const cos = Math.min(1, Math.max(-1, dot / (m1 * m2)));
+  return (Math.acos(cos) * 180) / Math.PI;
+}
+
 // Audio verification: the mic samples room loudness (never recorded). The
 // first seconds establish the room's baseline; the noise threshold sits well
 // above it, so quiet background hum passes. Sustained talking-level sound
@@ -50,6 +78,7 @@ interface ActivityTypeRow {
   displayName: string;
   isActive: boolean;
   supportsVerifiedSessions?: boolean;
+  verifiedSessionMode?: string | null; // "time" (default) or "reps"
 }
 
 type Phase = "setup" | "starting" | "active" | "gate" | "submitting" | "done" | "voided" | "error";
@@ -78,6 +107,8 @@ export default function VerifiedSessionPage() {
   const [phase, setPhase] = useState<Phase>("setup");
   const [activityType, setActivityType] = useState(prefillType);
   const [minutes, setMinutes] = useState<string>("10");
+  const [repsTarget, setRepsTarget] = useState<string>("20");
+  const [repCount, setRepCount] = useState(0);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [outOfFrame, setOutOfFrame] = useState(false);
   const [tooNoisy, setTooNoisy] = useState(false);
@@ -92,7 +123,16 @@ export default function VerifiedSessionPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const detectorRef = useRef<any>(null);
-  const sessionRef = useRef<{ id: number; durationMinutes: number; startedAtMs: number } | null>(null);
+  const sessionRef = useRef<{
+    id: number;
+    durationMinutes: number;
+    startedAtMs: number;
+    mode: "time" | "reps";
+    targetReps?: number;
+  } | null>(null);
+  const repCountRef = useRef(0);
+  const armPhaseRef = useRef<"up" | "down">("up");
+  const lastRepAtRef = useRef(0);
   const phaseRef = useRef<Phase>("setup");
   const lastFaceSeenRef = useRef<number>(0);
   const timersRef = useRef<number[]>([]);
@@ -198,8 +238,15 @@ export default function VerifiedSessionPage() {
   }, []);
 
   async function startSession() {
+    const isReps = selectedType?.verifiedSessionMode === "reps";
     const mins = parseInt(minutes, 10);
-    if (!activityType || !mins || mins < 1 || mins > 120) {
+    const target = parseInt(repsTarget, 10);
+    if (isReps) {
+      if (!activityType || !target || target < 5 || target > 200) {
+        toast({ title: "Pick a rep target between 5 and 200.", variant: "destructive" });
+        return;
+      }
+    } else if (!activityType || !mins || mins < 1 || mins > 120) {
       toast({ title: "Pick an activity and a time between 1 and 120 minutes.", variant: "destructive" });
       return;
     }
@@ -208,19 +255,34 @@ export default function VerifiedSessionPage() {
 
     try {
       // 1. Create the session on the server (it records the official start time).
-      const res = await apiRequest("POST", "/api/verified-sessions", {
-        activityType,
-        durationMinutes: mins,
-      });
+      const res = await apiRequest(
+        "POST",
+        "/api/verified-sessions",
+        isReps ? { activityType, targetReps: target } : { activityType, durationMinutes: mins },
+      );
       const session = await res.json();
-      sessionRef.current = { id: session.id, durationMinutes: mins, startedAtMs: Date.now() };
+      sessionRef.current = {
+        id: session.id,
+        durationMinutes: isReps ? REP_SESSION_MAX_MINUTES : mins,
+        startedAtMs: Date.now(),
+        mode: isReps ? "reps" : "time",
+        targetReps: isReps ? target : undefined,
+      };
+      repCountRef.current = 0;
+      armPhaseRef.current = "up";
+      lastRepAtRef.current = 0;
+      setRepCount(0);
 
-      // 2. Open the front camera + microphone. Audio processing is disabled so
-      // we hear the room as-is (noise suppression would hide the TV we're
-      // trying to detect). Sound is only measured for loudness, never recorded.
+      // 2. Open the front camera (+ microphone for time mode only — workouts
+      // are naturally noisy, so reps mode skips the noise check). Audio
+      // processing is disabled so we hear the room as-is (noise suppression
+      // would hide the TV we're trying to detect). Sound is only measured for
+      // loudness, never recorded.
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
-        audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+        audio: isReps
+          ? false
+          : { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
       });
       streamRef.current = stream;
       if (videoRef.current) {
@@ -229,52 +291,85 @@ export default function VerifiedSessionPage() {
       }
 
       // 2b. Loudness meter on the mic (on-device, nothing recorded).
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      const audioCtx = new AudioCtx();
-      await audioCtx.resume().catch(() => {});
-      const source = audioCtx.createMediaStreamSource(stream);
-      const analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 1024;
-      source.connect(analyser);
-      audioCtxRef.current = audioCtx;
-      analyserRef.current = analyser;
-      audioSamplesRef.current = [];
-      baselineSamplesRef.current = [];
-      noiseThresholdRef.current = AUDIO_ABS_FLOOR;
-      noisyMsRef.current = 0;
-      setTooNoisy(false);
+      let analyser: AnalyserNode | null = null;
+      if (!isReps) {
+        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        const audioCtx = new AudioCtx();
+        await audioCtx.resume().catch(() => {});
+        const source = audioCtx.createMediaStreamSource(stream);
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 1024;
+        source.connect(analyser);
+        audioCtxRef.current = audioCtx;
+        analyserRef.current = analyser;
+        audioSamplesRef.current = [];
+        baselineSamplesRef.current = [];
+        noiseThresholdRef.current = AUDIO_ABS_FLOOR;
+        noisyMsRef.current = 0;
+        setTooNoisy(false);
+      }
 
-      // 3. Load the on-device face detector (GPU first, CPU fallback).
-      const { FaceDetector, FilesetResolver } = await import("@mediapipe/tasks-vision");
+      // 3. Load the on-device detector: pose tracking for reps mode, face
+      // detection for time mode (GPU first, CPU fallback).
+      const { FaceDetector, PoseLandmarker, FilesetResolver } = await import("@mediapipe/tasks-vision");
       const vision = await FilesetResolver.forVisionTasks(
         "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm",
       );
-      const modelAssetPath =
-        "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite";
-      try {
-        detectorRef.current = await FaceDetector.createFromOptions(vision, {
-          baseOptions: { modelAssetPath, delegate: "GPU" },
-          runningMode: "VIDEO",
-          minDetectionConfidence: 0.4,
-        });
-      } catch {
-        detectorRef.current = await FaceDetector.createFromOptions(vision, {
-          baseOptions: { modelAssetPath, delegate: "CPU" },
-          runningMode: "VIDEO",
-          minDetectionConfidence: 0.4,
-        });
+      if (isReps) {
+        const modelAssetPath =
+          "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task";
+        try {
+          detectorRef.current = await PoseLandmarker.createFromOptions(vision, {
+            baseOptions: { modelAssetPath, delegate: "GPU" },
+            runningMode: "VIDEO",
+            numPoses: 1,
+          });
+        } catch {
+          detectorRef.current = await PoseLandmarker.createFromOptions(vision, {
+            baseOptions: { modelAssetPath, delegate: "CPU" },
+            runningMode: "VIDEO",
+            numPoses: 1,
+          });
+        }
+      } else {
+        const modelAssetPath =
+          "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite";
+        try {
+          detectorRef.current = await FaceDetector.createFromOptions(vision, {
+            baseOptions: { modelAssetPath, delegate: "GPU" },
+            runningMode: "VIDEO",
+            minDetectionConfidence: 0.4,
+          });
+        } catch {
+          detectorRef.current = await FaceDetector.createFromOptions(vision, {
+            baseOptions: { modelAssetPath, delegate: "CPU" },
+            runningMode: "VIDEO",
+            minDetectionConfidence: 0.4,
+          });
+        }
       }
 
       lastFaceSeenRef.current = Date.now(); // grace period to get settled
-      setSecondsLeft(mins * 60);
+      setSecondsLeft(isReps ? 0 : mins * 60);
       setPhase("active");
       phaseRef.current = "active";
 
-      // Countdown driven by wall-clock time so it can't drift.
+      // Clock driven by wall-clock time so it can't drift. Time mode counts
+      // down to zero; reps mode counts up and voids at the max window.
       const started = Date.now();
       const countdown = window.setInterval(() => {
         if (phaseRef.current !== "active") return;
-        const left = mins * 60 - Math.floor((Date.now() - started) / 1000);
+        const elapsed = Math.floor((Date.now() - started) / 1000);
+        if (isReps) {
+          setSecondsLeft(elapsed);
+          if (elapsed >= REP_SESSION_MAX_MINUTES * 60) {
+            voidSession(
+              `Time's up — a verified set has to be finished within ${REP_SESSION_MAX_MINUTES} minutes.`,
+            );
+          }
+          return;
+        }
+        const left = mins * 60 - elapsed;
         setSecondsLeft(Math.max(0, left));
         if (left <= 0) {
           finishTimer();
@@ -282,22 +377,57 @@ export default function VerifiedSessionPage() {
       }, 1000);
       timersRef.current.push(countdown);
 
-      // Presence check loop.
+      // Presence check loop. Reps mode also counts reps from the elbow angle:
+      // down past REP_DOWN_ANGLE, then back up past REP_UP_ANGLE = one rep.
       const detect = window.setInterval(() => {
         if (phaseRef.current !== "active") return;
         const video = videoRef.current;
         const detector = detectorRef.current;
         if (!video || !detector || video.readyState < 2) return;
         try {
-          const result = detector.detectForVideo(video, performance.now());
           const now = Date.now();
-          if (result.detections && result.detections.length > 0) {
+          let present = false;
+          if (isReps) {
+            const result = detector.detectForVideo(video, performance.now());
+            const lm = result.landmarks?.[0];
+            if (lm && lm.length > R_WRIST) {
+              const left = elbowAngle(lm, L_SHOULDER, L_ELBOW, L_WRIST);
+              const right = elbowAngle(lm, R_SHOULDER, R_ELBOW, R_WRIST);
+              const angles = [left, right].filter((x): x is number => x !== null);
+              if (angles.length > 0) {
+                present = true;
+                const angle = angles.length === 2 ? (angles[0] + angles[1]) / 2 : angles[0];
+                if (armPhaseRef.current === "up" && angle <= REP_DOWN_ANGLE) {
+                  armPhaseRef.current = "down";
+                } else if (armPhaseRef.current === "down" && angle >= REP_UP_ANGLE) {
+                  armPhaseRef.current = "up";
+                  if (now - lastRepAtRef.current >= REP_MIN_INTERVAL_MS) {
+                    lastRepAtRef.current = now;
+                    repCountRef.current += 1;
+                    setRepCount(repCountRef.current);
+                    if (repCountRef.current >= (sessionRef.current?.targetReps || Infinity)) {
+                      finishTimer();
+                      return;
+                    }
+                  }
+                }
+              }
+            }
+          } else {
+            const result = detector.detectForVideo(video, performance.now());
+            present = !!(result.detections && result.detections.length > 0);
+          }
+          if (present) {
             lastFaceSeenRef.current = now;
             setOutOfFrame(false);
           } else {
             const away = now - lastFaceSeenRef.current;
             if (away >= OUT_OF_FRAME_VOID_MS) {
-              voidSession("You were out of the camera frame too long.");
+              voidSession(
+                isReps
+                  ? "The camera lost sight of you for too long."
+                  : "You were out of the camera frame too long.",
+              );
             } else if (away >= OUT_OF_FRAME_WARN_MS) {
               setOutOfFrame(true);
             }
@@ -305,13 +435,13 @@ export default function VerifiedSessionPage() {
         } catch {
           /* skip this frame */
         }
-      }, DETECT_INTERVAL_MS);
+      }, isReps ? REP_DETECT_INTERVAL_MS : DETECT_INTERVAL_MS);
       timersRef.current.push(detect);
 
-      // Noise check loop: calibrate to the room first, then void only on
-      // SUSTAINED talking-level sound (TV, call, conversation).
+      // Noise check loop (time mode only): calibrate to the room first, then
+      // void only on SUSTAINED talking-level sound (TV, call, conversation).
       const audioStarted = Date.now();
-      const audioData = new Uint8Array(analyser.fftSize);
+      const audioData = analyser ? new Uint8Array(analyser.fftSize) : new Uint8Array(0);
       const audioLoop = window.setInterval(() => {
         if (phaseRef.current !== "active") return;
         const a = analyserRef.current;
@@ -396,9 +526,12 @@ export default function VerifiedSessionPage() {
         apiRequest("POST", `/api/verified-sessions/${session.id}/void`).catch(() => {});
       }
       const denied = error?.name === "NotAllowedError" || error?.name === "PermissionDeniedError";
+      const isRepsMode = selectedType?.verifiedSessionMode === "reps";
       setErrorMessage(
         denied
-          ? "Camera or microphone access was denied. Verified sessions need both — the camera confirms you're present and the mic confirms it stays quiet. Allow access in your settings and try again."
+          ? isRepsMode
+            ? "Camera access was denied. Verified sets need the camera to watch your movement and count reps. Allow access in your settings and try again."
+            : "Camera or microphone access was denied. Verified sessions need both — the camera confirms you're present and the mic confirms it stays quiet. Allow access in your settings and try again."
           : "Could not start the verified session. Check your connection and try again.",
       );
       setPhase("error");
@@ -477,6 +610,9 @@ export default function VerifiedSessionPage() {
       if (withPhoto && snapshotBlob) {
         formData.append("photo", snapshotBlob, "verified-session.jpg");
       }
+      if (session.mode === "reps") {
+        formData.append("reps", String(repCountRef.current));
+      }
       const token = getCachedAuthToken() ?? (await loadAuthToken());
       const res = await fetch(`${API_BASE}/api/verified-sessions/${session.id}/complete`, {
         method: "POST",
@@ -547,12 +683,21 @@ export default function VerifiedSessionPage() {
         {/* SETUP */}
         {(phase === "setup" || phase === "starting" || phase === "error") && (
           <div className="space-y-5">
-            <p className="text-sm text-gray-400">
-              Complete your activity live in front of the camera. Stay in frame, keep the app open,
-              and keep the room reasonably quiet — leaving, or sustained talking and TV noise,
-              voids the session. Nothing is recorded; the camera only checks that you're there and
-              the mic only checks the noise level.
-            </p>
+            {selectedType?.verifiedSessionMode === "reps" ? (
+              <p className="text-sm text-gray-400">
+                Do your set live on camera — the app tracks your body and counts every rep.
+                Prop your phone so your whole upper body is in view (a side angle works best
+                for push-ups). Leaving the frame or the app voids the set. Nothing is recorded;
+                the camera only tracks your movement on the device.
+              </p>
+            ) : (
+              <p className="text-sm text-gray-400">
+                Complete your activity live in front of the camera. Stay in frame, keep the app open,
+                and keep the room reasonably quiet — leaving, or sustained talking and TV noise,
+                voids the session. Nothing is recorded; the camera only checks that you're there and
+                the mic only checks the noise level.
+              </p>
+            )}
 
             {phase === "error" && (
               <div className="bg-red-900/40 border border-red-700 rounded-lg p-3 text-sm text-red-200 flex gap-2">
@@ -586,35 +731,67 @@ export default function VerifiedSessionPage() {
               )}
             </div>
 
-            <div>
-              <label className="text-sm font-semibold text-gray-300 block mb-2">Duration</label>
-              <div className="flex gap-2 mb-2 flex-wrap">
-                {QUICK_MINUTES.map((m) => (
-                  <button
-                    key={m}
-                    onClick={() => setMinutes(String(m))}
-                    className={`rounded-full px-4 py-1.5 text-sm font-medium border transition-colors ${
-                      minutes === String(m)
-                        ? "border-military-green bg-military-green/20 text-white"
-                        : "border-gray-700 bg-gray-800/60 text-gray-300"
-                    }`}
-                  >
-                    {m} min
-                  </button>
-                ))}
+            {selectedType?.verifiedSessionMode === "reps" ? (
+              <div>
+                <label className="text-sm font-semibold text-gray-300 block mb-2">Rep target</label>
+                <div className="flex gap-2 mb-2 flex-wrap">
+                  {QUICK_REPS.map((r) => (
+                    <button
+                      key={r}
+                      onClick={() => setRepsTarget(String(r))}
+                      className={`rounded-full px-4 py-1.5 text-sm font-medium border transition-colors ${
+                        repsTarget === String(r)
+                          ? "border-military-green bg-military-green/20 text-white"
+                          : "border-gray-700 bg-gray-800/60 text-gray-300"
+                      }`}
+                    >
+                      {r} reps
+                    </button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min={5}
+                    max={200}
+                    value={repsTarget}
+                    onChange={(e) => setRepsTarget(e.target.value)}
+                    className="bg-gray-800 border-gray-700 text-white w-28"
+                  />
+                  <span className="text-sm text-gray-400">reps (5-200)</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Input
-                  type="number"
-                  min={1}
-                  max={120}
-                  value={minutes}
-                  onChange={(e) => setMinutes(e.target.value)}
-                  className="bg-gray-800 border-gray-700 text-white w-28"
-                />
-                <span className="text-sm text-gray-400">minutes (1-120)</span>
+            ) : (
+              <div>
+                <label className="text-sm font-semibold text-gray-300 block mb-2">Duration</label>
+                <div className="flex gap-2 mb-2 flex-wrap">
+                  {QUICK_MINUTES.map((m) => (
+                    <button
+                      key={m}
+                      onClick={() => setMinutes(String(m))}
+                      className={`rounded-full px-4 py-1.5 text-sm font-medium border transition-colors ${
+                        minutes === String(m)
+                          ? "border-military-green bg-military-green/20 text-white"
+                          : "border-gray-700 bg-gray-800/60 text-gray-300"
+                      }`}
+                    >
+                      {m} min
+                    </button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min={1}
+                    max={120}
+                    value={minutes}
+                    onChange={(e) => setMinutes(e.target.value)}
+                    className="bg-gray-800 border-gray-700 text-white w-28"
+                  />
+                  <span className="text-sm text-gray-400">minutes (1-120)</span>
+                </div>
               </div>
-            </div>
+            )}
 
             <Button
               onClick={startSession}
@@ -622,7 +799,11 @@ export default function VerifiedSessionPage() {
               className="w-full bg-military-green text-forest-green font-bold py-6 text-base"
             >
               <Camera className="w-5 h-5 mr-2" />
-              {phase === "starting" ? "Starting camera..." : "Start Verified Session"}
+              {phase === "starting"
+                ? "Starting camera..."
+                : selectedType?.verifiedSessionMode === "reps"
+                  ? "Start Verified Set"
+                  : "Start Verified Session"}
             </Button>
           </div>
         )}
@@ -644,7 +825,8 @@ export default function VerifiedSessionPage() {
             {phase === "active" && (
               <div className="absolute inset-x-0 top-0 p-3 flex items-center justify-between bg-gradient-to-b from-black/70 to-transparent">
                 <span className="text-xs font-semibold uppercase tracking-wide text-military-green flex items-center gap-1">
-                  <ShieldCheck className="w-4 h-4" /> Verifying
+                  <ShieldCheck className="w-4 h-4" />
+                  {sessionRef.current?.mode === "reps" ? "Counting" : "Verifying"}
                 </span>
                 <span className="text-2xl font-bold tabular-nums flex items-center gap-1">
                   <Timer className="w-5 h-5 text-military-green" />
@@ -652,9 +834,19 @@ export default function VerifiedSessionPage() {
                 </span>
               </div>
             )}
+            {phase === "active" && sessionRef.current?.mode === "reps" && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <span className="text-7xl font-bold text-white/90 drop-shadow-lg tabular-nums">
+                  {repCount}
+                  <span className="text-3xl text-white/60"> / {sessionRef.current?.targetReps}</span>
+                </span>
+              </div>
+            )}
             {phase === "active" && outOfFrame && (
               <div className="absolute inset-x-0 bottom-0 p-3 bg-red-900/80 text-center text-sm font-semibold">
-                Come back into frame or the session will be voided!
+                {sessionRef.current?.mode === "reps"
+                  ? "Get your body back in view or the set will be voided!"
+                  : "Come back into frame or the session will be voided!"}
               </div>
             )}
             {phase === "active" && !outOfFrame && tooNoisy && (
@@ -674,14 +866,22 @@ export default function VerifiedSessionPage() {
           {phase === "active" && (
             <>
               <p className="text-xs text-center text-gray-500">
-                {selectedType?.displayName || activityType} · stay in frame · keep the app open
+                {sessionRef.current?.mode === "reps"
+                  ? `${selectedType?.displayName || activityType} · full reps count — all the way down, all the way up`
+                  : `${selectedType?.displayName || activityType} · stay in frame · keep the app open`}
               </p>
               <Button
                 variant="outline"
-                onClick={() => voidSession("You ended the session early.")}
+                onClick={() =>
+                  voidSession(
+                    sessionRef.current?.mode === "reps"
+                      ? "You ended the set early."
+                      : "You ended the session early.",
+                  )
+                }
                 className="w-full border-gray-700 text-gray-300"
               >
-                Quit session (no points)
+                {sessionRef.current?.mode === "reps" ? "Quit set (no points)" : "Quit session (no points)"}
               </Button>
             </>
           )}
@@ -768,8 +968,17 @@ export default function VerifiedSessionPage() {
             <CheckCircle className="w-12 h-12 text-military-green mx-auto" />
             <h2 className="text-lg font-bold">Verified and posted!</h2>
             <p className="text-sm text-gray-400">
-              Your {sessionRef.current?.durationMinutes}-minute {selectedType?.displayName || activityType}{" "}
-              session earned <span className="text-military-green font-bold">{awardedPoints} points</span>.
+              {sessionRef.current?.mode === "reps" ? (
+                <>
+                  Your set of {repCount} camera-counted {selectedType?.displayName || activityType}{" "}
+                  earned <span className="text-military-green font-bold">{awardedPoints} points</span>.
+                </>
+              ) : (
+                <>
+                  Your {sessionRef.current?.durationMinutes}-minute {selectedType?.displayName || activityType}{" "}
+                  session earned <span className="text-military-green font-bold">{awardedPoints} points</span>.
+                </>
+              )}
             </p>
             <Button
               onClick={() => navigate("/activity-feed")}

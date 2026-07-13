@@ -213,6 +213,27 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
   const [showVideo, setShowVideo] = useState(false);
   const [isWorkoutDetailsOpen, setIsWorkoutDetailsOpen] = useState(false);
   const [workoutDetailsImageUrl, setWorkoutDetailsImageUrl] = useState('');
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+
+  // Fullscreen that works in iOS WKWebView: element fullscreen (requestFullscreen)
+  // is disabled by default there, but webkitEnterFullscreen() opens the native
+  // AVPlayer fullscreen and always works for <video>.
+  const enterFullscreen = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    const anyVideo = v as any;
+    if (typeof v.requestFullscreen === 'function' && document.fullscreenEnabled) {
+      v.requestFullscreen().catch(() => {
+        anyVideo.webkitEnterFullscreen?.();
+      });
+    } else if (typeof anyVideo.webkitEnterFullscreen === 'function') {
+      try {
+        anyVideo.webkitEnterFullscreen();
+      } catch {
+        // video metadata not loaded yet — ignore
+      }
+    }
+  };
 
   // Resolve relative server paths to absolute URLs for Capacitor compatibility
   const resolvedVideoUrl = videoUrl ? resolveMediaUrl(videoUrl) : undefined;
@@ -281,6 +302,7 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
           /* Main Video Display */
           <video
             key={`video-${resolvedVideoUrl}`}
+            ref={videoRef}
             src={resolvedVideoUrl}
             className="w-full h-full object-cover"
             controls
@@ -328,20 +350,42 @@ export function MediaDisplay({ imageUrls, videoUrl, thumbnailUrl }: MediaDisplay
           </div>
         </div>
 
-        {/* Image Gallery Button (if images exist) */}
-        {sortedImageUrls.length > 0 && (
-          <button
-            onClick={() => setIsImageGalleryOpen(true)}
-            className="absolute top-3 right-3 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors backdrop-blur-sm"
-            title={`View ${sortedImageUrls.length} image${sortedImageUrls.length > 1 ? 's' : ''}`}
+        {/* Overlay buttons: positioned below the native video controls row
+            (mute button sits top-right) so they never overlap. When the
+            thumbnail is showing there are no native controls, so stay at the top. */}
+        {(sortedImageUrls.length > 0 || showVideo || !effectiveThumbnail) && (
+          <div
+            className={`absolute right-3 flex flex-col gap-2 ${
+              showVideo || !effectiveThumbnail ? 'top-14' : 'top-3'
+            }`}
           >
-            <Images className="w-5 h-5" />
-            {sortedImageUrls.length > 1 && (
-              <span className="absolute -top-1 -right-1 bg-military-green text-forest-green text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                {sortedImageUrls.length}
-              </span>
+            {/* Fullscreen button (only when the video element is on screen) */}
+            {(showVideo || !effectiveThumbnail) && (
+              <button
+                onClick={enterFullscreen}
+                className="bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors backdrop-blur-sm"
+                title="Fullscreen"
+              >
+                <Maximize2 className="w-5 h-5" />
+              </button>
             )}
-          </button>
+
+            {/* Image Gallery Button (if images exist) */}
+            {sortedImageUrls.length > 0 && (
+              <button
+                onClick={() => setIsImageGalleryOpen(true)}
+                className="relative bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors backdrop-blur-sm"
+                title={`View ${sortedImageUrls.length} image${sortedImageUrls.length > 1 ? 's' : ''}`}
+              >
+                <Images className="w-5 h-5" />
+                {sortedImageUrls.length > 1 && (
+                  <span className="absolute -top-1 -right-1 bg-military-green text-forest-green text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {sortedImageUrls.length}
+                  </span>
+                )}
+              </button>
+            )}
+          </div>
         )}
 
         {/* Image Gallery Modal */}

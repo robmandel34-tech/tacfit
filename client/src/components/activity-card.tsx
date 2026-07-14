@@ -20,6 +20,7 @@ interface ActivityCardProps {
     description: string;
     quantity?: string;
     textInput?: string; // Add text input field
+    textInputPrivate?: boolean; // reflection visible only to its author (server strips it for others)
     evidenceUrl?: string;
     evidenceType?: string; // Add evidence type field (video, photo, etc.)
     imageUrl?: string;
@@ -583,6 +584,11 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
         {activity.textInput && !isHealthKitActivity() && (
           <div className="px-6 py-4 border-t border-gray-600 bg-tactical-gray-lighter">
             <div className="p-3 bg-tactical-gray-lighter rounded-lg border border-gray-600">
+              {activity.textInputPrivate && (
+                <p className="text-xs text-gray-500 mb-1 uppercase tracking-wide" data-testid="label-private-reflection">
+                  Private reflection — only you can see this
+                </p>
+              )}
               <p className="text-gray-300 text-sm leading-relaxed">
                 {isTextExpanded 
                   ? activity.textInput 

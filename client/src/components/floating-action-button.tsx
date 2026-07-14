@@ -1,15 +1,33 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Target } from "lucide-react";
+import { Target, MapPin, X } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useAppleHealth } from "@/hooks/use-apple-health";
 import ActivitySubmissionModal from "@/components/activity-submission-modal";
+
+interface TravelPromptWorkout {
+  healthKitWorkoutId: string;
+  activityType: string;
+  startTime: string;
+  endTime: string;
+  durationSec: number | null;
+  distanceMeters: number | null;
+}
+
+const TRAVEL_DISMISS_KEY = "travel-prompt-dismissed";
 
 export default function FloatingActionButton() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [promptWorkoutId, setPromptWorkoutId] = useState<string | null>(null);
+  const [dismissedId, setDismissedId] = useState<string | null>(
+    () => localStorage.getItem(TRAVEL_DISMISS_KEY),
+  );
   const { user } = useAuth();
   const [location] = useLocation();
+  const appleHealth = useAppleHealth();
 
   // Always call hooks in the same order - but only enable queries when user exists
   const { data: userTeamMembership } = useQuery({
@@ -25,6 +43,18 @@ export default function FloatingActionButton() {
   const { data: currentCompetition } = useQuery({
     queryKey: [`/api/competitions/${competitionId}`],
     enabled: !!competitionId,
+  });
+
+  // Newest unposted traveling workout (run/walk/ride/hike) from Apple Health,
+  // finished within the last 48 hours — surfaced as a "post it" prompt banner.
+  const { data: travelPrompt = null } = useQuery<TravelPromptWorkout | null>({
+    queryKey: ["/api/apple-health/travel-prompt"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/apple-health/travel-prompt");
+      return res.json();
+    },
+    enabled: !!user && appleHealth.native && appleHealth.connected,
+    staleTime: 5 * 60 * 1000,
   });
 
   // Don't show the button if user is not authenticated - moved after all hooks
@@ -48,8 +78,62 @@ export default function FloatingActionButton() {
   // Users can always submit activities now - they get individual points regardless of competition status
   const canSubmitActivity = true;
 
+  const showTravelBanner =
+    travelPrompt && travelPrompt.healthKitWorkoutId !== dismissedId && !isModalOpen;
+
+  const travelSummary = travelPrompt
+    ? [
+        travelPrompt.activityType,
+        travelPrompt.durationSec ? `${Math.max(1, Math.round(travelPrompt.durationSec / 60))} min` : null,
+        travelPrompt.distanceMeters && travelPrompt.distanceMeters > 0
+          ? `${(travelPrompt.distanceMeters / 1000).toFixed(1)} km`
+          : null,
+      ].filter(Boolean).join(" · ")
+    : "";
+
+  const dismissTravelPrompt = () => {
+    if (!travelPrompt) return;
+    localStorage.setItem(TRAVEL_DISMISS_KEY, travelPrompt.healthKitWorkoutId);
+    setDismissedId(travelPrompt.healthKitWorkoutId);
+  };
+
+  const postTravelWorkout = () => {
+    if (!travelPrompt) return;
+    setPromptWorkoutId(travelPrompt.healthKitWorkoutId);
+    setIsModalOpen(true);
+  };
+
   return (
     <>
+      {showTravelBanner && (
+        <div
+          className="fixed bottom-44 left-4 right-4 z-50 rounded-lg border border-military-green/60 bg-tactical-gray/95 backdrop-blur-sm shadow-2xl p-3 flex items-center gap-3"
+          data-testid="banner-travel-prompt"
+        >
+          <MapPin className="h-5 w-5 text-military-green shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-white text-sm font-medium">Mission logged — post it?</p>
+            <p className="text-gray-400 text-xs truncate">{travelSummary}</p>
+          </div>
+          <Button
+            size="sm"
+            className="bg-military-green hover:bg-military-green/80 text-white"
+            onClick={postTravelWorkout}
+            data-testid="button-travel-post"
+          >
+            Post it
+          </Button>
+          <button
+            onClick={dismissTravelPrompt}
+            className="text-gray-400 hover:text-white p-1"
+            aria-label="Dismiss"
+            data-testid="button-travel-dismiss"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
       <Button
         onClick={() => canSubmitActivity && setIsModalOpen(true)}
         disabled={!canSubmitActivity}
@@ -79,7 +163,13 @@ export default function FloatingActionButton() {
 
       <ActivitySubmissionModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          setPromptWorkoutId(null);
+          // If the workout was posted, the prompt disappears on refetch.
+          queryClient.invalidateQueries({ queryKey: ["/api/apple-health/travel-prompt"] });
+        }}
+        initialWorkoutHkId={promptWorkoutId}
       />
     </>
   );

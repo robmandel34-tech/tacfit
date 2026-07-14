@@ -201,6 +201,7 @@ export const activities = pgTable("activities", {
   thumbnailUrl: text("thumbnail_url"), // Video thumbnail image URL
   imageUrls: text("image_urls").array().default([]), // Multiple image URLs
   textInput: text("text_input"), // Required text input for certain activity types
+  textInputPrivate: boolean("text_input_private").default(false), // reflection visible only to the author
   points: integer("points").default(10),
   isFlagged: boolean("is_flagged").default(false),
   fromAppleHealth: boolean("from_apple_health").default(false), // submitted via an Apple Health import

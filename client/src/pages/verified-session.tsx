@@ -36,12 +36,16 @@ const L_SHOULDER = 11, R_SHOULDER = 12, L_ELBOW = 13, R_ELBOW = 14, L_WRIST = 15
 const L_HIP = 23, R_HIP = 24, L_KNEE = 25, R_KNEE = 26, L_ANKLE = 27, R_ANKLE = 28;
 
 // Which joint each exercise bends, and the angles that count as "down" and
-// back "up". Push-ups watch the elbows; squats watch the knees.
+// back "up". Push-ups watch the elbows; squats watch the knees; jumping jacks
+// watch the arms swinging overhead; jump rope counts vertical bounces.
 interface RepTracking {
   joints: [number, number, number][]; // [top, middle (the bending joint), bottom]
   downAngle: number;
   upAngle: number;
   placementHint: string;
+  minIntervalMs?: number; // fastest plausible rep (defaults to REP_MIN_INTERVAL_MS)
+  perLimb?: boolean; // alternating exercises: each limb runs its own rep counter
+  bounce?: boolean; // jump-style: count vertical hip bounces instead of joint angles
 }
 const REP_TRACKING: Record<string, RepTracking> = {
   push_ups: {
@@ -62,8 +66,88 @@ const REP_TRACKING: Record<string, RepTracking> = {
     upAngle: 160,
     placementHint: "stand back so your whole body is in view — a side angle works best for squats",
   },
+  pull_ups: {
+    joints: [
+      [L_SHOULDER, L_ELBOW, L_WRIST],
+      [R_SHOULDER, R_ELBOW, R_WRIST],
+    ],
+    downAngle: 90,
+    upAngle: 150,
+    placementHint: "face the camera with your whole upper body and the bar in view",
+  },
+  lunges: {
+    joints: [
+      [L_HIP, L_KNEE, L_ANKLE],
+      [R_HIP, R_KNEE, R_ANKLE],
+    ],
+    downAngle: 110,
+    upAngle: 160,
+    placementHint: "stand back so your whole body is in view — a side angle works best for lunges",
+    perLimb: true,
+  },
+  burpees: {
+    joints: [
+      [L_HIP, L_KNEE, L_ANKLE],
+      [R_HIP, R_KNEE, R_ANKLE],
+    ],
+    downAngle: 100,
+    upAngle: 160,
+    placementHint: "stand back so your whole body stays in view for the whole movement",
+    minIntervalMs: 1500,
+  },
+  rowing: {
+    joints: [
+      [L_SHOULDER, L_ELBOW, L_WRIST],
+      [R_SHOULDER, R_ELBOW, R_WRIST],
+    ],
+    downAngle: 90,
+    upAngle: 150,
+    placementHint: "a side angle of you on the rower works best — each stroke counts as a rep",
+    minIntervalMs: 1000,
+  },
+  jumping_jacks: {
+    // Arm swing: hip→shoulder→wrist angle is small at your sides, large overhead.
+    joints: [
+      [L_HIP, L_SHOULDER, L_WRIST],
+      [R_HIP, R_SHOULDER, R_WRIST],
+    ],
+    downAngle: 45,
+    upAngle: 130,
+    placementHint: "face the camera with your whole body — including your hands overhead — in view",
+    minIntervalMs: 600,
+  },
+  mountain_climbers: {
+    joints: [
+      [L_HIP, L_KNEE, L_ANKLE],
+      [R_HIP, R_KNEE, R_ANKLE],
+    ],
+    downAngle: 100,
+    upAngle: 150,
+    placementHint: "a side angle in plank position works best — each knee drive counts as a rep",
+    perLimb: true,
+    minIntervalMs: 400,
+  },
+  jump_rope: {
+    joints: [],
+    downAngle: 0,
+    upAngle: 0,
+    placementHint: "face the camera with your whole body in view — each jump counts as a rep",
+    bounce: true,
+    minIntervalMs: 300,
+  },
 };
 const DEFAULT_REP_TRACKING = REP_TRACKING.push_ups;
+
+// Jump detection (jump rope): the hips must rise by this fraction of the
+// visible torso length (shoulder→hip) to count as leaving the ground, then
+// settle back near the baseline to complete the jump.
+const BOUNCE_UP_FRACTION = 0.22;
+const BOUNCE_DOWN_FRACTION = 0.1;
+
+// Time-mode activities where the face is often hidden (yoga poses), so
+// presence is verified by full-body pose tracking instead of face detection.
+// No mic check either — home yoga often has music or a guided video playing.
+const POSE_PRESENCE_ACTIVITIES = new Set(["yoga"]);
 
 function jointAngle(lm: any[], s: number, e: number, w: number): number | null {
   const a = lm[s], b = lm[e], c = lm[w];
@@ -146,6 +230,8 @@ export default function VerifiedSessionPage() {
   const [snapshotBlob, setSnapshotBlob] = useState<Blob | null>(null);
   const [snapshotUrl, setSnapshotUrl] = useState<string | null>(null);
   const [snapCountdown, setSnapCountdown] = useState<number | null>(null);
+  const [note, setNote] = useState("");
+  const [notePrivate, setNotePrivate] = useState(false);
   const snapTimerRef = useRef<number | null>(null);
   const [awardedPoints, setAwardedPoints] = useState(0);
 
@@ -161,6 +247,9 @@ export default function VerifiedSessionPage() {
   } | null>(null);
   const repCountRef = useRef(0);
   const armPhaseRef = useRef<"up" | "down">("up");
+  const limbPhasesRef = useRef<("up" | "down")[]>(["up", "up"]);
+  const bouncePhaseRef = useRef<"ground" | "air">("ground");
+  const bounceBaselineRef = useRef<number | null>(null);
   const lastRepAtRef = useRef(0);
   const phaseRef = useRef<Phase>("setup");
   const lastFaceSeenRef = useRef<number>(0);
@@ -268,6 +357,9 @@ export default function VerifiedSessionPage() {
 
   async function startSession() {
     const isReps = selectedType?.verifiedSessionMode === "reps";
+    // Time-mode activities like yoga where presence is verified by full-body
+    // pose tracking (poses hide the face) and no mic check runs.
+    const posePresence = !isReps && POSE_PRESENCE_ACTIVITIES.has(activityType);
     const mins = parseInt(minutes, 10);
     const target = parseInt(repsTarget, 10);
     if (isReps) {
@@ -299,8 +391,13 @@ export default function VerifiedSessionPage() {
       };
       repCountRef.current = 0;
       armPhaseRef.current = "up";
+      limbPhasesRef.current = ["up", "up"];
+      bouncePhaseRef.current = "ground";
+      bounceBaselineRef.current = null;
       lastRepAtRef.current = 0;
       setRepCount(0);
+      setNote("");
+      setNotePrivate(false);
 
       // 2. Open the front camera (+ microphone for time mode only — workouts
       // are naturally noisy, so reps mode skips the noise check). Audio
@@ -309,7 +406,7 @@ export default function VerifiedSessionPage() {
       // loudness, never recorded.
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
-        audio: isReps
+        audio: isReps || posePresence
           ? false
           : { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
       });
@@ -321,7 +418,7 @@ export default function VerifiedSessionPage() {
 
       // 2b. Loudness meter on the mic (on-device, nothing recorded).
       let analyser: AnalyserNode | null = null;
-      if (!isReps) {
+      if (!isReps && !posePresence) {
         const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
         const audioCtx = new AudioCtx();
         await audioCtx.resume().catch(() => {});
@@ -344,7 +441,7 @@ export default function VerifiedSessionPage() {
       const vision = await FilesetResolver.forVisionTasks(
         "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm",
       );
-      if (isReps) {
+      if (isReps || posePresence) {
         const modelAssetPath =
           "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task";
         try {
@@ -418,31 +515,88 @@ export default function VerifiedSessionPage() {
           let present = false;
           if (isReps) {
             const tracking = REP_TRACKING[activityType] || DEFAULT_REP_TRACKING;
+            const minInterval = tracking.minIntervalMs ?? REP_MIN_INTERVAL_MS;
             const result = detector.detectForVideo(video, performance.now());
             const lm = result.landmarks?.[0];
+            // Shared rep counter: bumps the count, and ends the session at target.
+            const countRep = (): boolean => {
+              if (now - lastRepAtRef.current < minInterval) return false;
+              lastRepAtRef.current = now;
+              repCountRef.current += 1;
+              setRepCount(repCountRef.current);
+              if (repCountRef.current >= (sessionRef.current?.targetReps || Infinity)) {
+                finishTimer();
+                return true;
+              }
+              return false;
+            };
             if (lm && lm.length > 0) {
-              const angles = tracking.joints
-                .map(([a, b, c]) => jointAngle(lm, a, b, c))
-                .filter((x): x is number => x !== null);
-              if (angles.length > 0) {
-                present = true;
-                const angle = angles.length === 2 ? (angles[0] + angles[1]) / 2 : angles[0];
-                if (armPhaseRef.current === "up" && angle <= tracking.downAngle) {
-                  armPhaseRef.current = "down";
-                } else if (armPhaseRef.current === "down" && angle >= tracking.upAngle) {
-                  armPhaseRef.current = "up";
-                  if (now - lastRepAtRef.current >= REP_MIN_INTERVAL_MS) {
-                    lastRepAtRef.current = now;
-                    repCountRef.current += 1;
-                    setRepCount(repCountRef.current);
-                    if (repCountRef.current >= (sessionRef.current?.targetReps || Infinity)) {
-                      finishTimer();
-                      return;
+              if (tracking.bounce) {
+                // Jump counting (jump rope): track the hips' vertical position.
+                // Leaving the ground = hips rise noticeably above the standing
+                // baseline (relative to torso length so distance doesn't matter),
+                // landing back near the baseline completes one jump.
+                const lh = lm[L_HIP], rh = lm[R_HIP];
+                const ls = lm[L_SHOULDER], rs = lm[R_SHOULDER];
+                const vis = (p: any) => p && (p.visibility === undefined || p.visibility > 0.5);
+                if (vis(lh) && vis(rh) && vis(ls) && vis(rs)) {
+                  present = true;
+                  const hipY = (lh.y + rh.y) / 2;
+                  const torso = Math.abs(hipY - (ls.y + rs.y) / 2);
+                  if (torso > 0.05) {
+                    const base = bounceBaselineRef.current;
+                    if (base === null) {
+                      bounceBaselineRef.current = hipY;
+                    } else if (bouncePhaseRef.current === "ground") {
+                      // Standing baseline drifts slowly with the person.
+                      bounceBaselineRef.current = base * 0.9 + hipY * 0.1;
+                      if (hipY <= base - torso * BOUNCE_UP_FRACTION) {
+                        bouncePhaseRef.current = "air";
+                      }
+                    } else if (hipY >= base - torso * BOUNCE_DOWN_FRACTION) {
+                      bouncePhaseRef.current = "ground";
+                      if (countRep()) return;
                     }
+                  }
+                }
+              } else if (tracking.perLimb) {
+                // Alternating exercises (lunges, mountain climbers): each side
+                // runs its own down-then-up cycle so left/right both count.
+                for (let i = 0; i < tracking.joints.length; i++) {
+                  const [a, b, c] = tracking.joints[i];
+                  const angle = jointAngle(lm, a, b, c);
+                  if (angle === null) continue;
+                  present = true;
+                  const phase = limbPhasesRef.current[i] || "up";
+                  if (phase === "up" && angle <= tracking.downAngle) {
+                    limbPhasesRef.current[i] = "down";
+                  } else if (phase === "down" && angle >= tracking.upAngle) {
+                    limbPhasesRef.current[i] = "up";
+                    if (countRep()) return;
+                  }
+                }
+              } else {
+                const angles = tracking.joints
+                  .map(([a, b, c]) => jointAngle(lm, a, b, c))
+                  .filter((x): x is number => x !== null);
+                if (angles.length > 0) {
+                  present = true;
+                  const angle = angles.length === 2 ? (angles[0] + angles[1]) / 2 : angles[0];
+                  if (armPhaseRef.current === "up" && angle <= tracking.downAngle) {
+                    armPhaseRef.current = "down";
+                  } else if (armPhaseRef.current === "down" && angle >= tracking.upAngle) {
+                    armPhaseRef.current = "up";
+                    if (countRep()) return;
                   }
                 }
               }
             }
+          } else if (posePresence) {
+            // Yoga: any tracked body pose in frame counts as present — the face
+            // is often hidden (downward dog, child's pose), so face detection
+            // would void a perfectly good session.
+            const result = detector.detectForVideo(video, performance.now());
+            present = !!(result.landmarks && result.landmarks[0]?.length > 0);
           } else {
             const result = detector.detectForVideo(video, performance.now());
             present = !!(result.detections && result.detections.length > 0);
@@ -557,10 +711,11 @@ export default function VerifiedSessionPage() {
       }
       const denied = error?.name === "NotAllowedError" || error?.name === "PermissionDeniedError";
       const isRepsMode = selectedType?.verifiedSessionMode === "reps";
+      const cameraOnly = isRepsMode || POSE_PRESENCE_ACTIVITIES.has(activityType);
       setErrorMessage(
         denied
-          ? isRepsMode
-            ? "Camera access was denied. Verified sets need the camera to watch your movement and count reps. Allow access in your settings and try again."
+          ? cameraOnly
+            ? "Camera access was denied. Verified sessions need the camera to watch your movement. Allow access in your settings and try again."
             : "Camera or microphone access was denied. Verified sessions need both — the camera confirms you're present and the mic confirms it stays quiet. Allow access in your settings and try again."
           : "Could not start the verified session. Check your connection and try again.",
       );
@@ -643,6 +798,10 @@ export default function VerifiedSessionPage() {
       if (session.mode === "reps") {
         formData.append("reps", String(repCountRef.current));
       }
+      if (note.trim()) {
+        formData.append("note", note.trim());
+        formData.append("notePrivate", notePrivate ? "true" : "false");
+      }
       const token = getCachedAuthToken() ?? (await loadAuthToken());
       const res = await fetch(`${API_BASE}/api/verified-sessions/${session.id}/complete`, {
         method: "POST",
@@ -720,6 +879,13 @@ export default function VerifiedSessionPage() {
                 {(REP_TRACKING[activityType] || DEFAULT_REP_TRACKING).placementHint}). Leaving
                 the frame or the app voids the set. Nothing is recorded; the camera only tracks
                 your movement on the device.
+              </p>
+            ) : POSE_PRESENCE_ACTIVITIES.has(activityType) ? (
+              <p className="text-sm text-gray-400">
+                Complete your practice live in front of the camera. Stand back so your whole body is
+                in view — the app tracks that you stay present through your poses. Leaving the frame
+                or the app voids the session. Music or a guided video is fine. Nothing is recorded;
+                the camera only tracks your movement on the device.
               </p>
             ) : (
               <p className="text-sm text-gray-400">
@@ -926,6 +1092,58 @@ export default function VerifiedSessionPage() {
                   Session complete. Snap a quick photo for the feed?
                 </p>
               </div>
+              {sessionRef.current?.mode !== "reps" && (
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-300 block">
+                    Reflection <span className="font-normal text-gray-500">(optional)</span>
+                  </label>
+                  <textarea
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    disabled={phase === "submitting"}
+                    maxLength={2000}
+                    rows={3}
+                    placeholder="How did it go? What came up for you?"
+                    className="w-full rounded-lg bg-gray-800 border border-gray-700 text-white text-sm p-3 placeholder:text-gray-500 focus:outline-none focus:border-military-green resize-none"
+                    data-testid="input-reflection"
+                  />
+                  {note.trim() && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setNotePrivate(false)}
+                        disabled={phase === "submitting"}
+                        className={`flex-1 rounded-lg border px-3 py-2 text-xs font-semibold transition-colors ${
+                          !notePrivate
+                            ? "border-military-green bg-military-green/20 text-white"
+                            : "border-gray-700 bg-gray-800/60 text-gray-400"
+                        }`}
+                        data-testid="button-reflection-public"
+                      >
+                        Share on feed
+                      </button>
+                      <button
+                        onClick={() => setNotePrivate(true)}
+                        disabled={phase === "submitting"}
+                        className={`flex-1 rounded-lg border px-3 py-2 text-xs font-semibold transition-colors ${
+                          notePrivate
+                            ? "border-military-green bg-military-green/20 text-white"
+                            : "border-gray-700 bg-gray-800/60 text-gray-400"
+                        }`}
+                        data-testid="button-reflection-private"
+                      >
+                        Keep private
+                      </button>
+                    </div>
+                  )}
+                  {note.trim() && (
+                    <p className="text-xs text-gray-500">
+                      {notePrivate
+                        ? "Only you will see this reflection."
+                        : "Your reflection will show with your post on the feed."}
+                    </p>
+                  )}
+                </div>
+              )}
               {snapshotUrl ? (
                 <div className="flex gap-2">
                   <Button

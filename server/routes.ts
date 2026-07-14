@@ -2774,6 +2774,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return false;
   };
 
+  // Private reflections stay with their author: anyone else gets the text
+  // stripped server-side (the UI hiding it isn't enough — the API must too).
+  const redactPrivateReflection = <T extends { userId: number | null; textInput: string | null; textInputPrivate: boolean | null }>(
+    activity: T,
+    viewerId: number | null,
+  ): T => {
+    if (activity.textInputPrivate && activity.userId !== viewerId) {
+      return { ...activity, textInput: null };
+    }
+    return activity;
+  };
+
   app.get("/api/activities", async (req, res) => {
     try {
       const competitionId = req.query.competitionId as string;
@@ -2796,10 +2808,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         activities = await storage.getActivities();
       }
       
+      const feedViewerId = (req.session?.userId || req.session?.user?.id || null) as number | null;
       // Get user details for each activity
       const activitiesWithUsers = await Promise.all(
-        activities.map(async (activity) => {
-
+        activities.map(async (rawActivity) => {
+          const activity = redactPrivateReflection(rawActivity, feedViewerId);
           const user = activity.userId ? await storage.getUser(activity.userId) : null;
           const likes = await storage.getActivityLikes(activity.id);
           const comments = await storage.getActivityComments(activity.id);
@@ -2844,10 +2857,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const competitionId = parseInt(req.params.competitionId);
       const activities = await storage.getActivitiesByCompetition(competitionId);
+      const feedViewerId = (req.session?.userId || req.session?.user?.id || null) as number | null;
       
       // Get user details and team information for each activity
       const activitiesWithUsers = await Promise.all(
-        activities.map(async (activity) => {
+        activities.map(async (rawActivity) => {
+          const activity = redactPrivateReflection(rawActivity, feedViewerId);
           const user = activity.userId ? await storage.getUser(activity.userId) : null;
           const likes = await storage.getActivityLikes(activity.id);
           const comments = await storage.getActivityComments(activity.id);
@@ -2890,10 +2905,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const teamId = parseInt(req.params.teamId);
       const activities = await storage.getActivitiesByTeam(teamId);
+      const feedViewerId = (req.session?.userId || req.session?.user?.id || null) as number | null;
       
       // Get user details for each activity
       const activitiesWithUsers = await Promise.all(
-        activities.map(async (activity) => {
+        activities.map(async (rawActivity) => {
+          const activity = redactPrivateReflection(rawActivity, feedViewerId);
           const user = activity.userId ? await storage.getUser(activity.userId) : null;
           const likes = await storage.getActivityLikes(activity.id);
           const comments = await storage.getActivityComments(activity.id);
@@ -3117,6 +3134,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (e) {
       console.error("apple-health workouts error:", e);
       res.status(500).json({ message: "Failed to get workouts" });
+    }
+  });
+
+  // Returns the newest recently-finished "traveling" workout (run, walk, ride,
+  // hike...) that hasn't been posted yet, so the app can prompt the user to
+  // post it right after it syncs from Apple Health. Null when there's nothing.
+  const TRAVEL_TYPE_RE = /run|walk|jog|cycl|bik|ride|hik|ruck|wheelchair/i;
+  app.get("/api/apple-health/travel-prompt", async (req, res) => {
+    try {
+      const userId = requireUserId(req, res);
+      if (!userId) return;
+      const workouts = await storage.getWorkoutsWithEligibility(userId, null);
+      const cutoff = Date.now() - 48 * 60 * 60 * 1000;
+      // Pick the one that FINISHED most recently (the list is sorted by start
+      // time, which can differ for long/overlapping workouts).
+      const candidate = workouts
+        .filter(
+          (w) =>
+            TRAVEL_TYPE_RE.test(w.activityType || "") &&
+            w.endTime &&
+            new Date(w.endTime).getTime() >= cutoff &&
+            (w.distanceMeters || 0) >= 400,
+        )
+        .sort((a, b) => new Date(b.endTime!).getTime() - new Date(a.endTime!).getTime())[0];
+      res.json(candidate ?? null);
+    } catch (e) {
+      console.error("apple-health travel-prompt error:", e);
+      res.status(500).json({ message: "Failed to check for recent workouts" });
     }
   });
 
@@ -3987,7 +4032,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ? `Verified ${displayName} set — every rep counted on camera`
           : `Verified ${displayName} session`,
         quantity: isRepsMode ? `${completedReps} reps` : `${session.durationMinutes} minutes`,
-        textInput: typeof req.body.note === "string" && req.body.note.trim() ? req.body.note.trim() : null,
+        textInput: typeof req.body.note === "string" && req.body.note.trim() ? req.body.note.trim().slice(0, 2000) : null,
+        textInputPrivate: req.body.notePrivate === "true" || req.body.notePrivate === true,
         points: VERIFIED_SESSION_POINTS,
         evidenceType: imageUrls.length > 0 ? "photo" : null,
         evidenceUrl: "",

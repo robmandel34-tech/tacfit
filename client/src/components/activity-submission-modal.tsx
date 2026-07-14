@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -26,6 +26,9 @@ const isNativeApp = Capacitor.isNativePlatform();
 interface ActivitySubmissionModalProps {
   isOpen: boolean;
   onClose: () => void;
+  // When set, the Apple Health workout with this id is pre-selected as soon as
+  // the synced workout list loads (used by the "post your run" prompt).
+  initialWorkoutHkId?: string | null;
 }
 
 interface ActivityType {
@@ -92,7 +95,7 @@ interface PassiveActivity {
 const metersToMiles = (m: number | null | undefined): number =>
   m && m > 0 ? m / 1609.344 : 0;
 
-export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySubmissionModalProps) {
+export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkoutHkId }: ActivitySubmissionModalProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -249,6 +252,23 @@ export default function ActivitySubmissionModal({ isOpen, onClose }: ActivitySub
     if (w.energyKcal) parts.push(`${w.energyKcal} cal`);
     setDescription(`Apple Health: ${parts.join(" · ")}`);
   };
+
+  // Pre-select the workout the "post your run" prompt was tapped for, once the
+  // synced list arrives. Applied at most once per modal open so the user can
+  // still change or clear the selection afterwards.
+  const appliedInitialWorkoutRef = useRef(false);
+  useEffect(() => {
+    if (!isOpen) {
+      appliedInitialWorkoutRef.current = false;
+      return;
+    }
+    if (appliedInitialWorkoutRef.current || !initialWorkoutHkId || loadedWorkouts.length === 0) return;
+    const w = loadedWorkouts.find((x) => x.healthKitWorkoutId === initialWorkoutHkId);
+    if (w && (w as any).eligible !== false) {
+      applyWorkout(w);
+      appliedInitialWorkoutRef.current = true;
+    }
+  }, [isOpen, initialWorkoutHkId, loadedWorkouts]);
 
   // Figures for the passive day. We prefer the detected workout "burst" (the
   // continuous period the user actually exercised) over the whole-day totals,

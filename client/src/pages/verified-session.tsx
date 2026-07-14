@@ -372,7 +372,23 @@ export default function VerifiedSessionPage() {
       return;
     }
     setPhase("starting");
+    phaseRef.current = "starting";
     setErrorMessage("");
+
+    // Watchdog: if anything in the start sequence silently hangs (server not
+    // answering, model download stalling), fail loudly instead of sitting on
+    // "Starting camera..." forever.
+    const watchdog = window.setTimeout(() => {
+      if (phaseRef.current !== "starting") return;
+      clearTimers();
+      stopCamera();
+      const s = sessionRef.current;
+      if (s) apiRequest("POST", `/api/verified-sessions/${s.id}/void`).catch(() => {});
+      sessionRef.current = null;
+      setErrorMessage("Starting took too long. Check your connection and try again.");
+      setPhase("error");
+      phaseRef.current = "error";
+    }, 30_000);
 
     try {
       // 1. Create the session on the server (it records the official start time).
@@ -475,6 +491,7 @@ export default function VerifiedSessionPage() {
         }
       }
 
+      window.clearTimeout(watchdog);
       lastFaceSeenRef.current = Date.now(); // grace period to get settled
       setSecondsLeft(isReps ? 0 : mins * 60);
       setPhase("active");
@@ -703,6 +720,7 @@ export default function VerifiedSessionPage() {
         apiRequest("POST", `/api/verified-sessions/${sessionId}/heartbeat`).catch(() => {});
       }
     } catch (error: any) {
+      window.clearTimeout(watchdog);
       clearTimers();
       stopCamera();
       const session = sessionRef.current;

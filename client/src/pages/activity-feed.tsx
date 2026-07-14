@@ -23,8 +23,15 @@ export default function ActivityFeed() {
     queryClient.invalidateQueries({ queryKey: ['/api/activity-types'] });
   }, [location]);
 
+  // NOTE: forceRefresh must NOT go into the queryKey directly — the default
+  // fetcher joins key segments into the URL, so ['/api/activities', 1] would
+  // request /api/activities/1 (404) and the feed rendered blank.
   const { data: activities, isLoading } = useQuery({
-    queryKey: ['/api/activities', forceRefresh],
+    queryKey: ['/api/activities'],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/activities");
+      return res.json();
+    },
     enabled: !!user,
   });
 
@@ -77,7 +84,6 @@ export default function ActivityFeed() {
       });
       setForceRefresh(prev => prev + 1);
       queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/activities', forceRefresh] });
       queryClient.invalidateQueries({ queryKey: ['/api/users'] });
       queryClient.invalidateQueries({ queryKey: ['/api/teams'] });
     },

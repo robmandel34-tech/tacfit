@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Camera, ShieldCheck, Timer, X, AlertTriangle, CheckCircle } from "lucide-react";
+import { Camera, ShieldCheck, Timer, X, AlertTriangle, CheckCircle, Eye } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { API_BASE, apiRequest } from "@/lib/queryClient";
@@ -194,7 +194,7 @@ interface ActivityTypeRow {
   verifiedSessionMode?: string | null; // "time" (default) or "reps"
 }
 
-type Phase = "setup" | "starting" | "active" | "gate" | "submitting" | "done" | "voided" | "error";
+type Phase = "setup" | "starting" | "practice" | "active" | "gate" | "submitting" | "done" | "voided" | "error";
 
 function formatClock(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60);
@@ -234,6 +234,8 @@ export default function VerifiedSessionPage() {
   const [notePrivate, setNotePrivate] = useState(false);
   const snapTimerRef = useRef<number | null>(null);
   const [awardedPoints, setAwardedPoints] = useState(0);
+  const [practiceLoading, setPracticeLoading] = useState(false);
+  const [practicePresent, setPracticePresent] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -331,6 +333,10 @@ export default function VerifiedSessionPage() {
   useEffect(() => {
     const onVisibility = () => {
       if (document.hidden) {
+        if (phaseRef.current === "practice") {
+          stopPractice();
+          return;
+        }
         voidSession("You switched away from the app.");
       }
     };
@@ -339,6 +345,10 @@ export default function VerifiedSessionPage() {
     if (Capacitor.isNativePlatform()) {
       CapApp.addListener("appStateChange", ({ isActive }) => {
         if (!isActive) {
+          if (phaseRef.current === "practice") {
+            stopPractice();
+            return;
+          }
           voidSession("You left the app during the session.");
         }
       }).then((handle) => {
@@ -356,6 +366,7 @@ export default function VerifiedSessionPage() {
   }, []);
 
   async function startSession() {
+    if (practiceLoading) return;
     const isReps = selectedType?.verifiedSessionMode === "reps";
     // Time-mode activities like yoga where presence is verified by full-body
     // pose tracking (poses hide the face) and no mic check runs.
@@ -742,6 +753,201 @@ export default function VerifiedSessionPage() {
     }
   }
 
+  // Practice mode: live camera + real tracking, but no server session, no
+  // points, and nothing voids — just a way to find the right phone placement
+  // and see the rep counter respond before doing it for real.
+  async function startPractice() {
+    if (practiceLoading || phaseRef.current !== "setup") return;
+    const isReps = selectedType?.verifiedSessionMode === "reps";
+    const posePresence = !isReps && POSE_PRESENCE_ACTIVITIES.has(activityType);
+    setPracticeLoading(true);
+    setPracticePresent(false);
+    repCountRef.current = 0;
+    armPhaseRef.current = "up";
+    limbPhasesRef.current = ["up", "up"];
+    bouncePhaseRef.current = "ground";
+    bounceBaselineRef.current = null;
+    lastRepAtRef.current = 0;
+    setRepCount(0);
+
+    // Watchdog: if the camera or model load silently hangs, unlock the setup
+    // buttons and show an error instead of leaving the page stuck.
+    const watchdog = window.setTimeout(() => {
+      if (phaseRef.current !== "setup") return;
+      clearTimers();
+      stopCamera();
+      setPracticeLoading(false);
+      toast({
+        title: "The camera preview took too long to start. Check your connection and try again.",
+        variant: "destructive",
+      });
+    }, 30_000);
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
+        audio: false,
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+      }
+
+      const { FaceDetector, PoseLandmarker, FilesetResolver } = await import("@mediapipe/tasks-vision");
+      const vision = await FilesetResolver.forVisionTasks(
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm",
+      );
+      if (isReps || posePresence) {
+        const modelAssetPath =
+          "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task";
+        try {
+          detectorRef.current = await PoseLandmarker.createFromOptions(vision, {
+            baseOptions: { modelAssetPath, delegate: "GPU" },
+            runningMode: "VIDEO",
+            numPoses: 1,
+          });
+        } catch {
+          detectorRef.current = await PoseLandmarker.createFromOptions(vision, {
+            baseOptions: { modelAssetPath, delegate: "CPU" },
+            runningMode: "VIDEO",
+            numPoses: 1,
+          });
+        }
+      } else {
+        const modelAssetPath =
+          "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite";
+        try {
+          detectorRef.current = await FaceDetector.createFromOptions(vision, {
+            baseOptions: { modelAssetPath, delegate: "GPU" },
+            runningMode: "VIDEO",
+            minDetectionConfidence: 0.4,
+          });
+        } catch {
+          detectorRef.current = await FaceDetector.createFromOptions(vision, {
+            baseOptions: { modelAssetPath, delegate: "CPU" },
+            runningMode: "VIDEO",
+            minDetectionConfidence: 0.4,
+          });
+        }
+      }
+
+      window.clearTimeout(watchdog);
+      setPracticeLoading(false);
+      setPhase("practice");
+      phaseRef.current = "practice";
+
+      const detect = window.setInterval(() => {
+        if (phaseRef.current !== "practice") return;
+        const video = videoRef.current;
+        const detector = detectorRef.current;
+        if (!video || !detector || video.readyState < 2) return;
+        try {
+          const now = Date.now();
+          let present = false;
+          if (isReps) {
+            const tracking = REP_TRACKING[activityType] || DEFAULT_REP_TRACKING;
+            const minInterval = tracking.minIntervalMs ?? REP_MIN_INTERVAL_MS;
+            const result = detector.detectForVideo(video, performance.now());
+            const lm = result.landmarks?.[0];
+            const countRep = () => {
+              if (now - lastRepAtRef.current < minInterval) return;
+              lastRepAtRef.current = now;
+              repCountRef.current += 1;
+              setRepCount(repCountRef.current);
+            };
+            if (lm && lm.length > 0) {
+              if (tracking.bounce) {
+                const lh = lm[L_HIP], rh = lm[R_HIP];
+                const ls = lm[L_SHOULDER], rs = lm[R_SHOULDER];
+                const vis = (p: any) => p && (p.visibility === undefined || p.visibility > 0.5);
+                if (vis(lh) && vis(rh) && vis(ls) && vis(rs)) {
+                  present = true;
+                  const hipY = (lh.y + rh.y) / 2;
+                  const torso = Math.abs(hipY - (ls.y + rs.y) / 2);
+                  if (torso > 0.05) {
+                    const base = bounceBaselineRef.current;
+                    if (base === null) {
+                      bounceBaselineRef.current = hipY;
+                    } else if (bouncePhaseRef.current === "ground") {
+                      bounceBaselineRef.current = base * 0.9 + hipY * 0.1;
+                      if (hipY <= base - torso * BOUNCE_UP_FRACTION) {
+                        bouncePhaseRef.current = "air";
+                      }
+                    } else if (hipY >= base - torso * BOUNCE_DOWN_FRACTION) {
+                      bouncePhaseRef.current = "ground";
+                      countRep();
+                    }
+                  }
+                }
+              } else if (tracking.perLimb) {
+                for (let i = 0; i < tracking.joints.length; i++) {
+                  const [a, b, c] = tracking.joints[i];
+                  const angle = jointAngle(lm, a, b, c);
+                  if (angle === null) continue;
+                  present = true;
+                  const limbPhase = limbPhasesRef.current[i] || "up";
+                  if (limbPhase === "up" && angle <= tracking.downAngle) {
+                    limbPhasesRef.current[i] = "down";
+                  } else if (limbPhase === "down" && angle >= tracking.upAngle) {
+                    limbPhasesRef.current[i] = "up";
+                    countRep();
+                  }
+                }
+              } else {
+                const angles = tracking.joints
+                  .map(([a, b, c]) => jointAngle(lm, a, b, c))
+                  .filter((x): x is number => x !== null);
+                if (angles.length > 0) {
+                  present = true;
+                  const angle = angles.length === 2 ? (angles[0] + angles[1]) / 2 : angles[0];
+                  if (armPhaseRef.current === "up" && angle <= tracking.downAngle) {
+                    armPhaseRef.current = "down";
+                  } else if (armPhaseRef.current === "down" && angle >= tracking.upAngle) {
+                    armPhaseRef.current = "up";
+                    countRep();
+                  }
+                }
+              }
+            }
+          } else if (posePresence) {
+            const result = detector.detectForVideo(video, performance.now());
+            present = !!(result.landmarks && result.landmarks[0]?.length > 0);
+          } else {
+            const result = detector.detectForVideo(video, performance.now());
+            present = !!(result.detections && result.detections.length > 0);
+          }
+          setPracticePresent(present);
+        } catch {
+          /* skip this frame */
+        }
+      }, isReps ? REP_DETECT_INTERVAL_MS : DETECT_INTERVAL_MS);
+      timersRef.current.push(detect);
+    } catch (error: any) {
+      window.clearTimeout(watchdog);
+      clearTimers();
+      stopCamera();
+      setPracticeLoading(false);
+      const denied = error?.name === "NotAllowedError" || error?.name === "PermissionDeniedError";
+      toast({
+        title: denied
+          ? "Camera access was denied. Allow camera access in your settings to practice."
+          : "Could not start the camera preview. Check your connection and try again.",
+        variant: "destructive",
+      });
+    }
+  }
+
+  function stopPractice() {
+    clearTimers();
+    stopCamera();
+    setPracticePresent(false);
+    repCountRef.current = 0;
+    setRepCount(0);
+    setPhase("setup");
+    phaseRef.current = "setup";
+  }
+
   function finishTimer() {
     if (phaseRef.current !== "active") return;
     phaseRef.current = "gate";
@@ -1010,7 +1216,7 @@ export default function VerifiedSessionPage() {
 
             <Button
               onClick={startSession}
-              disabled={phase === "starting" || verifiableTypes.length === 0}
+              disabled={phase === "starting" || practiceLoading || verifiableTypes.length === 0}
               className="w-full bg-military-green text-forest-green font-bold py-6 text-base"
             >
               <Camera className="w-5 h-5 mr-2" />
@@ -1020,11 +1226,25 @@ export default function VerifiedSessionPage() {
                   ? "Start Verified Set"
                   : "Start Verified Session"}
             </Button>
+
+            <Button
+              onClick={startPractice}
+              disabled={phase === "starting" || practiceLoading || verifiableTypes.length === 0}
+              variant="outline"
+              className="w-full border-gray-700 bg-gray-800/60 text-gray-200 font-semibold py-5"
+            >
+              <Eye className="w-5 h-5 mr-2" />
+              {practiceLoading ? "Opening camera..." : "Practice Camera Setup"}
+            </Button>
+            <p className="text-xs text-gray-500 -mt-3">
+              Practice opens the camera so you can position your phone and test the tracking.
+              Nothing counts and no points are involved.
+            </p>
           </div>
         )}
 
         {/* Camera preview — shown during the session and at the photo gate */}
-        <div className={phase === "active" || phase === "gate" || phase === "submitting" ? "space-y-4" : "hidden"}>
+        <div className={phase === "practice" || phase === "active" || phase === "gate" || phase === "submitting" ? "space-y-4" : "hidden"}>
           <div className="relative rounded-xl overflow-hidden border border-gray-700 bg-black aspect-[3/4]">
             {snapshotUrl && (phase === "gate" || phase === "submitting") ? (
               <img src={snapshotUrl} alt="Your session photo" className="w-full h-full object-cover" />
@@ -1069,6 +1289,32 @@ export default function VerifiedSessionPage() {
                 Too much talking or background noise — quiet things down or the session will be voided!
               </div>
             )}
+            {phase === "practice" && (
+              <div className="absolute inset-x-0 top-0 p-3 flex items-center justify-between bg-gradient-to-b from-black/70 to-transparent">
+                <span className="text-xs font-semibold uppercase tracking-wide text-amber-400 flex items-center gap-1">
+                  <Eye className="w-4 h-4" />
+                  Practice — nothing counts
+                </span>
+                <span
+                  className={`text-xs font-semibold rounded-full px-3 py-1 ${
+                    practicePresent ? "bg-military-green/30 text-military-green" : "bg-red-900/70 text-red-200"
+                  }`}
+                >
+                  {practicePresent
+                    ? selectedType?.verifiedSessionMode === "reps"
+                      ? "Body in view"
+                      : "You're in frame"
+                    : "Not in view yet"}
+                </span>
+              </div>
+            )}
+            {phase === "practice" && selectedType?.verifiedSessionMode === "reps" && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <span className="text-7xl font-bold text-white/90 drop-shadow-lg tabular-nums">
+                  {repCount}
+                </span>
+              </div>
+            )}
             {phase === "gate" && snapCountdown !== null && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/40">
                 <span className="text-8xl font-bold text-white drop-shadow-lg tabular-nums">
@@ -1077,6 +1323,24 @@ export default function VerifiedSessionPage() {
               </div>
             )}
           </div>
+
+          {phase === "practice" && (
+            <>
+              <p className="text-xs text-center text-gray-500">
+                {selectedType?.verifiedSessionMode === "reps"
+                  ? `Position your phone, then try a few reps — ${(REP_TRACKING[activityType] || DEFAULT_REP_TRACKING).placementHint}. Full range counts: all the way down, all the way up.`
+                  : POSE_PRESENCE_ACTIVITIES.has(activityType)
+                    ? "Position your phone so your whole body stays in view through your poses."
+                    : "Position your phone so your face stays clearly in view for the whole session."}
+              </p>
+              <Button
+                onClick={stopPractice}
+                className="w-full bg-military-green text-forest-green font-bold py-5"
+              >
+                Done Practicing
+              </Button>
+            </>
+          )}
 
           {phase === "active" && (
             <>

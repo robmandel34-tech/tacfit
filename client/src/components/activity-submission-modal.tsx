@@ -847,7 +847,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
                         <SelectItem 
                           key={activityType.name} 
                           value={activityType.name}
-                          className="text-forest-green hover:bg-military-green focus:bg-military-green data-[highlighted]:bg-military-green data-[highlighted]:text-white cursor-pointer"
+                          className="text-white hover:bg-military-green focus:bg-military-green data-[highlighted]:bg-military-green data-[highlighted]:text-forest-green cursor-pointer"
                         >
                           <div className="flex items-center justify-between w-full">
                             <span>{activityType.displayName}</span>

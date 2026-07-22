@@ -3531,7 +3531,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // HealthKit imports, so ineligible workouts can't be force-submitted.
       if (isInActiveCompetition && competition) {
         const required = competition.requiredActivities || [];
-        if (required.length > 0 && !isActivityAllowed(req.body.type, required)) {
+        // When a HealthKit workout is attached, its raw workout type decides
+        // eligibility (checked below) — some raw types count toward extra
+        // categories (e.g. functional strength training also counts as cardio)
+        // even though the submission's mapped type alone wouldn't qualify.
+        if (required.length > 0 && !healthWorkout && !isActivityAllowed(req.body.type, required)) {
           return res.status(400).json({ message: "That activity type isn't part of this competition." });
         }
         // Types marked verification-required in this competition can only be

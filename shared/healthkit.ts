@@ -132,14 +132,26 @@ export function isActivityAllowed(activityName: string, required: string[]): boo
   return !!category && requiredLower.includes(category);
 }
 
+// Raw HealthKit workout types that legitimately belong to MORE THAN ONE
+// umbrella category. Functional strength training is circuit-style,
+// heart-rate-elevating work, so cardio-only competitions accept it too
+// (it still submits as a Strength activity).
+export const HEALTHKIT_EXTRA_CATEGORIES: Record<string, string[]> = {
+  functionalstrengthtraining: ["cardio"],
+};
+
 // True if a synced HealthKit workout (raw type) is eligible for a competition
 // with the given `required` activity list. Maps the workout to its activity-type
-// name first, then applies category-aware matching.
+// name first, then applies category-aware matching. Some raw types also count
+// toward extra categories (see HEALTHKIT_EXTRA_CATEGORIES).
 export function isHealthKitWorkoutEligible(rawType: string, required: string[]): boolean {
   if (!required || required.length === 0) return true;
   const mappedName = mapHealthKitTypeToActivityName(rawType);
-  if (!mappedName) return false;
-  return isActivityAllowed(mappedName, required);
+  if (mappedName && isActivityAllowed(mappedName, required)) return true;
+  const extras = HEALTHKIT_EXTRA_CATEGORIES[normalizeHealthKitType(rawType)] || [];
+  if (extras.length === 0) return false;
+  const requiredLower = required.map((r) => (r || "").toString().trim().toLowerCase());
+  return extras.some((c) => requiredLower.includes(c));
 }
 
 // Minimum exercise minutes in a single passive burst for it to count as real

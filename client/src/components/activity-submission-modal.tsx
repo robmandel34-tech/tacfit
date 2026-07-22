@@ -161,8 +161,16 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
       // Independent / individual mode — offer all activity types.
       return activityTypes;
     }
-    return activityTypes.filter(at => isActivityAllowed(at.name, required));
-  }, [activityTypes, competition?.requiredActivities, competitionHasStarted, competitionHasEnded]);
+    const filtered = activityTypes.filter(at => isActivityAllowed(at.name, required));
+    // A HealthKit workout can be eligible through an extra category (e.g.
+    // functional strength training counts for cardio-only competitions) and
+    // prefill a type that isn't in the filtered list — keep it selectable.
+    if (type && !filtered.some(at => at.name === type)) {
+      const extra = activityTypes.find(at => at.name === type);
+      if (extra) return [...filtered, extra];
+    }
+    return filtered;
+  }, [activityTypes, competition?.requiredActivities, competitionHasStarted, competitionHasEnded, type]);
 
   const resetForm = () => {
     setType("");
@@ -236,7 +244,13 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
   // Prefill the form from a selected HealthKit workout.
   const applyWorkout = (w: AppleHealthWorkout) => {
     const mappedName = mapHealthKitTypeToActivityName(w.activityType);
-    const at = mappedName ? competitionActivityTypes.find(a => a.name === mappedName) : undefined;
+    // Look in the full list too: a workout eligible via an extra category
+    // (functional strength training in a cardio-only competition) maps to a
+    // type outside the competition's filtered dropdown.
+    const at = mappedName
+      ? competitionActivityTypes.find(a => a.name === mappedName) ??
+        activityTypes.find(a => a.name === mappedName)
+      : undefined;
     const minutes = workoutMinutes(w);
     if (at) {
       setType(at.name);

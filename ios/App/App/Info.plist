@@ -46,7 +46,7 @@
         <key>UIViewControllerBasedStatusBarAppearance</key>
         <true/>
         <key>NSCameraUsageDescription</key>
-        <string>Muster Up uses your camera to capture activity evidence photos and videos, and for team video calls.</string>
+        <string>Muster Up uses your camera to capture activity evidence photos and videos, for team video calls, and to verify camera-verified sessions by tracking your presence and movement on your device (nothing is recorded or uploaded).</string>
         <key>NSPhotoLibraryUsageDescription</key>
         <string>Muster Up accesses your photo library so you can choose activity evidence from your existing photos.</string>
         <key>NSPhotoLibraryAddUsageDescription</key>

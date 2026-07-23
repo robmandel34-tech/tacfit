@@ -1068,7 +1068,8 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
                       <p className="text-sm text-green-300" data-testid="text-points-preview">
                         User points (points you earn, separate from competition progress) are awarded
                         per minute or rep x2. Example: a 20 minute run earns 40 pts. Plus a 15 pts
-                        bonus if you include a photo and 30 pts for video.
+                        bonus if you include a photo and 30 pts for video. User points can be used
+                        to enter paid competitions for free in the future.
                         {quantity && selectedActivityType ? (
                           <> This submission earns <strong>{activityPoints(selectedActivityType.measurementUnit, quantity, imageFiles.length > 0, !!videoFile)}</strong> points with your current evidence.</>
                         ) : null}

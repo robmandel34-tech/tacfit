@@ -1,21 +1,24 @@
 // Effort-based activity points, shared by server (authoritative award) and
 // client (previews / help copy). One place so numbers never drift.
 //
-// Scheme (replaces the old flat 15/30 and flat 50 verified):
-// - Minutes-based activities: 1 point per minute, up to EFFORT_CAP.
-// - Reps-based activities: 1 point per 2 reps, up to EFFORT_CAP.
-// - Days-based (e.g. sleep consistency): 15 points per day, up to EFFORT_CAP.
+// Scheme (owner's rule, 2026-07-23):
+// - User points are awarded per minute or per rep, TIMES 2.
+//   A 20-minute run earns 40 pts; 100 reps earn 200 pts (up to EFFORT_CAP).
+// - Days-based (e.g. sleep consistency): 15 points per day.
 // - Every accepted submission earns at least MIN_POINTS.
-// - Photo + video evidence on a manual submission adds EVIDENCE_BONUS.
+// - Evidence bonus: +PHOTO_BONUS with a photo, +VIDEO_BONUS with video
+//   (video is the bigger bonus; they don't stack).
 // - Camera-verified sessions pay DOUBLE effort points (min VERIFIED_MIN,
 //   capped at VERIFIED_CAP) — proof is worth more than the honor system.
 
-export const EFFORT_CAP = 60;
+export const EFFORT_RATE = 2; // points per minute or per rep
+export const EFFORT_CAP = 200;
 export const MIN_POINTS = 5;
-export const EVIDENCE_BONUS = 10;
+export const PHOTO_BONUS = 15;
+export const VIDEO_BONUS = 30;
 export const VERIFIED_MULTIPLIER = 2;
 export const VERIFIED_MIN = 10;
-export const VERIFIED_CAP = 100;
+export const VERIFIED_CAP = 300;
 
 // Normalize a measurement unit string ("minutes", "Time", "reps", "days").
 function normalizeUnit(unit: string | null | undefined): "minutes" | "reps" | "days" {
@@ -38,23 +41,29 @@ export function parseQuantity(quantity: string | number | null | undefined): num
 export function effortPoints(unit: string | null | undefined, quantity: string | number | null | undefined): number {
   const qty = Math.max(0, parseQuantity(quantity));
   switch (normalizeUnit(unit)) {
-    case "reps":
-      return Math.min(EFFORT_CAP, Math.ceil(qty / 2));
     case "days":
       return Math.min(EFFORT_CAP, Math.round(qty * 15));
-    default:
-      return Math.min(EFFORT_CAP, Math.round(qty));
+    default: // minutes and reps both pay EFFORT_RATE per unit
+      return Math.min(EFFORT_CAP, Math.round(qty * EFFORT_RATE));
   }
+}
+
+// Evidence bonus: video is worth the most; photo alone a smaller bonus.
+export function evidenceBonus(hasImage: boolean, hasVideo: boolean): number {
+  if (hasVideo) return VIDEO_BONUS;
+  if (hasImage) return PHOTO_BONUS;
+  return 0;
 }
 
 // Points for a normal (manual or Apple Health) activity submission.
 export function activityPoints(
   unit: string | null | undefined,
   quantity: string | number | null | undefined,
-  hasBothEvidenceTypes: boolean = false,
+  hasImage: boolean = false,
+  hasVideo: boolean = false,
 ): number {
   const base = Math.max(MIN_POINTS, effortPoints(unit, quantity));
-  return base + (hasBothEvidenceTypes ? EVIDENCE_BONUS : 0);
+  return base + evidenceBonus(hasImage, hasVideo);
 }
 
 // Points for a completed camera-verified session.

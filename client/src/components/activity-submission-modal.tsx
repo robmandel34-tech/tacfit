@@ -109,6 +109,8 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [showGuidelines, setShowGuidelines] = useState(false);
+  const [showTeamProgressInfo, setShowTeamProgressInfo] = useState(false);
+  const [showUserPointsInfo, setShowUserPointsInfo] = useState(false);
   const [selectedWorkoutHkId, setSelectedWorkoutHkId] = useState<string | null>(null);
   const [passiveMetricDate, setPassiveMetricDate] = useState<string | null>(null);
 
@@ -1032,13 +1034,47 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
                     </p>
                   </div>
                 )}
-                <div className="p-3 bg-military-green/20 border border-military-green/30 rounded-lg">
-                  <p className="text-sm text-green-300" data-testid="text-points-preview">
-                    <strong>Points:</strong> points scale with your effort — about 1 point per minute (or per 2 reps), up to 60, plus a +10 bonus for photo + video evidence.
-                    {quantity && selectedActivityType ? (
-                      <> This submission earns <strong>{activityPoints(selectedActivityType.measurementUnit, quantity)}</strong> points ({activityPoints(selectedActivityType.measurementUnit, quantity, true)} with photo + video).</>
-                    ) : null}
-                  </p>
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowTeamProgressInfo((v) => !v)}
+                    className="w-full flex items-center justify-between gap-2 p-3 bg-tactical-gray-lighter rounded-lg border border-military-green/30 text-sm text-white font-medium text-left"
+                    data-testid="button-team-progress-info"
+                  >
+                    How will your submission impact your team's progress?
+                    {showTeamProgressInfo ? <ChevronUp className="w-4 h-4 shrink-0 text-military-green" /> : <ChevronDown className="w-4 h-4 shrink-0 text-military-green" />}
+                  </button>
+                  {showTeamProgressInfo && (
+                    <div className="p-3 bg-tactical-gray-lighter/40 border border-military-green/20 rounded-lg">
+                      <p className="text-sm text-gray-300" data-testid="text-team-progress-info">
+                        Your team's progress is a collection of each member's submissions.
+                        Example: total goal 1,000 reps — you submit 100 reps and a teammate
+                        submits 100 reps, so your team has made 20% progress (represented on the map).
+                      </p>
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => setShowUserPointsInfo((v) => !v)}
+                    className="w-full flex items-center justify-between gap-2 p-3 bg-tactical-gray-lighter rounded-lg border border-military-green/30 text-sm text-white font-medium text-left"
+                    data-testid="button-user-points-info"
+                  >
+                    How will I gain user points from this submission?
+                    {showUserPointsInfo ? <ChevronUp className="w-4 h-4 shrink-0 text-military-green" /> : <ChevronDown className="w-4 h-4 shrink-0 text-military-green" />}
+                  </button>
+                  {showUserPointsInfo && (
+                    <div className="p-3 bg-military-green/20 border border-military-green/30 rounded-lg">
+                      <p className="text-sm text-green-300" data-testid="text-points-preview">
+                        User points (points you earn, separate from competition progress) are awarded
+                        per minute or rep x2. Example: a 20 minute run earns 40 pts. Plus a 15 pts
+                        bonus if you include a photo and 30 pts for video.
+                        {quantity && selectedActivityType ? (
+                          <> This submission earns <strong>{activityPoints(selectedActivityType.measurementUnit, quantity, imageFiles.length > 0, !!videoFile)}</strong> points with your current evidence.</>
+                        ) : null}
+                      </p>
+                    </div>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>

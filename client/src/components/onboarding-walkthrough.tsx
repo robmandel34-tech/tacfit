@@ -357,8 +357,8 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete, onSaveSurve
           <div className="bg-military-green/20 border border-military-green/30 p-3 rounded-lg">
             <h5 className="font-semibold text-military-green mb-2">Point System</h5>
             <div className="space-y-1 text-sm">
-              <p className="text-gray-300">• Points scale with effort: <strong className="text-white">about 1 pt per minute or per 2 reps (5-60 pts)</strong></p>
-              <p className="text-gray-300">• Photo + video evidence bonus: <strong className="text-white">+10 points</strong></p>
+              <p className="text-gray-300">• Points scale with effort: <strong className="text-white">2 pts per minute or per rep (a 20 min run = 40 pts)</strong></p>
+              <p className="text-gray-300">• Evidence bonus: <strong className="text-white">+15 with a photo, +30 with video</strong></p>
               <p className="text-gray-300">• Camera-verified sessions: <strong className="text-white">double points</strong></p>
             </div>
           </div>

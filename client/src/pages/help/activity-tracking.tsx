@@ -111,16 +111,16 @@ export default function ActivityTrackingHelp() {
                     <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
                       <div>
                         <span className="text-sm font-medium text-white">Effort-Based Points</span>
-                        <p className="text-xs text-gray-400">About 1 pt per minute, or 1 pt per 2 reps (minimum 5)</p>
+                        <p className="text-xs text-gray-400">2 pts per minute or per rep (e.g. a 20 minute run = 40 pts)</p>
                       </div>
-                      <span className="font-bold text-military-green text-lg">5-60 pts</span>
+                      <span className="font-bold text-military-green text-lg">2 pts each</span>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-military-green/10 border border-military-green/30 rounded-lg">
                       <div>
                         <span className="text-sm font-medium text-white">Evidence Bonus</span>
-                        <p className="text-xs text-gray-400">Photo + Video proof</p>
+                        <p className="text-xs text-gray-400">+15 with a photo, +30 with video</p>
                       </div>
-                      <span className="font-bold text-military-green text-lg">+10 pts</span>
+                      <span className="font-bold text-military-green text-lg">+15 / +30</span>
                     </div>
                   </div>
                   <div className="mt-4 bg-yellow-900/20 border border-yellow-600/30 p-3 rounded-lg">

@@ -179,12 +179,12 @@ export default function CompetitionSystemHelp() {
                   <h4 className="font-semibold text-white mb-3">Activity Points</h4>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
-                      <span className="text-sm">Effort-based (per minute / per 2 reps)</span>
-                      <span className="font-semibold text-military-green">5-60 points</span>
+                      <span className="text-sm">Effort-based (per minute or per rep, x2)</span>
+                      <span className="font-semibold text-military-green">2 pts each</span>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
-                      <span className="text-sm">Photo + Video Evidence Bonus</span>
-                      <span className="font-semibold text-military-green">+10 points</span>
+                      <span className="text-sm">Evidence Bonus (photo / video)</span>
+                      <span className="font-semibold text-military-green">+15 / +30</span>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
                       <span className="text-sm">Camera-Verified Session</span>
@@ -246,8 +246,8 @@ export default function CompetitionSystemHelp() {
                       <div>
                         <span className="font-medium text-white">Individual Activity Rewards</span>
                         <p className="text-sm text-gray-400 mt-1">
-                          Earn <span className="text-military-green font-semibold">5-60 points</span> based on your effort (about 1 point per minute or per 2 reps), plus 
-                          <span className="text-military-green font-semibold"> +10 points</span> with photo + video evidence
+                          Earn <span className="text-military-green font-semibold">2 points per minute or per rep</span> (a 20 minute run = 40 points), plus 
+                          <span className="text-military-green font-semibold"> +15 points</span> with a photo or <span className="text-military-green font-semibold">+30 points</span> with video evidence
                         </p>
                       </div>
                     </div>

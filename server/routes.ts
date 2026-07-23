@@ -3615,7 +3615,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(400).json({ message: "Please enter a realistic amount for this activity." });
         }
       }
-      const finalPoints = activityPoints(scoringUnit, scoringQuantity, hasBothEvidenceTypes);
+      const finalPoints = activityPoints(scoringUnit, scoringQuantity, hasImageEvidence, hasVideoEvidence);
 
       // Handle video file (primary evidence) first
       let evidenceUrl = '';

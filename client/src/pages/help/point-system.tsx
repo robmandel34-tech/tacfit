@@ -74,20 +74,20 @@ export default function PointSystemHelp() {
                   <div className="bg-gray-700/50 border border-gray-600/30 p-4 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium text-white">Activity Submission</span>
-                      <span className="font-bold text-military-green text-lg">5-60 pts</span>
+                      <span className="font-bold text-military-green text-lg">2 pts each</span>
                     </div>
                     <p className="text-xs text-gray-400">
-                      Points scale with your effort: about 1 point per minute of exercise, or 1 point per 2 reps, up to 60 points (minimum 5)
+                      Points are awarded per minute or per rep, times 2. Example: a 20 minute run earns 40 points (up to 200 per submission)
                     </p>
                   </div>
 
                   <div className="bg-military-green/10 border border-military-green/30 p-4 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-white">Photo + Video Evidence Bonus</span>
-                      <span className="font-bold text-military-green text-lg">+10 pts</span>
+                      <span className="text-sm font-medium text-white">Evidence Bonus</span>
+                      <span className="font-bold text-military-green text-lg">+15 / +30</span>
                     </div>
                     <p className="text-xs text-gray-400">
-                      Include both photo and video evidence for a bonus on top of your effort points
+                      +15 points for including a photo, +30 points for video
                     </p>
                   </div>
 
@@ -97,7 +97,7 @@ export default function PointSystemHelp() {
                       <span className="font-bold text-military-green text-lg">2x pts</span>
                     </div>
                     <p className="text-xs text-gray-400">
-                      Complete an activity live on camera and earn double effort points (minimum 10, up to 100)
+                      Complete an activity live on camera and earn double effort points (minimum 10, up to 300)
                     </p>
                   </div>
 

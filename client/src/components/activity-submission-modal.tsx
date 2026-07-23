@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { API_BASE, apiRequest } from "@/lib/queryClient";
 import { useAppleHealth } from "@/hooks/use-apple-health";
 import { mapHealthKitTypeToActivityName, MIN_PASSIVE_EXERCISE_MINUTES, isActivityAllowed } from "@shared/healthkit";
+import { activityPoints } from "@shared/points";
 import { reconcileWorkoutDurationSec } from "@/lib/healthkit";
 import { celebrate } from "@/lib/celebrate";
 import { Capacitor } from "@capacitor/core";
@@ -675,7 +676,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
                 🏁 Competition Closed
               </div>
               <p className="text-sm text-gray-100">
-                This competition has ended. You can still log an individual activity — it won't count toward any competition but you'll earn personal points (15–30 pts).
+                This competition has ended. You can still log an individual activity — it won't count toward any competition but you'll earn personal points based on your effort.
               </p>
             </div>
           )}
@@ -686,7 +687,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
                 ℹ️ Independent Activity
               </div>
               <p className="text-sm text-gray-100">
-                This activity will not count toward any competition but you'll still earn individual points (15-30 pts).
+                This activity will not count toward any competition but you'll still earn individual points based on your effort.
               </p>
             </div>
           )}
@@ -896,7 +897,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
                         <p className="text-sm text-gray-300 mt-1">
                           This competition requires {selectedActivityType?.displayName || type} to be
                           completed live in front of your camera. Stay in frame for the full time and
-                          it posts automatically — 50 points.
+                          it posts automatically — verified work earns double points.
                         </p>
                       </div>
                     </div>
@@ -917,7 +918,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
                   <div className="mt-3 p-3 bg-tactical-gray-lighter rounded-lg border border-military-green/30 flex items-center justify-between gap-3">
                     <p className="text-xs text-gray-300">
                       <ShieldCheck className="w-3.5 h-3.5 text-military-green inline mr-1" />
-                      Prefer proof over photos? Do this as a camera-verified session (50 pts).
+                      Prefer proof over photos? Do this as a camera-verified session — verified work earns double points.
                     </p>
                     <Button
                       type="button"
@@ -1032,8 +1033,11 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
                   </div>
                 )}
                 <div className="p-3 bg-military-green/20 border border-military-green/30 rounded-lg">
-                  <p className="text-sm text-green-300">
-                    <strong>Points:</strong> 15 points for submission with at least 1 image, 30 points for submission with image + video
+                  <p className="text-sm text-green-300" data-testid="text-points-preview">
+                    <strong>Points:</strong> points scale with your effort — about 1 point per minute (or per 2 reps), up to 60, plus a +10 bonus for photo + video evidence.
+                    {quantity && selectedActivityType ? (
+                      <> This submission earns <strong>{activityPoints(selectedActivityType.measurementUnit, quantity)}</strong> points ({activityPoints(selectedActivityType.measurementUnit, quantity, true)} with photo + video).</>
+                    ) : null}
                   </p>
                 </div>
                 <div className="grid grid-cols-2 gap-3">

@@ -21,14 +21,8 @@ export interface NormalizedWorkout {
 // 2s for a 99-minute match). Only in that broken case do we fall back to the
 // elapsed time. A reported value within 20% of elapsed is treated as legitimate
 // so genuinely paused workouts are not inflated to wall-clock time.
-export function reconcileWorkoutDurationSec(reportedSec: number, elapsedSec: number): number {
-  const reported = Number.isFinite(reportedSec) ? Math.max(0, Math.round(reportedSec)) : 0;
-  const elapsed = Number.isFinite(elapsedSec) ? Math.max(0, Math.round(elapsedSec)) : 0;
-  if (reported > 0 && elapsed > 0) {
-    return reported < elapsed * 0.2 ? elapsed : reported;
-  }
-  return Math.max(reported, elapsed);
-}
+export { reconcileWorkoutDurationSec } from "@shared/healthkit";
+import { reconcileWorkoutDurationSec } from "@shared/healthkit";
 
 // HealthKit read scopes we request. These map to @perfood/capacitor-healthkit
 // authorization option keys. The second group powers the Readiness score

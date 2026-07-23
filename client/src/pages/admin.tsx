@@ -2094,7 +2094,7 @@ export default function AdminPage() {
                         />
                         <Label htmlFor="supportsVerifiedSessions" className="text-gray-300">Supports camera-verified sessions</Label>
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">Best for timed, stationary activities (meditation, reading, stretching). Users stay in frame for the full time and earn 50 points. Competitions can make this the only way to complete the activity.</p>
+                      <p className="text-xs text-gray-500 mt-1">Best for timed, stationary activities (meditation, reading, stretching). Users stay in frame for the full time and earn double effort points. Competitions can make this the only way to complete the activity.</p>
                     </div>
 
                     <div className="border-t border-tactical-gray pt-4">

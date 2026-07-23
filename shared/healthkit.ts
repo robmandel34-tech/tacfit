@@ -154,6 +154,22 @@ export function isHealthKitWorkoutEligible(rawType: string, required: string[]):
   return extras.some((c) => requiredLower.includes(c));
 }
 
+// Reconcile a workout's reported active duration against its wall-clock elapsed
+// time (endDate - startDate). HealthKit's `duration` is the *active* time and is
+// normally the right value (it excludes auto-pauses), so we trust it — but the
+// plugin sometimes returns a broken value (0, missing, or implausibly tiny, e.g.
+// 2s for a 99-minute match). Only in that broken case do we fall back to the
+// elapsed time. A reported value within 20% of elapsed is treated as legitimate
+// so genuinely paused workouts are not inflated to wall-clock time.
+export function reconcileWorkoutDurationSec(reportedSec: number, elapsedSec: number): number {
+  const reported = Number.isFinite(reportedSec) ? Math.max(0, Math.round(reportedSec)) : 0;
+  const elapsed = Number.isFinite(elapsedSec) ? Math.max(0, Math.round(elapsedSec)) : 0;
+  if (reported > 0 && elapsed > 0) {
+    return reported < elapsed * 0.2 ? elapsed : reported;
+  }
+  return Math.max(reported, elapsed);
+}
+
 // Minimum exercise minutes in a single passive burst for it to count as real
 // exercise worth logging as an "Unspecified Activity". Anything shorter is
 // treated as incidental daily movement and is not surfaced or accepted.

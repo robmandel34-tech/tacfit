@@ -1039,7 +1039,7 @@ export default function VerifiedSessionPage() {
       }
       const activity = await res.json();
       stopCamera();
-      setAwardedPoints(activity.points || 50);
+      setAwardedPoints(activity.points || 0);
       setPhase("done");
       phaseRef.current = "done";
       celebrate();

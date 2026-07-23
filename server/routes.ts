@@ -13,7 +13,8 @@ import {
   scheduleTeamCallSchema, startVerifiedSessionSchema,
 } from "@shared/schema";
 import { getCompetitionPricing } from "@shared/pricing";
-import { MIN_PASSIVE_EXERCISE_MINUTES, isActivityAllowed, isHealthKitWorkoutEligible } from "@shared/healthkit";
+import { MIN_PASSIVE_EXERCISE_MINUTES, isActivityAllowed, isHealthKitWorkoutEligible, reconcileWorkoutDurationSec } from "@shared/healthkit";
+import { activityPoints, verifiedSessionPoints, parseQuantity } from "@shared/points";
 import { recomputeReadinessForUser, isReadinessTestAccount, sampleReadiness } from "./readiness-service";
 import { verifyGoogleIdToken, verifyAppleIdToken, isGoogleConfigured, isAppleConfigured, type SsoIdentity } from "./sso-auth";
 import { z } from "zod";
@@ -3568,10 +3569,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Calculate base points
-      let basePoints = 15;
-
-      // Check if both video and image evidence are provided for bonus (30 total).
+      // Check if both video and image evidence are provided for the bonus.
       // Video may either come through multer OR via a pre-signed direct upload (req.body.videoUrl).
       const preUploadedVideoCheck = typeof req.body.videoUrl === 'string' && req.body.videoUrl.trim().startsWith('/uploads/');
       const hasVideoEvidence = videoFiles.length > 0 || preUploadedVideoCheck;
@@ -3582,8 +3580,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let description = req.body.description;
       let evidenceType = req.body.evidenceType || null;
       
-      // Apply points logic: full 30 points only if both evidence types are provided
-      const finalPoints = hasBothEvidenceTypes ? 30 : basePoints;
+      // Effort-based points: scale with the activity's own metric (minutes,
+      // reps, days) rather than a flat award, plus the photo+video bonus.
+      // The server is authoritative about the effort amount — crafted request
+      // bodies must not be able to mint points:
+      // - Apple Health workout attached: minutes come from the stored workout.
+      // - Passive Apple Health day: minutes come from the stored daily metric.
+      // - Manual entry: the submitted type must be a real, active activity
+      //   type, and the quantity must be a sane number for its unit.
+      const allActivityTypes = await storage.getActivityTypes();
+      const submittedTypeRow = allActivityTypes.find(
+        (t) => t.name.toLowerCase() === String(req.body.type || "").toLowerCase(),
+      );
+      if (!submittedTypeRow || submittedTypeRow.isActive === false) {
+        return res.status(400).json({ message: "Unknown activity type." });
+      }
+
+      let scoringUnit: string = submittedTypeRow.measurementUnit || "minutes";
+      let scoringQuantity: number;
+      if (healthWorkout) {
+        const elapsedSec = healthWorkout.startTime && healthWorkout.endTime
+          ? Math.max(0, Math.round((new Date(healthWorkout.endTime).getTime() - new Date(healthWorkout.startTime).getTime()) / 1000))
+          : 0;
+        scoringUnit = "minutes";
+        scoringQuantity = Math.round(reconcileWorkoutDurationSec(healthWorkout.durationSec || 0, elapsedSec) / 60);
+      } else if (passiveMetric) {
+        scoringUnit = "minutes";
+        scoringQuantity = Math.max(0, Math.round(passiveMetric.burstExerciseMinutes ?? passiveMetric.exerciseMinutes ?? 0));
+      } else {
+        scoringQuantity = parseQuantity(req.body.quantity);
+        const unitLower = scoringUnit.toLowerCase();
+        const maxByUnit = unitLower === "reps" ? 1000 : unitLower === "days" ? 31 : 1440;
+        if (!Number.isFinite(scoringQuantity) || scoringQuantity <= 0 || scoringQuantity > maxByUnit) {
+          return res.status(400).json({ message: "Please enter a realistic amount for this activity." });
+        }
+      }
+      const finalPoints = activityPoints(scoringUnit, scoringQuantity, hasBothEvidenceTypes);
 
       // Handle video file (primary evidence) first
       let evidenceUrl = '';
@@ -3768,9 +3800,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ---------- Verified focus sessions (camera-verified meditation/reading) ----------
-  // Flat award decided by the owner: verification itself is worth 50 pts,
-  // regardless of duration or evidence.
-  const VERIFIED_SESSION_POINTS = 50;
+  // Points scale with effort (minutes or reps) and pay double the normal
+  // rate because the camera proved the work — see shared/points.ts.
   // Reps mode: max time window to finish the set, and the plausibility floor —
   // no real push-up takes less than ~1.2s, so N reps can't be claimed faster
   // than N * 1.2s of real elapsed time.
@@ -4027,6 +4058,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const typeRow = types.find(t => t.name === session.activityType);
       const displayName = typeRow?.displayName || session.activityType;
 
+      // Effort-based payout: double points for camera-proven work.
+      const sessionPoints = verifiedSessionPoints(
+        isRepsMode ? "reps" : "time",
+        isRepsMode ? completedReps : session.durationMinutes,
+      );
+
       const activityData = insertActivitySchema.parse({
         userId,
         competitionId: isInActiveCompetition ? userTeam?.competitionId : null,
@@ -4038,7 +4075,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         quantity: isRepsMode ? `${completedReps} reps` : `${session.durationMinutes} minutes`,
         textInput: typeof req.body.note === "string" && req.body.note.trim() ? req.body.note.trim().slice(0, 2000) : null,
         textInputPrivate: req.body.notePrivate === "true" || req.body.notePrivate === true,
-        points: VERIFIED_SESSION_POINTS,
+        points: sessionPoints,
         evidenceType: imageUrls.length > 0 ? "photo" : null,
         evidenceUrl: "",
         thumbnailUrl: "",
@@ -4065,8 +4102,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       notifySlack(
         isRepsMode
-          ? `💪 *Verified set completed* — ${user.username} knocked out ${completedReps} ${displayName} (camera-counted) · ${VERIFIED_SESSION_POINTS} pts${userTeam ? ` · ${userTeam.name}` : ""}`
-          : `🧘 *Verified session completed* — ${user.username} finished ${session.durationMinutes} min of ${displayName} (camera-verified) · ${VERIFIED_SESSION_POINTS} pts${userTeam ? ` · ${userTeam.name}` : ""}`,
+          ? `💪 *Verified set completed* — ${user.username} knocked out ${completedReps} ${displayName} (camera-counted) · ${sessionPoints} pts${userTeam ? ` · ${userTeam.name}` : ""}`
+          : `🧘 *Verified session completed* — ${user.username} finished ${session.durationMinutes} min of ${displayName} (camera-verified) · ${sessionPoints} pts${userTeam ? ` · ${userTeam.name}` : ""}`,
         "activity",
       );
 

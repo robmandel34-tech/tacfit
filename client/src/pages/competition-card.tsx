@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthRequired } from "@/lib/auth";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, uploadUrl } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/navigation";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,8 @@ interface RecapResponse {
   userStats: CompetitionRecapUserStats | null;
   userStatsHidden: boolean;
   viewerParticipated: boolean;
+  // Live photo + motto per team (older responses may omit it).
+  teamProfiles?: { teamId: number; motto: string | null; pictureUrl: string | null }[];
 }
 
 // The shareable end-of-competition "momento" card. The image is pre-rendered
@@ -56,7 +58,17 @@ export default function CompetitionCardPage() {
     blobRef.current = null;
     (async () => {
       try {
-        const canvas = await renderRecapCard({ summary: recap.summary, userStats: recap.userStats });
+        // The featured team is the viewer's own on a personal card, the winner
+        // on a public one — the same choice the renderer makes.
+        const featuredTeamId = recap.userStats?.teamId ?? recap.summary.standings[0]?.teamId ?? null;
+        const profile = recap.teamProfiles?.find((t) => t.teamId === featuredTeamId) ?? null;
+        const canvas = await renderRecapCard({
+          summary: recap.summary,
+          userStats: recap.userStats,
+          teamProfile: profile
+            ? { motto: profile.motto, pictureUrl: profile.pictureUrl ? uploadUrl(profile.pictureUrl) : null }
+            : null,
+        });
         const blob = await canvasToPngBlob(canvas);
         if (cancelled) return;
         blobRef.current = blob;

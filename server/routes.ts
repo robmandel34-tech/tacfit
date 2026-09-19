@@ -4677,6 +4677,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
+      // Team picture + motto are read live (not frozen in the recap) so the
+      // momento card can feature the team's current photo; standings numbers
+      // still come only from the frozen summary.
+      const teams = await storage.getTeamsByCompetition(competitionId);
+      const teamProfiles = teams.map((t) => ({
+        teamId: t.id,
+        motto: t.motto ?? null,
+        pictureUrl: t.pictureUrl ?? null,
+      }));
+
       res.json({
         id: recap.id,
         competitionId,
@@ -4685,6 +4695,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userStats,
         userStatsHidden,
         viewerParticipated: !!viewerStats,
+        teamProfiles,
       });
     } catch (error) {
       console.error("Error fetching competition recap:", error);

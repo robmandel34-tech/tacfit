@@ -35,11 +35,12 @@ function requiredActivityNames(competition: any): string[] {
 }
 
 // How many of the picked activities this competition accepts (umbrella-aware:
-// picking "run" matches a competition that requires "cardio").
+// picking "run" matches a competition that requires "cardio"). A competition
+// with no required list accepts everything, so every pick counts.
 function activityMatchCount(competition: any, picked: string[]): number {
   if (picked.length === 0) return 0;
   const required = requiredActivityNames(competition);
-  if (required.length === 0) return 0;
+  if (required.length === 0) return picked.length;
   return picked.filter((activity) => isActivityAllowed(activity, required)).length;
 }
 
@@ -147,8 +148,10 @@ export default function Competitions() {
     }
   });
 
-  // Every activity required by an open (not yet completed) competition.
-  const openActivities = useMemo(() => {
+  // Every activity required by an open (not yet completed) competition. When
+  // no open competition declares any (e.g. all are finished), fall back to the
+  // full activity list so the filter is always there to find.
+  const { openActivities, filterFromOpenCompetitions } = useMemo(() => {
     const names = new Map<string, string>();
     for (const comp of competitions as any[]) {
       if (comp.isCompleted) continue;
@@ -156,7 +159,15 @@ export default function Competitions() {
         names.set(name.toLowerCase(), name);
       }
     }
-    return Array.from(names.values()).sort((a, b) => activityDisplayName(a).localeCompare(activityDisplayName(b)));
+    const fromOpen = names.size > 0;
+    if (!fromOpen) {
+      for (const type of activityTypes) {
+        const name = String(type?.name ?? "").trim();
+        if (name) names.set(name.toLowerCase(), name);
+      }
+    }
+    const sorted = Array.from(names.values()).sort((a, b) => activityDisplayName(a).localeCompare(activityDisplayName(b)));
+    return { openActivities: sorted, filterFromOpenCompetitions: fromOpen };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [competitions, activityTypes]);
 
@@ -394,7 +405,7 @@ export default function Competitions() {
         </Card>
 
         {/* Activity filter: pick what you want to do, best-fit competitions rise to the top */}
-        {openActivities.length > 0 && (
+        {competitions.length > 0 && openActivities.length > 0 && (
           <div className="mb-6 flex flex-wrap items-center gap-3" data-testid="section-activity-filter">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -411,7 +422,7 @@ export default function Competitions() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-64 max-h-80 overflow-y-auto">
-                <DropdownMenuLabel>Activities in open competitions</DropdownMenuLabel>
+                <DropdownMenuLabel>{filterFromOpenCompetitions ? "Activities in open competitions" : "Activities"}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {openActivities.map((name) => (
                   <DropdownMenuCheckboxItem

@@ -1,10 +1,34 @@
 import { createRoot } from "react-dom/client";
 import { Capacitor } from "@capacitor/core";
 import { SplashScreen } from "@capacitor/splash-screen";
+import { analytics } from "@heycatch/sdk";
 import App from "./App";
 import "./index.css";
 import { installAuthFetchInterceptor, loadAuthToken } from "./lib/authToken";
 import { initAnalytics } from "./lib/analytics";
+
+// Native iOS builds bake VITE_API_URL (the published backend); the web build
+// talks to its own origin and leaves it empty.
+const API_BASE = (import.meta.env.VITE_API_URL as string) ?? "";
+
+// HeyCatch product analytics — initialised once, at module scope, before the
+// app renders. Autocaptures pageviews/clicks; identity is set after sign-in in
+// lib/analytics.ts and business outcomes are reported by the server.
+// When the API lives on another origin (native app), list its host so API
+// calls carry the session header that links server events to this session.
+const apiHost = (() => {
+  if (!API_BASE) return undefined;
+  try {
+    return new URL(API_BASE).hostname;
+  } catch {
+    return undefined;
+  }
+})();
+analytics.init({
+  projectKey: "hck_pk_RFfvs65QXI_qS_mc3FXOTVjeL_du86XB",
+  install: { framework: "vite-react", frameworkVersion: "18", agent: "replit" },
+  ...(apiHost ? { tracingHosts: [apiHost] } : {}),
+});
 
 // Initialize product analytics (PostHog). No-op if no key is configured.
 initAnalytics();
@@ -12,7 +36,6 @@ initAnalytics();
 // Attach the bearer token to every API request — required for native iOS
 // (Capacitor WKWebView) where cross-origin session cookies are unreliable.
 // Web requests are unaffected when no token is stored.
-const API_BASE = (import.meta.env.VITE_API_URL as string) ?? "";
 installAuthFetchInterceptor(API_BASE);
 // Prime the in-memory token cache from persistent storage before first paint.
 void loadAuthToken();

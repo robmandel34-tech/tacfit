@@ -19,6 +19,7 @@ interface User {
   avatar?: string;
   coverPhoto?: string;
   isAdmin?: boolean;
+  createdAt?: string | null;
 }
 
 interface AuthContextType {
@@ -76,12 +77,16 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
           if (sessionResponse.ok) {
             const currentUser = await sessionResponse.json();
             setUser(currentUser);
+            // Re-identify with the server's copy: it carries createdAt (for the
+            // set-once signup date), which older cached payloads may lack.
+            identifyUser(currentUser);
             localStorage.setItem("user", JSON.stringify(currentUser));
           } else if (sessionResponse.status === 401) {
             // The stored session/token is no longer valid (e.g. token was never
             // persisted on an older native build). Clear the stale auth and send
             // the user to login so a fresh, working token/cookie is established.
             await setAuthToken(null);
+            resetAnalytics();
             localStorage.removeItem("user");
             setUser(null);
             setIsLoading(false);

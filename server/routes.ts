@@ -70,6 +70,7 @@ import Stripe from "stripe";
 import bcrypt from "bcrypt";
 import rateLimit from "express-rate-limit";
 import os from "os";
+import { heycatch, heycatchUserId, identifyUserOnServer, analyticsActor } from "./heycatch";
 
 const execAsync = promisify(exec);
 
@@ -661,6 +662,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   async function findOrCreateSsoUser(
     identity: SsoIdentity,
     provider: "apple" | "google",
+    request: Request,
   ) {
     // 1. Returning user — match by the provider's stable id.
     let user =
@@ -720,6 +722,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       `🟢 *New signup* (${provider}) — ${created.username} (${created.email})`,
       "signups",
     );
+    // An SSO account is usable the moment it exists, so this is the completed
+    // sign-up. Reported here, inside the user's own sign-in request.
+    await identifyUserOnServer(created);
+    await heycatch.trackEvent(
+      "signup_completed",
+      { method: provider },
+      { userId: heycatchUserId(created), request },
+    );
     return created;
   }
 
@@ -743,7 +753,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .status(401)
           .json({ message: "Could not verify Google sign-in." });
       }
-      const user = await findOrCreateSsoUser(identity, "google");
+      const user = await findOrCreateSsoUser(identity, "google", req);
       if (user.isSuspended) {
         return res.status(403).json({
           message: "Account suspended",
@@ -782,7 +792,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!identity.name && typeof req.body.fullName === "string") {
         identity.name = req.body.fullName;
       }
-      const user = await findOrCreateSsoUser(identity, "apple");
+      const user = await findOrCreateSsoUser(identity, "apple", req);
       if (user.isSuspended) {
         return res.status(403).json({
           message: "Account suspended",
@@ -855,14 +865,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Update user as verified
-      await storage.updateUser(user.id, {
-        isEmailVerified: true,
-        emailVerificationToken: null,
-        emailVerificationTokenExpiresAt: null
-      });
+      // Update user as verified — conditionally, so two concurrent clicks on
+      // the same link flip the flag (and count the sign-up) exactly once.
+      const [verifiedNow] = await db
+        .update(usersTable)
+        .set({
+          isEmailVerified: true,
+          emailVerificationToken: null,
+          emailVerificationTokenExpiresAt: null,
+        })
+        .where(and(eq(usersTable.id, user.id), sql`${usersTable.isEmailVerified} IS NOT TRUE`))
+        .returning({ id: usersTable.id });
 
       console.log(`Email verified successfully for user: ${user.email}`);
+
+      // A verified email is what makes this a real, completed sign-up — the
+      // account existed before, but could not log in until now.
+      if (verifiedNow) {
+        await identifyUserOnServer(user);
+        await heycatch.trackEvent(
+          "signup_completed",
+          { method: "email" },
+          { userId: heycatchUserId(user), request: req },
+        );
+      }
 
       // Send welcome email
       try {
@@ -1415,7 +1441,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!updatedUser) {
         return res.status(500).json({ message: "Failed to complete onboarding" });
       }
-      
+
+      // Report the first completion only — the route is re-callable to update
+      // survey answers. Link to the live session only when it's the user's own
+      // request (an admin completing it for someone else has no such session).
+      if (!user.onboardingCompleted) {
+        await heycatch.trackEvent(
+          "onboarding_completed",
+          {
+            archetype: updates.fitnessArchetype ?? null,
+            has_habit_goal: Boolean(updates.healthyHabitGoal),
+            listed_activities: Boolean(updates.fitnessActivities),
+          },
+          {
+            userId: heycatchUserId(updatedUser),
+            ...(sessionUserId === userId ? { request: req } : {}),
+          },
+        );
+      }
+
       const { password, ...userWithoutPassword } = updatedUser;
       res.json(userWithoutPassword);
     } catch (error) {
@@ -2050,6 +2094,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         competitionsEntered: (user.competitionsEntered || 0) + 1
       });
 
+      await heycatch.trackEvent(
+        "team_joined",
+        { team_id: team.id, competition_id: team.competitionId ?? null, role: "member" },
+        { userId: heycatchUserId(analyticsActor(req, user.id)), request: req },
+      );
+
       res.json({ 
         message: "Successfully joined team", 
         team: team 
@@ -2319,6 +2369,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         competitionsEntered: (user.competitionsEntered || 0) + 1
       });
 
+      await heycatch.trackEvent(
+        "team_joined",
+        { team_id: newTeam.id, competition_id: competitionId, role: "captain" },
+        { userId: heycatchUserId(analyticsActor(req, user.id)), request: req },
+      );
+
       res.json({ 
         message: "Successfully created team", 
         team: newTeam 
@@ -2378,7 +2434,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId: team.captainId!,
         role: "captain"
       });
-      
+
+      await heycatch.trackEvent(
+        "team_joined",
+        { team_id: team.id, competition_id: team.competitionId ?? null, role: "captain" },
+        { userId: heycatchUserId(analyticsActor(req, team.captainId!)), request: req },
+      );
+
       res.json(team);
     } catch (error) {
       res.status(400).json({ message: "Invalid team data" });
@@ -3795,6 +3857,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Non-critical: never let the milestone check break the submission.
       }
 
+      await heycatch.trackEvent(
+        "activity_logged",
+        {
+          type: activity.type,
+          points: activity.points ?? 0,
+          source: healthWorkout ? "apple_health" : "manual",
+          in_competition: Boolean(activity.competitionId),
+        },
+        { userId: heycatchUserId(analyticsActor(req, user.id)), request: req },
+      );
+
       res.json(activity);
     } catch (error) {
       console.error("Activity submission error:", error);
@@ -4157,6 +4230,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ? `💪 *Verified set completed* — ${user.username} knocked out ${completedReps} ${displayName} (camera-counted) · ${sessionPoints} pts${userTeam ? ` · ${userTeam.name}` : ""}`
           : `🧘 *Verified session completed* — ${user.username} finished ${session.durationMinutes} min of ${displayName} (camera-verified) · ${sessionPoints} pts${userTeam ? ` · ${userTeam.name}` : ""}`,
         "activity",
+      );
+
+      await heycatch.trackEvent(
+        "activity_logged",
+        {
+          type: activity.type,
+          points: activity.points ?? 0,
+          source: isRepsMode ? "verified_reps" : "verified_timed",
+          in_competition: Boolean(activity.competitionId),
+        },
+        { userId: heycatchUserId(user), request: req },
       );
 
       res.json(activity);
@@ -4730,7 +4814,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Mark invitation as accepted
       await storage.updateCompetitionInvitation(invitation.id, { status: "accepted" });
-      
+
+      // Only a completed (free) entry is an outcome; a pending one is
+      // reported by the payment route that completes it.
+      if (isFirstCompetition) {
+        await heycatch.trackEvent(
+          "competition_entered",
+          { competition_id: invitation.competitionId!, payment_type: "free", amount_cents: 0, via: "invitation" },
+          { userId: heycatchUserId(analyticsActor(req, user.id)), request: req },
+        );
+      }
+
       res.json({
         entry,
         requiresPayment: !isFirstCompetition
@@ -4982,6 +5076,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const alreadyMember = await storage.getTeamMember(invitation.teamId, userId);
       if (!alreadyMember) {
         await storage.addTeamMember({ teamId: invitation.teamId, userId, role: 'member' });
+        await heycatch.trackEvent(
+          "team_joined",
+          { team_id: invitation.teamId, competition_id: invitation.competitionId ?? null, role: "member", via: "invitation" },
+          { userId: heycatchUserId({ id: userId }), request: req },
+        );
       }
       const updated = await storage.updateUserInvitation(id, 'accepted');
       res.json({ message: "Invitation accepted", invitation: updated, requiresPayment: false });
@@ -5018,6 +5117,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const alreadyMember = await storage.getTeamMember(invitation.teamId, userId);
       if (!alreadyMember) {
         await storage.addTeamMember({ teamId: invitation.teamId, userId, role: 'member' });
+        await heycatch.trackEvent(
+          "team_joined",
+          { team_id: invitation.teamId, competition_id: invitation.competitionId ?? null, role: "member", via: "invitation" },
+          { userId: heycatchUserId({ id: userId }), request: req },
+        );
       }
       const updated = await storage.updateUserInvitation(id, 'accepted');
       res.json({ message: "Invitation accepted after payment", invitation: updated });
@@ -5744,6 +5848,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         `🪙 *Points entry* — ${pointsPayer?.username ?? `user ${userId}`} spent ${ENTRY_COST_POINTS} points to enter "${competition.name}"`,
       );
 
+      await heycatch.trackEvent(
+        "competition_entered",
+        { competition_id: competitionId, payment_type: "points", points_spent: ENTRY_COST_POINTS },
+        { userId: heycatchUserId({ id: userId }), request: req },
+      );
+
       res.json({
         message: "Successfully entered competition using points",
         pointsDeducted: ENTRY_COST_POINTS,
@@ -6381,6 +6491,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.log(
               `Webhook: entered user ${userId} into competition ${competitionId} via PI ${pi.id}`,
             );
+            // Insert won → this is the one report for the entry. A webhook has
+            // no user request to link, so only the user id is passed.
+            await heycatch.trackEvent(
+              "competition_entered",
+              {
+                competition_id: competitionId,
+                payment_type: "stripe",
+                amount_cents: pi.amount,
+                currency: pi.currency,
+              },
+              { userId: heycatchUserId({ id: userId }) },
+            );
           } catch (e: any) {
             if (e?.code === "23505") {
               // Already entered (client beat us to it, or duplicate event) — fine.
@@ -6463,6 +6585,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         `💳 *Payment* — ${payer?.username ?? `user ${userId}`} paid $${(paymentIntent.amount / 100).toFixed(2)} to enter "${competition.name}"`,
       );
 
+      // Only the request whose insert won reports the entry, so the webhook
+      // and this confirm route can race without double-counting.
+      await heycatch.trackEvent(
+        "competition_entered",
+        {
+          competition_id: competitionId,
+          payment_type: "stripe",
+          amount_cents: paymentIntent.amount,
+          currency: paymentIntent.currency,
+        },
+        { userId: heycatchUserId({ id: userId }), request: req },
+      );
+
       res.json({ message: "Successfully entered competition with payment" });
     } catch (error: any) {
       console.error('Stripe payment entry error:', error);
@@ -6510,6 +6645,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         paymentMethod: 'none',
         amountPaid: 0
       });
+
+      await heycatch.trackEvent(
+        "competition_entered",
+        { competition_id: competitionId, payment_type: "free", amount_cents: 0 },
+        { userId: heycatchUserId(analyticsActor(req, user.id)), request: req },
+      );
 
       res.json({
         message: "Successfully joined the free competition",

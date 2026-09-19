@@ -38,13 +38,24 @@ app.use((req, res, next) => {
     // Same-origin or server-to-server request — allow through
   }
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  // X-POSTHOG-SESSION-ID is the HeyCatch session header the native app (a
+  // cross-origin WKWebView) stamps on API calls so server-side analytics
+  // events join the user's live session. Without it here, preflight fails.
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-POSTHOG-SESSION-ID');
   res.header('Access-Control-Allow-Credentials', 'true');
   if (req.method === 'OPTIONS') {
     res.sendStatus(200);
   } else {
     next();
   }
+});
+
+// HeyCatch short links: single-character paths (/a … /z, /0 … /9) are reserved
+// for channel attribution. Each one lands on the app with the campaign in the
+// query string, where the HeyCatch SDK reads it. Registered before every other
+// route so neither the API nor the SPA catch-all can shadow it.
+app.get(/^\/([a-z0-9])$/, (req, res) => {
+  res.redirect(302, `/?utm_source=heycatch&utm_campaign=${req.params[0]}`);
 });
 
 // Serve uploaded media — object storage first, local disk as fallback (dev)

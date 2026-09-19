@@ -202,3 +202,14 @@ paths guard against null. Buttons stay hidden until client ids are configured:
 - **Services**: SendGrid (email), Stripe (payments), Giphy (chat GIFs), Google
   Maps Static API (route maps), Apple HealthKit (workout sync), Replit object
   storage / GCS (media), fairmeeting.net (team video calls).
+- **Analytics**: HeyCatch (`@heycatch/sdk`, pinned to the `latest` tag — never a
+  `-dev` build). Browser init lives in `client/src/main.tsx` (autocapture;
+  `tracingHosts` = API host on native builds), identity in
+  `client/src/lib/analytics.ts`, server init + helpers in `server/heycatch.ts`.
+  Server reports only business outcomes: `signup_completed`,
+  `onboarding_completed`, `activity_logged`, `team_joined`,
+  `competition_entered` — always `await`ed, with `userId` = stringified
+  `users.id` and `request: req` when inside the user's own request. Do not
+  hand-instrument pageviews/clicks. Single-character paths (`/a`…`/9`) are
+  HeyCatch short links (302 in `server/index.ts`) — never add such routes.
+  PostHog remains optional behind `VITE_POSTHOG_KEY`.

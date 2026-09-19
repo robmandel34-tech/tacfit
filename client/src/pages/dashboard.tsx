@@ -8,9 +8,16 @@ import AdvertisementCard from "@/components/advertisement-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { OnboardingWalkthrough } from "@/components/onboarding-walkthrough";
+import {
+  OnboardingWalkthrough,
+  OPEN_ACTIVITY_SUBMISSION_EVENT,
+  type OnboardingFirstAction,
+  type OnboardingSurvey,
+} from "@/components/onboarding-walkthrough";
+import CompetitionRecapCard, { type CompetitionRecapFeedItem } from "@/components/competition-recap-card";
 import { Activity, Users, Shield } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -19,6 +26,7 @@ export default function Dashboard() {
   const { refreshUser } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   const { data: activities = [] } = useQuery({
@@ -56,6 +64,12 @@ export default function Dashboard() {
     }
   });
 
+  // End-of-competition recaps: one auto-post per finished competition.
+  const { data: competitionRecaps = [] } = useQuery<CompetitionRecapFeedItem[]>({
+    queryKey: ["/api/competition-recaps"],
+    enabled: !!user,
+  });
+
   const { data: currentUser } = useQuery<{ hideAdvertisements: boolean }>({
     queryKey: [`/api/users/${user?.id}`],
     enabled: !!user?.id,
@@ -67,21 +81,21 @@ export default function Dashboard() {
   });
 
   const saveSurveyMutation = useMutation({
-    mutationFn: async ({ data, notify }: { data: { fitnessArchetype?: string; fitnessActivities?: string }; notify: boolean }) => {
+    mutationFn: async ({ data, notify }: { data: { healthyHabitGoal?: string; fitnessActivities?: string }; notify: boolean }) => {
       if (!user?.id) throw new Error("User not found");
       return apiRequest("PATCH", `/api/users/${user.id}/fitness-survey`, { ...data, notify });
     },
   });
 
   const completeOnboardingMutation = useMutation({
-    mutationFn: async (survey?: { fitnessArchetype: string; fitnessActivities: string }) => {
+    mutationFn: async (survey?: OnboardingSurvey) => {
       if (!user?.id) throw new Error("User not found");
       return apiRequest("PATCH", `/api/users/${user.id}/onboarding`, survey ?? {});
     },
     onSuccess: async () => {
       toast({
         title: "Welcome to Muster Up!",
-        description: "You're now ready to start your tactical fitness journey.",
+        description: "You're in. Let's make that habit stick.",
       });
       // Refresh user data to update onboarding status both in queries and auth context
       queryClient.invalidateQueries({ queryKey: [`/api/users/${user?.id}`] });
@@ -102,6 +116,29 @@ export default function Dashboard() {
     },
   });
 
+
+  // Where to send a brand-new user after they pick "What do you want to do first?"
+  const handleFirstAction = (action?: OnboardingFirstAction) => {
+    switch (action) {
+      case 'competitions':
+        setLocation('/competitions');
+        break;
+      case 'profile':
+        setLocation('/profile');
+        break;
+      case 'submit-activity':
+        // The floating action button owns the submission modal.
+        window.dispatchEvent(new CustomEvent(OPEN_ACTIVITY_SUBMISSION_EVENT));
+        break;
+      case 'walkthrough':
+        setLocation('/help/walkthrough');
+        break;
+      case 'explore':
+      default:
+        // Already on the Intel Feed.
+        break;
+    }
+  };
 
   // Show onboarding to new users who haven't completed it (only once per session)
   useEffect(() => {
@@ -216,10 +253,15 @@ export default function Dashboard() {
               : advertisements;
 
             const timelineItems: Array<{ 
-              type: 'admin-post' | 'advertisement' | 'activity';
+              type: 'admin-post' | 'advertisement' | 'activity' | 'competition-recap';
               data: any;
               createdAt: string;
             }> = [
+              ...competitionRecaps.map((recap) => ({
+                type: 'competition-recap' as const,
+                data: recap,
+                createdAt: recap.createdAt
+              })),
               ...adminPosts.map((post: any) => ({
                 type: 'admin-post' as const,
                 data: post,
@@ -267,6 +309,13 @@ export default function Dashboard() {
               <div className="space-y-6">
                 {sortedTimeline.map((item, index) => {
                   switch (item.type) {
+                    case 'competition-recap':
+                      return (
+                        <CompetitionRecapCard
+                          key={`recap-${item.data.id}`}
+                          recap={item.data}
+                        />
+                      );
                     case 'admin-post':
                       return <AdminPostCard key={`admin-${item.data.id}`} post={item.data} />;
                     case 'advertisement':
@@ -285,7 +334,7 @@ export default function Dashboard() {
                 })}
                 
                 {/* Show message for user activities if only admin content exists */}
-                {activities.length === 0 && (adminPosts.length > 0 || advertisements.length > 0) && (
+                {activities.length === 0 && (adminPosts.length > 0 || advertisements.length > 0 || competitionRecaps.length > 0) && (
                   <Card className="tile-card">
                     <CardContent className="py-8">
                       <div className="text-center">
@@ -310,16 +359,18 @@ export default function Dashboard() {
       {/* Onboarding Walkthrough */}
       <OnboardingWalkthrough
         isOpen={showOnboarding}
+        mode="onboarding"
         onClose={() => {
           setShowOnboarding(false);
         }}
-        initialArchetype={(user as any)?.fitnessArchetype || ''}
+        initialHabitGoal={(user as any)?.healthyHabitGoal || ''}
         initialActivities={(user as any)?.fitnessActivities || ''}
         onSaveSurvey={(data, notify) => {
           saveSurveyMutation.mutate({ data, notify });
         }}
-        onComplete={(survey) => {
+        onComplete={(survey, firstAction) => {
           completeOnboardingMutation.mutate(survey);
+          handleFirstAction(firstAction);
         }}
       />
     </div>

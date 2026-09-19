@@ -7,10 +7,20 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { UserPlus, Phone, Search, Users, Send, Copy, MessageSquare } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { UserPlus, Phone, Search, Users, Send, Copy, MessageSquare, MoonStar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthRequired } from "@/lib/auth";
 import { apiRequest, uploadUrl } from "@/lib/queryClient";
+
+interface InviteSuggestion {
+  id: number;
+  username: string;
+  avatar: string | null;
+  lastActivityAt: string | null;
+  activityCount: number;
+  daysQuiet: number | null;
+}
 
 interface TeamInviteModalProps {
   isOpen: boolean;
@@ -34,6 +44,65 @@ export default function TeamInviteModal({
   const [phoneNumber, setPhoneNumber] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [inviteUrl, setInviteUrl] = useState("");
+  const [selectedSuggestions, setSelectedSuggestions] = useState<number[]>([]);
+
+  // 2-3 buddies who have logged activities before but nothing in the last
+  // 14 days — a nudge to bring them back onto a team.
+  const { data: suggestions = [], isLoading: suggestionsLoading } = useQuery<InviteSuggestion[]>({
+    queryKey: [`/api/teams/${teamId}/invite-suggestions`],
+    queryFn: async () => {
+      const res = await apiRequest("GET", `/api/teams/${teamId}/invite-suggestions`);
+      return res.json();
+    },
+    enabled: isOpen && !!teamId,
+    staleTime: 60 * 1000,
+  });
+
+  const toggleSuggestion = (userId: number) => {
+    setSelectedSuggestions((prev) =>
+      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId],
+    );
+  };
+
+  // Send invites to every selected suggestion, then close like a single invite does.
+  const inviteSelectedSuggestions = useMutation({
+    mutationFn: async (userIds: number[]) => {
+      const results: { userId: number; ok: boolean; message?: string }[] = [];
+      for (const userId of userIds) {
+        try {
+          const res = await apiRequest("POST", `/api/teams/${teamId}/invite-user`, {
+            userId,
+            invitedBy: user?.id,
+          });
+          results.push({ userId, ok: res.ok });
+        } catch (err: any) {
+          results.push({ userId, ok: false, message: err?.message });
+        }
+      }
+      return results;
+    },
+    onSuccess: (results) => {
+      const sent = results.filter((r) => r.ok);
+      const failed = results.filter((r) => !r.ok);
+      const nameOf = (id: number) => suggestions.find((sug) => sug.id === id)?.username || `user ${id}`;
+      if (sent.length > 0) {
+        toast({
+          title: sent.length === 1 ? "Invitation Sent" : "Invitations Sent",
+          description: `Invited ${sent.map((r) => nameOf(r.userId)).join(", ")}`,
+        });
+      }
+      if (failed.length > 0) {
+        toast({
+          title: "Some invites didn't go through",
+          description: failed.map((r) => nameOf(r.userId)).join(", "),
+          variant: "destructive",
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: [`/api/teams/${teamId}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/teams/${teamId}/invite-suggestions`] });
+      if (sent.length > 0) handleClose();
+    },
+  });
 
   // Get all users for search
   const { data: allUsers = [] } = useQuery({
@@ -145,6 +214,7 @@ export default function TeamInviteModal({
     setPhoneNumber("");
     setSearchQuery("");
     setInviteUrl("");
+    setSelectedSuggestions([]);
   };
 
   const handleClose = () => {
@@ -187,6 +257,77 @@ export default function TeamInviteModal({
           </TabsList>
 
           <TabsContent value="app-users" className="space-y-4">
+            {(suggestionsLoading || suggestions.length > 0) && (
+              <div
+                className="rounded-lg border border-steel-blue/40 bg-steel-blue/10 p-3 space-y-3"
+                data-testid="section-invite-suggestions"
+              >
+                <div className="flex items-start gap-2">
+                  <MoonStar className="h-4 w-4 text-steel-blue mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-white text-sm font-semibold">Buddies who've gone quiet</p>
+                    <p className="text-gray-400 text-xs">
+                      They've logged activities before but nothing in the last 14 days. Pick who to bring back.
+                    </p>
+                  </div>
+                </div>
+
+                {suggestionsLoading ? (
+                  <p className="text-gray-400 text-xs">Finding buddies...</p>
+                ) : (
+                  <div className="space-y-2">
+                    {suggestions.map((sug) => {
+                      const checked = selectedSuggestions.includes(sug.id);
+                      return (
+                        <label
+                          key={sug.id}
+                          className={`flex items-center gap-3 p-2 rounded-lg border cursor-pointer transition-colors ${
+                            checked
+                              ? "border-military-green bg-military-green/10"
+                              : "border-tactical-gray bg-tactical-gray-light hover:border-tactical-gray-lighter"
+                          }`}
+                          data-testid={`row-invite-suggestion-${sug.id}`}
+                        >
+                          <Checkbox
+                            checked={checked}
+                            onCheckedChange={() => toggleSuggestion(sug.id)}
+                            className="border-gray-500 data-[state=checked]:bg-military-green data-[state=checked]:border-military-green"
+                          />
+                          <Avatar className="h-9 w-9">
+                            <AvatarImage src={sug.avatar ? uploadUrl(sug.avatar) : undefined} />
+                            <AvatarFallback className="bg-military-green text-forest-green text-xs">
+                              {getInitials(sug.username)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-white text-sm font-medium truncate">{sug.username}</p>
+                            <p className="text-gray-400 text-xs">
+                              {sug.activityCount} {sug.activityCount === 1 ? "activity" : "activities"} logged
+                              {sug.daysQuiet !== null ? ` · quiet for ${sug.daysQuiet} days` : ""}
+                            </p>
+                          </div>
+                        </label>
+                      );
+                    })}
+                    <Button
+                      size="sm"
+                      onClick={() => inviteSelectedSuggestions.mutate(selectedSuggestions)}
+                      disabled={selectedSuggestions.length === 0 || inviteSelectedSuggestions.isPending}
+                      className="w-full bg-military-green hover:bg-military-green-light text-forest-green"
+                      data-testid="button-invite-selected"
+                    >
+                      <Send className="h-4 w-4 mr-2" />
+                      {inviteSelectedSuggestions.isPending
+                        ? "Sending..."
+                        : selectedSuggestions.length > 0
+                        ? `Invite ${selectedSuggestions.length} selected`
+                        : "Select buddies to invite"}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="search" className="text-gray-300">
                 Search for users to invite

@@ -3,7 +3,8 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import Navigation from "@/components/navigation";
-import { Camera, ThumbsUp, MessageCircle, Flag, Trash2, X } from "lucide-react";
+import { Camera, MessageCircle, Flag, Trash2, X } from "lucide-react";
+import { ClapIcon } from "@/components/icons/clap-icon";
 import { queryClient, apiRequest, API_BASE, uploadUrl } from "@/lib/queryClient";
 import ActivitySubmissionModal from "@/components/activity-submission-modal";
 import { useToast } from "@/hooks/use-toast";
@@ -305,7 +306,7 @@ export default function ActivityFeed() {
                       onClick={() => likeActivity.mutate(activity.id)}
                       className="flex items-center gap-2 text-gray-400 hover:text-military-green transition-colors text-sm"
                     >
-                      <ThumbsUp className="h-4 w-4" />
+                      <ClapIcon className="h-[18px] w-[18px]" />
                       <span>{activity.likesCount || 0}</span>
                     </button>
                     

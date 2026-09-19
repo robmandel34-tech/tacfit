@@ -1,8 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ClapIcon } from "@/components/icons/clap-icon";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ThumbsUp, MessageCircle, Flag, Users, Image, Mountain, Trash2, ChevronDown, ChevronUp, BadgeCheck, Check, Brain, BookOpenCheck, HeartPulse, Flame, Sparkles, Wind } from "lucide-react";
+import { MessageCircle, Flag, Users, Image, Mountain, Trash2, ChevronDown, ChevronUp, BadgeCheck, Check, Brain, BookOpenCheck, HeartPulse, Flame, Sparkles, Wind } from "lucide-react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -646,11 +647,9 @@ export default function ActivityCard({ activity, onLike, onFlag, showFlagButton 
                   color: userLikeStatus ? '#7cb342' : undefined
                 }}
               >
-                <ThumbsUp 
-                  className="h-4 w-4" 
-                  style={{
-                    fill: userLikeStatus ? '#7cb342' : 'none'
-                  }}
+                <ClapIcon
+                  className="h-[18px] w-[18px]"
+                  filled={!!userLikeStatus}
                 />
                 <span>{currentLikeCount}</span>
               </button>

@@ -12,7 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import defaultAvatarSoldier from "@/assets/default-avatar-soldier.png";
-import { Trophy, Target, Users, Calendar, UserPlus, MessageCircle, Send, Clock, Check, X, Bell, Camera, Upload, Search, Edit, Trash2, ShieldOff, Info, ChevronDown, Lock } from "lucide-react";
+import { Trophy, Target, Users, Calendar, UserPlus, MessageCircle, Send, Clock, Check, X, Bell, Camera, Upload, Search, Edit, Trash2, ShieldOff, Info, ChevronDown, Lock, Award } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, uploadUrl, API_BASE } from "@/lib/queryClient";
 import { getReadinessDisplay, type ReadinessData } from "@/lib/readiness";
@@ -514,6 +514,18 @@ export default function Profile() {
                                           <p className="text-combat-orange text-sm font-bold">{record.pointsEarned} pts</p>
                                         </div>
                                       </div>
+                                      {record.hasRecap && record.competitionId && (
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => setLocation(`/competitions/${record.competitionId}/card/${targetUserId}`)}
+                                          className="mt-2 w-full border-military-green/60 text-military-green hover:bg-military-green hover:text-forest-green"
+                                          data-testid={`button-view-recap-card-${record.competitionId}`}
+                                        >
+                                          <Award className="h-4 w-4 mr-2" />
+                                          View momento card
+                                        </Button>
+                                      )}
                                     </div>
                                   ))}
                                 </>

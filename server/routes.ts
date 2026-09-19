@@ -22,7 +22,7 @@ import { ObjectStorageService, ObjectNotFoundError } from './objectStorage.js';
 import { db } from "./db";
 import { pool } from "./db";
 import { and, eq, sql } from "drizzle-orm";
-import { users as usersTable, competitionEntries as competitionEntriesTable, authTokens as authTokensTable, pointsTransactions as pointsTransactionsTable, activities as activitiesTable, activityFlags as activityFlagsTable } from "@shared/schema";
+import { users as usersTable, competitions as competitionsTable, competitionEntries as competitionEntriesTable, authTokens as authTokensTable, pointsTransactions as pointsTransactionsTable, activities as activitiesTable, activityFlags as activityFlagsTable } from "@shared/schema";
 import { desc } from "drizzle-orm";
 
 // Record a single points-balance change so users can see their history.
@@ -56,6 +56,14 @@ import { exec } from "child_process";
 import { promisify } from "util";
 import { generateVerificationToken, sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail } from "./email-service";
 import { notifySlack } from "./slack-service";
+import {
+  computeCompetitionRecap,
+  saveCompetitionRecap,
+  getCompetitionRecap,
+  getRecapUserStats,
+  competitionIdsWithRecap,
+  listRecapsForViewer,
+} from "./competition-recap";
 import { runDigest, buildCompetitionDigest } from "./digest-service";
 import { webhookService } from "./webhook-service";
 import Stripe from "stripe";
@@ -221,23 +229,40 @@ async function completeCompetition(competitionId: number) {
     
     console.log(`Competition type: ${competition.paymentType}`);
     
-    // Mark competition as completed
-    await storage.updateCompetition(competitionId, {
-      isCompleted: true,
-      completedAt: new Date()
-    });
+    // Mark completed atomically: only the first caller flips the flag, so two
+    // concurrent requests (e.g. two users loading the competitions list at the
+    // same moment) can't both distribute rewards and write history.
+    const claimed = await db
+      .update(competitionsTable)
+      .set({ isCompleted: true, completedAt: new Date() })
+      .where(and(eq(competitionsTable.id, competitionId), eq(competitionsTable.isCompleted, false)))
+      .returning({ id: competitionsTable.id });
+    if (claimed.length === 0) {
+      console.log(`Competition ${competitionId} is already being completed; skipping`);
+      return;
+    }
     
-    // Get all teams for this competition, sorted by points (highest first)
-    const teams = await storage.getTeamsByCompetition(competitionId);
-    const sortedTeams = teams.sort((a, b) => (b.points || 0) - (a.points || 0));
+    // Final standings are computed once from the activities that counted
+    // (same math as the standings page) and frozen as the competition recap —
+    // the source for the feed auto-post and each participant's momento card.
+    // If the recap can't be saved we roll the completion flag back so the next
+    // pass retries instead of leaving a finished competition with no recap.
+    let recapData;
+    try {
+      recapData = await computeCompetitionRecap(competition);
+      await saveCompetitionRecap(recapData);
+    } catch (recapError) {
+      console.error(`Failed to build recap for competition ${competitionId}; leaving it open to retry:`, recapError);
+      await storage.updateCompetition(competitionId, { isCompleted: false, completedAt: null });
+      return;
+    }
+    const sortedTeams = recapData.rankedTeams;
     
     // Distribute rewards based on placement and record in history
-    for (let i = 0; i < sortedTeams.length; i++) {
-      const team = sortedTeams[i];
-      const placement = i + 1;
-      
-      // Get team members
-      const teamMembers = await storage.getTeamMembers(team.id);
+    for (const ranked of sortedTeams) {
+      const team = ranked.team;
+      const placement = ranked.rank;
+      const teamMembers = ranked.members;
       
       // Determine points based on placement
       let captainPoints = 0;
@@ -1125,8 +1150,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
       
-      const { password, ...userWithoutPassword } = user;
-      res.json(userWithoutPassword);
+      const { password, healthyHabitGoal, fitnessActivities, fitnessArchetype, ...publicUser } = user;
+      // Onboarding survey answers are personal; only the user (or an admin) sees them.
+      const viewerId = req.session?.userId;
+      let includeSurvey = viewerId === user.id;
+      if (!includeSurvey && viewerId) {
+        const viewer = await storage.getUser(viewerId);
+        includeSurvey = !!viewer?.isAdmin;
+      }
+      res.json(includeSurvey ? { ...publicUser, healthyHabitGoal, fitnessActivities, fitnessArchetype } : publicUser);
     } catch (error) {
       res.status(500).json({ message: "Error fetching user" });
     }
@@ -1373,6 +1405,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (typeof req.body?.fitnessActivities === "string" && req.body.fitnessActivities.trim()) {
         updates.fitnessActivities = req.body.fitnessActivities.trim().slice(0, 2000);
       }
+      if (typeof req.body?.healthyHabitGoal === "string" && req.body.healthyHabitGoal.trim()) {
+        updates.healthyHabitGoal = req.body.healthyHabitGoal.trim().slice(0, 500);
+      }
 
       // Mark onboarding as completed (and store survey answers if provided)
       const updatedUser = await storage.updateUser(userId, updates);
@@ -1419,6 +1454,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (typeof req.body?.fitnessActivities === "string") {
         updates.fitnessActivities = req.body.fitnessActivities.trim().slice(0, 2000);
       }
+      if (typeof req.body?.healthyHabitGoal === "string") {
+        updates.healthyHabitGoal = req.body.healthyHabitGoal.trim().slice(0, 500);
+      }
 
       if (Object.keys(updates).length === 0) {
         return res.status(400).json({ message: "No valid survey fields provided" });
@@ -1446,16 +1484,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
           clown: "Inconsistent",
           survivor: "Struggling",
         };
-        const archetype = updatedUser.fitnessArchetype
-          ? (archetypeLabels[updatedUser.fitnessArchetype] || updatedUser.fitnessArchetype)
+        const habitGoal = updatedUser.healthyHabitGoal?.trim()
+          ? updatedUser.healthyHabitGoal.trim()
           : "(not answered)";
         const activities = updatedUser.fitnessActivities?.trim()
           ? updatedUser.fitnessActivities.trim()
           : "(none provided)";
+        // Legacy field from the pre-habit-question survey; only shown when present.
+        const archetype = updatedUser.fitnessArchetype
+          ? (archetypeLabels[updatedUser.fitnessArchetype] || updatedUser.fitnessArchetype)
+          : null;
         notifySlack(
           `📋 *Onboarding survey* — ${updatedUser.username} (${updatedUser.email})\n` +
-            `• *Current whole fitness:* ${archetype}\n` +
-            `• *Activities (do now / want more):* ${activities}`,
+            `• *Habit they want to make stick:* ${habitGoal}\n` +
+            `• *Activities (do now / want more):* ${activities}` +
+            (archetype ? `\n• *Current whole fitness:* ${archetype}` : ""),
           "onboarding",
         );
       }
@@ -1852,9 +1895,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Complete competition and distribute rewards
+  // Complete competition and distribute rewards (admin only — this freezes
+  // standings, pays out rewards and publishes the recap to the feed).
   app.post("/api/competitions/:id/complete", async (req, res) => {
     try {
+      const sessionUserId = req.session?.userId;
+      if (!sessionUserId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      const sessionUser = await storage.getUser(sessionUserId);
+      if (!sessionUser?.isAdmin) {
+        return res.status(403).json({ message: "Forbidden — admin only" });
+      }
       const competitionId = parseInt(req.params.id);
       const competition = await storage.getCompetition(competitionId);
       
@@ -2057,7 +2109,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           senderId: userId,
           teamId,
           type: "team",
-          content: `${scheduler?.username || "A teammate"} scheduled a team call: "${title}" for ${when}. Open Team to join when it's time.`,
+          content: `${scheduler?.username || "A teammate"} scheduled a Team Muster: "${title}" for ${when}. Open Team to join when it's time.`,
         });
       } catch (msgErr) {
         console.error("Failed to post call chat message:", msgErr);
@@ -4449,6 +4501,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json([]);
       }
       const history = await storage.getCompetitionHistory(targetId);
+      // Competitions that finished after recaps shipped have a momento card.
+      const withRecap = await competitionIdsWithRecap(
+        history.map((r) => r.competitionId!).filter((id) => typeof id === "number"),
+      );
       
       // Get competition and team details
       const historyWithDetails = await Promise.all(
@@ -4459,7 +4515,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return {
             ...record,
             competition: competition ? { id: competition.id, name: competition.name } : null,
-            team: team ? { id: team.id, name: team.name } : null
+            team: team ? { id: team.id, name: team.name } : null,
+            hasRecap: withRecap.has(record.competitionId!),
           };
         })
       );
@@ -4467,6 +4524,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(historyWithDetails);
     } catch (error) {
       res.status(500).json({ message: "Error fetching competition history" });
+    }
+  });
+
+  // End-of-competition recaps for the Intel Feed: one item per finished
+  // competition (overall summary + final team standings, no individual stats).
+  // Private competitions are only surfaced to people who took part.
+  app.get("/api/competition-recaps", async (req, res) => {
+    try {
+      const viewerId = (req.session?.userId || req.session?.user?.id || null) as number | null;
+      if (!viewerId) return res.status(401).json({ message: "Not authenticated" });
+      const viewer = await storage.getUser(viewerId);
+      const { recaps, participated } = await listRecapsForViewer(viewerId);
+      const items = [];
+      for (const recap of recaps) {
+        const competition = await storage.getCompetition(recap.competitionId);
+        if (!competition) continue;
+        const viewerParticipated = participated.has(recap.competitionId);
+        if (competition.isPrivate && !viewerParticipated && !viewer?.isAdmin) continue;
+        // A competition nobody took part in has nothing worth posting.
+        if (!recap.summary?.participantCount) continue;
+        items.push({
+          id: recap.id,
+          competitionId: recap.competitionId,
+          createdAt: recap.createdAt,
+          summary: recap.summary,
+          viewerParticipated,
+        });
+      }
+      res.json(items);
+    } catch (error) {
+      console.error("Error fetching competition recaps:", error);
+      res.status(500).json({ message: "Error fetching competition recaps" });
+    }
+  });
+
+  // A single competition's recap, optionally with one participant's stats for
+  // the momento card. Individual stats follow profile privacy: the owner, and
+  // anyone allowed to view that profile's details, can see them.
+  app.get("/api/competitions/:id/recap", async (req, res) => {
+    try {
+      const competitionId = parseInt(req.params.id);
+      const viewerId = (req.session?.userId || req.session?.user?.id || null) as number | null;
+      if (!viewerId) return res.status(401).json({ message: "Not authenticated" });
+      const competition = await storage.getCompetition(competitionId);
+      const recap = await getCompetitionRecap(competitionId);
+      if (!competition || !recap) {
+        return res.status(404).json({ message: "No recap for this competition yet" });
+      }
+
+      const requestedUserId = req.query.userId ? parseInt(String(req.query.userId)) : viewerId;
+      const targetUserId = Number.isFinite(requestedUserId) ? requestedUserId : viewerId;
+      const viewerStats = await getRecapUserStats(competitionId, viewerId);
+
+      if (competition.isPrivate && !viewerStats) {
+        const viewer = await storage.getUser(viewerId);
+        if (!viewer?.isAdmin) return res.status(403).json({ message: "This competition was private" });
+      }
+
+      let userStats = null;
+      let userStatsHidden = false;
+      const targetStats = targetUserId === viewerId ? viewerStats : await getRecapUserStats(competitionId, targetUserId);
+      if (targetStats) {
+        if (await canViewProfileDetails(viewerId, targetUserId)) {
+          userStats = targetStats;
+        } else {
+          userStatsHidden = true;
+        }
+      }
+
+      res.json({
+        id: recap.id,
+        competitionId,
+        createdAt: recap.createdAt,
+        summary: recap.summary,
+        userStats,
+        userStatsHidden,
+        viewerParticipated: !!viewerStats,
+      });
+    } catch (error) {
+      console.error("Error fetching competition recap:", error);
+      res.status(500).json({ message: "Error fetching competition recap" });
     }
   });
 
@@ -4643,10 +4781,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Suggest 2-3 "gone quiet" users to invite to a team: people who have logged
+  // an activity before but nothing in the last 14 days, and who could actually
+  // accept (not already on this team, not on a team in a live competition, no
+  // pending invite to this team).
+  app.get("/api/teams/:teamId/invite-suggestions", async (req, res) => {
+    try {
+      const teamId = parseInt(req.params.teamId);
+      const viewerId = (req.session?.userId || req.session?.user?.id || null) as number | null;
+      if (!viewerId) return res.status(401).json({ message: "Not authenticated" });
+      const team = await storage.getTeam(teamId);
+      if (!team) return res.status(404).json({ message: "Team not found" });
+      const requesterMembership = await storage.getTeamMemberByUserAndTeam(viewerId, teamId);
+      if (!requesterMembership) return res.status(403).json({ message: "Only team members can invite" });
+
+      const quietSince = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+      const candidates = await db.execute(sql`
+        SELECT u.id, u.username, u.avatar,
+               MAX(a.created_at) AS last_activity_at,
+               COUNT(a.id)::int AS activity_count
+        FROM users u
+        JOIN activities a ON a.user_id = u.id
+        WHERE u.id <> ${viewerId}
+          AND COALESCE(u.is_suspended, false) = false
+          AND COALESCE(u.profile_public, true) = true
+          AND NOT EXISTS (
+            SELECT 1 FROM team_members tm
+            JOIN teams t ON t.id = tm.team_id
+            JOIN competitions c ON c.id = t.competition_id
+            WHERE tm.user_id = u.id
+              AND (tm.team_id = ${teamId} OR COALESCE(c.is_completed, false) = false)
+          )
+          AND NOT EXISTS (
+            SELECT 1 FROM user_invitations ui
+            WHERE ui.user_id = u.id AND ui.team_id = ${teamId} AND ui.status = 'pending'
+          )
+        GROUP BY u.id
+        HAVING MAX(a.created_at) < ${quietSince}
+        ORDER BY MAX(a.created_at) DESC
+        LIMIT 3
+      `);
+      const rows = (candidates.rows as any[]).map((r) => ({
+        id: Number(r.id),
+        username: r.username as string,
+        avatar: (r.avatar as string | null) ?? null,
+        lastActivityAt: r.last_activity_at ? new Date(r.last_activity_at).toISOString() : null,
+        activityCount: Number(r.activity_count) || 0,
+        daysQuiet: r.last_activity_at
+          ? Math.floor((Date.now() - new Date(r.last_activity_at).getTime()) / 86_400_000)
+          : null,
+      }));
+      res.json(rows);
+    } catch (error) {
+      console.error("Error fetching invite suggestions:", error);
+      res.status(500).json({ message: "Error fetching invite suggestions" });
+    }
+  });
+
   app.post("/api/teams/:teamId/invite-user", async (req, res) => {
     try {
-      const { userId, invitedBy } = req.body;
       const teamId = parseInt(req.params.teamId);
+      const userId = parseInt(req.body?.userId);
+      // The inviter is always the signed-in user — never trusted from the body.
+      const invitedBy = req.session?.userId;
+      if (!invitedBy) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      if (!Number.isFinite(teamId) || !Number.isFinite(userId)) {
+        return res.status(400).json({ message: "Invalid team or user" });
+      }
+      const inviterMembership = await storage.getTeamMemberByUserAndTeam(invitedBy, teamId);
+      if (!inviterMembership) {
+        return res.status(403).json({ message: "Only team members can invite" });
+      }
       
       // Check if user is already on this team
       const existingMember = await storage.getTeamMemberByUserAndTeam(userId, teamId);
@@ -4696,6 +4903,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/users/:userId/team-invitations", async (req, res) => {
     try {
       const userId = parseInt(req.params.userId);
+      const sessionUserId = req.session?.userId;
+      if (!sessionUserId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      if (sessionUserId !== userId) {
+        const sessionUser = await storage.getUser(sessionUserId);
+        if (!sessionUser?.isAdmin) {
+          return res.status(403).json({ message: "Forbidden" });
+        }
+      }
       const invitations = await storage.getUserInvitations(userId);
 
       // Enrich with team, competition, and inviter details

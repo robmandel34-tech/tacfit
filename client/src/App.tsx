@@ -97,6 +97,8 @@ import ActivityTrackingHelp from "@/pages/help/activity-tracking";
 import PointSystemHelp from "@/pages/help/point-system";
 import NavigationHelp from "@/pages/help/navigation";
 import CommunityGuidelinesHelp from "@/pages/help/community-guidelines";
+import WalkthroughHelp from "@/pages/help/walkthrough";
+import CompetitionCardPage from "@/pages/competition-card";
 import Settings from "@/pages/settings";
 import BottomNavigation from "@/components/bottom-navigation";
 import FloatingActionButton from "@/components/floating-action-button";
@@ -131,6 +133,8 @@ function Router() {
         <Route path="/help/point-system" component={PointSystemHelp} />
         <Route path="/help/navigation" component={NavigationHelp} />
         <Route path="/help/community-guidelines" component={CommunityGuidelinesHelp} />
+        <Route path="/help/walkthrough" component={WalkthroughHelp} />
+        <Route path="/competitions/:competitionId/card/:userId?" component={CompetitionCardPage} />
         <Route path="/settings" component={Settings} />
         <Route component={NotFound} />
       </Switch>

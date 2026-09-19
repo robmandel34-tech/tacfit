@@ -10,19 +10,21 @@ export default function Navigation() {
   const { user, logout } = useAuth();
   const [location, navigate] = useLocation();
 
-  if (!user) return null;
-
+  // Hooks must run on every render (even before the user is loaded), so the
+  // queries are declared first and simply disabled until we have a user id.
   // Get pending tasks for notification count
-  const { data: pendingTasks = [] } = useQuery({
-    queryKey: [`/api/mission-tasks/user/${user.id}/pending`],
-    enabled: !!user.id,
+  const { data: pendingTasks = [] } = useQuery<any[]>({
+    queryKey: [`/api/mission-tasks/user/${user?.id}/pending`],
+    enabled: !!user?.id,
   });
 
   // Get unread message count
-  const { data: conversations = [] } = useQuery({
-    queryKey: ["/api/conversations", user.id],
-    enabled: !!user.id,
+  const { data: conversations = [] } = useQuery<any[]>({
+    queryKey: ["/api/conversations", user?.id],
+    enabled: !!user?.id,
   });
+
+  if (!user) return null;
 
   const pendingTasksCount = Array.isArray(pendingTasks) ? pendingTasks.length : 0;
   const unreadMessagesCount = conversations.reduce((total: number, conv: any) => total + Number(conv.unreadCount || 0), 0);

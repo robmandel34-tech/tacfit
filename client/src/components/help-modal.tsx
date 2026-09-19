@@ -185,6 +185,7 @@ export function HelpModal() {
       {/* Onboarding Walkthrough */}
       <OnboardingWalkthrough
         isOpen={showOnboarding}
+        mode="tour"
         onClose={() => setShowOnboarding(false)}
         onComplete={() => setShowOnboarding(false)}
       />

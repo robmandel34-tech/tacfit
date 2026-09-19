@@ -94,7 +94,7 @@ export default function TeamCallsCard({ teamId, userId, isCaptain }: TeamCallsCa
       setIsDialogOpen(false);
       setTitle("");
       setWhen(defaultDateTimeLocal());
-      toast({ title: "Call scheduled", description: "Your teammates can see it now." });
+      toast({ title: "Team Muster scheduled", description: "Your teammates can see it now." });
     },
     onError: (err: any) => {
       toast({
@@ -111,7 +111,7 @@ export default function TeamCallsCard({ teamId, userId, isCaptain }: TeamCallsCa
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [`/api/teams/${teamId}/calls`] });
-      toast({ title: "Call cancelled" });
+      toast({ title: "Team Muster cancelled" });
     },
     onError: (err: any) => {
       toast({
@@ -130,7 +130,7 @@ export default function TeamCallsCard({ teamId, userId, isCaptain }: TeamCallsCa
         <div className="flex items-center justify-between">
           <CardTitle className="text-white flex items-center gap-2">
             <CalendarClock className="h-5 w-5 text-green-400" />
-            Upcoming Calls
+            Team Musters
           </CardTitle>
           <Button
             size="sm"
@@ -139,16 +139,16 @@ export default function TeamCallsCard({ teamId, userId, isCaptain }: TeamCallsCa
             className="bg-green-700 hover:bg-green-600"
           >
             <Plus className="h-4 w-4 mr-1" />
-            Schedule
+            Schedule a Team Muster
           </Button>
         </div>
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <p className="text-gray-400 text-sm">Loading calls...</p>
+          <p className="text-gray-400 text-sm">Loading Team Musters...</p>
         ) : upcoming.length === 0 ? (
           <p className="text-gray-400 text-sm" data-testid="text-no-calls">
-            No calls scheduled yet. Tap Schedule to set up a team call.
+            No Team Musters scheduled yet. Tap "Schedule a Team Muster" to set up a live video muster with your team.
           </p>
         ) : (
           <ul className="space-y-3">
@@ -188,7 +188,7 @@ export default function TeamCallsCard({ teamId, userId, isCaptain }: TeamCallsCa
                         onClick={() => cancelMutation.mutate(call.id)}
                         disabled={cancelMutation.isPending}
                         data-testid={`button-cancel-call-${call.id}`}
-                        aria-label="Cancel call"
+                        aria-label="Cancel Team Muster"
                         className="text-gray-400 hover:text-red-400"
                       >
                         <X className="h-4 w-4" />
@@ -205,19 +205,19 @@ export default function TeamCallsCard({ teamId, userId, isCaptain }: TeamCallsCa
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent data-testid="dialog-schedule-call">
           <DialogHeader>
-            <DialogTitle>Schedule a team call</DialogTitle>
+            <DialogTitle>Schedule a Team Muster</DialogTitle>
             <DialogDescription>
               Pick a name and time. Everyone on your team will see it and can join with one tap.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label htmlFor="call-title">Call name</Label>
+              <Label htmlFor="call-title">Muster name</Label>
               <Input
                 id="call-title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g. Weekly team huddle"
+                placeholder="e.g. Weekly Team Muster"
                 maxLength={120}
                 data-testid="input-call-title"
               />
@@ -243,7 +243,7 @@ export default function TeamCallsCard({ teamId, userId, isCaptain }: TeamCallsCa
               data-testid="button-confirm-schedule"
               className="bg-green-700 hover:bg-green-600"
             >
-              {scheduleMutation.isPending ? "Scheduling..." : "Schedule call"}
+              {scheduleMutation.isPending ? "Scheduling..." : "Schedule Team Muster"}
             </Button>
           </DialogFooter>
         </DialogContent>

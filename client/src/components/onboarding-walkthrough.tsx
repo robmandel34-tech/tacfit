@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,13 +16,16 @@ import {
   MapPin,
   CheckCircle,
   Play,
-  X,
   ExternalLink,
   Mountain,
   Shield,
   AlertTriangle,
   UserCheck,
   Zap,
+  Compass,
+  UserCircle,
+  Map,
+  Sparkles,
 } from 'lucide-react';
 import { Link } from 'wouter';
 
@@ -34,99 +37,562 @@ interface OnboardingStep {
   content: React.ReactNode;
 }
 
-interface OnboardingSurvey {
-  fitnessArchetype: string;
+export interface OnboardingSurvey {
+  healthyHabitGoal: string;
   fitnessActivities: string;
 }
+
+// What a brand-new user picked on the "What do you want to do first?" slide.
+export type OnboardingFirstAction =
+  | 'competitions'
+  | 'profile'
+  | 'submit-activity'
+  | 'walkthrough'
+  | 'explore';
+
+// Fired when the user picks "Submit your first activity" — the floating action
+// button owns the submission modal and listens for this.
+export const OPEN_ACTIVITY_SUBMISSION_EVENT = 'muster:open-activity-submission';
 
 interface OnboardingWalkthroughProps {
   isOpen: boolean;
   onClose: () => void;
-  onComplete: (survey: OnboardingSurvey) => void;
+  // 'onboarding' = the two-question check-in + "what first?" chooser shown to
+  // new accounts. 'tour' = the full feature walkthrough (help portal).
+  mode?: 'onboarding' | 'tour';
+  onComplete: (survey: OnboardingSurvey, firstAction?: OnboardingFirstAction) => void;
   // Persists survey answers as the user advances, before onboarding is finished.
   // notify=true signals the answers are complete and should be posted to Slack.
   onSaveSurvey?: (
-    data: { fitnessArchetype?: string; fitnessActivities?: string },
+    data: { healthyHabitGoal?: string; fitnessActivities?: string },
     notify: boolean,
   ) => void;
-  initialArchetype?: string;
+  initialHabitGoal?: string;
   initialActivities?: string;
 }
 
-const ARCHETYPE_OPTIONS = [
+const FIRST_ACTION_OPTIONS: Array<{
+  value: OnboardingFirstAction;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+}> = [
   {
-    value: 'servant',
-    title: 'Excellent',
-    description: '',
+    value: 'competitions',
+    title: 'Join your first competition / team',
+    description: 'Browse open competitions and pick a squad.',
+    icon: <Trophy className="h-5 w-5" />,
   },
   {
-    value: 'clown',
-    title: 'Inconsistent',
-    description: '',
+    value: 'profile',
+    title: 'Set up your profile',
+    description: 'Add a photo, bio and your privacy preferences.',
+    icon: <UserCircle className="h-5 w-5" />,
   },
   {
-    value: 'survivor',
-    title: 'Struggling',
-    description: '',
+    value: 'submit-activity',
+    title: 'Submit your first activity',
+    description: 'Log a workout on your own — no competition needed.',
+    icon: <Activity className="h-5 w-5" />,
+  },
+  {
+    value: 'walkthrough',
+    title: 'Walk through the overview',
+    description: 'A short guided tour of how Muster Up works.',
+    icon: <Map className="h-5 w-5" />,
+  },
+  {
+    value: 'explore',
+    title: 'Just start exploring',
+    description: 'Drop into the Intel Feed and look around.',
+    icon: <Compass className="h-5 w-5" />,
   },
 ];
 
-export function OnboardingWalkthrough({ isOpen, onClose, onComplete, onSaveSurvey, initialArchetype, initialActivities }: OnboardingWalkthroughProps) {
+// The full feature tour. Static content, so it lives outside the component.
+const TOUR_STEPS: OnboardingStep[] = [
+  {
+    id: 'welcome',
+    title: 'Welcome to Muster Up',
+    description: 'Your tactical fitness competition platform',
+    icon: <Trophy className="h-6 w-6" />,
+    content: (
+      <div className="space-y-4">
+        <div className="text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-military-green/20">
+            <Trophy className="h-8 w-8 text-military-green" />
+          </div>
+          <h3 className="text-xl font-bold text-white mb-2">Mission Briefing</h3>
+          <p className="text-gray-300">
+            Muster Up is a team-based fitness competition platform where you'll join teams, 
+            complete fitness activities, and compete for victory.
+          </p>
+        </div>
+        <div className="grid grid-cols-2 gap-4 mt-6">
+          <div className="text-center p-3 rounded-lg bg-gray-800/50">
+            <Users className="h-6 w-6 text-military-green mx-auto mb-2" />
+            <p className="text-sm text-gray-300">Team-based</p>
+          </div>
+          <div className="text-center p-3 rounded-lg bg-gray-800/50">
+            <Target className="h-6 w-6 text-military-green mx-auto mb-2" />
+            <p className="text-sm text-gray-300">Goal-oriented</p>
+          </div>
+        </div>
+
+        {/* Early Adopter callout */}
+        <div className="mt-4 p-4 rounded-xl border border-amber-500/40 bg-amber-500/10">
+          <div className="flex items-start gap-3">
+            <Zap className="h-5 w-5 text-amber-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-amber-300 font-semibold text-sm mb-1">Early Adopter Advantage</p>
+              <p className="text-gray-300 text-sm">
+                All competitions are <strong className="text-white">currently free</strong> to enter. 
+                Future paid competitions can be unlocked using your earned points — so joining now 
+                and stacking points is your best chance to keep competing for free long-term.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-center mt-6">
+          <Link href="/help/navigation">
+            <Button 
+              variant="default" 
+              size="sm"
+              className="bg-military-green hover:bg-military-green/80 text-forest-green font-medium"
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Learn More About Navigation
+            </Button>
+          </Link>
+        </div>
+      </div>
+    )
+  },
+  {
+    id: 'competitions',
+    title: 'Tactical Operations',
+    description: 'How competitions work in Muster Up',
+    icon: <Target className="h-6 w-6" />,
+    content: (
+      <div className="space-y-4">
+        <div className="bg-gray-800/50 p-4 rounded-lg">
+          <h4 className="font-semibold text-white mb-3">Competition Structure</h4>
+          <div className="space-y-3">
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-forest-green">1</div>
+              <div>
+                <p className="text-sm font-medium text-white">Join Window</p>
+                <p className="text-xs text-gray-400">Limited time to join and form teams</p>
+              </div>
+            </div>
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-forest-green">2</div>
+              <div>
+                <p className="text-sm font-medium text-white">Competition Period</p>
+                <p className="text-xs text-gray-400">2-4 weeks of tactical training challenges</p>
+              </div>
+            </div>
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-forest-green">3</div>
+              <div>
+                <p className="text-sm font-medium text-white">Victory & Rewards</p>
+                <p className="text-xs text-gray-400">Points awarded based on team performance</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="bg-yellow-900/20 border border-yellow-600/30 p-3 rounded-lg">
+          <p className="text-sm text-yellow-200">
+            <strong>Pro Tip:</strong> Competitions have specific activity requirements like cardio training, 
+            strength operations, and mobility training.
+          </p>
+        </div>
+        <div className="flex justify-center mt-4">
+          <Link href="/help/competition-system">
+            <Button 
+              variant="default" 
+              size="sm"
+              className="bg-military-green hover:bg-military-green/80 text-forest-green font-medium"
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Learn More About Competitions
+            </Button>
+          </Link>
+        </div>
+      </div>
+    )
+  },
+  {
+    id: 'teams',
+    title: 'Team Formation',
+    description: 'Building your tactical team',
+    icon: <Users className="h-6 w-6" />,
+    content: (
+      <div className="space-y-4">
+        <div className="bg-gray-800/50 p-4 rounded-lg">
+          <h4 className="font-semibold text-white mb-3">Team Dynamics</h4>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-2 bg-gray-700/50 rounded">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                <span className="text-sm text-white">Team Captain</span>
+              </div>
+              <Badge variant="outline" className="text-xs border-gray-600 text-gray-300">Leadership role</Badge>
+            </div>
+            <div className="flex items-center justify-between p-2 bg-gray-700/50 rounded">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 rounded-full bg-military-green text-forest-green"></div>
+                <span className="text-sm text-white">Team Members</span>
+              </div>
+              <Badge variant="outline" className="text-xs border-gray-600 text-gray-300">Support role</Badge>
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="text-center p-3 bg-gray-800/30 rounded-lg">
+            <MessageSquare className="h-5 w-5 text-military-green mx-auto mb-1" />
+            <p className="text-xs text-gray-300">Team Chat</p>
+          </div>
+          <div className="text-center p-3 bg-gray-800/30 rounded-lg">
+            <CheckCircle className="h-5 w-5 text-military-green mx-auto mb-1" />
+            <p className="text-xs text-gray-300">Mission Planning</p>
+          </div>
+        </div>
+        <p className="text-sm text-gray-300">
+          Teams work together to complete training goals and climb the leaderboard. 
+          Communication and coordination are key to victory.
+        </p>
+        <div className="flex justify-center mt-4">
+          <Link href="/help/team-formation">
+            <Button 
+              variant="default" 
+              size="sm"
+              className="bg-military-green hover:bg-military-green/80 text-forest-green font-medium"
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Learn More About Teams
+            </Button>
+          </Link>
+        </div>
+      </div>
+    )
+  },
+  {
+    id: 'activities',
+    title: 'Activity Submission',
+    description: 'Tracking your tactical training',
+    icon: <Activity className="h-6 w-6" />,
+    content: (
+      <div className="space-y-4">
+        <div className="bg-gray-800/50 p-4 rounded-lg">
+          <h4 className="font-semibold text-white mb-3">How to Submit Activities</h4>
+          <div className="space-y-3">
+            <div className="flex items-center space-x-3 p-2 bg-gray-700/30 rounded">
+              <div className="w-8 h-8 rounded-full bg-military-green flex items-center justify-center text-forest-green">
+                <span className="text-xs text-black font-bold">⊕</span>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-white">Click the Crosshair Icon</p>
+                <p className="text-xs text-gray-400">Located in the bottom-right corner of any page</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3 p-2 bg-gray-700/30 rounded">
+              <div className="w-8 h-8 rounded bg-military-green/20 flex items-center justify-center">
+                <span className="text-xs text-military-green">📝</span>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-white">Fill Out Activity Details</p>
+                <p className="text-xs text-gray-400">Choose activity type, quantity, and description</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3 p-2 bg-gray-700/30 rounded">
+              <div className="w-8 h-8 rounded bg-military-green/20 flex items-center justify-center">
+                <span className="text-xs text-military-green">📷</span>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-white">Add Evidence</p>
+                <p className="text-xs text-gray-400">Upload photos and videos to earn maximum points</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="bg-military-green/20 border border-military-green/30 p-3 rounded-lg">
+          <h5 className="font-semibold text-military-green mb-2">Point System</h5>
+          <div className="space-y-1 text-sm">
+            <p className="text-gray-300">• Points scale with effort: <strong className="text-white">2 pts per minute or per rep (a 20 min run = 40 pts)</strong></p>
+            <p className="text-gray-300">• Evidence bonus: <strong className="text-white">+15 with a photo, +30 with video</strong></p>
+            <p className="text-gray-300">• Camera-verified sessions: <strong className="text-white">double points</strong></p>
+          </div>
+        </div>
+        <p className="text-sm text-gray-300">
+          Submit your training activities with evidence to earn points for your team. 
+          The more evidence you provide, the more points you earn!
+        </p>
+        <div className="flex justify-center mt-4">
+          <Link href="/help/activity-tracking">
+            <Button 
+              variant="default" 
+              size="sm"
+              className="bg-military-green hover:bg-military-green/80 text-forest-green font-medium"
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Learn More About Activities
+            </Button>
+          </Link>
+        </div>
+      </div>
+    )
+  },
+  {
+    id: 'navigation',
+    title: 'Command Center',
+    description: 'Navigating the application',
+    icon: <MapPin className="h-6 w-6" />,
+    content: (
+      <div className="space-y-4">
+        <div className="bg-gray-800/50 p-4 rounded-lg">
+          <h4 className="font-semibold text-white mb-3">Main Navigation</h4>
+          <div className="space-y-3">
+            <div className="flex items-center space-x-3 p-2 bg-gray-700/30 rounded">
+              <div className="w-8 h-8 rounded bg-military-green/20 flex items-center justify-center">
+                <Activity className="h-4 w-4 text-military-green" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-white">Intel Feed</p>
+                <p className="text-xs text-gray-400">View all team activities and updates</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3 p-2 bg-gray-700/30 rounded">
+              <div className="w-8 h-8 rounded bg-military-green/20 flex items-center justify-center">
+                <Mountain className="h-4 w-4 text-military-green" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-white">Competitions</p>
+                <p className="text-xs text-gray-400">Browse and join tactical operations</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3 p-2 bg-gray-700/30 rounded">
+              <div className="w-8 h-8 rounded bg-military-green/20 flex items-center justify-center">
+                <Shield className="h-4 w-4 text-military-green" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-white">Team</p>
+                <p className="text-xs text-gray-400">Manage your team and view progress</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="bg-blue-900/20 border border-blue-600/30 p-3 rounded-lg">
+          <p className="text-sm text-blue-200">
+            <strong>Navigation Tip:</strong> The bottom navigation is always available. The Team tab will only appear after you join a competition and team.
+          </p>
+        </div>
+        <div className="flex justify-center mt-4">
+          <Link href="/help/navigation">
+            <Button 
+              variant="default" 
+              size="sm"
+              className="bg-military-green hover:bg-military-green/80 text-forest-green font-medium"
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Learn More About Navigation
+            </Button>
+          </Link>
+        </div>
+      </div>
+    )
+  },
+  {
+    id: 'community-guidelines',
+    title: 'Rules of Engagement',
+    description: 'Community standards and tactical etiquette',
+    icon: <Shield className="h-6 w-6" />,
+    content: (
+      <div className="space-y-4">
+        <div className="text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-military-green/20">
+            <UserCheck className="h-8 w-8 text-military-green" />
+          </div>
+          <h3 className="text-xl font-bold text-white mb-2">Community Standards</h3>
+          <p className="text-gray-300">
+            Muster Up supports free speech and encourages light-hearted banter between teams. 
+            Some friendly poking and competitive spirit makes competitions fun!
+          </p>
+        </div>
+
+        <div className="bg-military-green/20 border border-military-green/30 p-4 rounded-lg">
+          <h4 className="font-semibold text-military-green mb-3">What's Encouraged</h4>
+          <div className="space-y-2">
+            <div className="flex items-center space-x-3">
+              <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
+              <span className="text-sm text-gray-300">Friendly competitive banter</span>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
+              <span className="text-sm text-gray-300">Team motivation and support</span>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
+              <span className="text-sm text-gray-300">Sharing fitness tips and advice</span>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
+              <span className="text-sm text-gray-300">Celebrating team victories</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-red-900/20 border border-red-600/30 p-4 rounded-lg">
+          <h4 className="font-semibold text-red-400 mb-3 flex items-center">
+            <AlertTriangle className="h-5 w-5 mr-2" />
+            Prohibited Conduct
+          </h4>
+          <div className="space-y-3">
+            <div>
+              <p className="text-sm font-medium text-white mb-1">Harassment & Abuse</p>
+              <p className="text-xs text-gray-300">Personal attacks, discriminatory language, or targeted harassment will result in immediate suspension.</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-white mb-1">Cheating & False Evidence</p>
+              <p className="text-xs text-gray-300">Submitting fake activities, manipulated photos, or false data.</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-white mb-1">Spam & Disruption</p>
+              <p className="text-xs text-gray-300">Excessive posting, off-topic content, or disrupting team communications.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-orange-900/20 border border-orange-600/30 p-4 rounded-lg">
+          <h4 className="font-semibold text-orange-400 mb-2">⚠️ Team Disqualification</h4>
+          <p className="text-sm text-orange-200">
+            <strong>Important:</strong> If any team member is caught cheating with false activity submissions, 
+            <strong className="text-orange-100"> your entire team can be disqualified</strong> from the competition. 
+            Team captains are responsible for ensuring all submissions are legitimate.
+          </p>
+        </div>
+
+        <div className="bg-gray-800/50 p-4 rounded-lg">
+          <h4 className="font-semibold text-white mb-3">Consequences</h4>
+          <div className="space-y-2 text-sm">
+            <div className="flex items-center justify-between p-2 bg-gray-700/30 rounded">
+              <span className="text-gray-300">First Warning</span>
+              <span className="text-yellow-400 text-xs">Official notice</span>
+            </div>
+            <div className="flex items-center justify-between p-2 bg-gray-700/30 rounded">
+              <span className="text-gray-300">Repeated Violations</span>
+              <span className="text-orange-400 text-xs">Account suspension</span>
+            </div>
+            <div className="flex items-center justify-between p-2 bg-gray-700/30 rounded">
+              <span className="text-gray-300">Severe Misconduct</span>
+              <span className="text-red-400 text-xs">Permanent ban</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-blue-900/20 border border-blue-600/30 p-3 rounded-lg">
+          <p className="text-sm text-blue-200">
+            <strong>Remember:</strong> Muster Up is about building a supportive fitness community. 
+            Respect your fellow operators and play fair!
+          </p>
+        </div>
+      </div>
+    )
+  },
+  {
+    id: 'ready',
+    title: 'Ready for Action',
+    description: 'Your mission begins now',
+    icon: <Play className="h-6 w-6" />,
+    content: (
+      <div className="space-y-4 text-center">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-military-green/20">
+          <CheckCircle className="h-8 w-8 text-military-green" />
+        </div>
+        <h3 className="text-xl font-bold text-white mb-2">Mission Briefing Complete</h3>
+        <p className="text-gray-300 mb-4">
+          You're now ready to join the tactical fitness community. Start by browsing competitions 
+          and joining a team that matches your goals.
+        </p>
+        <div className="bg-gray-800/50 p-4 rounded-lg">
+          <h4 className="font-semibold text-white mb-3">Next Steps:</h4>
+          <div className="space-y-2 text-left">
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
+              <span className="text-sm text-gray-300">Browse available competitions</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
+              <span className="text-sm text-gray-300">Join or create a team</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
+              <span className="text-sm text-gray-300">Start submitting activities</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
+              <span className="text-sm text-gray-300">Communicate with your team</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-center mt-4">
+          <Link href="/help/point-system">
+            <Button 
+              variant="default" 
+              size="sm"
+              className="bg-military-green hover:bg-military-green/80 text-forest-green font-medium"
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Learn More About Points
+            </Button>
+          </Link>
+        </div>
+      </div>
+    )
+  }
+];
+
+export function OnboardingWalkthrough({
+  isOpen,
+  onClose,
+  mode = 'tour',
+  onComplete,
+  onSaveSurvey,
+  initialHabitGoal,
+  initialActivities,
+}: OnboardingWalkthroughProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
-  const [fitnessArchetype, setFitnessArchetype] = useState(initialArchetype || '');
+  const [healthyHabitGoal, setHealthyHabitGoal] = useState(initialHabitGoal || '');
   const [fitnessActivities, setFitnessActivities] = useState(initialActivities || '');
   // Ensures we only fire the "survey finished" notify once per walkthrough,
   // even if the user navigates Back then Next past the survey again.
   const surveyNotifiedRef = useRef(false);
 
-  const steps: OnboardingStep[] = [
+  const onboardingSteps: OnboardingStep[] = [
     {
-      id: 'survey-archetype',
+      id: 'survey-habit',
       title: 'Quick Check-In',
-      description: 'Tell us where you are right now',
+      description: 'Two quick questions, then you are in',
       icon: <Target className="h-6 w-6" />,
       content: (
         <div className="space-y-4">
           <h3 className="text-lg font-bold text-white">
-            How would you describe your current whole fitness (mind, body and spirit)?
+            What healthy habit do you want to make a lasting habit of?
           </h3>
-          <p className="text-sm text-gray-400">There are no wrong answers — pick the one that fits best today.</p>
-          <div className="space-y-3">
-            {ARCHETYPE_OPTIONS.map((option) => {
-              const selected = fitnessArchetype === option.value;
-              return (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => setFitnessArchetype(option.value)}
-                  className={`w-full text-left p-4 rounded-lg border transition-all ${
-                    selected
-                      ? 'border-military-green bg-military-green/15 ring-1 ring-military-green'
-                      : 'border-gray-700 bg-gray-800/50 hover:border-gray-500'
-                  }`}
-                >
-                  <div className="flex items-start space-x-3">
-                    <div
-                      className={`mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border ${
-                        selected ? 'border-military-green bg-military-green' : 'border-gray-500'
-                      }`}
-                    >
-                      {selected && <CheckCircle className="h-4 w-4 text-forest-green" />}
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-white">{option.title}</p>
-                      {option.description && (
-                        <p className="text-xs text-gray-400 mt-0.5">{option.description}</p>
-                      )}
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+          <p className="text-sm text-gray-400">
+            Mind, body or spirit — whatever you want to stick this time.
+          </p>
+          <Textarea
+            value={healthyHabitGoal}
+            onChange={(e) => setHealthyHabitGoal(e.target.value)}
+            placeholder="Examples: Run three mornings a week, daily prayer, lights out by 10pm..."
+            maxLength={500}
+            className="min-h-[96px] bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 focus-visible:ring-military-green"
+            data-testid="input-habit-goal"
+          />
         </div>
-      )
+      ),
     },
     {
       id: 'survey-activities',
@@ -143,465 +609,59 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete, onSaveSurve
             onChange={(e) => setFitnessActivities(e.target.value)}
             placeholder="Examples: Running, Reading, Yoga, Meditation/Prayer..."
             className="min-h-[140px] bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 focus-visible:ring-military-green"
+            data-testid="input-fitness-activities"
           />
           <p className="text-xs text-gray-500">Optional — you can skip this and update it later.</p>
         </div>
-      )
+      ),
     },
     {
-      id: 'welcome',
-      title: 'Welcome to Muster Up',
-      description: 'Your tactical fitness competition platform',
-      icon: <Trophy className="h-6 w-6" />,
+      id: 'first-action',
+      title: 'You are in',
+      description: 'Pick a starting point',
+      icon: <Sparkles className="h-6 w-6" />,
       content: (
         <div className="space-y-4">
-          <div className="text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-military-green/20">
-              <Trophy className="h-8 w-8 text-military-green" />
-            </div>
-            <h3 className="text-xl font-bold text-white mb-2">Mission Briefing</h3>
-            <p className="text-gray-300">
-              Muster Up is a team-based fitness competition platform where you'll join teams, 
-              complete fitness activities, and compete for victory.
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-4 mt-6">
-            <div className="text-center p-3 rounded-lg bg-gray-800/50">
-              <Users className="h-6 w-6 text-military-green mx-auto mb-2" />
-              <p className="text-sm text-gray-300">Team-based</p>
-            </div>
-            <div className="text-center p-3 rounded-lg bg-gray-800/50">
-              <Target className="h-6 w-6 text-military-green mx-auto mb-2" />
-              <p className="text-sm text-gray-300">Goal-oriented</p>
-            </div>
-          </div>
-
-          {/* Early Adopter callout */}
-          <div className="mt-4 p-4 rounded-xl border border-amber-500/40 bg-amber-500/10">
-            <div className="flex items-start gap-3">
-              <Zap className="h-5 w-5 text-amber-400 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-amber-300 font-semibold text-sm mb-1">Early Adopter Advantage</p>
-                <p className="text-gray-300 text-sm">
-                  All competitions are <strong className="text-white">currently free</strong> to enter. 
-                  Future paid competitions can be unlocked using your earned points — so joining now 
-                  and stacking points is your best chance to keep competing for free long-term.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-center mt-6">
-            <Link href="/help/navigation">
-              <Button 
-                variant="default" 
-                size="sm"
-                className="bg-military-green hover:bg-military-green/80 text-forest-green font-medium"
+          <h3 className="text-lg font-bold text-white">What do you want to do first?</h3>
+          <div className="space-y-2">
+            {FIRST_ACTION_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => handleFirstAction(option.value)}
+                className="w-full text-left p-4 rounded-lg border border-gray-700 bg-gray-800/50 hover:border-military-green hover:bg-military-green/10 transition-all flex items-center gap-3"
+                data-testid={`button-first-action-${option.value}`}
               >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Learn More About Navigation
-              </Button>
-            </Link>
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-military-green/20 text-military-green">
+                  {option.icon}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-white">{option.title}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{option.description}</p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-gray-500 ml-auto flex-shrink-0" />
+              </button>
+            ))}
           </div>
         </div>
-      )
+      ),
     },
-    {
-      id: 'competitions',
-      title: 'Tactical Operations',
-      description: 'How competitions work in Muster Up',
-      icon: <Target className="h-6 w-6" />,
-      content: (
-        <div className="space-y-4">
-          <div className="bg-gray-800/50 p-4 rounded-lg">
-            <h4 className="font-semibold text-white mb-3">Competition Structure</h4>
-            <div className="space-y-3">
-              <div className="flex items-start space-x-3">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-forest-green">1</div>
-                <div>
-                  <p className="text-sm font-medium text-white">Join Window</p>
-                  <p className="text-xs text-gray-400">Limited time to join and form teams</p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-forest-green">2</div>
-                <div>
-                  <p className="text-sm font-medium text-white">Competition Period</p>
-                  <p className="text-xs text-gray-400">2-4 weeks of tactical training challenges</p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-military-green flex items-center justify-center text-xs font-bold text-forest-green">3</div>
-                <div>
-                  <p className="text-sm font-medium text-white">Victory & Rewards</p>
-                  <p className="text-xs text-gray-400">Points awarded based on team performance</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="bg-yellow-900/20 border border-yellow-600/30 p-3 rounded-lg">
-            <p className="text-sm text-yellow-200">
-              <strong>Pro Tip:</strong> Competitions have specific activity requirements like cardio training, 
-              strength operations, and mobility training.
-            </p>
-          </div>
-          <div className="flex justify-center mt-4">
-            <Link href="/help/competition-system">
-              <Button 
-                variant="default" 
-                size="sm"
-                className="bg-military-green hover:bg-military-green/80 text-forest-green font-medium"
-              >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Learn More About Competitions
-              </Button>
-            </Link>
-          </div>
-        </div>
-      )
-    },
-    {
-      id: 'teams',
-      title: 'Team Formation',
-      description: 'Building your tactical team',
-      icon: <Users className="h-6 w-6" />,
-      content: (
-        <div className="space-y-4">
-          <div className="bg-gray-800/50 p-4 rounded-lg">
-            <h4 className="font-semibold text-white mb-3">Team Dynamics</h4>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-2 bg-gray-700/50 rounded">
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                  <span className="text-sm text-white">Team Captain</span>
-                </div>
-                <Badge variant="outline" className="text-xs border-gray-600 text-gray-300">Leadership role</Badge>
-              </div>
-              <div className="flex items-center justify-between p-2 bg-gray-700/50 rounded">
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 rounded-full bg-military-green text-forest-green"></div>
-                  <span className="text-sm text-white">Team Members</span>
-                </div>
-                <Badge variant="outline" className="text-xs border-gray-600 text-gray-300">Support role</Badge>
-              </div>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="text-center p-3 bg-gray-800/30 rounded-lg">
-              <MessageSquare className="h-5 w-5 text-military-green mx-auto mb-1" />
-              <p className="text-xs text-gray-300">Team Chat</p>
-            </div>
-            <div className="text-center p-3 bg-gray-800/30 rounded-lg">
-              <CheckCircle className="h-5 w-5 text-military-green mx-auto mb-1" />
-              <p className="text-xs text-gray-300">Mission Planning</p>
-            </div>
-          </div>
-          <p className="text-sm text-gray-300">
-            Teams work together to complete training goals and climb the leaderboard. 
-            Communication and coordination are key to victory.
-          </p>
-          <div className="flex justify-center mt-4">
-            <Link href="/help/team-formation">
-              <Button 
-                variant="default" 
-                size="sm"
-                className="bg-military-green hover:bg-military-green/80 text-forest-green font-medium"
-              >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Learn More About Teams
-              </Button>
-            </Link>
-          </div>
-        </div>
-      )
-    },
-    {
-      id: 'activities',
-      title: 'Activity Submission',
-      description: 'Tracking your tactical training',
-      icon: <Activity className="h-6 w-6" />,
-      content: (
-        <div className="space-y-4">
-          <div className="bg-gray-800/50 p-4 rounded-lg">
-            <h4 className="font-semibold text-white mb-3">How to Submit Activities</h4>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3 p-2 bg-gray-700/30 rounded">
-                <div className="w-8 h-8 rounded-full bg-military-green flex items-center justify-center text-forest-green">
-                  <span className="text-xs text-black font-bold">⊕</span>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-white">Click the Crosshair Icon</p>
-                  <p className="text-xs text-gray-400">Located in the bottom-right corner of any page</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3 p-2 bg-gray-700/30 rounded">
-                <div className="w-8 h-8 rounded bg-military-green/20 flex items-center justify-center">
-                  <span className="text-xs text-military-green">📝</span>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-white">Fill Out Activity Details</p>
-                  <p className="text-xs text-gray-400">Choose activity type, quantity, and description</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3 p-2 bg-gray-700/30 rounded">
-                <div className="w-8 h-8 rounded bg-military-green/20 flex items-center justify-center">
-                  <span className="text-xs text-military-green">📷</span>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-white">Add Evidence</p>
-                  <p className="text-xs text-gray-400">Upload photos and videos to earn maximum points</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="bg-military-green/20 border border-military-green/30 p-3 rounded-lg">
-            <h5 className="font-semibold text-military-green mb-2">Point System</h5>
-            <div className="space-y-1 text-sm">
-              <p className="text-gray-300">• Points scale with effort: <strong className="text-white">2 pts per minute or per rep (a 20 min run = 40 pts)</strong></p>
-              <p className="text-gray-300">• Evidence bonus: <strong className="text-white">+15 with a photo, +30 with video</strong></p>
-              <p className="text-gray-300">• Camera-verified sessions: <strong className="text-white">double points</strong></p>
-            </div>
-          </div>
-          <p className="text-sm text-gray-300">
-            Submit your training activities with evidence to earn points for your team. 
-            The more evidence you provide, the more points you earn!
-          </p>
-          <div className="flex justify-center mt-4">
-            <Link href="/help/activity-tracking">
-              <Button 
-                variant="default" 
-                size="sm"
-                className="bg-military-green hover:bg-military-green/80 text-forest-green font-medium"
-              >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Learn More About Activities
-              </Button>
-            </Link>
-          </div>
-        </div>
-      )
-    },
-    {
-      id: 'navigation',
-      title: 'Command Center',
-      description: 'Navigating the application',
-      icon: <MapPin className="h-6 w-6" />,
-      content: (
-        <div className="space-y-4">
-          <div className="bg-gray-800/50 p-4 rounded-lg">
-            <h4 className="font-semibold text-white mb-3">Main Navigation</h4>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3 p-2 bg-gray-700/30 rounded">
-                <div className="w-8 h-8 rounded bg-military-green/20 flex items-center justify-center">
-                  <Activity className="h-4 w-4 text-military-green" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-white">Intel Feed</p>
-                  <p className="text-xs text-gray-400">View all team activities and updates</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3 p-2 bg-gray-700/30 rounded">
-                <div className="w-8 h-8 rounded bg-military-green/20 flex items-center justify-center">
-                  <Mountain className="h-4 w-4 text-military-green" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-white">Competitions</p>
-                  <p className="text-xs text-gray-400">Browse and join tactical operations</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3 p-2 bg-gray-700/30 rounded">
-                <div className="w-8 h-8 rounded bg-military-green/20 flex items-center justify-center">
-                  <Shield className="h-4 w-4 text-military-green" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-white">Team</p>
-                  <p className="text-xs text-gray-400">Manage your team and view progress</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="bg-blue-900/20 border border-blue-600/30 p-3 rounded-lg">
-            <p className="text-sm text-blue-200">
-              <strong>Navigation Tip:</strong> The bottom navigation is always available. The Team tab will only appear after you join a competition and team.
-            </p>
-          </div>
-          <div className="flex justify-center mt-4">
-            <Link href="/help/navigation">
-              <Button 
-                variant="default" 
-                size="sm"
-                className="bg-military-green hover:bg-military-green/80 text-forest-green font-medium"
-              >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Learn More About Navigation
-              </Button>
-            </Link>
-          </div>
-        </div>
-      )
-    },
-    {
-      id: 'community-guidelines',
-      title: 'Rules of Engagement',
-      description: 'Community standards and tactical etiquette',
-      icon: <Shield className="h-6 w-6" />,
-      content: (
-        <div className="space-y-4">
-          <div className="text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-military-green/20">
-              <UserCheck className="h-8 w-8 text-military-green" />
-            </div>
-            <h3 className="text-xl font-bold text-white mb-2">Community Standards</h3>
-            <p className="text-gray-300">
-              Muster Up supports free speech and encourages light-hearted banter between teams. 
-              Some friendly poking and competitive spirit makes competitions fun!
-            </p>
-          </div>
-
-          <div className="bg-military-green/20 border border-military-green/30 p-4 rounded-lg">
-            <h4 className="font-semibold text-military-green mb-3">What's Encouraged</h4>
-            <div className="space-y-2">
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
-                <span className="text-sm text-gray-300">Friendly competitive banter</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
-                <span className="text-sm text-gray-300">Team motivation and support</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
-                <span className="text-sm text-gray-300">Sharing fitness tips and advice</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
-                <span className="text-sm text-gray-300">Celebrating team victories</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-red-900/20 border border-red-600/30 p-4 rounded-lg">
-            <h4 className="font-semibold text-red-400 mb-3 flex items-center">
-              <AlertTriangle className="h-5 w-5 mr-2" />
-              Prohibited Conduct
-            </h4>
-            <div className="space-y-3">
-              <div>
-                <p className="text-sm font-medium text-white mb-1">Harassment & Abuse</p>
-                <p className="text-xs text-gray-300">Personal attacks, discriminatory language, or targeted harassment will result in immediate suspension.</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-white mb-1">Cheating & False Evidence</p>
-                <p className="text-xs text-gray-300">Submitting fake activities, manipulated photos, or false data.</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-white mb-1">Spam & Disruption</p>
-                <p className="text-xs text-gray-300">Excessive posting, off-topic content, or disrupting team communications.</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-orange-900/20 border border-orange-600/30 p-4 rounded-lg">
-            <h4 className="font-semibold text-orange-400 mb-2">⚠️ Team Disqualification</h4>
-            <p className="text-sm text-orange-200">
-              <strong>Important:</strong> If any team member is caught cheating with false activity submissions, 
-              <strong className="text-orange-100"> your entire team can be disqualified</strong> from the competition. 
-              Team captains are responsible for ensuring all submissions are legitimate.
-            </p>
-          </div>
-
-          <div className="bg-gray-800/50 p-4 rounded-lg">
-            <h4 className="font-semibold text-white mb-3">Consequences</h4>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between p-2 bg-gray-700/30 rounded">
-                <span className="text-gray-300">First Warning</span>
-                <span className="text-yellow-400 text-xs">Official notice</span>
-              </div>
-              <div className="flex items-center justify-between p-2 bg-gray-700/30 rounded">
-                <span className="text-gray-300">Repeated Violations</span>
-                <span className="text-orange-400 text-xs">Account suspension</span>
-              </div>
-              <div className="flex items-center justify-between p-2 bg-gray-700/30 rounded">
-                <span className="text-gray-300">Severe Misconduct</span>
-                <span className="text-red-400 text-xs">Permanent ban</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-blue-900/20 border border-blue-600/30 p-3 rounded-lg">
-            <p className="text-sm text-blue-200">
-              <strong>Remember:</strong> Muster Up is about building a supportive fitness community. 
-              Respect your fellow operators and play fair!
-            </p>
-          </div>
-        </div>
-      )
-    },
-    {
-      id: 'ready',
-      title: 'Ready for Action',
-      description: 'Your mission begins now',
-      icon: <Play className="h-6 w-6" />,
-      content: (
-        <div className="space-y-4 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-military-green/20">
-            <CheckCircle className="h-8 w-8 text-military-green" />
-          </div>
-          <h3 className="text-xl font-bold text-white mb-2">Mission Briefing Complete</h3>
-          <p className="text-gray-300 mb-4">
-            You're now ready to join the tactical fitness community. Start by browsing competitions 
-            and joining a team that matches your goals.
-          </p>
-          <div className="bg-gray-800/50 p-4 rounded-lg">
-            <h4 className="font-semibold text-white mb-3">Next Steps:</h4>
-            <div className="space-y-2 text-left">
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
-                <span className="text-sm text-gray-300">Browse available competitions</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
-                <span className="text-sm text-gray-300">Join or create a team</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
-                <span className="text-sm text-gray-300">Start submitting activities</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 rounded-full bg-military-green text-forest-green"></div>
-                <span className="text-sm text-gray-300">Communicate with your team</span>
-              </div>
-            </div>
-          </div>
-          <div className="flex justify-center mt-4">
-            <Link href="/help/point-system">
-              <Button 
-                variant="default" 
-                size="sm"
-                className="bg-military-green hover:bg-military-green/80 text-forest-green font-medium"
-              >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Learn More About Points
-              </Button>
-            </Link>
-          </div>
-        </div>
-      )
-    }
   ];
+
+  const steps = mode === 'onboarding' ? onboardingSteps : TOUR_STEPS;
+  const currentStepData = steps[Math.min(currentStep, steps.length - 1)];
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
       // Persist survey answers as the user moves past each question, so they're
-      // saved even if the user closes the walkthrough before finishing the tour.
+      // saved even if the user closes the walkthrough before finishing.
       const leavingId = currentStepData.id;
-      if (leavingId === 'survey-archetype' && fitnessArchetype) {
-        onSaveSurvey?.({ fitnessArchetype }, false);
+      if (leavingId === 'survey-habit' && healthyHabitGoal.trim()) {
+        onSaveSurvey?.({ healthyHabitGoal: healthyHabitGoal.trim() }, false);
       } else if (leavingId === 'survey-activities' && !surveyNotifiedRef.current) {
         surveyNotifiedRef.current = true;
-        onSaveSurvey?.({ fitnessArchetype, fitnessActivities }, true);
+        onSaveSurvey?.({ healthyHabitGoal: healthyHabitGoal.trim(), fitnessActivities }, true);
       }
-      setCompletedSteps(prev => new Set([...Array.from(prev), currentStep]));
       setCurrentStep(currentStep + 1);
     }
   };
@@ -612,15 +672,26 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete, onSaveSurve
     }
   };
 
+  const survey = (): OnboardingSurvey => ({
+    healthyHabitGoal: healthyHabitGoal.trim(),
+    fitnessActivities,
+  });
+
   const handleComplete = () => {
-    setCompletedSteps(prev => new Set([...Array.from(prev), currentStep]));
-    onComplete({ fitnessArchetype, fitnessActivities });
+    onComplete(survey());
     onClose();
   };
 
+  function handleFirstAction(action: OnboardingFirstAction) {
+    onComplete(survey(), action);
+    onClose();
+  }
+
   const progress = ((currentStep + 1) / steps.length) * 100;
-  const currentStepData = steps[currentStep];
-  const nextDisabled = currentStepData.id === 'survey-archetype' && !fitnessArchetype;
+  const isLastStep = currentStep === steps.length - 1;
+  const nextDisabled = currentStepData.id === 'survey-habit' && !healthyHabitGoal.trim();
+  // The chooser slide completes onboarding through its own buttons.
+  const hideFooterAction = currentStepData.id === 'first-action';
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -686,12 +757,14 @@ export function OnboardingWalkthrough({ isOpen, onClose, onComplete, onSaveSurve
             ))}
           </div>
 
-          {currentStep === steps.length - 1 ? (
+          {hideFooterAction ? (
+            <div className="w-[104px]" aria-hidden="true" />
+          ) : isLastStep ? (
             <Button
               onClick={handleComplete}
               className="bg-military-green hover:bg-military-green/80 text-forest-green font-semibold"
             >
-              Start Mission
+              {mode === 'onboarding' ? 'Start Mission' : 'Finish'}
               <Play className="h-4 w-4 ml-2" />
             </Button>
           ) : (

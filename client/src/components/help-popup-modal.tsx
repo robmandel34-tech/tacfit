@@ -186,6 +186,7 @@ export function HelpPopupModal({ isOpen, onClose }: HelpPopupModalProps) {
       {/* Onboarding Walkthrough */}
       <OnboardingWalkthrough
         isOpen={showOnboarding}
+        mode="tour"
         onClose={() => setShowOnboarding(false)}
         onComplete={() => setShowOnboarding(false)}
       />

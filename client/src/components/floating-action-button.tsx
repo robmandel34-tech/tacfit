@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Target, MapPin, X } from "lucide-react";
@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAppleHealth } from "@/hooks/use-apple-health";
 import ActivitySubmissionModal from "@/components/activity-submission-modal";
+import { OPEN_ACTIVITY_SUBMISSION_EVENT } from "@/components/onboarding-walkthrough";
 
 interface TravelPromptWorkout {
   healthKitWorkoutId: string;
@@ -56,6 +57,14 @@ export default function FloatingActionButton() {
     enabled: !!user && appleHealth.native && appleHealth.connected,
     staleTime: 5 * 60 * 1000,
   });
+
+  // Other surfaces (e.g. the onboarding "submit your first activity" choice)
+  // can ask us to open the submission modal without owning it themselves.
+  useEffect(() => {
+    const open = () => setIsModalOpen(true);
+    window.addEventListener(OPEN_ACTIVITY_SUBMISSION_EVENT, open);
+    return () => window.removeEventListener(OPEN_ACTIVITY_SUBMISSION_EVENT, open);
+  }, []);
 
   // Don't show the button if user is not authenticated - moved after all hooks
   if (!user) return null;

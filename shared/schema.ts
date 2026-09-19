@@ -50,6 +50,8 @@ export const users = pgTable("users", {
   // Onboarding survey: whole-fitness self assessment
   fitnessArchetype: text("fitness_archetype"),
   fitnessActivities: text("fitness_activities"),
+  // Onboarding: "What healthy habit do you want to make a lasting habit of?"
+  healthyHabitGoal: text("healthy_habit_goal"),
   // Guards against duplicate Slack posts of the survey (one post per user).
   onboardingSurveyNotified: boolean("onboarding_survey_notified").default(false),
 
@@ -284,6 +286,84 @@ export const competitionHistory = pgTable("competition_history", {
   pointsEarned: integer("points_earned").default(0),
   completedAt: timestamp("completed_at").defaultNow(),
 });
+
+// Frozen end-of-competition "momento" data. One recap per competition, created
+// when the competition is completed; per-participant stats live alongside so a
+// user's card survives later activity edits/deletions.
+export const competitionRecaps = pgTable("competition_recaps", {
+  id: serial("id").primaryKey(),
+  competitionId: integer("competition_id").references(() => competitions.id).notNull().unique(),
+  summary: json("summary").$type<CompetitionRecapSummary>().notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const competitionRecapUserStats = pgTable("competition_recap_user_stats", {
+  id: serial("id").primaryKey(),
+  recapId: integer("recap_id").references(() => competitionRecaps.id).notNull(),
+  competitionId: integer("competition_id").references(() => competitions.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  teamId: integer("team_id").references(() => teams.id),
+  stats: json("stats").$type<CompetitionRecapUserStats>().notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  uniqueIndex("competition_recap_user_stats_recap_user_idx").on(table.recapId, table.userId),
+]);
+
+export interface RecapTeamStanding {
+  teamId: number;
+  name: string;
+  rank: number;
+  points: number;
+  progressPercent: number;
+  memberCount: number;
+  activityCount: number;
+}
+
+export interface RecapActivityTotal {
+  type: string;
+  displayName: string;
+  unit: string;
+  count: number;
+  totalQuantity: number;
+  target: number | null;
+}
+
+export interface CompetitionRecapSummary {
+  competitionId: number;
+  name: string;
+  startDate: string;
+  endDate: string;
+  durationDays: number;
+  teamCount: number;
+  participantCount: number;
+  activityCount: number;
+  totalPoints: number;
+  verifiedCount: number;
+  evidenceCount: number;
+  winner: { teamId: number; name: string; points: number } | null;
+  standings: RecapTeamStanding[];
+  activityTotals: RecapActivityTotal[];
+}
+
+export interface CompetitionRecapUserStats {
+  userId: number;
+  username: string;
+  teamId: number | null;
+  teamName: string | null;
+  teamRank: number | null;
+  teamPoints: number;
+  activityCount: number;
+  points: number;
+  verifiedCount: number;
+  evidenceCount: number;
+  activeDays: number;
+  teamContributionPercent: number;
+  rankInTeam: number | null;
+  byType: RecapActivityTotal[];
+}
+
+export type CompetitionRecap = typeof competitionRecaps.$inferSelect;
+export type CompetitionRecapUserStatsRow = typeof competitionRecapUserStats.$inferSelect;
 
 export const competitionInvitations = pgTable("competition_invitations", {
   id: serial("id").primaryKey(),

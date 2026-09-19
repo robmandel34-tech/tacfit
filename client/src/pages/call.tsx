@@ -135,19 +135,19 @@ export default function Call() {
           Leave
         </Button>
         <span className="text-white text-sm font-semibold truncate">
-          {call?.title || "Team call"}
+          {call?.title || "Team Muster"}
         </span>
       </div>
 
       {(authLoading || isLoading) && (
         <div className="flex h-full items-center justify-center text-white">
-          Connecting to your team call...
+          Connecting to your Team Muster...
         </div>
       )}
 
       {error && (
         <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center text-white">
-          <p>This call isn't available. It may have been cancelled, or you may not be on this team.</p>
+          <p>This Team Muster isn't available. It may have been cancelled, or you may not be on this team.</p>
           <Button onClick={leave} className="bg-green-700 hover:bg-green-600">
             Back to Team
           </Button>

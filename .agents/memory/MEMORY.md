@@ -23,4 +23,5 @@
 - [Competition recaps](competition-recaps.md) — standings frozen once at completion (atomic claim), feed post derived from recap table not admin_posts, share via navigator.share files (no plugin), no backfill.
 - [Headless browser verification](headless-browser-verification.md) — screenshot logged-in pages via chromium+CDP; client needs localStorage.user; never pkill -f your own command string.
 - [Native fetch auth gating](native-fetch-auth-gating.md) — adding auth to an open endpoint breaks iOS raw-fetch callers; migrate callers to apiRequest (bearer) in the same change.
+- [Stripe setup](stripe-setup.md) — paid competition entry only; live secret key everywhere, live pk in prod, TEST pk in dev preview (mismatch left as is by user); safe health-check recipe.
 - [HeyCatch analytics](heycatch-analytics.md) — pin npm `latest` (a `dev` tag exists, must show "(prod)"); native needs tracingHosts + CORS X-POSTHOG-SESSION-ID; only the winning insert tracks an outcome.

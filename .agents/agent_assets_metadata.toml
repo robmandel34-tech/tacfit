@@ -6,111 +6,144 @@ id = "nObh1zuSG_cjZ2-06JgX_"
 uri = "file://exports/tacfit-privacy-policy.txt"
 type = "text"
 title = "TacFit Privacy Policy (HTML — paste into Webflow Embed)"
+logical_id = "3b282365-98c3-4f8d-8149-5e6c88bb0bbb"
 
 [[outputs]]
 id = "_Qra6OVbNx8P75XemL4R9"
 uri = "file://client/public/marketing/og-image.jpg"
 type = "image"
 title = "Preview: new link share image"
+logical_id = "c39326b7-78e0-4be1-8c9c-e0f6f3fe02a1"
 
 [[outputs]]
 id = "KiRdZXZMjZuXtUB2b5EEu"
 uri = "file://marketing-screenshots/readiness-callout.png"
 type = "image"
 title = "Readiness score callout (marketing)"
+logical_id = "21a9843c-ae35-4034-88bb-daa6770521e9"
 
 [[outputs]]
 id = "3mtmVt-nYiBhEn27Lc0Vs"
 uri = "file://marketing-screenshots/competition-map-framed.png"
 type = "image"
 title = "Competition route map — framed"
+logical_id = "ec50a17d-c88e-4905-a1b5-0a1770eddfde"
 
 [[outputs]]
 id = "g9CC0l9rB_DNng6GYp4Bs"
 uri = "file://marketing-screenshots/competition-map.png"
 type = "image"
 title = "Competition route map — clean cut-out (transparent corners)"
+logical_id = "d112edf7-6bb8-4b6c-a7b5-75e0c839d48e"
 
 [[outputs]]
 id = "W5TtePI32AiE2bLA9n9AZ"
 uri = "file://marketing-site.zip"
 type = "unspecified"
 title = "Muster marketing website (Netlify-ready)"
+logical_id = "affde3a5-e997-4d53-8672-8024ddcc8344"
 
 [[outputs]]
 id = "SxhD_0nRBtjtBKe8st8x8"
 uri = "file://muster-marketing-site.zip"
 type = "unspecified"
 title = "Muster marketing site (updated network diagram) — drop into Netlify"
+logical_id = "3bebc16a-bd68-4d19-8b89-412cc3aecd0d"
 
 [[outputs]]
 id = "_AVbKlVh94bwyNj-nxP0G"
 uri = "file://marketing-screenshots/muster-fanfare-preview.mp3"
 type = "audio"
 title = "Muster victory fanfare — preview"
+logical_id = "e0c51b56-b5cd-4048-87ab-fbb9648dd13f"
 
 [[outputs]]
 id = "ehSzy1HTKzeb2bjlmvpR0"
 uri = "file://marketing-screenshots/muster-stadium-sting-preview.mp3"
 type = "audio"
 title = "Muster stadium-anthem sting — preview (original, chant energy)"
+logical_id = "521493c1-31db-485b-b92f-8eb7a64a6fed"
 
 [[outputs]]
 id = "MPW1BaSPbsRHmNf92yudA"
 uri = "file://marketing-screenshots/muster-epic-orchestral-preview.mp3"
 type = "audio"
 title = "Epic orchestral hit — cinematic, choir + boom"
+logical_id = "a79a43c3-576d-4f07-855c-3b7916830cba"
 
 [[outputs]]
 id = "n0LnL_KIAr3QUGjAq4ceu"
 uri = "file://marketing-screenshots/muster-edm-hype-preview.mp3"
 type = "audio"
 title = "EDM hype drop — modern, festival energy"
+logical_id = "301445f4-5e9b-468d-906a-8dc263831fa7"
 
 [[outputs]]
 id = "HOFHUdNEtRhzTtb8-PETs"
 uri = "file://marketing-screenshots/muster-march-drums-preview.mp3"
 type = "audio"
 title = "Tactical march — snare cadence + trumpet flourish"
+logical_id = "2b0284d3-4279-4259-9e59-4662ff2660f5"
 
 [[outputs]]
 id = "T3vRD2LkXL_xUKNwX0Vle"
 uri = "file://marketing-screenshots/muster-stadium-v2-stomp.mp3"
 type = "audio"
 title = "Stadium v2 — stomp-stomp-clap arena rhythm"
+logical_id = "c6e85df6-2b4c-47f3-8d36-886434f09e44"
 
 [[outputs]]
 id = "eCy118BwGyXxf13-65K-n"
 uri = "file://marketing-screenshots/muster-stadium-v3-doubletime.mp3"
 type = "audio"
 title = "Stadium v3 — double-time punk drive"
+logical_id = "17bddf0c-3921-42d4-914e-e94ba95e2038"
 
 [[outputs]]
 id = "Ez3HsxqmQNnevTd49aFgF"
 uri = "file://marketing-screenshots/muster-stadium-v4-gangshout.mp3"
 type = "audio"
 title = "Stadium v4 — half-time groove with crowd 'HEY!'"
+logical_id = "bd951fe8-5a17-4d25-89d9-83c6b6f2cfd9"
 
 [[outputs]]
 id = "bpaprxH7DETLZw3VJzONX"
 uri = "file://exports/marketing-site-20260622-2143.zip"
 type = "unspecified"
 title = "Muster Up marketing site (fresh export 2026-06-22)"
+logical_id = "10207ffc-e13a-42c6-9491-ba2e5ffb0751"
 
 [[outputs]]
 id = "qvfBWTxx7X0gjkQYm--jQ"
 uri = "file://exports/muster-up-drop-and-run.zip"
 type = "unspecified"
 title = "Muster up — Drop & Run animation (latest, open the HTML in a browser)"
+logical_id = "b528ef1c-f82b-4614-ab9b-4dde55b050ea"
 
 [[outputs]]
 id = "RU_EBDgaSttjL0WdkHKyP"
 uri = "file://muster-up-marketing-2026-07-11.zip"
 type = "unspecified"
 title = "Muster Up marketing site (2026-07-11) — drop into Netlify"
+logical_id = "d601cf3a-9366-44f1-84c5-ea654a2a12bf"
 
 [[outputs]]
 id = "12kmV8GnO2MHCRDwgKb0F"
 uri = "file://muster-up-marketing-2026-07-12.zip"
 type = "unspecified"
 title = "Muster Up marketing site — 2026-07-12 (orbit figures, clean screenshots, intro splash)"
+logical_id = "d757e4f7-3cf6-4308-8422-5e74d380d0d7"
+
+[[outputs]]
+id = "Xy3ZXcsom4s3uwodBpxmG"
+uri = "file://docs/Muster-Up-App-Store-Details.docx"
+type = "word_document"
+title = "Muster Up — Updated App Store Details"
+description = "Editable Word document with copy-ready listing fields, updated description, launch-only camera and paid-competition copy, screenshot captions, and the audit change log."
+logical_id = "bb468a65-b077-4497-a370-1506fdcf68c1"
+content_hash = "sha256:0db520b8eec55dcb95d1478807d59b2dc21959696e69d1c6372e9687a1e786db"
+size = 6867
+mtime_ms = 1789790634628
+storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:52c3692b-e3ae-4f26-87b1-b5a765544cd7/bb468a65-b077-4497-a370-1506fdcf68c1/7c40255d-f660-46d5-bf65-a411c57b71d6"
+storage_version_token = "1789790646649490"
+content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"

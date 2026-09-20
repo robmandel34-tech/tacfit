@@ -18,6 +18,19 @@ workflows:
         VITE_API_URL: "https://tacfit.replit.app"
       node: 20.9.0
     scripts:
+      - name: Normalize lockfile registry URLs
+        script: |
+          set -e
+          # Packages installed inside Replit get "resolved" URLs pointing at
+          # Replit's internal package proxy (package-firewall.replit.internal /
+          # .local), which does not resolve from this Mac VM and fails
+          # `npm install` with ENOTFOUND. Point them back at the public
+          # registry; integrity hashes are unchanged (same tarballs).
+          perl -pi -e 's#https?://package-firewall\.replit\.[a-z]+/npm/#https://registry.npmjs.org/#g' package-lock.json
+          if grep -q "package-firewall.replit" package-lock.json; then
+            echo "package-lock.json still references the Replit package proxy" >&2
+            exit 1
+          fi
       - name: Install dependencies
         script: npm install
       - name: Build frontend

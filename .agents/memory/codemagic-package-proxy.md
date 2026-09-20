@@ -1,9 +1,14 @@
 ---
 name: Codemagic vs Replit package proxy
-description: Why Codemagic "Install dependencies" fails with ENOTFOUND package-firewall.replit.local, and how to fix it.
+description: Why Codemagic "Install dependencies" fails with ENOTFOUND package-firewall.replit.internal (formerly .local), and the self-healing yaml step that fixes it.
 ---
 
-# Codemagic build fails: ENOTFOUND package-firewall.replit.local
+# Codemagic build fails: ENOTFOUND package-firewall.replit.internal
+
+**Status (2026-09-20):** codemagic.yaml now has a "Normalize lockfile registry URLs" step
+before `npm install` that rewrites any `package-firewall.replit.<tld>` host back to
+registry.npmjs.org, so this should no longer need a manual fix. The hostname changed from
+`.local` to `.internal` in 2026; the step matches both. Keep that step if the yaml is reworked.
 
 **Symptom:** Codemagic (or any CI/build outside Replit) fails at `npm ci`/`npm install`
 with `npm ERR! code ENOTFOUND ... request to http://package-firewall.replit.local/npm/<pkg>...

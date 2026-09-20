@@ -10,7 +10,7 @@
 - [App icon pipeline](app-icon-pipeline.md) — all icons generated from the SVG brand mark onto #181B14; iOS app icon MUST be opaque (strip alpha or Apple rejects); icon filenames kept legacy tacfit-* to avoid manifest/HTML path edits.
 - [App splash animation](app-splash-animation.md) — native launch screen is static (can't animate); parachute splash is a web overlay after SplashScreen.hide(); keep native/index.html/React mark identical to avoid flash.
 - [SSO auth](sso-auth.md) — Apple+Google sits beside email/password; only link by email when provider says it's VERIFIED (else account-takeover); password is nullable, guard every password path.
-- [Codemagic package proxy](codemagic-package-proxy.md) — Codemagic install fails ENOTFOUND package-firewall.replit.local; Replit bakes internal proxy URLs into package-lock resolved fields — sed them back to registry.npmjs.org (recurs on every new dep).
+- [Codemagic package proxy](codemagic-package-proxy.md) — Replit bakes package-firewall.replit.internal URLs into package-lock; a codemagic.yaml step now rewrites them to registry.npmjs.org before npm install.
 - [WAAPI partial keyframes](waapi-partial-keyframes.md) — animating a prop (e.g. opacity) on only early keyframes makes WAAPI fade it back to the element's underlying value at offset 1; set it on both ends or use a separate 2-keyframe track.
 - [/uploads serving & video](uploads-serving.md) — videos upload direct-to-GCS + local disk is ephemeral; /uploads MUST fall back to object storage or feed shows "Video preview unavailable".
 - [Port 5000 orphans](port-5000-orphans.md) — "feature stopped working" after a restart often = backend down from EADDRINUSE; SIGTERM handler added; find orphans via `ps aux | grep "tsx server"`, not lsof.

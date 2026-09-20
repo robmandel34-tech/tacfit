@@ -32,5 +32,6 @@ the project's `platform :ios, 'X'` (Podfile) / `IPHONEOS_DEPLOYMENT_TARGET`
 "could not find compatible versions ... required a higher minimum deployment
 target." Fix: bump BOTH the Podfile platform line AND every
 IPHONEOS_DEPLOYMENT_TARGET in project.pbxproj to meet the plugin's minimum
-(Capacitor 6 baseline is iOS 14.0). Check a new plugin's podspec deployment_target
+(app floor is iOS 15.0 since 2026-09-19 — Apple ITMS-90068 requires MinimumOSVersion ≥ 15.0
+for uploads from Spring 2027; never lower it). Check a new plugin's podspec deployment_target
 before the next native build.

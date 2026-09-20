@@ -13,6 +13,7 @@ import {
   scheduleTeamCallSchema, startVerifiedSessionSchema,
 } from "@shared/schema";
 import { getCompetitionPricing } from "@shared/pricing";
+import { isVerifiedSessionMode, defaultVerifiedSessionMode, resolveRepExercise, SUPPORTED_REP_EXERCISE_LIST } from "@shared/verified-session-mode";
 import { MIN_PASSIVE_EXERCISE_MINUTES, isActivityAllowed, isHealthKitWorkoutEligible, reconcileWorkoutDurationSec } from "@shared/healthkit";
 import { activityPoints, verifiedSessionPoints, parseQuantity } from "@shared/points";
 import { recomputeReadinessForUser, isReadinessTestAccount, sampleReadiness } from "./readiness-service";
@@ -4346,31 +4347,109 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Activity types are global configuration (and decide how camera-verified
+  // sessions are checked), so only admins may create, edit, or delete them.
+  const requireAdminUser = async (req: any, res: any): Promise<boolean> => {
+    const uid = req.session?.userId || req.session?.user?.id;
+    if (!uid) {
+      res.status(401).json({ message: "Not authenticated" });
+      return false;
+    }
+    const user = await storage.getUser(uid);
+    if (!user?.isAdmin) {
+      res.status(403).json({ message: "Admin access required" });
+      return false;
+    }
+    return true;
+  };
+
+  // Reps mode only works for exercises the on-device counter knows; anything
+  // else would silently be scored with push-up thresholds.
+  const repsModeProblem = (type: {
+    name?: string | null;
+    displayName?: string | null;
+    supportsVerifiedSessions?: boolean | null;
+    verifiedSessionMode?: string | null;
+  }): string | null => {
+    if (!type.supportsVerifiedSessions || type.verifiedSessionMode !== "reps") return null;
+    if (resolveRepExercise(type)) return null;
+    return `The camera can't count reps for "${type.displayName || type.name}" yet. Name it after a supported exercise (${SUPPORTED_REP_EXERCISE_LIST}) or use "time" mode.`;
+  };
+
   app.post("/api/activity-types", async (req, res) => {
     try {
-      const activityTypeData = insertActivityTypeSchema.parse(req.body);
+      if (!(await requireAdminUser(req, res))) return;
+      const parsed = insertActivityTypeSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: "Invalid activity type data" });
+      }
+      const activityTypeData = parsed.data;
+      if (activityTypeData.verifiedSessionMode != null && !isVerifiedSessionMode(activityTypeData.verifiedSessionMode)) {
+        return res.status(400).json({ message: "Verified session mode must be \"time\" or \"reps\"." });
+      }
+      // Older app builds don't send the mode. A reps-style unit ("Reps") on an
+      // exercise the camera can count means reps, not a timer — otherwise a
+      // new "Push Ups" type silently becomes a timed session.
+      if (activityTypeData.verifiedSessionMode == null) {
+        activityTypeData.verifiedSessionMode = defaultVerifiedSessionMode(activityTypeData);
+      }
+      const problem = repsModeProblem(activityTypeData);
+      if (problem) {
+        return res.status(400).json({ message: problem });
+      }
       const activityType = await storage.createActivityType(activityTypeData);
       res.json(activityType);
     } catch (error) {
-      res.status(400).json({ message: "Invalid activity type data" });
+      console.error("Error creating activity type:", error);
+      res.status(500).json({ message: "Error creating activity type" });
     }
   });
 
   app.put("/api/activity-types/:id", async (req, res) => {
     try {
-      const updates = req.body;
-      const activityType = await storage.updateActivityType(parseInt(req.params.id), updates);
+      if (!(await requireAdminUser(req, res))) return;
+      const id = parseInt(req.params.id);
+      if (!Number.isFinite(id)) {
+        return res.status(400).json({ message: "Invalid activity type id" });
+      }
+      // Only real, admin-editable columns get through (drops id/createdAt and
+      // stray form fields).
+      const parsed = insertActivityTypeSchema.partial().safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: "Invalid activity type data" });
+      }
+      const updates = parsed.data;
+      if (updates.verifiedSessionMode === null) {
+        delete updates.verifiedSessionMode; // null = "not provided", keep the stored mode
+      }
+      if (updates.verifiedSessionMode != null && !isVerifiedSessionMode(updates.verifiedSessionMode)) {
+        return res.status(400).json({ message: "Verified session mode must be \"time\" or \"reps\"." });
+      }
+      const existing = await storage.getActivityType(id);
+      if (!existing) {
+        return res.status(404).json({ message: "Activity type not found" });
+      }
+      const problem = repsModeProblem({ ...existing, ...updates });
+      if (problem) {
+        return res.status(400).json({ message: problem });
+      }
+      if (Object.keys(updates).length === 0) {
+        return res.json(existing); // nothing to change (e.g. only a null mode was sent)
+      }
+      const activityType = await storage.updateActivityType(id, updates);
       if (!activityType) {
         return res.status(404).json({ message: "Activity type not found" });
       }
       res.json(activityType);
     } catch (error) {
+      console.error("Error updating activity type:", error);
       res.status(500).json({ message: "Error updating activity type" });
     }
   });
 
   app.delete("/api/activity-types/:id", async (req, res) => {
     try {
+      if (!(await requireAdminUser(req, res))) return;
       const success = await storage.deleteActivityType(parseInt(req.params.id));
       if (!success) {
         return res.status(404).json({ message: "Activity type not found" });

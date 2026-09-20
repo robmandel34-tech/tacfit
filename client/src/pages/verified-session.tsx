@@ -12,6 +12,7 @@ import { celebrate } from "@/lib/celebrate";
 import { Capacitor } from "@capacitor/core";
 import { App as CapApp } from "@capacitor/app";
 import type { PluginListenerHandle } from "@capacitor/core";
+import { matchActivityKey, resolveRepExercise, type RepExerciseKey } from "@shared/verified-session-mode";
 
 // Camera-verified focus session: the camera confirms a person stays in frame
 // for the full duration. Leaving the frame too long, backgrounding the app,
@@ -47,7 +48,7 @@ interface RepTracking {
   perLimb?: boolean; // alternating exercises: each limb runs its own rep counter
   bounce?: boolean; // jump-style: count vertical hip bounces instead of joint angles
 }
-const REP_TRACKING: Record<string, RepTracking> = {
+const REP_TRACKING: Record<RepExerciseKey, RepTracking> = {
   push_ups: {
     joints: [
       [L_SHOULDER, L_ELBOW, L_WRIST],
@@ -136,7 +137,15 @@ const REP_TRACKING: Record<string, RepTracking> = {
     minIntervalMs: 300,
   },
 };
-const DEFAULT_REP_TRACKING = REP_TRACKING.push_ups;
+// Admins name activity types free-form ("Push Ups", "Pull-Ups"), so the
+// tracking is resolved from the name. Undefined means the camera has no rep
+// counter for this exercise — the server refuses to put such a type in reps
+// mode, so this only happens for stale rows, and the page then refuses to
+// start rather than scoring the wrong movement.
+function repTrackingFor(type: ActivityTypeRow | undefined): RepTracking | undefined {
+  const key = resolveRepExercise(type);
+  return key ? REP_TRACKING[key] : undefined;
+}
 
 // Jump detection (jump rope): the hips must rise by this fraction of the
 // visible torso length (shoulder→hip) to count as leaving the ground, then
@@ -148,6 +157,8 @@ const BOUNCE_DOWN_FRACTION = 0.1;
 // presence is verified by full-body pose tracking instead of face detection.
 // No mic check either — home yoga often has music or a guided video playing.
 const POSE_PRESENCE_ACTIVITIES = new Set(["yoga"]);
+const isPosePresenceActivity = (activityTypeName: string) =>
+  matchActivityKey(activityTypeName, POSE_PRESENCE_ACTIVITIES) !== undefined;
 
 function jointAngle(lm: any[], s: number, e: number, w: number): number | null {
   const a = lm[s], b = lm[e], c = lm[w];
@@ -285,6 +296,9 @@ export default function VerifiedSessionPage() {
   }, [verifiableTypes, activityType]);
 
   const selectedType = verifiableTypes.find((t) => t.name === activityType);
+  // A reps-mode type whose name maps to no rep counter (stale row) can't run.
+  const repsUnsupported =
+    selectedType?.verifiedSessionMode === "reps" && repTrackingFor(selectedType) === undefined;
 
   function clearTimers() {
     timersRef.current.forEach((t) => window.clearInterval(t));
@@ -368,9 +382,14 @@ export default function VerifiedSessionPage() {
   async function startSession() {
     if (practiceLoading) return;
     const isReps = selectedType?.verifiedSessionMode === "reps";
+    const repTracking = isReps ? repTrackingFor(selectedType) : undefined;
+    if (isReps && !repTracking) {
+      toast({ title: "The camera can't count reps for this exercise yet.", variant: "destructive" });
+      return;
+    }
     // Time-mode activities like yoga where presence is verified by full-body
     // pose tracking (poses hide the face) and no mic check runs.
-    const posePresence = !isReps && POSE_PRESENCE_ACTIVITIES.has(activityType);
+    const posePresence = !isReps && isPosePresenceActivity(activityType);
     const mins = parseInt(minutes, 10);
     const target = parseInt(repsTarget, 10);
     if (isReps) {
@@ -542,7 +561,7 @@ export default function VerifiedSessionPage() {
           const now = Date.now();
           let present = false;
           if (isReps) {
-            const tracking = REP_TRACKING[activityType] || DEFAULT_REP_TRACKING;
+            const tracking = repTracking as RepTracking;
             const minInterval = tracking.minIntervalMs ?? REP_MIN_INTERVAL_MS;
             const result = detector.detectForVideo(video, performance.now());
             const lm = result.landmarks?.[0];
@@ -740,7 +759,7 @@ export default function VerifiedSessionPage() {
       }
       const denied = error?.name === "NotAllowedError" || error?.name === "PermissionDeniedError";
       const isRepsMode = selectedType?.verifiedSessionMode === "reps";
-      const cameraOnly = isRepsMode || POSE_PRESENCE_ACTIVITIES.has(activityType);
+      const cameraOnly = isRepsMode || isPosePresenceActivity(activityType);
       setErrorMessage(
         denied
           ? cameraOnly
@@ -759,7 +778,12 @@ export default function VerifiedSessionPage() {
   async function startPractice() {
     if (practiceLoading || phaseRef.current !== "setup") return;
     const isReps = selectedType?.verifiedSessionMode === "reps";
-    const posePresence = !isReps && POSE_PRESENCE_ACTIVITIES.has(activityType);
+    const repTracking = isReps ? repTrackingFor(selectedType) : undefined;
+    if (isReps && !repTracking) {
+      toast({ title: "The camera can't count reps for this exercise yet.", variant: "destructive" });
+      return;
+    }
+    const posePresence = !isReps && isPosePresenceActivity(activityType);
     setPracticeLoading(true);
     setPracticePresent(false);
     repCountRef.current = 0;
@@ -846,7 +870,7 @@ export default function VerifiedSessionPage() {
           const now = Date.now();
           let present = false;
           if (isReps) {
-            const tracking = REP_TRACKING[activityType] || DEFAULT_REP_TRACKING;
+            const tracking = repTracking as RepTracking;
             const minInterval = tracking.minIntervalMs ?? REP_MIN_INTERVAL_MS;
             const result = detector.detectForVideo(video, performance.now());
             const lm = result.landmarks?.[0];
@@ -1100,11 +1124,11 @@ export default function VerifiedSessionPage() {
               <p className="text-sm text-gray-400">
                 Do your set live on camera — the app tracks your body and counts every rep.
                 Prop your phone so it can see you clearly (
-                {(REP_TRACKING[activityType] || DEFAULT_REP_TRACKING).placementHint}). Leaving
+                {repTrackingFor(selectedType)?.placementHint}). Leaving
                 the frame or the app voids the set. Nothing is recorded; the camera only tracks
                 your movement on the device.
               </p>
-            ) : POSE_PRESENCE_ACTIVITIES.has(activityType) ? (
+            ) : isPosePresenceActivity(activityType) ? (
               <p className="text-sm text-gray-400">
                 Complete your practice live in front of the camera. Stand back so your whole body is
                 in view — the app tracks that you stay present through your poses. Leaving the frame
@@ -1214,9 +1238,17 @@ export default function VerifiedSessionPage() {
               </div>
             )}
 
+            {repsUnsupported && (
+              <p className="text-sm text-amber-400" data-testid="text-reps-unsupported">
+                The camera can't count reps for {selectedType?.displayName} yet, so a verified set
+                can't start. Ask an admin to rename it after a supported exercise or switch it to a
+                timed session.
+              </p>
+            )}
+
             <Button
               onClick={startSession}
-              disabled={phase === "starting" || practiceLoading || verifiableTypes.length === 0}
+              disabled={phase === "starting" || practiceLoading || verifiableTypes.length === 0 || repsUnsupported}
               className="w-full bg-military-green text-forest-green font-bold py-6 text-base"
             >
               <Camera className="w-5 h-5 mr-2" />
@@ -1229,7 +1261,7 @@ export default function VerifiedSessionPage() {
 
             <Button
               onClick={startPractice}
-              disabled={phase === "starting" || practiceLoading || verifiableTypes.length === 0}
+              disabled={phase === "starting" || practiceLoading || verifiableTypes.length === 0 || repsUnsupported}
               variant="outline"
               className="w-full border-gray-700 bg-gray-800/60 text-gray-200 font-semibold py-5"
             >
@@ -1328,8 +1360,8 @@ export default function VerifiedSessionPage() {
             <>
               <p className="text-xs text-center text-gray-500">
                 {selectedType?.verifiedSessionMode === "reps"
-                  ? `Position your phone, then try a few reps — ${(REP_TRACKING[activityType] || DEFAULT_REP_TRACKING).placementHint}. Full range counts: all the way down, all the way up.`
-                  : POSE_PRESENCE_ACTIVITIES.has(activityType)
+                  ? `Position your phone, then try a few reps — ${repTrackingFor(selectedType)?.placementHint}. Full range counts: all the way down, all the way up.`
+                  : isPosePresenceActivity(activityType)
                     ? "Position your phone so your whole body stays in view through your poses."
                     : "Position your phone so your face stays clearly in view for the whole session."}
               </p>

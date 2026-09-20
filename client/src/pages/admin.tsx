@@ -18,6 +18,7 @@ import { AdminReportsPanel } from "@/components/admin-reports-panel";
 import { AdminFlaggedActivitiesPanel } from "@/components/admin-flagged-activities-panel";
 import { UserParticipationModal } from "@/components/user-participation-modal";
 import { format } from "date-fns";
+import { isVerifiedSessionMode, isRepsUnit, defaultVerifiedSessionMode, resolveRepExercise, SUPPORTED_REP_EXERCISES, SUPPORTED_REP_EXERCISE_LIST, type VerifiedSessionMode } from "@shared/verified-session-mode";
 
 interface Competition {
   id: number;
@@ -69,6 +70,7 @@ interface ActivityType {
   textInputMinWords: number;
   requiresHealthKit: boolean;
   supportsVerifiedSessions?: boolean;
+  verifiedSessionMode?: string | null; // "time" (default) or "reps"
   createdAt: string;
 }
 
@@ -232,7 +234,8 @@ export default function AdminPage() {
     textInputDescription: '',
     textInputMinWords: 50,
     requiresHealthKit: false,
-    supportsVerifiedSessions: false
+    supportsVerifiedSessions: false,
+    verifiedSessionMode: 'time' as VerifiedSessionMode
   });
 
   const [editingActivityType, setEditingActivityType] = useState<ActivityType | null>(null);
@@ -554,7 +557,8 @@ export default function AdminPage() {
       textInputDescription: '',
       textInputMinWords: 50,
       requiresHealthKit: false,
-      supportsVerifiedSessions: false
+      supportsVerifiedSessions: false,
+      verifiedSessionMode: 'time' as VerifiedSessionMode
     });
   };
 
@@ -911,7 +915,10 @@ export default function AdminPage() {
       textInputDescription: activityType.textInputDescription || '',
       textInputMinWords: activityType.textInputMinWords || 50,
       requiresHealthKit: activityType.requiresHealthKit || false,
-      supportsVerifiedSessions: activityType.supportsVerifiedSessions || false
+      supportsVerifiedSessions: activityType.supportsVerifiedSessions || false,
+      verifiedSessionMode: isVerifiedSessionMode(activityType.verifiedSessionMode)
+        ? activityType.verifiedSessionMode
+        : 'time'
     });
     setIsCreateActivityTypeOpen(true);
   };
@@ -2089,12 +2096,74 @@ export default function AdminPage() {
                         <Switch
                           id="supportsVerifiedSessions"
                           checked={activityTypeForm.supportsVerifiedSessions}
-                          onCheckedChange={(checked) => setActivityTypeForm(prev => ({ ...prev, supportsVerifiedSessions: checked }))}
+                          onCheckedChange={(checked) => setActivityTypeForm(prev => ({
+                            ...prev,
+                            supportsVerifiedSessions: checked,
+                            // A reps-style unit on an exercise the camera can count
+                            // wants rep counting; the admin can still override below.
+                            verifiedSessionMode: checked ? defaultVerifiedSessionMode(prev) : prev.verifiedSessionMode,
+                          }))}
                           data-testid="switch-supports-verified-sessions"
                         />
                         <Label htmlFor="supportsVerifiedSessions" className="text-gray-300">Supports camera-verified sessions</Label>
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">Best for timed, stationary activities (meditation, reading, stretching). Users stay in frame for the full time and earn double effort points. Competitions can make this the only way to complete the activity.</p>
+                      <p className="text-xs text-gray-500 mt-1">Users complete the activity live on camera and earn double effort points. Competitions can make this the only way to complete the activity.</p>
+
+                      {activityTypeForm.supportsVerifiedSessions && (
+                        <div className="mt-4">
+                          <Label className="text-gray-300">How the camera verifies</Label>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                            {([
+                              {
+                                value: 'time' as VerifiedSessionMode,
+                                title: 'Time in frame',
+                                detail: 'User picks a number of minutes and stays in frame the whole time. Best for stationary activities (meditation, reading, stretching).',
+                              },
+                              {
+                                value: 'reps' as VerifiedSessionMode,
+                                title: 'Count reps',
+                                detail: 'User picks a rep target and the camera counts each rep with movement tracking. Tuned for push-ups, squats, pull-ups, lunges, burpees, jumping jacks, mountain climbers and jump rope.',
+                              },
+                            ]).map((option) => {
+                              const selected = activityTypeForm.verifiedSessionMode === option.value;
+                              return (
+                                <button
+                                  key={option.value}
+                                  type="button"
+                                  onClick={() => setActivityTypeForm(prev => ({ ...prev, verifiedSessionMode: option.value }))}
+                                  aria-pressed={selected}
+                                  className={`text-left rounded-md border p-3 transition-colors ${
+                                    selected
+                                      ? 'border-military-green bg-military-green/20 text-white'
+                                      : 'border-gray-700 bg-gray-800/60 text-gray-300 hover:border-gray-500'
+                                  }`}
+                                  data-testid={`button-verified-mode-${option.value}`}
+                                >
+                                  <div className="text-sm font-medium">{option.title}</div>
+                                  <div className="text-xs text-gray-400 mt-1">{option.detail}</div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                          {activityTypeForm.verifiedSessionMode === 'time' && isRepsUnit(activityTypeForm.measurementUnit) && (
+                            <p className="text-xs text-amber-400 mt-2" data-testid="text-verified-mode-hint">
+                              This activity is measured in reps, but the camera will run a timer. Choose "Count reps" if users should be counted, not timed.
+                            </p>
+                          )}
+                          {activityTypeForm.verifiedSessionMode === 'reps' && (() => {
+                            const exercise = resolveRepExercise(activityTypeForm);
+                            return exercise ? (
+                              <p className="text-xs text-gray-400 mt-2" data-testid="text-rep-exercise-match">
+                                The camera will count this as <span className="text-white">{SUPPORTED_REP_EXERCISES[exercise]}</span>.
+                              </p>
+                            ) : (
+                              <p className="text-xs text-amber-400 mt-2" data-testid="text-rep-exercise-missing">
+                                The camera can't count reps for "{activityTypeForm.displayName || activityTypeForm.name || 'this activity'}" yet — it won't save in this mode. Name it after a supported exercise ({SUPPORTED_REP_EXERCISE_LIST}) or use "Time in frame".
+                              </p>
+                            );
+                          })()}
+                        </div>
+                      )}
                     </div>
 
                     <div className="border-t border-tactical-gray pt-4">
@@ -2161,6 +2230,7 @@ export default function AdminPage() {
                       <TableHead className="text-gray-300">Default</TableHead>
                       <TableHead className="text-gray-300">Text Input</TableHead>
                       <TableHead className="text-gray-300">HealthKit</TableHead>
+                      <TableHead className="text-gray-300">Camera</TableHead>
                       <TableHead className="text-gray-300">Status</TableHead>
                       <TableHead className="text-gray-300">Actions</TableHead>
                     </TableRow>
@@ -2192,6 +2262,19 @@ export default function AdminPage() {
                             <Badge variant="secondary">
                               Optional
                             </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {activityType.supportsVerifiedSessions ? (
+                            <Badge
+                              variant="outline"
+                              className="text-[var(--bubble-accent)] border-[var(--bubble-accent)]/40 bg-[var(--bubble-bg)]"
+                              data-testid={`badge-verified-mode-${activityType.id}`}
+                            >
+                              {activityType.verifiedSessionMode === 'reps' ? 'Counts reps' : 'Timed'}
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary">Off</Badge>
                           )}
                         </TableCell>
                         <TableCell>

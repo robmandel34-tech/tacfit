@@ -27,3 +27,4 @@
 - [HeyCatch analytics](heycatch-analytics.md) — pin npm `latest`; native CORS must allow every header the SDK stamps (3 X-POSTHOG-*) or the iOS app goes blank; only the winning insert tracks an outcome.
 - [Onboarding survey vocabulary](onboarding-survey.md) — fitness_archetype has legacy (servant/clown/survivor, still sent by iOS ≤1.0.4) + current (excellent/just_ok/struggling) values; accept both via shared/onboarding.ts.
 - [Global button focus reset](global-button-focus-reset.md) — index.css kills focus rings on every <button> with !important; custom radios/cards must use native input + label has-[:focus-visible] ring.
+- [Marketing screen clips](marketing-screen-clips.md) — demo videos = real app in headless Chromium with API/auth answers intercepted (zero DB writes); see traps (Stripe.js, splash, SW, FAB).

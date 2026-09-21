@@ -147,3 +147,31 @@ mtime_ms = 1789790634628
 storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:52c3692b-e3ae-4f26-87b1-b5a765544cd7/bb468a65-b077-4497-a370-1506fdcf68c1/7c40255d-f660-46d5-bf65-a411c57b71d6"
 storage_version_token = "1789790646649490"
 content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+[[outputs]]
+id = "jZt1QkEAz57VFy7onNg2s"
+uri = "file://marketing/clips/competition-map-progress-full.mp4"
+type = "video"
+title = "Competition tab — team advances 5% (full screen, 1080x2340)"
+description = "6.5 s, 30 fps, H.264. Real Competitions tab: title card, progress map, and the #1 team's row. Dawn Patrol's marker moves along the route while the leaderboard ticks 58% → 63%."
+logical_id = "4ff96d11-2915-426a-a2ba-10f157c35a5f"
+content_hash = "sha256:b5f07e49c56aab7feee451308257d756c8e401f7f502a4e9fbb0de260d944f32"
+size = 656526
+mtime_ms = 1790026459404
+storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:52c3692b-e3ae-4f26-87b1-b5a765544cd7/4ff96d11-2915-426a-a2ba-10f157c35a5f/6147261a-b577-446c-89e7-a925e35a0a43"
+storage_version_token = "1790026575047118"
+content_type = "video/mp4"
+
+[[outputs]]
+id = "R8Whc-GjC7j4XD6d-GYx1"
+uri = "file://marketing/clips/competition-map-progress-closeup.mp4"
+type = "video"
+title = "Competition map close-up — team advances 5% (1080x1408)"
+description = "Same clip cropped to the Team Progress Map card plus the team's percentage row, for tighter cuts next to your camera-verified activity footage."
+logical_id = "ad60cf71-6437-4a79-b7e8-da81d3463d64"
+content_hash = "sha256:c2add51883113529733a081ca3d32401517399d0f6ee39128c7c154654d643d7"
+size = 622500
+mtime_ms = 1790026463601
+storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:52c3692b-e3ae-4f26-87b1-b5a765544cd7/ad60cf71-6437-4a79-b7e8-da81d3463d64/bccffe3a-da20-4b57-a884-f4748fed8587"
+storage_version_token = "1790026576003350"
+content_type = "video/mp4"

@@ -34,3 +34,6 @@ Master splash: `scripts/assets/ios-splash-master.png` (2732×2732). `scripts/cap
 
 ## Dead files
 `npm run check` reports pre-existing TS errors only in `server/routes_clean_start.ts` and `server/routes_mood_section.ts` — dead files nothing imports; ignore them.
+
+## `pod install` fails with `curl: (56) ... 504` on FBAEMKit (2026-09-21)
+The Facebook SDK (FBSDKCoreKit/FBSDKLoginKit 17.4.0, hard-pinned by @capgo/capacitor-social-login even though only Apple + Google sign-in are used) ships as binary xcframeworks that CocoaPods downloads from github.com/facebook/facebook-ios-sdk/releases. GitHub 5xx on that download = transient, not a code problem. The "Install CocoaPods" step in codemagic.yaml now retries `pod install` 3x with a 60s gap; if it still fails, just re-run the build later. Dropping the FB dependency would mean patching the plugin's podspec AND its Swift sources (FacebookProvider imports FBSDKLoginKit) — not worth it for a flaky download.

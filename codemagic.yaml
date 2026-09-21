@@ -65,7 +65,23 @@ workflows:
         script: |
           set -e
           cd ios/App
-          pod install
+          # Some pods are binaries fetched from GitHub releases (the Facebook SDK,
+          # pulled in by @capgo/capacitor-social-login even though only Apple and
+          # Google sign-in are used). GitHub occasionally answers 5xx for those
+          # downloads; a failed attempt leaves nothing half-installed, so retry
+          # before giving up instead of failing the whole build on one blip.
+          for attempt in 1 2 3; do
+            if pod install; then
+              exit 0
+            fi
+            echo "pod install failed (attempt $attempt of 3)" >&2
+            if [ "$attempt" -lt 3 ]; then
+              echo "retrying in 60s..." >&2
+              sleep 60
+            fi
+          done
+          echo "pod install failed after 3 attempts" >&2
+          exit 1
       - name: Set build number
         script: |
           BUILD_NUMBER=$(date +%s)

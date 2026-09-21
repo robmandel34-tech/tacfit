@@ -12,11 +12,20 @@ description: Non-obvious decisions behind the HeyCatch SDK setup (version pinnin
 - **frameworkVersion decision:** for `framework: 'vite-react'` we report React's
   major (18), not Vite's. **Why:** the SDK peer-depends on React and `vite-react`
   is a React app whose bundler happens to be Vite. Keep consistent if bumped.
-- **Native app linking:** the iOS build calls the API cross-origin
-  (capacitor://localhost → published backend), so `tracingHosts` is derived from
-  `VITE_API_URL` and the server CORS `Access-Control-Allow-Headers` must include
-  `X-POSTHOG-SESSION-ID`. **Why:** the SDK's helper stamps that header on API
-  calls to listed hosts; without the CORS entry every native API preflight fails.
+- **Native app linking (incident 2026-09-20):** the iOS build calls the API
+  cross-origin (capacitor://localhost → published backend), so `tracingHosts` is
+  derived from `VITE_API_URL`. The SDK wraps posthog-js, whose lazily loaded
+  `tracing-headers` extension stamps THREE headers on calls to listed hosts:
+  `X-POSTHOG-SESSION-ID`, `X-POSTHOG-WINDOW-ID`, `X-POSTHOG-DISTINCT-ID`. The
+  server CORS originally allowed only the first → the first TestFlight build with
+  the SDK showed "all content gone", create errors and broken login. Server
+  preflight now echoes `Access-Control-Request-Headers` (origin allow-list stays
+  the real control). **How to recognise it:** deployment logs show only the 1–2
+  launch requests (auth/me, apple-health/status — sent before the extension
+  loads) and then nothing, while web + curl + DB are all healthy. Web can't
+  reproduce it (same origin, no preflight). **Rule:** any new request header on
+  native must be covered by CORS; test native-shaped preflights with curl
+  (`Origin: capacitor://localhost` + `Access-Control-Request-Headers`).
 - **Event attribution rule:** server events use the session user when present
   (`analyticsActor`) and only the request whose DB insert *won* reports an
   outcome (Stripe webhook vs client confirm, verify-email conditional update,

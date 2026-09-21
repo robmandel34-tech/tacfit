@@ -38,11 +38,25 @@ app.use((req, res, next) => {
     // Same-origin or server-to-server request — allow through
   }
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-  // X-POSTHOG-SESSION-ID is the HeyCatch session header the native app (a
-  // cross-origin WKWebView) stamps on API calls so server-side analytics
-  // events join the user's live session. Without it here, preflight fails.
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-POSTHOG-SESSION-ID');
+  // The native app is a cross-origin WKWebView (capacitor://localhost), so every
+  // API call is preflighted and EVERY request header must be allowed here. The
+  // HeyCatch/PostHog tracing extension stamps X-POSTHOG-SESSION-ID,
+  // X-POSTHOG-WINDOW-ID and X-POSTHOG-DISTINCT-ID on calls to the API host
+  // (it loads lazily, so the first launch requests slip through and everything
+  // after fails). Allowing only one of them blanked the whole iOS app: no
+  // content, no login. Echo whatever the preflight asks for — the origin
+  // allow-list above is the real access control — so a future SDK header can't
+  // brick the native app again; keep the static list for non-preflight replies.
+  const requestedHeaders = req.headers['access-control-request-headers'];
+  res.header(
+    'Access-Control-Allow-Headers',
+    requestedHeaders ||
+      'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-POSTHOG-SESSION-ID, X-POSTHOG-WINDOW-ID, X-POSTHOG-DISTINCT-ID',
+  );
   res.header('Access-Control-Allow-Credentials', 'true');
+  // Responses vary per origin / requested headers; keep caches from reusing one
+  // origin's CORS answer for another.
+  res.header('Vary', 'Origin, Access-Control-Request-Headers');
   if (req.method === 'OPTIONS') {
     res.sendStatus(200);
   } else {

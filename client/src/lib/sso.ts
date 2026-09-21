@@ -39,6 +39,32 @@ export function isAppleAvailable(): boolean {
     : !!APPLE_SERVICES_ID;
 }
 
+// Apple config for SocialLogin.initialize().
+//
+// Native iOS: the plugin's iOS `initialize` rejects with "No provider was
+// initialized" unless an `apple` object is present, and
+// `login({ provider: "apple" })` is then never reached. The OS-level flow
+// ignores clientId (the token audience is always the app's bundle id); the
+// plugin only uses its presence to know Apple should be enabled — so ALWAYS
+// pass a block on iOS. Never pass redirectUrl on iOS: that switches the plugin
+// into its separate redirect/backend exchange flow instead of the direct
+// ASAuthorization flow our server expects.
+//
+// Web: the web implementation ignores `apple` without a clientId, and the
+// button is hidden there unless VITE_APPLE_SERVICES_ID is set.
+const IOS_BUNDLE_ID = "com.tacfit.app"; // must match capacitor.config appId
+
+function appleInitOptions():
+  | { clientId?: string; redirectUrl?: string }
+  | undefined {
+  if (isNative() && Capacitor.getPlatform() === "ios") {
+    return { clientId: IOS_BUNDLE_ID };
+  }
+  return APPLE_SERVICES_ID
+    ? { clientId: APPLE_SERVICES_ID, redirectUrl: APPLE_REDIRECT_URI }
+    : undefined;
+}
+
 let initPromise: Promise<void> | null = null;
 function ensureInitialized(): Promise<void> {
   if (!initPromise) {
@@ -50,9 +76,7 @@ function ensureInitialized(): Promise<void> {
               iOSClientId: GOOGLE_IOS_CLIENT_ID,
             }
           : undefined,
-      apple: APPLE_SERVICES_ID
-        ? { clientId: APPLE_SERVICES_ID, redirectUrl: APPLE_REDIRECT_URI }
-        : undefined,
+      apple: appleInitOptions(),
     }).catch((e) => {
       // Allow a later retry if initialization failed (e.g. SDK script blocked).
       initPromise = null;
@@ -86,14 +110,30 @@ export async function signInWithApple(): Promise<{
   });
   const result = res.result as {
     idToken?: string | null;
+    accessToken?: { token?: string | null } | null;
     profile?: { givenName?: string | null; familyName?: string | null };
   };
-  if (!result?.idToken) {
+  // @capgo/capacitor-social-login (v6) misnames Apple's fields on BOTH iOS
+  // and web: `idToken` holds the short-lived AUTHORIZATION CODE, while the
+  // identity token (the JWT our backend verifies against Apple's JWKS) is in
+  // `accessToken.token`. Pick whichever field actually contains a JWT so a
+  // future plugin version that fixes the naming keeps working.
+  const idToken = [result?.accessToken?.token, result?.idToken].find(isJwt);
+  if (!idToken) {
     throw new Error("Apple did not return an identity token.");
   }
   const fullName =
     [result.profile?.givenName, result.profile?.familyName]
       .filter(Boolean)
       .join(" ") || undefined;
-  return { idToken: result.idToken, fullName };
+  return { idToken, fullName };
+}
+
+// A JWT is three non-empty base64url segments; Apple's authorization code is a
+// single opaque string, so this cleanly tells the two apart.
+function isJwt(value: string | null | undefined): value is string {
+  return (
+    typeof value === "string" &&
+    /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(value)
+  );
 }

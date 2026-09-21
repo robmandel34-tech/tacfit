@@ -32,6 +32,19 @@ email-based linking on `emailVerified === true`; provider-id match is always saf
 Client ids are PUBLIC (env vars, not secrets); buttons stay hidden until the
 matching id is set. Native Google needs the iOS client id specifically (web id
 alone can't drive the reversed-client-id URL scheme), so the native button gates
-on `VITE_GOOGLE_IOS_CLIENT_ID`. Native Apple needs no values — only the App ID's
-"Sign in with Apple" capability (audience = bundle id `com.tacfit.app`).
-`VITE_` vars must be added to Codemagic too for native builds.
+on `VITE_GOOGLE_IOS_CLIENT_ID`. Native Apple needs no Apple-side values — only
+the App ID's "Sign in with Apple" capability (audience = bundle id
+`com.tacfit.app`). `VITE_` vars must be added to Codemagic too for native builds.
+
+## @capgo/capacitor-social-login v6 quirks (Apple never worked on iOS until 2026-09-21)
+1. iOS `initialize()` rejects "No provider was initialized" unless an `apple: {}`
+   block is present (clientId content is ignored natively). Passing it only when
+   the web Services ID is set silently disabled Apple on device — the sheet never
+   opened and NO request reached the server, so server logs looked empty.
+   Never pass `redirectUrl` on iOS (flips the plugin into its backend-exchange flow).
+2. On BOTH iOS and web the plugin puts Apple's authorization CODE in
+   `result.idToken` and the identity JWT in `result.accessToken.token`. Pick the
+   field that is a JWT; forwarding `idToken` makes the server's JWKS verify fail.
+**How to apply:** when a native SSO failure leaves no server log line, suspect
+the plugin init/response shape first; read the plugin's Swift source, not its
+TS types. Any plugin upgrade: re-check both quirks.

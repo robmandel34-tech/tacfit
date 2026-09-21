@@ -9,7 +9,7 @@
 - [Capacitor dialog tap-close](capacitor-dialog-tap-close.md) — Radix Dialog self-closes on inside taps (e.g. Next) in iOS WKWebView; add onInteractOutside + onPointerDownOutside preventDefault.
 - [App icon pipeline](app-icon-pipeline.md) — all icons generated from the SVG brand mark onto #181B14; iOS app icon MUST be opaque (strip alpha or Apple rejects); icon filenames kept legacy tacfit-* to avoid manifest/HTML path edits.
 - [App splash animation](app-splash-animation.md) — native launch screen is static (can't animate); parachute splash is a web overlay after SplashScreen.hide(); keep native/index.html/React mark identical to avoid flash.
-- [SSO auth](sso-auth.md) — Apple+Google sits beside email/password; only link by email when provider says it's VERIFIED (else account-takeover); password is nullable, guard every password path.
+- [SSO auth](sso-auth.md) — Apple+Google beside email/password; link by email only when provider-VERIFIED; password nullable; capgo plugin v6 needs `apple:{}` on iOS + JWT is in accessToken.token, not idToken.
 - [Codemagic package proxy](codemagic-package-proxy.md) — Replit bakes package-firewall.replit.internal URLs into package-lock; a codemagic.yaml step now rewrites them to registry.npmjs.org before npm install.
 - [WAAPI partial keyframes](waapi-partial-keyframes.md) — animating a prop (e.g. opacity) on only early keyframes makes WAAPI fade it back to the element's underlying value at offset 1; set it on both ends or use a separate 2-keyframe track.
 - [/uploads serving & video](uploads-serving.md) — videos upload direct-to-GCS + local disk is ephemeral; /uploads MUST fall back to object storage or feed shows "Video preview unavailable".

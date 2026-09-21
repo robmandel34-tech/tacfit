@@ -16,6 +16,7 @@ import { getCompetitionPricing } from "@shared/pricing";
 import { isVerifiedSessionMode, defaultVerifiedSessionMode, resolveRepExercise, SUPPORTED_REP_EXERCISE_LIST } from "@shared/verified-session-mode";
 import { MIN_PASSIVE_EXERCISE_MINUTES, isActivityAllowed, isHealthKitWorkoutEligible, reconcileWorkoutDurationSec } from "@shared/healthkit";
 import { activityPoints, verifiedSessionPoints, parseQuantity } from "@shared/points";
+import { isAcceptedFitnessLevel, fitnessLevelLabel } from "@shared/onboarding";
 import { recomputeReadinessForUser, isReadinessTestAccount, sampleReadiness } from "./readiness-service";
 import { verifyGoogleIdToken, verifyAppleIdToken, isGoogleConfigured, isAppleConfigured, type SsoIdentity } from "./sso-auth";
 import { z } from "zod";
@@ -1424,9 +1425,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Optional onboarding survey answers
       const updates: Record<string, any> = { onboardingCompleted: true };
-      const allowedArchetypes = ["servant", "clown", "survivor"];
-      if (typeof req.body?.fitnessArchetype === "string" && allowedArchetypes.includes(req.body.fitnessArchetype.trim())) {
-        updates.fitnessArchetype = req.body.fitnessArchetype.trim();
+      const fitnessLevel = typeof req.body?.fitnessArchetype === "string" ? req.body.fitnessArchetype.trim() : undefined;
+      if (isAcceptedFitnessLevel(fitnessLevel)) {
+        updates.fitnessArchetype = fitnessLevel;
       }
       if (typeof req.body?.fitnessActivities === "string" && req.body.fitnessActivities.trim()) {
         updates.fitnessActivities = req.body.fitnessActivities.trim().slice(0, 2000);
@@ -1491,9 +1492,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const updates: Record<string, any> = {};
-      const allowedArchetypes = ["servant", "clown", "survivor"];
-      if (typeof req.body?.fitnessArchetype === "string" && allowedArchetypes.includes(req.body.fitnessArchetype.trim())) {
-        updates.fitnessArchetype = req.body.fitnessArchetype.trim();
+      const fitnessLevel = typeof req.body?.fitnessArchetype === "string" ? req.body.fitnessArchetype.trim() : undefined;
+      if (isAcceptedFitnessLevel(fitnessLevel)) {
+        updates.fitnessArchetype = fitnessLevel;
       }
       if (typeof req.body?.fitnessActivities === "string") {
         updates.fitnessActivities = req.body.fitnessActivities.trim().slice(0, 2000);
@@ -1523,26 +1524,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // (after the second question). Falls back to #tacfit if no dedicated
       // channel is configured. Fire-and-forget — never blocks the response.
       if (willNotify) {
-        const archetypeLabels: Record<string, string> = {
-          servant: "Excellent",
-          clown: "Inconsistent",
-          survivor: "Struggling",
-        };
-        const habitGoal = updatedUser.healthyHabitGoal?.trim()
-          ? updatedUser.healthyHabitGoal.trim()
-          : "(not answered)";
+        const fitnessLevel = fitnessLevelLabel(updatedUser.fitnessArchetype) ?? "(not answered)";
         const activities = updatedUser.fitnessActivities?.trim()
           ? updatedUser.fitnessActivities.trim()
           : "(none provided)";
-        // Legacy field from the pre-habit-question survey; only shown when present.
-        const archetype = updatedUser.fitnessArchetype
-          ? (archetypeLabels[updatedUser.fitnessArchetype] || updatedUser.fitnessArchetype)
-          : null;
+        // Asked only by the short-lived 2026-09-19 build of the survey; shown when present.
+        const habitGoal = updatedUser.healthyHabitGoal?.trim() || null;
         notifySlack(
           `📋 *Onboarding survey* — ${updatedUser.username} (${updatedUser.email})\n` +
-            `• *Habit they want to make stick:* ${habitGoal}\n` +
+            `• *Current level of fitness:* ${fitnessLevel}\n` +
             `• *Activities (do now / want more):* ${activities}` +
-            (archetype ? `\n• *Current whole fitness:* ${archetype}` : ""),
+            (habitGoal ? `\n• *Habit they want to make stick:* ${habitGoal}` : ""),
           "onboarding",
         );
       }

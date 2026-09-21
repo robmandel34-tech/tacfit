@@ -10,3 +10,6 @@ description: How to screenshot logged-in app pages in this repl (the Screenshot 
 - Injecting a curl session cookie into the browser and then logging in in-page calls `session.regenerate`, which destroys the curl session too.
 - Dev DB is a small test DB (~7 users, all competitions completed); seed temporary competitions/teams via a tsx script and delete them afterwards (FKs: activity_likes, user_sessions, competition_entries).
 - `@test.com` / `@tacfit.app` emails skip email verification on register/login.
+- Start chromium with the background-task option, not `( ... & )` inside a normal shell command — the browser dies as soon as that shell exits (ECONNREFUSED on the CDP port).
+- Re-running a script against the same browser: `Target.createTarget` with width/height needs `newWindow: true` or it fails with "Target position can only be set for new windows".
+- A workspace restart mid-session wipes /tmp (scripts, screenshots, the browser) AND can roll uncommitted file edits back several minutes; after any restart, grep for your latest edits before re-testing — a stale bundle is not the explanation.

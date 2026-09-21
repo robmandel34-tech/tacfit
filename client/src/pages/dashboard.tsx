@@ -81,7 +81,7 @@ export default function Dashboard() {
   });
 
   const saveSurveyMutation = useMutation({
-    mutationFn: async ({ data, notify }: { data: { healthyHabitGoal?: string; fitnessActivities?: string }; notify: boolean }) => {
+    mutationFn: async ({ data, notify }: { data: { fitnessArchetype?: string; fitnessActivities?: string }; notify: boolean }) => {
       if (!user?.id) throw new Error("User not found");
       return apiRequest("PATCH", `/api/users/${user.id}/fitness-survey`, { ...data, notify });
     },
@@ -95,7 +95,7 @@ export default function Dashboard() {
     onSuccess: async () => {
       toast({
         title: "Welcome to Muster Up!",
-        description: "You're in. Let's make that habit stick.",
+        description: "You're in. Let's get to work.",
       });
       // Refresh user data to update onboarding status both in queries and auth context
       queryClient.invalidateQueries({ queryKey: [`/api/users/${user?.id}`] });
@@ -363,7 +363,7 @@ export default function Dashboard() {
         onClose={() => {
           setShowOnboarding(false);
         }}
-        initialHabitGoal={(user as any)?.healthyHabitGoal || ''}
+        initialFitnessLevel={(user as any)?.fitnessArchetype || ''}
         initialActivities={(user as any)?.fitnessActivities || ''}
         onSaveSurvey={(data, notify) => {
           saveSurveyMutation.mutate({ data, notify });

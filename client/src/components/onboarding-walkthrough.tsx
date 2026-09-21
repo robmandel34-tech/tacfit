@@ -28,6 +28,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { Link } from 'wouter';
+import { FITNESS_LEVEL_OPTIONS, isFitnessLevel } from '@shared/onboarding';
 
 interface OnboardingStep {
   id: string;
@@ -38,7 +39,8 @@ interface OnboardingStep {
 }
 
 export interface OnboardingSurvey {
-  healthyHabitGoal: string;
+  // One of FITNESS_LEVEL_OPTIONS; empty string when unanswered.
+  fitnessArchetype: string;
   fitnessActivities: string;
 }
 
@@ -64,10 +66,10 @@ interface OnboardingWalkthroughProps {
   // Persists survey answers as the user advances, before onboarding is finished.
   // notify=true signals the answers are complete and should be posted to Slack.
   onSaveSurvey?: (
-    data: { healthyHabitGoal?: string; fitnessActivities?: string },
+    data: { fitnessArchetype?: string; fitnessActivities?: string },
     notify: boolean,
   ) => void;
-  initialHabitGoal?: string;
+  initialFitnessLevel?: string;
   initialActivities?: string;
 }
 
@@ -559,11 +561,15 @@ export function OnboardingWalkthrough({
   mode = 'tour',
   onComplete,
   onSaveSurvey,
-  initialHabitGoal,
+  initialFitnessLevel,
   initialActivities,
 }: OnboardingWalkthroughProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [healthyHabitGoal, setHealthyHabitGoal] = useState(initialHabitGoal || '');
+  // Only pre-select a value the current question can actually show; older
+  // accounts may hold a legacy value from an earlier version of this question.
+  const [fitnessLevel, setFitnessLevel] = useState(
+    isFitnessLevel(initialFitnessLevel) ? initialFitnessLevel : '',
+  );
   const [fitnessActivities, setFitnessActivities] = useState(initialActivities || '');
   // Ensures we only fire the "survey finished" notify once per walkthrough,
   // even if the user navigates Back then Next past the survey again.
@@ -571,26 +577,58 @@ export function OnboardingWalkthrough({
 
   const onboardingSteps: OnboardingStep[] = [
     {
-      id: 'survey-habit',
+      id: 'survey-fitness-level',
       title: 'Quick Check-In',
       description: 'Two quick questions, then you are in',
       icon: <Target className="h-6 w-6" />,
       content: (
         <div className="space-y-4">
           <h3 className="text-lg font-bold text-white">
-            What healthy habit do you want to make a lasting habit of?
+            How would you rate your current level of fitness?
           </h3>
           <p className="text-sm text-gray-400">
-            Mind, body or spirit — whatever you want to stick this time.
+            There are no wrong answers — pick the one that fits best today.
           </p>
-          <Textarea
-            value={healthyHabitGoal}
-            onChange={(e) => setHealthyHabitGoal(e.target.value)}
-            placeholder="Examples: Run three mornings a week, daily prayer, lights out by 10pm..."
-            maxLength={500}
-            className="min-h-[96px] bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 focus-visible:ring-military-green"
-            data-testid="input-habit-goal"
-          />
+          {/* Native radios: arrow-key navigation and required semantics come for
+              free, and the label (not a <button>) carries the focus ring, so the
+              global button:focus-visible reset in index.css can't hide it. */}
+          <fieldset className="space-y-3">
+            <legend className="sr-only">Current level of fitness (required)</legend>
+            {FITNESS_LEVEL_OPTIONS.map((option) => {
+              const selected = fitnessLevel === option.value;
+              return (
+                <label
+                  key={option.value}
+                  className={`relative flex w-full cursor-pointer items-center gap-3 rounded-lg border p-4 transition-all has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-military-green has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-gray-900 ${
+                    selected
+                      ? 'border-military-green bg-military-green/15 ring-1 ring-military-green'
+                      : 'border-gray-700 bg-gray-800/50 hover:border-gray-500'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="fitness-level"
+                    value={option.value}
+                    checked={selected}
+                    required
+                    aria-required="true"
+                    onChange={() => setFitnessLevel(option.value)}
+                    className="sr-only"
+                    data-testid={`radio-fitness-level-${option.value}`}
+                  />
+                  <span
+                    aria-hidden="true"
+                    className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border ${
+                      selected ? 'border-military-green bg-military-green' : 'border-gray-500'
+                    }`}
+                  >
+                    {selected && <CheckCircle className="h-4 w-4 text-forest-green" />}
+                  </span>
+                  <span className="text-sm font-semibold text-white">{option.label}</span>
+                </label>
+              );
+            })}
+          </fieldset>
         </div>
       ),
     },
@@ -656,11 +694,11 @@ export function OnboardingWalkthrough({
       // Persist survey answers as the user moves past each question, so they're
       // saved even if the user closes the walkthrough before finishing.
       const leavingId = currentStepData.id;
-      if (leavingId === 'survey-habit' && healthyHabitGoal.trim()) {
-        onSaveSurvey?.({ healthyHabitGoal: healthyHabitGoal.trim() }, false);
+      if (leavingId === 'survey-fitness-level' && fitnessLevel) {
+        onSaveSurvey?.({ fitnessArchetype: fitnessLevel }, false);
       } else if (leavingId === 'survey-activities' && !surveyNotifiedRef.current) {
         surveyNotifiedRef.current = true;
-        onSaveSurvey?.({ healthyHabitGoal: healthyHabitGoal.trim(), fitnessActivities }, true);
+        onSaveSurvey?.({ fitnessArchetype: fitnessLevel, fitnessActivities }, true);
       }
       setCurrentStep(currentStep + 1);
     }
@@ -673,7 +711,7 @@ export function OnboardingWalkthrough({
   };
 
   const survey = (): OnboardingSurvey => ({
-    healthyHabitGoal: healthyHabitGoal.trim(),
+    fitnessArchetype: fitnessLevel,
     fitnessActivities,
   });
 
@@ -689,7 +727,7 @@ export function OnboardingWalkthrough({
 
   const progress = ((currentStep + 1) / steps.length) * 100;
   const isLastStep = currentStep === steps.length - 1;
-  const nextDisabled = currentStepData.id === 'survey-habit' && !healthyHabitGoal.trim();
+  const nextDisabled = currentStepData.id === 'survey-fitness-level' && !fitnessLevel;
   // The chooser slide completes onboarding through its own buttons.
   const hideFooterAction = currentStepData.id === 'first-action';
 

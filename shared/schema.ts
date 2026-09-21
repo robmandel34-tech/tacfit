@@ -47,10 +47,12 @@ export const users = pgTable("users", {
   // Profile card background theme
   profileBackground: text("profile_background").default("green"),
 
-  // Onboarding survey: whole-fitness self assessment
+  // Onboarding check-in: "How would you rate your current level of fitness?"
+  // Values in shared/onboarding.ts (plus legacy servant/clown/survivor tokens).
   fitnessArchetype: text("fitness_archetype"),
   fitnessActivities: text("fitness_activities"),
-  // Onboarding: "What healthy habit do you want to make a lasting habit of?"
+  // No longer asked (was "What healthy habit do you want to make a lasting
+  // habit of?"); kept for accounts that answered it.
   healthyHabitGoal: text("healthy_habit_goal"),
   // Guards against duplicate Slack posts of the survey (one post per user).
   onboardingSurveyNotified: boolean("onboarding_survey_notified").default(false),

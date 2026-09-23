@@ -3,24 +3,26 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Founder Offer — Join the Muster Up Inaugural Competition</title>
-<meta name="description" content="Sign up for the free Muster Up inaugural competition. Take part and earn Muster Up Founder status — free for life. 4 weeks of cardio, mindfulness, and reading. Limited to the first 25–50 members." />
+<title>Become a Founder — Muster Up Free for Life</title>
+<meta name="description" content="The first 50 people to join Muster Up earn permanent Founder status and keep Muster Up free for life. No sign-up form — join the app and jump into the next Zero Day competition." />
+<link rel="canonical" href="https://joinmuster.com/founder" />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://tacfit.app/founder.html" />
-<meta property="og:title" content="Founder Offer — Join the Muster Up Inaugural Competition" />
-<meta property="og:description" content="Sign up, take part, and earn Muster Up Founder status — free for life. Limited to the first 25–50 members." />
-<meta property="og:image" content="https://tacfit.app/marketing/og-image.jpg" />
+<meta property="og:site_name" content="Muster Up" />
+<meta property="og:url" content="https://joinmuster.com/founder" />
+<meta property="og:title" content="Become a Founder — Muster Up Free for Life" />
+<meta property="og:description" content="The first 50 members earn permanent Founder status and keep Muster Up free for life. Join the app and you’re in." />
+<meta property="og:image" content="https://joinmuster.com/marketing/og-image.jpg" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:image" content="https://tacfit.app/marketing/og-image.jpg" />
+<meta name="twitter:image" content="https://joinmuster.com/marketing/og-image.jpg" />
 <link rel="icon" type="image/x-icon" href="/favicons/favicon.ico" />
 <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32.png" />
 <link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16.png" />
 <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png" />
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" crossorigin="anonymous">
 <style>
   :root {
     --green: #D2913C;
@@ -84,45 +86,33 @@
   .detail-fact .k { display: block; font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-3); font-weight: 700; margin-bottom: 6px; }
   .detail-fact .v { display: block; font-size: 20px; font-weight: 800; color: var(--text); }
 
-  /* FORM SECTION */
-  .signup-section { padding: 20px 0 80px; }
-  .signup-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 48px; align-items: start; }
-  @media (max-width: 820px) { .signup-grid { grid-template-columns: 1fr; gap: 32px; } }
+  /* OFFER LAYOUT */
+  .offer-section { padding: 20px 0 80px; }
+  .offer-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 48px; align-items: start; }
+  @media (max-width: 820px) { .offer-grid { grid-template-columns: 1fr; gap: 32px; } }
 
-  .form-card {
+  .claim-card {
     background: var(--card); border: 1px solid var(--border);
     border-radius: 16px; padding: 36px;
     box-shadow: 0 30px 80px -40px rgba(0,0,0,0.7);
   }
-  .form-card h2 { font-size: 22px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.01em; }
-  .form-card .sub { color: var(--text-3); font-size: 14px; margin-bottom: 28px; }
-  .field { margin-bottom: 18px; }
-  .field label {
-    display: block; font-size: 13px; font-weight: 600;
-    color: var(--text-2); margin-bottom: 8px;
-    text-transform: uppercase; letter-spacing: 0.06em;
+  .claim-card h2 { font-size: 22px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.01em; }
+  .claim-card .sub { color: var(--text-3); font-size: 14px; margin-bottom: 28px; }
+
+  /* Numbered steps — the whole claim process, since there is nothing to fill in. */
+  .steps { list-style: none; display: flex; flex-direction: column; gap: 20px; margin-bottom: 30px; counter-reset: step; }
+  .steps li { counter-increment: step; position: relative; padding-left: 46px; color: var(--text-2); font-size: 14px; line-height: 1.6; }
+  .steps li::before {
+    content: counter(step); position: absolute; left: 0; top: 0;
+    width: 32px; height: 32px; border-radius: 9px;
+    background: rgba(210,145,60,0.12); border: 1px solid rgba(210,145,60,0.3);
+    color: var(--green); font-weight: 800; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
   }
-  .field input, .field textarea {
-    width: 100%; background: var(--bg-soft); color: var(--text);
-    border: 1px solid var(--border); border-radius: 10px;
-    padding: 13px 14px; font-size: 15px; font-family: inherit;
-    transition: border-color .15s, box-shadow .15s;
-  }
-  .field textarea { min-height: 90px; resize: vertical; }
-  .field input:focus, .field textarea:focus {
-    outline: none; border-color: var(--green);
-    box-shadow: 0 0 0 3px rgba(210,145,60,0.15);
-  }
-  .submit-row { display: flex; align-items: center; gap: 16px; margin-top: 6px; flex-wrap: wrap; }
-  .submit-row .btn { padding: 14px 28px; }
-  .form-note { font-size: 13px; color: var(--text-3); }
-  .form-success {
-    display: none; background: rgba(210,145,60,0.1);
-    border: 1px solid rgba(210,145,60,0.35); color: var(--green);
-    padding: 14px 16px; border-radius: 10px; font-size: 14px;
-    margin-bottom: 18px;
-  }
-  .form-success.show { display: block; }
+  .steps li strong { display: block; color: var(--text); font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+  .claim-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .claim-row .btn { padding: 14px 28px; }
+  .claim-note { font-size: 13px; color: var(--text-3); }
 
   /* BENEFITS PANEL */
   .info-panel { display: flex; flex-direction: column; gap: 20px; }
@@ -149,6 +139,22 @@
   .foot-links a { color: var(--text-3); font-size: 14px; transition: color .15s; }
   .foot-links a:hover { color: var(--green); }
 </style>
+<!-- HeyCatch analytics. Static import at module scope so the SDK evaluates on
+     every page load; autocapture handles pageviews, clicks and outbound links. -->
+<script type="module">
+  import { analytics } from 'https://esm.sh/@heycatch/sdk@0.7.0';
+
+  analytics.init({
+    projectKey: 'hck_pk_RFfvs65QXI_qS_mc3FXOTVjeL_du86XB',
+    install: {
+      framework: 'web',
+      agent: 'claude-code',
+    },
+    // Traditional multi-page site: every nav is a full page load, so batched
+    // events would be dropped in flight (notably on iOS Safari).
+    requestBatching: false,
+  });
+</script>
 </head>
 <body>
 
@@ -161,9 +167,11 @@
     <div class="nav-links">
       <a href="/#showcase">The App</a>
       <a href="/#why">Why Muster Up</a>
-      <a href="/founder.html" class="active">Founder Offer</a>
-      <a href="/partners.html">Partners</a>
-      <a href="/contact-us.html">Contact</a>
+      <a class='active' href='/founder'>Become a Founder</a>
+      <a href='/crew'>Bring your crew</a>
+      <a href='/vs/whoop'>Compare</a>
+      <a href='/partners'>Partners</a>
+      <a href='/contact-us'>Contact</a>
     </div>
     <a href="https://app.joinmuster.com" class="btn btn-primary">Sign In</a>
   </div>
@@ -171,53 +179,37 @@
 
 <header class="page-head">
   <div class="container">
-    <span class="eyebrow"><span class="dot"></span> Free Inaugural Competition · First 25–50 members only</span>
+    <span class="eyebrow"><span class="dot"></span> First 50 members only · Free for life</span>
     <h1>Become a Muster Up <span class="accent">Founder.</span></h1>
-    <p>Be one of the first to join Muster Up. Sign up for our free inaugural competition, take part over four weeks, and earn permanent <strong>Founder status</strong> — plus <strong>Muster Up free for life</strong>. Reserve your spot below.</p>
+    <p>Muster Up is just getting going, and the first people through the door are the ones who make it worth joining. So the <strong>first 50 members</strong> earn permanent <strong>Founder status</strong> and keep <strong>Muster Up free for life</strong>. There is nothing to fill in and nothing to pay — join the app and you’re in.</p>
   </div>
 </header>
 
 <section class="details">
   <div class="container details-grid">
-    <div class="detail-fact"><span class="k">Length</span><span class="v">4 weeks</span></div>
+    <div class="detail-fact"><span class="k">Spots</span><span class="v">First 50</span></div>
     <div class="detail-fact"><span class="k">Entry</span><span class="v">Free</span></div>
-    <div class="detail-fact"><span class="k">Spots</span><span class="v">25–50</span></div>
+    <div class="detail-fact"><span class="k">To claim</span><span class="v">Join the app</span></div>
     <div class="detail-fact"><span class="k">Reward</span><span class="v">Free for life</span></div>
   </div>
 </section>
 
-<section class="signup-section">
-  <div class="container signup-grid">
-    <div class="form-card">
-      <h2>Reserve your Founder spot</h2>
-      <p class="sub">Fill in your details and we'll be in touch with the next steps to get you into the inaugural competition.</p>
+<section class="offer-section">
+  <div class="container offer-grid">
+    <div class="claim-card">
+      <h2>How to claim it</h2>
+      <p class="sub">No form, no waitlist, no code to enter. We can see who joins.</p>
 
-      <div class="form-success" id="success" role="status" aria-live="polite">
-        You're on the list! We'll reach out soon with how to join the inaugural competition. Welcome, Founder.
+      <ol class="steps">
+        <li><strong>Create your Muster Up account.</strong> That is the whole entry. The first 50 accounts are Founders, and your badge lands automatically.</li>
+        <li><strong>Jump into the next Zero Day.</strong> A fresh two-week competition kicks off every two weeks on a Monday — any cardio, plus air squats, lunges and push ups, at whatever number you can do today.</li>
+        <li><strong>Keep it free for life.</strong> Whatever Muster Up costs later, Founders never pay. Your status stays with your account.</li>
+      </ol>
+
+      <div class="claim-row">
+        <a href="https://app.joinmuster.com" class="btn btn-primary">Join Muster Up →</a>
+        <span class="claim-note">Free to join. No payment details required.</span>
       </div>
-
-      <form id="founderForm" novalidate>
-        <div class="field">
-          <label for="name">Full Name</label>
-          <input id="name" name="name" type="text" required autocomplete="name" placeholder="Jane Operator" />
-        </div>
-        <div class="field">
-          <label for="email">Email</label>
-          <input id="email" name="email" type="email" required autocomplete="email" placeholder="jane@example.com" />
-        </div>
-        <div class="field">
-          <label for="phone">Phone (optional)</label>
-          <input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="(555) 123-4567" />
-        </div>
-        <div class="field">
-          <label for="why">Why do you want to join? (optional)</label>
-          <textarea id="why" name="why" placeholder="Tell us a little about your fitness goals."></textarea>
-        </div>
-        <div class="submit-row">
-          <button type="submit" class="btn btn-primary">Claim my Founder spot →</button>
-          <span class="form-note">Free to join. No payment required.</span>
-        </div>
-      </form>
     </div>
 
     <aside class="info-panel">
@@ -226,19 +218,20 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         </div>
         <h3>Founder status — free for life</h3>
-        <p>Everyone who signs up and takes part in the inaugural competition keeps Muster Up free for life, plus a permanent Founder badge.</p>
+        <p>The first 50 people to join keep Muster Up free for life, plus a permanent Founder badge on their profile. Same reward as before, none of the paperwork.</p>
       </div>
 
       <div class="info-card">
         <div class="ico">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         </div>
-        <h3>4 weeks, three ways to win</h3>
-        <p>A four-week challenge built around the body, mind, and spirit. Log your activity across these categories:</p>
+        <h3>A new Zero Day every two weeks</h3>
+        <p>Two weeks long, free to enter, and a fresh one starts on a Monday every two weeks. Activities included:</p>
         <div class="activity-chips">
           <span class="act-chip">Cardio — any type</span>
-          <span class="act-chip">Mindfulness · Meditation · Prayer</span>
-          <span class="act-chip">Reading</span>
+          <span class="act-chip">Air Squats</span>
+          <span class="act-chip">Lunges</span>
+          <span class="act-chip">Push Ups</span>
         </div>
       </div>
 
@@ -260,45 +253,18 @@
       <span style="font-size:15px;">© 2026 Muster Up</span>
     </div>
     <div class="foot-links">
-      <a href="/privacy.html">Privacy</a>
-      <a href="/partners.html">Partners</a>
-      <a href="/founder.html">Founder Offer</a>
-      <a href="/contact-us.html">Contact</a>
+      <a href='/privacy'>Privacy</a>
+      <a href='/crew'>Bring your crew</a>
+    <a href='/vs/whoop'>vs WHOOP</a>
+      <a href='/vs/apple-fitness'>vs Apple Fitness+</a>
+      <a href='/partners'>Partners</a>
+      <a href='/founder'>Become a Founder</a>
+      <a href='/contact-us'>Contact</a>
       <a href="/#showcase">The App</a>
     </div>
   </div>
 </footer>
 
-<script>
-  // Form submission — opens the user's email client pre-filled with the
-  // Founder sign-up addressed to tactfit2025@gmail.com. The success banner
-  // still shows if no mail client is configured.
-  const form = document.getElementById('founderForm');
-  const success = document.getElementById('success');
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const name = form.name.value.trim();
-    const email = form.email.value.trim();
-    const phone = form.phone.value.trim();
-    const why = form.why.value.trim();
-    if (!name || !email) {
-      form.reportValidity();
-      return;
-    }
-    const subject = `[Muster Up] Founder sign-up — ${name}`;
-    const body =
-      `Name: ${name}\n` +
-      `Email: ${email}\n` +
-      `Phone: ${phone || '(not provided)'}\n` +
-      `Why join: ${why || '(not provided)'}\n` +
-      `\nI'd like to join the free Muster Up inaugural competition and claim Founder status.\n`;
-    const mailto = `mailto:tactfit2025@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.location.href = mailto;
-    success.classList.add('show');
-    setTimeout(() => { form.reset(); }, 500);
-    success.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  });
-</script>
 
 </body>
 </html>

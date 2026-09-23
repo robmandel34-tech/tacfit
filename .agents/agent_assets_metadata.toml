@@ -175,3 +175,17 @@ mtime_ms = 1790026463601
 storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:52c3692b-e3ae-4f26-87b1-b5a765544cd7/ad60cf71-6437-4a79-b7e8-da81d3463d64/bccffe3a-da20-4b57-a884-f4748fed8587"
 storage_version_token = "1790026576003350"
 content_type = "video/mp4"
+
+[[outputs]]
+id = "NGCaZLqKPy264PB2-w22d"
+uri = "file://marketing/joinmuster-site-2026-09-22.zip"
+type = "unspecified"
+title = "joinmuster.com — updated site (drop into Netlify)"
+description = "Complete marketing-site folder with the heycatch audit fixes applied. Unzip and drag the folder's contents onto Netlify Deploys (or replace the folder in your Git-connected repo)."
+logical_id = "66e831a0-79c9-4b90-a19f-f63be0ed2be8"
+content_hash = "sha256:fa9d0b9b61154a58f4ffd0f18b23646a42d97e7a94f463835103a69cf784ab01"
+size = 4842097
+mtime_ms = 1790137906598
+storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:52c3692b-e3ae-4f26-87b1-b5a765544cd7/66e831a0-79c9-4b90-a19f-f63be0ed2be8/efeb17cf-d87a-4f93-9869-b285f7fef821"
+storage_version_token = "1790137913127755"
+content_type = "application/octet-stream"

@@ -5,22 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Partners & Integrations — Muster Up</title>
 <meta name="description" content="Partner with Muster Up. We supplement and integrate with your fitness apps and organization to drive user growth and retention through sponsored competitions and seamless API integration." />
+<link rel="canonical" href="https://joinmuster.com/partners" />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://tacfit.app/partners.html" />
+<meta property="og:site_name" content="Muster Up" />
+<meta property="og:url" content="https://joinmuster.com/partners" />
 <meta property="og:title" content="Partners & Integrations — Muster Up" />
 <meta property="og:description" content="Partner with Muster Up to drive growth and retention through sponsored competitions and seamless API integration." />
-<meta property="og:image" content="https://tacfit.app/marketing/og-image.jpg" />
+<meta property="og:image" content="https://joinmuster.com/marketing/og-image.jpg" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:image" content="https://tacfit.app/marketing/og-image.jpg" />
+<meta name="twitter:image" content="https://joinmuster.com/marketing/og-image.jpg" />
 <link rel="icon" type="image/x-icon" href="/favicons/favicon.ico" />
 <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32.png" />
 <link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16.png" />
 <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png" />
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" crossorigin="anonymous">
 <style>
   :root {
     --green: #D2913C;
@@ -157,6 +159,22 @@
   .foot-links a { color: var(--text-3); font-size: 14px; transition: color .15s; }
   .foot-links a:hover { color: var(--green); }
 </style>
+<!-- HeyCatch analytics. Static import at module scope so the SDK evaluates on
+     every page load; autocapture handles pageviews, clicks and outbound links. -->
+<script type="module">
+  import { analytics } from 'https://esm.sh/@heycatch/sdk@0.7.0';
+
+  analytics.init({
+    projectKey: 'hck_pk_RFfvs65QXI_qS_mc3FXOTVjeL_du86XB',
+    install: {
+      framework: 'web',
+      agent: 'claude-code',
+    },
+    // Traditional multi-page site: every nav is a full page load, so batched
+    // events would be dropped in flight (notably on iOS Safari).
+    requestBatching: false,
+  });
+</script>
 </head>
 <body>
 
@@ -169,9 +187,11 @@
     <div class="nav-links">
       <a href="/#showcase">The App</a>
       <a href="/#why">Why Muster Up</a>
-      <a href="/founder.html">Founder Offer</a>
-      <a href="/partners.html" class="active">Partners</a>
-      <a href="/contact-us.html">Contact</a>
+      <a href='/founder'>Become a Founder</a>
+      <a href='/crew'>Bring your crew</a>
+      <a href='/vs/whoop'>Compare</a>
+      <a class='active' href='/partners'>Partners</a>
+      <a href='/contact-us'>Contact</a>
     </div>
     <a href="/#download" class="btn btn-primary">Get the App</a>
   </div>
@@ -195,10 +215,13 @@
         Thanks — your details are on their way. We'll reach out to discuss a potential partnership.
       </div>
 
-      <form id="partnerForm" novalidate>
+      <form id='partnerForm' method='POST' name='partner-inquiry' data-netlify="true" data-netlify-honeypot="bot-field" novalidate>
+        <input type="hidden" name="form-name" value="partner-inquiry" />
+        <input type="hidden" name="lead-type" value="api-partner" />
+        <p hidden><label>Don't fill this out: <input name="bot-field" /></label></p>
         <div class="field">
           <label for="name">Your Name</label>
-          <input id="name" name="name" type="text" required autocomplete="name" placeholder="Jane Operator" />
+          <input id="name" name="name" type="text" required autocomplete="name" placeholder="Jane Ramirez" />
         </div>
         <div class="field">
           <label for="email">Email</label>
@@ -268,43 +291,53 @@
       <span style="font-size:15px;">© 2026 Muster Up</span>
     </div>
     <div class="foot-links">
-      <a href="/privacy.html">Privacy</a>
-      <a href="/partners.html">Partners</a>
-      <a href="/founder.html">Founder Offer</a>
-      <a href="/contact-us.html">Contact</a>
+      <a href='/privacy'>Privacy</a>
+      <a href='/crew'>Bring your crew</a>
+    <a href='/vs/whoop'>vs WHOOP</a>
+      <a href='/vs/apple-fitness'>vs Apple Fitness+</a>
+      <a href='/partners'>Partners</a>
+      <a href='/founder'>Become a Founder</a>
+      <a href='/contact-us'>Contact</a>
       <a href="/#showcase">The App</a>
     </div>
   </div>
 </footer>
 
-<script>
-  // Form submission — opens the user's email client pre-filled with the
-  // partnership request addressed to tactfit2025@gmail.com. The success banner
-  // still shows if no mail client is configured.
+<script type="module">
+  import { analytics } from 'https://esm.sh/@heycatch/sdk@0.7.0';
+
+  // Form submission — posts to Netlify Forms. Submissions are stored against
+  // the form's name ("partner-inquiry"), which keeps API/integration partners
+  // separate from crew leads ("crew-matchup") in the Netlify dashboard.
   const form = document.getElementById('partnerForm');
   const success = document.getElementById('success');
-  form.addEventListener('submit', (e) => {
+  const button = form.querySelector('button[type="submit"]');
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const name = form.name.value.trim();
-    const email = form.email.value.trim();
-    const organization = form.organization.value.trim();
-    if (!name || !email || !organization) {
-      form.reportValidity();
-      return;
+    if (!form.checkValidity()) { form.reportValidity(); return; }
+    button.disabled = true;
+    try {
+      const res = await fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams(new FormData(form)).toString(),
+      });
+      if (!res.ok) throw new Error('Submission failed: ' + res.status);
+      // Netlify Forms never reaches our own backend, so the browser is the
+      // only place that knows this submission succeeded.
+      analytics.trackEvent('partner_inquiry_submitted');
+      form.reset();
+      success.classList.add('show');
+      success.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } catch (err) {
+      button.disabled = false;
+      form.querySelector('.form-note').textContent =
+        'Something went wrong sending that. Please try again, or use the contact page.';
     }
-    const subject = `[Muster Up] Partnership inquiry — ${organization}`;
-    const body =
-      `Name: ${name}\n` +
-      `Email: ${email}\n` +
-      `Organization / Application: ${organization}\n` +
-      `\nI'm interested in discussing a potential partnership with Muster Up.\n`;
-    const mailto = `mailto:tactfit2025@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.location.href = mailto;
-    success.classList.add('show');
-    setTimeout(() => { form.reset(); }, 500);
-    success.scrollIntoView({ behavior: 'smooth', block: 'center' });
   });
 </script>
+
+
 
 </body>
 </html>

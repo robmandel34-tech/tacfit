@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900"
+     preserveAspectRatio="xMidYMid slice" role="img"
+     aria-label="Illustration of a squad of four hikers walking a trail across layered forest ridgelines at sunrise.">
+  <defs>
+    <linearGradient id="rSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#232B1B"/>
+      <stop offset="0.55" stop-color="#1C2016"/>
+      <stop offset="1" stop-color="#171A12"/>
+    </linearGradient>
+    <radialGradient id="rSun" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#D2913C" stop-opacity="0.55"/>
+      <stop offset="0.45" stop-color="#D2913C" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#D2913C" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="rNear" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#20251A"/>
+      <stop offset="1" stop-color="#15180F"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="900" fill="url(#rSky)"/>
+  <circle cx="905" cy="250" r="330" fill="url(#rSun)"/>
+  <circle cx="905" cy="250" r="62" fill="#D2913C" opacity="0.9"/>
+
+  <!-- faint topographic contours in the sky, echoing the app's progress map -->
+  <g fill="none" stroke="#9BAD7D" stroke-opacity="0.09" stroke-width="2">
+    <path d="M-40 300 C 200 250, 420 330, 640 285 S 1020 210, 1240 265"/>
+    <path d="M-40 350 C 220 300, 440 380, 660 335 S 1030 262, 1240 315"/>
+    <path d="M-40 400 C 240 352, 460 430, 680 385 S 1040 315, 1240 366"/>
+  </g>
+
+  <!-- ridge, far -->
+  <path d="M0 470 L 150 392 L 268 452 L 400 330 L 520 430 L 650 355 L 790 455 L 930 385 L 1060 448 L 1200 400 L 1200 900 L 0 900 Z"
+        fill="#36412C" fill-opacity="0.7"/>
+  <!-- ridge, middle -->
+  <path d="M0 585 L 130 520 L 250 570 L 395 470 L 530 560 L 690 500 L 820 575 L 980 505 L 1110 565 L 1200 528 L 1200 900 L 0 900 Z"
+        fill="#2B3422"/>
+  <!-- ridge, near -->
+  <path d="M0 700 L 180 645 L 330 692 L 480 620 L 640 690 L 800 640 L 960 700 L 1110 660 L 1200 690 L 1200 900 L 0 900 Z"
+        fill="url(#rNear)"/>
+
+  <!-- the trail the squad is walking -->
+  <path d="M-20 806 C 200 770, 360 800, 520 760 C 700 716, 860 742, 1030 700 C 1120 678, 1170 672, 1220 668"
+        fill="none" stroke="#D2913C" stroke-opacity="0.32" stroke-width="5"
+        stroke-linecap="round" stroke-dasharray="26 20"/>
+
+  <!-- squad of four: nobody out front alone -->
+  <g fill="#0E1109">
+    <g transform="translate(300,790) scale(1.05)">
+      <circle cx="0" cy="-42" r="11"/>
+      <path d="M-11 -28 L 11 -28 L 7 6 L -7 6 Z"/>
+      <path d="M-7 6 L -13 40 M 7 6 L 13 40" stroke="#0E1109" stroke-width="7" stroke-linecap="round"/>
+      <path d="M-10 -24 L -19 1 M 10 -24 L 19 3" stroke="#0E1109" stroke-width="6.5" stroke-linecap="round"/>
+    </g>
+    <g transform="translate(468,762) scale(1.05)">
+      <circle cx="0" cy="-42" r="11"/>
+      <path d="M-11 -28 L 11 -28 L 7 6 L -7 6 Z"/>
+      <path d="M-7 6 L -13 40 M 7 6 L 13 40" stroke="#0E1109" stroke-width="7" stroke-linecap="round"/>
+      <path d="M-10 -24 L -18 2 M 10 -24 L 20 -6" stroke="#0E1109" stroke-width="6.5" stroke-linecap="round"/>
+    </g>
+    <g transform="translate(700,730) scale(1.05)">
+      <circle cx="0" cy="-42" r="11"/>
+      <path d="M-11 -28 L 11 -28 L 7 6 L -7 6 Z"/>
+      <path d="M-7 6 L -13 40 M 7 6 L 13 40" stroke="#0E1109" stroke-width="7" stroke-linecap="round"/>
+      <path d="M-10 -24 L -20 -2 M 10 -24 L 18 4" stroke="#0E1109" stroke-width="6.5" stroke-linecap="round"/>
+    </g>
+    <g transform="translate(878,712) scale(1.05)">
+      <circle cx="0" cy="-42" r="11"/>
+      <path d="M-11 -28 L 11 -28 L 7 6 L -7 6 Z"/>
+      <path d="M-7 6 L -13 40 M 7 6 L 13 40" stroke="#0E1109" stroke-width="7" stroke-linecap="round"/>
+      <path d="M-10 -24 L -18 3 M 10 -24 L 19 0" stroke="#0E1109" stroke-width="6.5" stroke-linecap="round"/>
+    </g>
+  </g>
+
+  <!-- amber waypoints, as on the progress map -->
+  <g fill="#D2913C">
+    <circle cx="520" cy="760" r="6" opacity="0.85"/>
+    <circle cx="1030" cy="700" r="6" opacity="0.85"/>
+  </g>
+</svg>

@@ -1,0 +1,41 @@
+# Muster Up
+
+> Muster Up turns fitness into a team sport. Two-week team fitness competitions where squads are small enough (5 people max) that every single person counts. iOS app plus a web version; free today, Zero Day stays free for good.
+
+Last updated: 2026-09-22
+
+## What it is
+
+- Team fitness competitions, two weeks long. Squads of up to 5 go head to head; a bigger crew (a shift, a box, a run club) is split into squads that climb the same map.
+- Zero Day: a free competition that starts every two weeks on a Monday. Counts any cardio (a ten-minute walk counts) plus air squats, lunges and push ups. Other competitions also count yoga, meditation or prayer, breathing, reading and lifting.
+- Inside the app: Intel Feed (community activity stream), Competitions, Your Squad, Team Comms (chat, task board, video calls), Progress Map (earn points, climb the leaderboard, base camp to victory point), Profile (points, wins, buddies).
+- Cardio syncs from Apple Health. Android users use the web version at https://app.joinmuster.com.
+
+## Pricing
+
+- Every competition is free today. Zero Day stays free.
+- Coming soon: camera-verified competitions, which will be paid. You pay for a fair competition (every rep counted on camera), not a subscription.
+- Founding members and founding crews who join before paid competitions launch are permanently exempt.
+
+## Who it is for
+
+- People who quit alone before and want a team that notices when they go quiet.
+- Fitness enthusiasts who want to pull someone else up.
+- Crew leads (a shift, a gym, a run club) who want a real scoreboard without running it themselves: "I handle the setup — your only job is getting your crew to download the app."
+
+## Founder
+
+- Built by Robert Mandel, a veteran who learned how much further you go when someone's counting on you.
+
+## Pages
+
+- [Home](https://joinmuster.com/): overview, Zero Day, features, FAQ
+- [Bring your crew](https://joinmuster.com/crew): put your crew against another crew; matchup request form
+- [Become a Founder](https://joinmuster.com/founder): the first 50 members keep Muster Up free for life
+- [Muster Up vs WHOOP](https://joinmuster.com/vs/whoop)
+- [Muster Up vs Apple Fitness+](https://joinmuster.com/vs/apple-fitness)
+- [Partners](https://joinmuster.com/partners)
+- [Contact](https://joinmuster.com/contact-us)
+- [Privacy](https://joinmuster.com/privacy)
+- [App Store](https://apps.apple.com/us/app/muster-up-find-your-team/id6764738732)
+- [Web app](https://app.joinmuster.com)

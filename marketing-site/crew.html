@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bring Your Crew — Muster Up</title>
+<meta name="description" content="Put your crew against another crew. A shift, a box, a run club — Muster Up turns it into a real scoreboard for two weeks. Free, no contract." />
+<link rel="canonical" href="https://joinmuster.com/crew" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Muster Up" />
+<meta property="og:url" content="https://joinmuster.com/crew" />
+<meta property="og:title" content="Bring Your Crew — Muster Up" />
+<meta property="og:description" content="Put your crew against another crew. Two weeks, cardio and simple bodyweight moves, free. We line up the opponent and handle setup." />
+<meta property="og:image" content="https://joinmuster.com/marketing/og-image.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Muster Up — Find your team." />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="https://joinmuster.com/marketing/og-image.jpg" />
+<meta name="twitter:image:alt" content="Muster Up — Find your team." />
+<link rel="icon" type="image/x-icon" href="/favicons/favicon.ico" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" crossorigin="anonymous">
+<style>
+  :root {
+    --green: #D2913C;
+    --green-light: #E2A551;
+    --green-dark: #A97529;
+    --forest: #4C3917;
+    --bg: #181B14;
+    --bg-soft: #1C2016;
+    --card: #20241A;
+    --card-2: #262B1D;
+    --border: #2F3426;
+    --text: #ECE6D6;
+    --text-2: #CEC8B7;
+    --text-3: #9AA088;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; line-height: 1.5; overflow-x: hidden; }
+  a { color: inherit; text-decoration: none; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+  /* NAV */
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(10,12,15,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .nav-row { display: flex; align-items: center; justify-content: space-between; height: 72px; }
+  .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 20px; letter-spacing: -0.02em; }
+  .brand img { width: 36px; height: 36px; }
+  .nav-links { display: flex; gap: 32px; }
+  .nav-links a { color: var(--text-2); font-weight: 500; font-size: 15px; transition: color .15s; }
+  .nav-links a:hover, .nav-links a.active { color: var(--green); }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 24px; border-radius: 10px; font-weight: 600; font-size: 15px; transition: transform .15s, background .15s, box-shadow .15s; cursor: pointer; border: none; }
+  .btn-primary { background: var(--green); color: #000; }
+  .btn-primary:hover { background: var(--green-light); transform: translateY(-1px); box-shadow: 0 10px 30px -10px rgba(210,145,60,.55); }
+  .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--green); color: var(--green); }
+  @media (max-width: 720px) { .nav-links { display: none; } }
+
+  /* PAGE HEADER */
+  .page-head { position: relative; padding: 160px 0 50px; text-align: center; overflow: hidden; }
+  .page-head::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 50% 0%, rgba(210,145,60,0.18) 0%, transparent 55%),
+      radial-gradient(circle at 50% 100%, rgba(76,57,23,0.2) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .page-head > * { position: relative; z-index: 1; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px; border: 1px solid rgba(210,145,60,0.35);
+    border-radius: 999px; font-size: 13px; font-weight: 600;
+    color: var(--green); margin-bottom: 24px;
+  }
+  .eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .page-head h1 { font-size: clamp(40px, 6vw, 64px); font-weight: 900; letter-spacing: -0.03em; line-height: 1.05; margin-bottom: 18px; }
+  .page-head h1 .accent { color: var(--green); }
+  .page-head p { color: var(--text-2); font-size: 18px; max-width: 680px; margin: 0 auto; line-height: 1.6; }
+
+  /* FORM SECTION */
+  .partner-section { padding: 20px 0 80px; }
+  .partner-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 48px; align-items: start; }
+  @media (max-width: 820px) { .partner-grid { grid-template-columns: 1fr; gap: 32px; } }
+
+  .form-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 36px;
+    box-shadow: 0 30px 80px -40px rgba(0,0,0,0.7);
+  }
+  .form-card h2 { font-size: 22px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.01em; }
+  .form-card .sub { color: var(--text-3); font-size: 14px; margin-bottom: 28px; }
+  .field { margin-bottom: 18px; }
+  .field label {
+    display: block; font-size: 13px; font-weight: 600;
+    color: var(--text-2); margin-bottom: 8px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .field input {
+    width: 100%; background: var(--bg-soft); color: var(--text);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 13px 14px; font-size: 15px; font-family: inherit;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .field input:focus {
+    outline: none; border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(210,145,60,0.15);
+  }
+  .submit-row { display: flex; align-items: center; gap: 16px; margin-top: 6px; }
+  .submit-row .btn { padding: 14px 28px; }
+  .form-note { font-size: 13px; color: var(--text-3); }
+  .form-success {
+    display: none; background: rgba(210,145,60,0.1);
+    border: 1px solid rgba(210,145,60,0.35); color: var(--green);
+    padding: 14px 16px; border-radius: 10px; font-size: 14px;
+    margin-bottom: 18px;
+  }
+  .form-success.show { display: block; }
+
+  /* WHY PANEL */
+  .info-panel { display: flex; flex-direction: column; gap: 20px; }
+  .info-card {
+    background: var(--card-2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 22px;
+  }
+  .info-card .ico {
+    width: 38px; height: 38px; border-radius: 9px;
+    background: rgba(210,145,60,0.12); border: 1px solid rgba(210,145,60,0.3);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 14px;
+  }
+  .info-card .ico svg { width: 18px; height: 18px; color: var(--green); }
+  .info-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .info-card p { color: var(--text-2); font-size: 14px; line-height: 1.55; }
+
+  /* CURRENT PARTNERS */
+  .partners-current { padding: 0 0 100px; }
+  .partners-current h2 { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; text-align: center; }
+  .partners-current .section-sub { color: var(--text-3); font-size: 15px; text-align: center; margin-bottom: 32px; }
+  .partner-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; max-width: 760px; margin: 0 auto; }
+  .partner-item {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 24px; display: flex; align-items: center; gap: 16px;
+  }
+  .partner-item .badge {
+    width: 48px; height: 48px; flex: none; border-radius: 12px;
+    background: rgba(210,145,60,0.12); border: 1px solid rgba(210,145,60,0.3);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .partner-item .badge svg { width: 24px; height: 24px; color: var(--green); }
+  .partner-item h3 { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+  .partner-item p { color: var(--text-3); font-size: 13.5px; line-height: 1.5; }
+
+  /* FOOTER */
+  footer { background: var(--bg-soft); border-top: 1px solid var(--border); padding: 36px 0; }
+  .foot-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+  .foot-links { display: flex; gap: 24px; }
+  .foot-links a { color: var(--text-3); font-size: 14px; transition: color .15s; }
+  .foot-links a:hover { color: var(--green); }
+
+  /* CREW PAGE */
+  .field textarea, .field select {
+    width: 100%; background: var(--bg-soft); color: var(--text);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 13px 14px; font-size: 15px; font-family: inherit;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .field textarea { min-height: 96px; resize: vertical; line-height: 1.55; }
+  .field textarea:focus, .field select:focus {
+    outline: none; border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(210,145,60,0.15);
+  }
+  .field .hint { display: block; margin-top: 7px; font-size: 12.5px; color: var(--text-3); text-transform: none; letter-spacing: 0; font-weight: 500; }
+
+  .crew-how { padding: 10px 0 70px; }
+  .crew-how h2 { font-size: clamp(26px, 3.4vw, 34px); font-weight: 800; letter-spacing: -0.025em; text-align: center; margin-bottom: 38px; }
+  .crew-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  @media (max-width: 860px) { .crew-cards { grid-template-columns: 1fr; } }
+  .crew-card { background: linear-gradient(180deg, var(--card), var(--card-2)); border: 1px solid var(--border); border-radius: 18px; padding: 30px 28px; }
+  .crew-card .num { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 10px; background: rgba(210,145,60,0.12); border: 1px solid rgba(210,145,60,0.3); color: var(--green); font-weight: 800; font-size: 14px; margin-bottom: 18px; }
+  .crew-card h3 { font-size: 20px; font-weight: 800; letter-spacing: -0.015em; margin-bottom: 10px; }
+  .crew-card p { color: var(--text-2); font-size: 15.5px; line-height: 1.65; }
+
+  .crew-cost { padding: 0 0 80px; }
+  .crew-cost-card { max-width: 820px; margin: 0 auto; background: rgba(210,145,60,0.07); border: 1px solid rgba(210,145,60,0.3); border-radius: 20px; padding: 40px; text-align: center; }
+  .crew-cost-card h2 { font-size: clamp(24px, 3.2vw, 32px); font-weight: 800; letter-spacing: -0.025em; margin-bottom: 14px; }
+  .crew-cost-card p { color: var(--text-2); font-size: 16.5px; line-height: 1.75; max-width: 640px; margin: 0 auto; }
+  @media (max-width: 600px) { .crew-cost-card { padding: 28px 22px; } .crew-card { padding: 26px 22px; } }
+
+  .crew-facts { max-width: 820px; margin: 20px auto 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 860px) { .crew-facts { grid-template-columns: 1fr; } }
+  .crew-fact { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 22px; }
+  .crew-fact h3 { font-size: 15px; font-weight: 800; margin-bottom: 8px; color: var(--green); }
+  .crew-fact p { color: var(--text-2); font-size: 14.5px; line-height: 1.6; }
+</style>
+<!-- HeyCatch analytics. Static import at module scope so the SDK evaluates on
+     every page load; autocapture handles pageviews, clicks and outbound links. -->
+<script type="module">
+  import { analytics } from 'https://esm.sh/@heycatch/sdk@0.7.0';
+
+  analytics.init({
+    projectKey: 'hck_pk_RFfvs65QXI_qS_mc3FXOTVjeL_du86XB',
+    install: {
+      framework: 'web',
+      agent: 'claude-code',
+    },
+    // Traditional multi-page site: every nav is a full page load, so batched
+    // events would be dropped in flight (notably on iOS Safari).
+    requestBatching: false,
+  });
+</script>
+</head>
+<body>
+
+<nav id="nav">
+  <div class="container nav-row">
+    <a href="/" class="brand">
+      <svg width="36" height="36" viewBox="0 0 100 100" role="img" aria-label="Muster Up" style="display:block;flex-shrink:0"><g transform="translate(-0.35,2.25)"><circle cx="49" cy="64" r="10" fill="none" stroke="#ECE6D6" stroke-width="1.2" opacity="0.32"/><path d="M17 76 L32 34 L49 64 L67 20 L84 74" fill="none" stroke="#ECE6D6" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="17" cy="76" r="2.9" fill="#ECE6D6"/><circle cx="84" cy="74" r="2.6" fill="#ECE6D6"/><circle cx="32" cy="34" r="3.3" fill="#D2913C"/><circle cx="67" cy="20" r="3.4" fill="#D2913C"/><line x1="67" y1="18" x2="67" y2="2.8" stroke="#ECE6D6" stroke-width="2" stroke-linecap="round"/><path d="M67.6 4.4 L79.5 8.6 L67.6 12.8 Z" fill="#D2913C"/><circle cx="67" cy="2.6" r="2" fill="#ECE6D6"/><circle cx="49" cy="64" r="6.5" fill="#181B14" stroke="#ECE6D6" stroke-width="2.2"/><circle cx="49" cy="64" r="3.3" fill="#6E93A6"/></g></svg>
+      Muster Up
+    </a>
+    <div class="nav-links">
+      <a href="/#showcase">The App</a>
+      <a href="/#why">Why Muster Up</a>
+      <a href="/#founder">Zero Day</a>
+      <a class='active' href='/crew'>Bring your crew</a>
+      <a href='/vs/whoop'>Compare</a>
+      <a href='/partners'>Partners</a>
+      <a href='/contact-us'>Contact</a>
+    </div>
+    <a href="/#download" class="btn btn-primary">Get the App</a>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="container">
+    <span class="eyebrow"><span class="dot"></span> Bring your crew</span>
+    <h1>Put your crew against <span class="accent">another crew.</span></h1>
+    <p>A shift. A box. A run club. A crew that already trains together and already talks trash. Muster Up turns that into a real scoreboard for two weeks — free, no contract, nothing to install but the app.</p>
+  </div>
+</header>
+
+<section class="crew-how">
+  <div class="container">
+    <div class="crew-cards">
+      <div class="crew-card">
+        <span class="num">1</span>
+        <h3>You pick the matchup.</h3>
+        <p>Your shift against the other shift. Your gym against the one across town. We’ll help you line up an opponent if you don’t have one.</p>
+      </div>
+      <div class="crew-card">
+        <span class="num">2</span>
+        <h3>Two weeks, low bar.</h3>
+        <p>Any cardio counts, and so do air squats, lunges and push ups. Ten minutes counts. Long enough to matter, short enough that people actually finish.</p>
+      </div>
+      <div class="crew-card">
+        <span class="num">3</span>
+        <h3>You run it, we handle the rest.</h3>
+        <p>I handle the setup — your only job is getting your crew to download the app. Onboarding and support are on us too.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="crew-cost">
+  <div class="container">
+    <div class="crew-cost-card">
+      <h2>What this doesn’t cost you</h2>
+      <p>No money, no contract, no subscription. We don’t sell or share your people’s data, ever. We won’t market to your members outside the app. If it doesn’t serve your crew, you stop and nothing happens.</p>
+    </div>
+    <!-- The three questions crew leads ask before they bring a crew -->
+    <div class="crew-facts">
+      <div class="crew-fact">
+        <h3>How much work is it for me?</h3>
+        <p>Almost none. I handle the setup — your only job is getting your crew to download the app.</p>
+      </div>
+      <div class="crew-fact">
+        <h3>How big are the teams?</h3>
+        <p>Squads are 5 people max — every member counts, no one can hide. A crew of 30 becomes six squads climbing the same map.</p>
+      </div>
+      <div class="crew-fact">
+        <h3>What’s the catch?</h3>
+        <p>There isn’t one. Founding crews join before paid competitions launch and are permanently exempt. Zero Day stays free for good.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="partner-section">
+  <div class="container partner-grid">
+    <div class="form-card">
+      <h2>Line up a matchup</h2>
+      <p class="sub">Tell us about your crew and we’ll come back with a matchup and a start date.</p>
+
+      <div class="form-success" id="success" role="status" aria-live="polite">
+        Thanks — your details are on their way. We’ll be in touch about a matchup and a start date.
+      </div>
+
+      <!-- Netlify Forms. Submissions land in the same place as Partners but under
+           their own form name, so crew leads stay separate from API partners. -->
+      <form id='crewForm' method='POST' name='crew-matchup' data-netlify="true" data-netlify-honeypot="bot-field" novalidate>
+        <input type="hidden" name="form-name" value="crew-matchup" />
+        <input type="hidden" name="lead-type" value="crew" />
+        <p hidden><label>Don’t fill this out: <input name="bot-field" /></label></p>
+        <div class="field">
+          <label for="name">Your Name</label>
+          <input id="name" name="name" type="text" required autocomplete="name" placeholder="Jane Ramirez" />
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" required autocomplete="email" placeholder="jane@example.com" />
+        </div>
+        <div class="field">
+          <label for="organization">Organization</label>
+          <input id="organization" name="organization" type="text" required placeholder="Station 12, Redline CrossFit, Tuesday Run Club…" />
+        </div>
+        <div class="field">
+          <label for="crew-size">Roughly how many people</label>
+          <select id="crew-size" name="crew-size" required>
+            <option value="">Pick a range</option>
+            <option value="Under 10">Under 10</option>
+            <option value="10-25">10–25</option>
+            <option value="25-50">25–50</option>
+            <option value="50-100">50–100</option>
+            <option value="100+">100+</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="opponent">Who would you want to go up against?</label>
+          <textarea id="opponent" name="opponent" placeholder="The other shift, the gym across town, our old rivals…"></textarea>
+          <span class="hint">No idea yet is a fine answer — we’ll find you an opponent.</span>
+        </div>
+        <div class="submit-row">
+          <button type="submit" class="btn btn-primary">Line up a matchup</button>
+          <span class="form-note">We’ll reply to the email you provide.</span>
+        </div>
+      </form>
+    </div>
+
+    <aside class="info-panel">
+      <div class="info-card">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21 3 6"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg></div>
+        <h3>A real scoreboard</h3>
+        <p>Every activity your people log moves your crew along the map. Two weeks, one shared climb, a finish line everyone can see.</p>
+      </div>
+
+      <div class="info-card">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <h3>Squads, not leaderboards</h3>
+        <p>Crews are split into squads small enough that every person counts. Nobody is a rounding error.</p>
+      </div>
+
+      <div class="info-card">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <h3>Your people’s data stays theirs</h3>
+        <p>Activity stays inside the app and the team. We never sell it, share it, or use it to market to your members.</p>
+      </div>
+
+      <div class="info-card">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></div>
+        <h3>You pick the activities</h3>
+        <p>Competitions are fully customizable — choose exactly which activities count, with no limit on the types you include. If it’s healthy and your crew wants some inspiration to do more of it, Muster Up can run a competition around it.</p>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<footer>
+  <div class="container foot-row">
+    <div class="brand">
+      <svg width="28" height="28" viewBox="0 0 100 100" role="img" aria-label="Muster Up" style="display:block;flex-shrink:0"><g transform="translate(-0.35,2.25)"><circle cx="49" cy="64" r="10" fill="none" stroke="#ECE6D6" stroke-width="1.2" opacity="0.32"/><path d="M17 76 L32 34 L49 64 L67 20 L84 74" fill="none" stroke="#ECE6D6" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="17" cy="76" r="2.9" fill="#ECE6D6"/><circle cx="84" cy="74" r="2.6" fill="#ECE6D6"/><circle cx="32" cy="34" r="3.3" fill="#D2913C"/><circle cx="67" cy="20" r="3.4" fill="#D2913C"/><line x1="67" y1="18" x2="67" y2="2.8" stroke="#ECE6D6" stroke-width="2" stroke-linecap="round"/><path d="M67.6 4.4 L79.5 8.6 L67.6 12.8 Z" fill="#D2913C"/><circle cx="67" cy="2.6" r="2" fill="#ECE6D6"/><circle cx="49" cy="64" r="6.5" fill="#181B14" stroke="#ECE6D6" stroke-width="2.2"/><circle cx="49" cy="64" r="3.3" fill="#6E93A6"/></g></svg>
+      <span style="font-size:15px;">© 2026 Muster Up</span>
+    </div>
+    <div class="foot-links">
+      <a href='/privacy'>Privacy</a>
+      <a href='/crew'>Bring your crew</a>
+    <a href='/vs/whoop'>vs WHOOP</a>
+      <a href='/vs/apple-fitness'>vs Apple Fitness+</a>
+      <a href='/partners'>Partners</a>
+      <a href='/contact-us'>Contact</a>
+      <a href="/#showcase">The App</a>
+    </div>
+  </div>
+</footer>
+
+<script type="module">
+  import { analytics } from 'https://esm.sh/@heycatch/sdk@0.7.0';
+
+  // Posts to Netlify Forms. Stored under the form name "crew-matchup", which is
+  // what keeps crew leads tagged separately from partner-inquiry submissions.
+  const form = document.getElementById('crewForm');
+  const success = document.getElementById('success');
+  const button = form.querySelector('button[type="submit"]');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!form.checkValidity()) { form.reportValidity(); return; }
+    button.disabled = true;
+    try {
+      const res = await fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams(new FormData(form)).toString(),
+      });
+      if (!res.ok) throw new Error(res.status);
+      // Netlify Forms never reaches our own backend, so the browser is the
+      // only place that knows this submission succeeded.
+      analytics.trackEvent('crew_matchup_requested');
+      form.reset();
+      form.hidden = true;
+      success.classList.add('show');
+      success.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } catch (err) {
+      button.disabled = false;
+      const note = form.querySelector('.form-note');
+      if (note) note.textContent = 'That didn\'t go through. Try again, or use the contact page.';
+    }
+  });
+</script>
+
+
+</body>
+</html>

@@ -1,54 +1,19 @@
 ---
-name: Marketing site
-description: TacFit's public marketing site is a standalone static site, separate from the Express/React app.
+name: Marketing site (joinmuster.com)
+description: Where the public landing page lives, how it deploys, and the traps hit when editing/verifying it.
 ---
 
-# Marketing site
+The public landing page is a standalone static site in `marketing-site/`, deployed on Netlify (joinmuster.com) — NOT via Replit Publish or the iOS build. The app (app.joinmuster.com) is separate.
 
-The public marketing/landing page lives at `marketing-site/index.html` (plus
-`contact-us.html`, `privacy.html`). It is a **standalone static site deployed via
-Netlify** (`marketing-site/netlify.toml`), NOT served by the Express app and not
-part of the React SPA. Anchors like `#mission` are in-page sections, not app routes —
-hitting `/mission` on the dev workflow 404s.
+**The live site is the baseline, not the repo.** The repo copy drifted badly from what Netlify served (Sep 2026: live had a /crew page, `assets/zero-day.js`, no hero video, different copy). Before editing, `curl` the live pages and rebuild the folder from them, then re-apply changes. Netlify injects its own RUM `<script>` (netlify-rum) into served HTML — strip it from downloaded copies or it doubles up on the next deploy.
 
-**Why this matters:** it does NOT go live through the app's standard deploy path
-(Replit Publish / TestFlight). It updates through Netlify when the marketing files
-are pushed/deployed. The standing 3-step app deploy reminder does not apply to
-marketing-site changes.
+**Why:** the user edits/deploys the site outside this repo sometimes; repo edits made on the stale copy would silently revert live changes.
 
-**Domain/DNS wiring (joinmuster.com, completed 2026-06-16):** DNS is run by
-**Netlify DNS** — the domain's nameservers at GoDaddy were switched to Netlify's
-(`dns{1-4}.p07.nsone.net`), so ALL records are managed in Netlify's DNS panel, NOT
-GoDaddy. Topology: `joinmuster.com` + `www` → the Netlify marketing site
-(`tacfit.netlify.app`); `app.joinmuster.com` → the Replit app deployment (A record
-to Replit's LB IP + `replit-verify=` TXT). **Why it matters:** the marketing site
-and the app live on the SAME domain but different hosts — root/www on Netlify, app
-on Replit. The web app is same-origin (Express serves its own frontend+API), so it
-needs NO `APP_ORIGIN` env var; `app.joinmuster.com` is already hardcoded in the CORS
-allowlist in `server/index.ts`. A common confusion: adding the domain in Replit/Netlify
-dashboards does NOT create the DNS pointer — the A/TXT record must be added in Netlify DNS.
-
-**Conventions:** the file uses vanilla CSS with custom `--green/--card/--border`
-CSS variables (NOT Tailwind), and SMIL `<animate>` SVGs for motion. Scroll-reveal
-uses an IntersectionObserver over `.reveal:not(.feature-row)`. Match these when
-editing — add `.reveal` to new elements to get the fade-in.
-
-**"How it works" flow reveal:** the staircase (`.flow`) is a separate motion system
-from `.reveal` — JS adds `.anim` then `.in-view`, and CSS keyframes fire on staggered
-`--d` delays per step. New time-sequenced bits keyed off this reveal must be gated by
-`.flow.anim.in-view ...` AND given clean static fallbacks (default opacity so no-JS /
-`prefers-reduced-motion` show a resting state, no orphan effects).
-
-**Animating SVG limbs:** to "move" a stick-figure arm (e.g. the s5 Win fist-bump crew),
-do NOT rotate the arm path — SVG rotation-origin/`transform-box` is unreliable. Instead
-draw both a resting arm and a raised arm and cross-fade their opacity. Geometry is exact
-(endpoints meet at computed midpoints) and there are no pivot bugs.
-
-**Stray-dot at a line's endpoint = round stroke-linecap, not a marker.** The infil
-parachute "draw the M route" effect hides/reveals the line via `stroke-dashoffset`. With
-`stroke-linecap="round"`, WebKit (Safari/iOS) paints a stray DOT at the path's endpoint
-whenever the line is fully hidden (default state + every loop reset) — it looks like a lone
-floating marker. Fix: use `stroke-linecap="butt"` (endpoints sit under marker circles, so no
-visible change). **Why:** chasing it as a marker opacity/fill-mode bug wastes attempts — the
-dot is the dash-boundary cap, independent of the `.ia-pop` markers. If a single dot sits at a
-drawn-line's start/end point, suspect the linecap first.
+**How to apply:**
+- Deliverable = updated `marketing-site/` folder in the repo + a zip (`marketing/joinmuster-site-<date>.zip`) presented as an asset for drag-and-drop Netlify deploy. A drag-and-drop deploy replaces the whole site, so include every live asset.
+- Pretty URLs: Netlify serves `/crew` → `crew.html`, `/vs/whoop` → `vs/whoop.html`; a local python server needs a translate_path shim for that.
+- Homepage script strips the URL hash and pins scroll to the top for ~2s on load; cross-page deep links (`/#founder`) only work because of the `incomingHash` + `performance navigation type === 'navigate'` handling in that script — keep it if the pin logic is touched.
+- Netlify Forms need `data-netlify="true"` on the `<form>` at deploy time; the three forms (crew-matchup, partner-inquiry, contact) lacked it until Sep 2026 — check the Netlify Forms dashboard if submissions are "missing".
+- Product facts used on the site: squads are 5 max (from code, `MAX_TEAM_SIZE`), Zero Day free, camera-verified competitions paid later, founding crews exempt. The audit text claimed 8–30 per squad — wrong.
+- FAQPage JSON-LD must mirror visible FAQ text exactly; verify with a regex script after any FAQ edit.
+- Headless verification: sessionStorage key `musterSplashSeen=1` skips the intro splash; dispatch a synthetic `wheel` event before programmatic scrolling or the load-time pin resets scrollY to 0. `xmllint` and `column` are not installed here.

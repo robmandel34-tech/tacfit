@@ -1,5 +1,5 @@
 - [Verified sessions](verified-sessions.md) — anti-abuse design for camera-verified sessions: timed (face + noise) and reps mode (pose-counted push-ups); coverage math must be server-derived.
-- [Marketing site](marketing-site.md) — public landing page is a standalone Netlify static site at `marketing-site/index.html`, separate from the app; deploys via Netlify, not Replit Publish/TestFlight.
+- [Marketing site](marketing-site.md) — joinmuster.com is a Netlify static site in `marketing-site/`; LIVE site is the baseline (repo drifts), deliver folder+zip; deep-link/forms/splash traps inside.
 - [HealthKit Readiness](healthkit-readiness.md) — Readiness scoring + states (ready/calibrating/insufficient); "not showing" = backend not Published OR UI hid non-ready states (now all states render via getReadinessDisplay).
 - [Private competitions](private-competitions.md) — invite-only = unlisted, anyone with link joins; visibility filter must check BOTH competition entry AND team membership.
 - [Private reflections](private-reflections.md) — session reflections marked private must be stripped server-side in EVERY activity-returning endpoint; never UI-only hiding.

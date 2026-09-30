@@ -14,7 +14,16 @@ import {
 } from "@shared/schema";
 import { getCompetitionPricing } from "@shared/pricing";
 import { isVerifiedSessionMode, defaultVerifiedSessionMode, resolveRepExercise, SUPPORTED_REP_EXERCISE_LIST } from "@shared/verified-session-mode";
-import { MIN_PASSIVE_EXERCISE_MINUTES, isActivityAllowed, isHealthKitWorkoutEligible, reconcileWorkoutDurationSec } from "@shared/healthkit";
+import {
+  MIN_PASSIVE_EXERCISE_MINUTES,
+  MIN_MINDFUL_SESSION_MINUTES,
+  isActivityAllowed,
+  isHealthKitWorkoutEligible,
+  isMindfulRelabelAllowed,
+  isMindfulSessionType,
+  mindfulSessionDurationSec,
+  reconcileWorkoutDurationSec,
+} from "@shared/healthkit";
 import { activityPoints, verifiedSessionPoints, parseQuantity } from "@shared/points";
 import { isAcceptedFitnessLevel, fitnessLevelLabel } from "@shared/onboarding";
 import { recomputeReadinessForUser, isReadinessTestAccount, sampleReadiness } from "./readiness-service";
@@ -3189,13 +3198,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       let synced = 0;
       for (const w of parsed.data.workouts) {
+        // Mindful Minutes sessions: the length is the start→end interval (the
+        // reported durationSec is ignored — a crafted payload could otherwise
+        // pair a 30-second interval with an hour-long duration), and sessions
+        // under MIN_MINDFUL_SESSION_MINUTES are dropped. The client already
+        // filters these; the rule is enforced here too so short "meditations"
+        // can't be seeded as evidence.
+        const mindful = isMindfulSessionType(w.activityType);
+        const mindfulSec = mindful ? mindfulSessionDurationSec(w.startTime, w.endTime) : 0;
+        if (mindful && mindfulSec < MIN_MINDFUL_SESSION_MINUTES * 60) continue;
         await storage.upsertAppleHealthWorkout({
           userId,
           healthKitWorkoutId: w.healthKitWorkoutId,
           activityType: w.activityType,
           startTime: w.startTime,
           endTime: w.endTime,
-          durationSec: w.durationSec ?? 0,
+          durationSec: mindful ? mindfulSec : (w.durationSec ?? 0),
           distanceMeters: w.distanceMeters ?? 0,
           energyKcal: w.energyKcal ?? 0,
           avgHeartRate: w.avgHeartRate ?? 0,
@@ -3600,6 +3618,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         if (healthWorkout.submittedActivityId) {
           return res.status(409).json({ message: "This Apple Health workout has already been submitted." });
+        }
+        // A Mindful Minutes session can be relabeled within the mindfulness
+        // family (meditation/prayer, breathing, ...) but never logged as, say,
+        // a run — the session is the evidence, so the type must match it.
+        if (isMindfulSessionType(healthWorkout.activityType) && !isMindfulRelabelAllowed(req.body.type)) {
+          return res.status(400).json({
+            message: "A meditation session can only be logged as a mindfulness activity (Meditation/Prayer, Breathing Exercises, Mindfulness…).",
+          });
         }
       }
 

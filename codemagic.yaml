@@ -49,6 +49,13 @@ workflows:
           # is reinstalled fresh on every build, so re-apply the patch here, BEFORE
           # `pod install` compiles the plugin Swift. Idempotent.
           bash scripts/patch-healthkit-hrv.sh
+      - name: Patch HealthKit plugin for Mindful Minutes support
+        script: |
+          set -e
+          # Meditation / breathing sessions are HealthKit *category* samples
+          # (mindfulSession), which the published plugin can neither authorize
+          # nor read. Same re-apply-every-build rule as the HRV patch. Idempotent.
+          bash scripts/patch-healthkit-mindful.sh
       - name: Sync web assets to iOS
         script: |
           set -e

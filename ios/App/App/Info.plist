@@ -54,7 +54,7 @@
         <key>NSMicrophoneUsageDescription</key>
         <string>Muster Up uses your microphone when recording activity evidence videos, during team video calls, and to check the noise level during camera-verified sessions (sound is never recorded).</string>
         <key>NSHealthShareUsageDescription</key>
-        <string>Muster Up reads your Apple Health data to automatically import workout activities.</string>
+        <string>Muster Up reads your Apple Health workouts, Mindful Minutes meditation sessions and daily health metrics to import activities and calculate your Readiness score.</string>
         <key>NSHealthUpdateUsageDescription</key>
         <string>Muster Up can write completed workouts back to Apple Health.</string>
         <key>ITSAppUsesNonExemptEncryption</key>

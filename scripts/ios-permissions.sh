@@ -46,7 +46,7 @@ set_plist_entry "NSMicrophoneUsageDescription" \
   "Muster Up uses your microphone when recording activity evidence videos and during team video calls."
 
 set_plist_entry "NSHealthShareUsageDescription" \
-  "Muster Up reads your Apple Health data to automatically import workout activities."
+  "Muster Up reads your Apple Health workouts, Mindful Minutes meditation sessions and daily health metrics to import activities and calculate your Readiness score."
 
 set_plist_entry "NSHealthUpdateUsageDescription" \
   "Muster Up can write completed workouts back to Apple Health."

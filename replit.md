@@ -124,7 +124,10 @@ user. Tactical language throughout: "buddies," "Intel Feed," "Command Center."
   `enter-with-payment`).
 - **Activity Tracking**: submissions with photo/video evidence, point scoring
   with evidence bonuses, configurable text requirements. Apple HealthKit syncs
-  workouts (incl. GPS route maps via Google Maps Static API).
+  workouts (incl. GPS route maps via Google Maps Static API) and Mindful
+  Minutes sessions (≥5 min, stored in the same `apple_health_workouts` table
+  as raw type "Mindful Session", default type meditation/prayer, relabelable
+  only within the mindfulness category; length = start→end interval).
 - **Social**: buddy requests, activity feed (likes/comments), team + direct
   chat (Giphy GIFs), team video calls (fairmeeting.net embed), mission tasks,
   PWA push notifications (VAPID, granular per-type preferences).
@@ -163,6 +166,11 @@ profile" step, then archives. Manual Mac builds use `scripts/cap-build.sh`.
    submission (currently 1.0.4).
 6. `VITE_`-prefixed env vars used by the frontend must ALSO be set in Codemagic
    for native builds (e.g. `VITE_API_URL`, SSO client ids).
+7. The HealthKit plugin is patched at build time by `scripts/patch-healthkit-hrv.sh`
+   (HRV) and `scripts/patch-healthkit-mindful.sh` (mindfulSession category
+   samples) — both codemagic.yaml steps must stay before `pod install`. Adding a
+   new HealthKit read type also requires bumping `HEALTHKIT_SCOPES_VERSION` in
+   `client/src/lib/healthkit.ts` so existing users get re-prompted once.
 - Fine-grained history of resolved build incidents (provisioning profile
   gotchas, HealthKit "not available", 401-on-native, camera-crash rejection)
   lives in the agent memory file `.agents/memory/ios-build-lessons.md`.

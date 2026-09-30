@@ -24,7 +24,7 @@ import {
 import { db } from "./db";
 import { eq, and, or, desc, isNull, gt, gte, lt, lte, inArray, sql } from "drizzle-orm";
 import { IStorage } from "./storage";
-import { isHealthKitWorkoutEligible } from "@shared/healthkit";
+import { healthKitActivityLabel, isHealthKitWorkoutEligible } from "@shared/healthkit";
 
 export class DatabaseStorage implements IStorage {
   // User operations
@@ -1598,7 +1598,7 @@ export class DatabaseStorage implements IStorage {
         return {
           ...w,
           eligible: false,
-          ineligibleReason: `${w.activityType} isn't a required activity for this competition`,
+          ineligibleReason: `${healthKitActivityLabel(w.activityType)} isn't a required activity for this competition`,
         };
       }
       return { ...w, eligible: true, ineligibleReason: null };

@@ -9,9 +9,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Camera, X, HelpCircle, ChevronDown, ChevronUp, Smartphone, RefreshCw, Activity, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { API_BASE, apiRequest } from "@/lib/queryClient";
+import { API_BASE, apiRequest, buildAuthHeaders } from "@/lib/queryClient";
 import { useAppleHealth } from "@/hooks/use-apple-health";
-import { mapHealthKitTypeToActivityName, MIN_PASSIVE_EXERCISE_MINUTES, isActivityAllowed } from "@shared/healthkit";
+import {
+  mapHealthKitTypeToActivityName,
+  MIN_PASSIVE_EXERCISE_MINUTES,
+  isActivityAllowed,
+  isMindfulSessionType,
+  isMindfulRelabelAllowed,
+  healthKitActivityLabel,
+} from "@shared/healthkit";
 import { activityPoints } from "@shared/points";
 import { reconcileWorkoutDurationSec } from "@/lib/healthkit";
 import { celebrate } from "@/lib/celebrate";
@@ -72,6 +79,9 @@ interface AppleHealthWorkout {
   durationSec: number;
   distanceMeters: number;
   energyKcal: number;
+  // Original device payload. For Mindful Minutes sessions this carries the
+  // app that recorded it (e.g. "Headspace") under `source`.
+  raw?: { source?: string | null } | null;
   eligible?: boolean;
   ineligibleReason?: string | null;
 }
@@ -218,6 +228,20 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
     enabled: isOpen && showHealthWorkouts,
   });
 
+  // Users who connected Apple Health before Mindful Minutes was added have
+  // never been asked for that permission. Ask once, here in context, and then
+  // re-sync so their meditation sessions show up in the list below.
+  const ensureScopesRef = useRef(appleHealth.ensureLatestScopes);
+  const syncSilentlyRef = useRef(appleHealth.syncSilently);
+  ensureScopesRef.current = appleHealth.ensureLatestScopes;
+  syncSilentlyRef.current = appleHealth.syncSilently;
+  useEffect(() => {
+    if (!isOpen || !showHealthWorkouts) return;
+    void ensureScopesRef.current().then((reauthorized) => {
+      if (reauthorized) void syncSilentlyRef.current();
+    });
+  }, [isOpen, showHealthWorkouts]);
+
   // Passive activity for the most recent unlogged day (exercise minutes +
   // distance). Surfaced as a one-tap "Unspecified Activity" the user can label.
   const { data: passiveActivity = null, isFetching: passiveLoading } = useQuery<PassiveActivity | null>({
@@ -244,6 +268,13 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
     return Math.round(sec / 60);
   };
 
+  // Display name for a synced entry: the workout type ("Running"), or
+  // "Meditation" for a Mindful Minutes session.
+  const workoutLabel = (w: AppleHealthWorkout): string => healthKitActivityLabel(w.activityType);
+  // Which app recorded a Mindful Minutes session (Headspace, Calm, Mindfulness...).
+  const workoutSource = (w: AppleHealthWorkout): string | null =>
+    isMindfulSessionType(w.activityType) && w.raw?.source ? String(w.raw.source) : null;
+
   // Prefill the form from a selected HealthKit workout.
   const applyWorkout = (w: AppleHealthWorkout) => {
     const mappedName = mapHealthKitTypeToActivityName(w.activityType);
@@ -260,13 +291,20 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
       if ((at.measurementUnit || "minutes") === "minutes") {
         setQuantity(String(Math.max(1, minutes)));
       }
+    } else if (isMindfulSessionType(w.activityType)) {
+      // No meditation/prayer type available: clear any previously chosen
+      // (non-mindfulness) type so the user picks from the narrowed list.
+      setType("");
+      setQuantity(String(Math.max(1, minutes)));
     }
     setSelectedWorkoutHkId(w.healthKitWorkoutId);
     setPassiveMetricDate(null);
     const km = w.distanceMeters ? (w.distanceMeters / 1000).toFixed(2) : null;
-    const parts = [`${w.activityType}`, `${minutes} min`];
+    const parts = [workoutLabel(w), `${minutes} min`];
     if (km && Number(km) > 0) parts.push(`${km} km`);
     if (w.energyKcal) parts.push(`${w.energyKcal} cal`);
+    const source = workoutSource(w);
+    if (source) parts.push(source);
     setDescription(`Apple Health: ${parts.join(" · ")}`);
   };
 
@@ -331,8 +369,14 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
     const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     return k === dayKey;
   };
+  // Mindful Minutes sessions don't count here: meditation doesn't add exercise
+  // minutes, so a day with a meditation AND a passive burst is still two
+  // distinct things the user can log.
   const passiveDayHasWorkout =
-    !!passiveActivity && loadedWorkouts.some((w) => sameLocalDay(w.startTime, passiveActivity.metricDate));
+    !!passiveActivity &&
+    loadedWorkouts.some(
+      (w) => !isMindfulSessionType(w.activityType) && sameLocalDay(w.startTime, passiveActivity.metricDate),
+    );
   const showPassive =
     !!passiveActivity &&
     passiveMinutes(passiveActivity) >= MIN_PASSIVE_EXERCISE_MINUTES &&
@@ -342,6 +386,16 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
   const countWords = (text: string): number => {
     return text.trim().split(/\s+/).filter(word => word.length > 0).length;
   };
+
+  // While an Apple Health meditation session is attached, the session is the
+  // evidence, so the type can only be relabeled within the mindfulness family
+  // (the server enforces the same rule).
+  const selectedWorkoutIsMindful =
+    !!selectedWorkoutHkId &&
+    loadedWorkouts.some((w) => w.healthKitWorkoutId === selectedWorkoutHkId && isMindfulSessionType(w.activityType));
+  const selectableActivityTypes = selectedWorkoutIsMindful
+    ? competitionActivityTypes.filter((at) => isMindfulRelabelAllowed(at.name))
+    : competitionActivityTypes;
 
   const selectedActivityType = competitionActivityTypes.find(at => at.name === type);
   // Require reflection if this specific activity has it enabled in the competition, OR if the activity type globally requires it
@@ -420,11 +474,17 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
     });
 
   const submitActivity = useMutation({
-    mutationFn: (data: FormData) =>
-      new Promise<any>((resolve, reject) => {
+    mutationFn: async (data: FormData) => {
+      // Native builds authenticate with a bearer token (cookies aren't
+      // reliable in the WKWebView), so attach it here like apiRequest does.
+      const authHeaders = await buildAuthHeaders();
+      return new Promise<any>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open("POST", `${API_BASE}/api/activities`);
         xhr.withCredentials = true;
+        for (const [name, value] of Object.entries(authHeaders)) {
+          xhr.setRequestHeader(name, value);
+        }
 
         // Simulate progress since proxied environments don't fire reliable progress events
         let simulated = 90;
@@ -477,7 +537,8 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
         xhr.timeout = 10 * 60 * 1000;
 
         xhr.send(data);
-      }),
+      });
+    },
     onSuccess: async (data: any) => {
       // Fire the celebration moment: explosion, "Way to Muster up!", sound, buzz.
       celebrate();
@@ -702,7 +763,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
                         <Smartphone className="w-4 h-4 text-military-green" /> Connect Apple Health
                       </div>
                       <p className="text-sm text-gray-400">
-                        Pull your workouts straight from Apple Health so you can submit them with one tap.
+                        Pull your workouts and meditation sessions (Mindful Minutes) straight from Apple Health so you can submit them with one tap.
                       </p>
                       <Button
                         type="button"
@@ -781,7 +842,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
                         <p className="text-sm text-gray-400">Loading your workouts...</p>
                       ) : loadedWorkouts.length === 0 ? (
                         showPassive ? null : (
-                          <p className="text-sm text-gray-400">No Apple Health workouts synced yet. Tap Refresh after recording a workout.</p>
+                          <p className="text-sm text-gray-400">No Apple Health workouts or meditation sessions synced yet. Tap Refresh after recording one.</p>
                         )
                       ) : (() => {
                         const selectedWorkout = loadedWorkouts.find((w) => w.healthKitWorkoutId === selectedWorkoutHkId);
@@ -797,12 +858,13 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
                                 data-testid="select-apple-health-workout"
                                 className="w-full h-10 appearance-none rounded-md bg-tactical-gray-lighter border-2 border-tactical-gray text-white pl-3 pr-9 text-sm focus:border-white focus:outline-none"
                               >
-                                <option value="" disabled>Choose a synced workout</option>
+                                <option value="" disabled>Choose a synced workout or meditation</option>
                                 {loadedWorkouts.map((w) => {
                                   const minutes = workoutMinutes(w);
                                   const km = w.distanceMeters ? (w.distanceMeters / 1000).toFixed(2) : null;
                                   const eligible = w.eligible !== false;
-                                  const label = `${w.activityType} · ${new Date(w.startTime).toLocaleDateString()} · ${minutes} min${km && Number(km) > 0 ? ` · ${km} km` : ""}${w.energyKcal ? ` · ${w.energyKcal} cal` : ""}${!eligible && w.ineligibleReason ? ` (can't use: ${w.ineligibleReason})` : ""}`;
+                                  const source = workoutSource(w);
+                                  const label = `${workoutLabel(w)} · ${new Date(w.startTime).toLocaleDateString()} · ${minutes} min${km && Number(km) > 0 ? ` · ${km} km` : ""}${w.energyKcal ? ` · ${w.energyKcal} cal` : ""}${source ? ` · ${source}` : ""}${!eligible && w.ineligibleReason ? ` (can't use: ${w.ineligibleReason})` : ""}`;
                                   return (
                                     <option
                                       key={w.healthKitWorkoutId}
@@ -820,7 +882,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
                             {selectedWorkout && selectedWorkout.eligible !== false && (
                               <div className="flex items-center gap-2 text-xs text-military-green">
                                 <CheckCircle className="w-3.5 h-3.5" />
-                                Selected: {selectedWorkout.activityType} · {workoutMinutes(selectedWorkout)} min
+                                Selected: {workoutLabel(selectedWorkout)} · {workoutMinutes(selectedWorkout)} min
                               </div>
                             )}
                             {selectedWorkout && selectedWorkout.eligible === false && selectedWorkout.ineligibleReason && (
@@ -846,7 +908,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
                       className="w-full h-10 appearance-none rounded-md bg-tactical-gray-lighter border-2 border-tactical-gray text-white pl-3 pr-9 text-sm focus:border-white focus:outline-none"
                     >
                       <option value="" disabled>Choose an activity type</option>
-                      {competitionActivityTypes.map((activityType) => (
+                      {selectableActivityTypes.map((activityType) => (
                         <option key={activityType.name} value={activityType.name}>
                           {activityType.displayName}
                         </option>
@@ -860,7 +922,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
                       <SelectValue placeholder="Choose an activity type" />
                     </SelectTrigger>
                     <SelectContent className="bg-tactical-gray-light border-tactical-gray text-white z-50" position="popper" sideOffset={5}>
-                      {competitionActivityTypes.map((activityType) => (
+                      {selectableActivityTypes.map((activityType) => (
                         <SelectItem 
                           key={activityType.name} 
                           value={activityType.name}

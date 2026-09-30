@@ -5,7 +5,7 @@ import { getCachedAuthToken, loadAuthToken } from "./authToken";
 // Set VITE_API_URL in your .env.production to your deployed backend (e.g. https://myapp.replit.app)
 export const API_BASE = (import.meta.env.VITE_API_URL as string) ?? "";
 
-async function buildAuthHeaders(): Promise<Record<string, string>> {
+export async function buildAuthHeaders(): Promise<Record<string, string>> {
   // Use the in-memory cached token when available (instant). Fall back to
   // an async load on the very first request after app launch.
   const token = getCachedAuthToken() ?? (await loadAuthToken());

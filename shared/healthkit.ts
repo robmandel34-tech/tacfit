@@ -42,6 +42,10 @@ export const HEALTHKIT_TO_TACFIT: Record<string, string> = {
   mindandbody: "mindfulness",
   mindfulness: "mindfulness",
   meditation: "meditation/prayer",
+  // Apple Health "Mindful Minutes" sessions (see HEALTHKIT_MINDFUL_SESSION_TYPE).
+  // Every session lands on the combined meditation/prayer type; the user can
+  // relabel it (breathing, mindfulness, ...) before submitting.
+  mindfulsession: "meditation/prayer",
 
   // Sports
   basketball: "basketball",
@@ -174,6 +178,54 @@ export function reconcileWorkoutDurationSec(reportedSec: number, elapsedSec: num
 // exercise worth logging as an "Unspecified Activity". Anything shorter is
 // treated as incidental daily movement and is not surfaced or accepted.
 export const MIN_PASSIVE_EXERCISE_MINUTES = 10;
+
+// --- Apple Health "Mindful Minutes" -------------------------------------------
+// Meditation, breathing and prayer apps (Apple Mindfulness, Headspace, Calm,
+// Hallow, ...) write HKCategoryTypeIdentifier.mindfulSession samples, NOT
+// workouts. We import them through the same synced-workout pipeline (table,
+// dedupe by HealthKit UUID, one-time claim, competition eligibility) under this
+// raw activityType so every downstream rule keeps working unchanged. HealthKit
+// UUIDs are unique across sample types, so they can't collide with workouts.
+export const HEALTHKIT_MINDFUL_SESSION_TYPE = "Mindful Session";
+
+// Sessions shorter than this are treated as accidental taps / app noise and are
+// neither synced nor accepted (mirrors MIN_PASSIVE_EXERCISE_MINUTES).
+export const MIN_MINDFUL_SESSION_MINUTES = 5;
+
+// True if a synced Apple Health entry is a Mindful Minutes session rather than
+// a recorded workout.
+export function isMindfulSessionType(raw: string): boolean {
+  return normalizeHealthKitType(raw) === "mindfulsession";
+}
+
+// Human label for a synced Apple Health entry. Workout types are already
+// display-ready ("Running"); mindful sessions read as "Meditation" so the user
+// recognizes them, even though they can relabel the activity type before
+// submitting.
+export function healthKitActivityLabel(raw: string): string {
+  return isMindfulSessionType(raw) ? "Meditation" : raw;
+}
+
+// Which activity types a Mindful Minutes session may be logged as. The user
+// can relabel within the mindfulness family (meditation/prayer, breathing,
+// body scan, ...) but not turn a meditation into a run. Enforced on the server
+// at submission and used to filter the client dropdown.
+export function isMindfulRelabelAllowed(activityName: string): boolean {
+  const name = (activityName || "").toString().trim().toLowerCase();
+  return !!name && ACTIVITY_CATEGORY[name] === "mindfulness";
+}
+
+// Effective length of a Mindful Minutes session. Category samples have no
+// separate "active" duration — the session IS the start→end interval — so the
+// wall-clock elapsed time is authoritative and any reported duration is
+// ignored. (Prevents a crafted payload from pairing a 30-second interval with
+// a one-hour durationSec to pass the minimum and inflate points.)
+export function mindfulSessionDurationSec(startTime: Date | string, endTime: Date | string): number {
+  const startMs = new Date(startTime).getTime();
+  const endMs = new Date(endTime).getTime();
+  if (!Number.isFinite(startMs) || !Number.isFinite(endMs)) return 0;
+  return Math.max(0, Math.round((endMs - startMs) / 1000));
+}
 
 // Normalize a raw HealthKit workout type string to a lookup key.
 export function normalizeHealthKitType(raw: string): string {

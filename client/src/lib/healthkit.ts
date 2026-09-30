@@ -22,11 +22,17 @@ export interface NormalizedWorkout {
 // elapsed time. A reported value within 20% of elapsed is treated as legitimate
 // so genuinely paused workouts are not inflated to wall-clock time.
 export { reconcileWorkoutDurationSec } from "@shared/healthkit";
-import { reconcileWorkoutDurationSec } from "@shared/healthkit";
+import {
+  reconcileWorkoutDurationSec,
+  HEALTHKIT_MINDFUL_SESSION_TYPE,
+  MIN_MINDFUL_SESSION_MINUTES,
+  mindfulSessionDurationSec,
+} from "@shared/healthkit";
 
 // HealthKit read scopes we request. These map to @perfood/capacitor-healthkit
 // authorization option keys. The second group powers the Readiness score
 // (resting HR, respiratory rate, blood oxygen, body temperature, sleep).
+// "mindfulSession" (Mindful Minutes) is added by scripts/patch-healthkit-mindful.sh.
 const READ_SCOPES = [
   "activity",
   "calories",
@@ -38,7 +44,31 @@ const READ_SCOPES = [
   "oxygenSaturation",
   "bodyTemperature",
   "sleepAnalysis",
+  "mindfulSession",
 ];
+
+// Bump whenever READ_SCOPES gains a new HealthKit type. Users who connected
+// before the bump have never been asked for the new type, so the hook
+// re-runs requestAuthorization once (iOS only prompts for the not-yet-decided
+// types) before syncing. Stored per device in localStorage.
+export const HEALTHKIT_SCOPES_VERSION = 2; // v2: + mindfulSession (Mindful Minutes)
+const SCOPES_VERSION_KEY = "apple-health-scopes-version";
+
+export function hasLatestHealthKitScopes(): boolean {
+  try {
+    return Number(localStorage.getItem(SCOPES_VERSION_KEY)) >= HEALTHKIT_SCOPES_VERSION;
+  } catch {
+    return true; // storage unavailable: never loop on re-prompting
+  }
+}
+
+export function markHealthKitScopesCurrent(): void {
+  try {
+    localStorage.setItem(SCOPES_VERSION_KEY, String(HEALTHKIT_SCOPES_VERSION));
+  } catch {
+    // ignore — worst case we ask again next launch
+  }
+}
 
 // Daily health metrics sent to /api/apple-health/metrics/sync. Any field may be
 // null when the device has no reading for that signal on that day. HRV is read
@@ -89,7 +119,64 @@ export async function requestHealthKitAuthorization(): Promise<boolean> {
     read: READ_SCOPES,
     write: [],
   });
+  markHealthKitScopesCurrent();
   return true;
+}
+
+// Reads recent Apple Health "Mindful Minutes" sessions (meditation, breathing,
+// prayer apps) and normalizes them into the same shape as workouts so they
+// flow through the existing sync/claim pipeline. Requires the patched plugin
+// (scripts/patch-healthkit-mindful.sh); on an older native build, or before the
+// user has answered the Mindful Minutes permission, the plugin rejects the
+// query — that is swallowed here so it can never break the workout sync.
+export async function readRecentMindfulSessions(sinceDays = 30): Promise<NormalizedWorkout[]> {
+  if (!isHealthKitAvailable()) return [];
+  const { CapacitorHealthkit } = await import("@perfood/capacitor-healthkit");
+  const end = new Date();
+  const start = new Date(end.getTime() - sinceDays * 24 * 60 * 60 * 1000);
+
+  let rows: any[] = [];
+  try {
+    const result = await CapacitorHealthkit.queryHKitSampleType<any>({
+      sampleName: "mindfulSession",
+      startDate: start.toISOString(),
+      endDate: end.toISOString(),
+      limit: 200,
+    });
+    rows = result?.resultData ?? [];
+  } catch (err) {
+    console.warn("Apple Health mindful sessions unavailable:", err);
+    return [];
+  }
+
+  const minSec = MIN_MINDFUL_SESSION_MINUTES * 60;
+  return rows
+    .filter((s) => s && s.uuid && s.startDate && s.endDate)
+    .filter((s) => Number.isFinite(new Date(s.startDate).getTime()) && Number.isFinite(new Date(s.endDate).getTime()))
+    .map((s) => {
+      return {
+        healthKitWorkoutId: String(s.uuid),
+        activityType: HEALTHKIT_MINDFUL_SESSION_TYPE,
+        startTime: new Date(s.startDate).toISOString(),
+        endTime: new Date(s.endDate).toISOString(),
+        // A mindful session's length is its start→end interval (no separate
+        // active-time concept), and the server recomputes it the same way.
+        durationSec: mindfulSessionDurationSec(s.startDate, s.endDate),
+        distanceMeters: 0,
+        energyKcal: 0,
+        avgHeartRate: 0,
+        routePolyline: null,
+        // Keep only what the UI shows (which app recorded it); skip the bulky
+        // device block.
+        raw: {
+          kind: "mindfulSession",
+          source: typeof s.source === "string" ? s.source : null,
+          sourceBundleId: typeof s.sourceBundleId === "string" ? s.sourceBundleId : null,
+          timeZone: typeof s.timeZone === "string" ? s.timeZone : null,
+        },
+      };
+    })
+    .filter((s) => s.durationSec >= minSec);
 }
 
 // Reads recent workouts from HealthKit and normalizes them. No-ops on web.

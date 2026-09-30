@@ -4,14 +4,21 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import {
   getHealthKitScopes,
+  hasLatestHealthKitScopes,
   isHealthKitAvailable,
   readDailyHealthMetrics,
+  readRecentMindfulSessions,
   readRecentWorkouts,
   requestHealthKitAuthorization,
 } from "@/lib/healthkit";
 
 // Auto re-sync cadence while the app is connected and foregrounded (~7 min).
 const SYNC_INTERVAL_MS = 7 * 60 * 1000;
+
+// Module-level (shared by every useAppleHealth instance — FAB, Log Activity
+// modal, Settings) so the one-time re-authorization sheet is requested once
+// and concurrent callers await the same result instead of racing.
+let scopesUpgradeInFlight: Promise<boolean> | null = null;
 
 interface AppleHealthStatus {
   connected: boolean;
@@ -41,6 +48,10 @@ export function useAppleHealth() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [todayActivity, setTodayActivity] = useState<TodayActivity | null>(null);
   const syncingRef = useRef(false);
+  // A sync requested while one is already running is coalesced into a single
+  // follow-up run (instead of being dropped), so e.g. the sync that follows a
+  // permission grant can't be lost to an in-progress timer/foreground sync.
+  const syncAgainRef = useRef(false);
 
   const { data: status, isLoading } = useQuery<AppleHealthStatus>({
     queryKey: ["/api/apple-health/status"],
@@ -49,14 +60,23 @@ export function useAppleHealth() {
 
   const connected = !!status?.connected;
 
-  // Reads device workouts and pushes them to the backend.
+  // Reads device workouts (plus Mindful Minutes sessions) and pushes them to
+  // the backend. Mindful sessions ride along in the same payload — they are
+  // stored and claimed exactly like workouts — and a failure reading them
+  // never blocks workouts (readRecentMindfulSessions swallows its own errors).
   const syncNow = useCallback(
     async (silent = false): Promise<number> => {
-      if (!native || syncingRef.current) return 0;
+      if (!native) return 0;
+      if (syncingRef.current) {
+        syncAgainRef.current = true;
+        return 0;
+      }
       syncingRef.current = true;
       setIsSyncing(true);
       try {
-        const workouts = await readRecentWorkouts(30);
+        const recorded = await readRecentWorkouts(30);
+        const mindful = await readRecentMindfulSessions(30);
+        const workouts = [...recorded, ...mindful];
         const res = await apiRequest("POST", "/api/apple-health/sync", { workouts });
         const data = await res.json();
         await queryClient.invalidateQueries({ queryKey: ["/api/apple-health/status"] });
@@ -90,9 +110,14 @@ export function useAppleHealth() {
           console.warn("Apple Health metrics sync failed:", metricErr);
         }
         if (!silent) {
+          const workoutCount = recorded.length;
+          const mindfulCount = mindful.length;
           toast({
             title: "Apple Health synced",
-            description: `${data.synced ?? workouts.length} workouts updated.`,
+            description:
+              mindfulCount > 0
+                ? `${workoutCount} workout${workoutCount === 1 ? "" : "s"} and ${mindfulCount} meditation session${mindfulCount === 1 ? "" : "s"} updated.`
+                : `${data.synced ?? workoutCount} workouts updated.`,
           });
         }
         return data.synced ?? workouts.length;
@@ -108,10 +133,49 @@ export function useAppleHealth() {
       } finally {
         syncingRef.current = false;
         setIsSyncing(false);
+        if (syncAgainRef.current) {
+          syncAgainRef.current = false;
+          void syncNow(true);
+        }
       }
     },
     [native, queryClient, toast],
   );
+
+  // One-time re-authorization for users who connected before a new HealthKit
+  // read type was added (e.g. Mindful Minutes). iOS only shows the permission
+  // sheet for types the user hasn't decided on yet, so this is a single extra
+  // prompt. It runs in context (Log Activity screen / Refresh), not at launch.
+  // Resolves true when a re-authorization actually happened, so the caller can
+  // follow up with a sync that now includes the new data.
+  const ensureLatestScopes = useCallback(async (): Promise<boolean> => {
+    if (!native || !connected || hasLatestHealthKitScopes()) return false;
+    // Another instance (or an earlier call) is already showing the sheet —
+    // wait for that result rather than prompting twice or syncing too early.
+    if (scopesUpgradeInFlight) return scopesUpgradeInFlight;
+    scopesUpgradeInFlight = (async () => {
+      try {
+        const ok = await requestHealthKitAuthorization(); // marks the scope version current
+        if (!ok) return false;
+        await apiRequest("POST", "/api/apple-health/connect", { scopes: getHealthKitScopes() });
+        await queryClient.invalidateQueries({ queryKey: ["/api/apple-health/status"] });
+        return true;
+      } catch (e) {
+        console.warn("Apple Health re-authorization failed:", e);
+        return false;
+      } finally {
+        scopesUpgradeInFlight = null;
+      }
+    })();
+    return scopesUpgradeInFlight;
+  }, [native, connected, queryClient]);
+
+  // Manual "Refresh": pick up any newly added read types first, then sync
+  // with a visible result toast.
+  const refresh = useCallback(async (): Promise<number> => {
+    await ensureLatestScopes();
+    return syncNow(false);
+  }, [ensureLatestScopes, syncNow]);
 
   const connectMutation = useMutation({
     mutationFn: async () => {
@@ -213,7 +277,10 @@ export function useAppleHealth() {
     scopes: status?.scopes ?? [],
     connect: () => connectMutation.mutate(),
     disconnect: () => disconnectMutation.mutate(),
-    refresh: () => syncNow(false),
+    refresh,
+    // Silent variants for in-context housekeeping (no toasts).
+    ensureLatestScopes,
+    syncSilently: () => syncNow(true),
     isConnecting: connectMutation.isPending,
     isDisconnecting: disconnectMutation.isPending,
     isSyncing,

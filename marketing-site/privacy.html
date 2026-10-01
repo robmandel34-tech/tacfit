@@ -45,15 +45,25 @@
   /* NAV */
   nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(10,12,15,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.06); }
   .nav-row { display: flex; align-items: center; justify-content: space-between; height: 72px; max-width: 1200px; margin: 0 auto; padding: 0 24px; }
-  .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 20px; letter-spacing: -0.02em; color: var(--text); }
+  .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 20px; letter-spacing: -0.02em; color: var(--text); white-space: nowrap; }
   .brand img { width: 36px; height: 36px; }
-  .nav-links { display: flex; gap: 32px; }
-  .nav-links a { color: var(--text-2); font-weight: 500; font-size: 15px; transition: color .15s; text-decoration: none; }
+  .nav-links { display: flex; gap: 24px; }
+  .nav-links a { color: var(--text-2); font-weight: 500; font-size: 15px; transition: color .15s; text-decoration: none; white-space: nowrap; }
+  @media (max-width: 1180px) { .nav-links { gap: 18px; } }
+  @media (max-width: 1060px) { .nav-links { gap: 14px; } .nav-links a { font-size: 14px; } }
   .nav-links a:hover { color: var(--green); }
-  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 24px; border-radius: 10px; font-weight: 600; font-size: 15px; cursor: pointer; border: none; text-decoration: none; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 24px; border-radius: 10px; font-weight: 600; font-size: 15px; cursor: pointer; border: none; text-decoration: none; white-space: nowrap; }
   .btn-primary { background: var(--green); color: #000; }
   .btn-primary:hover { background: var(--green-light); text-decoration: none; }
-  @media (max-width: 720px) { .nav-links { display: none; } }
+  /* Tablets (721–1000px): the inline menu no longer fits beside the brand and button,
+     so it drops to a compact centred second row. Under 720px it is hidden, as before;
+     the footer carries every link. */
+  @media (max-width: 1000px) {
+    .nav-row { flex-wrap: wrap; height: auto; padding-top: 12px; padding-bottom: 10px; }
+    .nav-links { order: 3; width: 100%; justify-content: center; flex-wrap: wrap; gap: 4px 18px; margin-top: 10px; }
+    .nav-links a { font-size: 14px; }
+  }
+  @media (max-width: 720px) { .nav-links { display: none; } .nav-row { height: 72px; padding-top: 0; padding-bottom: 0; } }
 
   /* PAGE HEADER */
   .page-head { position: relative; padding: 140px 0 40px; text-align: center; overflow: hidden; }
@@ -147,7 +157,7 @@
       <a href="/#why">Why Muster Up</a>
       <a href='/founder'>Become a Founder</a>
       <a href='/crew'>Bring your crew</a>
-      <a href='/vs/whoop'>Compare</a>
+      <a href='/fitness-trackers'>Wearables</a>
       <a href='/partners'>Partners</a>
       <a href='/contact-us'>Contact</a>
     </div>
@@ -321,7 +331,7 @@
     <div class="foot-links">
       <a href='/privacy'>Privacy</a>
       <a href='/crew'>Bring your crew</a>
-    <a href='/vs/whoop'>vs WHOOP</a>
+    <a href='/fitness-trackers'>Works with your wearable</a>
       <a href='/vs/apple-fitness'>vs Apple Fitness+</a>
       <a href='/partners'>Partners</a>
       <a href='/founder'>Become a Founder</a>

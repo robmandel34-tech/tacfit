@@ -189,3 +189,17 @@ mtime_ms = 1790137906598
 storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:52c3692b-e3ae-4f26-87b1-b5a765544cd7/66e831a0-79c9-4b90-a19f-f63be0ed2be8/efeb17cf-d87a-4f93-9869-b285f7fef821"
 storage_version_token = "1790137913127755"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "GYD3-cTl19zqS0wwV1HxF"
+uri = "file://marketing/joinmuster-site-2026-10-01.zip"
+type = "unspecified"
+title = "joinmuster.com — Oct 1, 2026 update"
+description = "Drag-and-drop Netlify deploy. Includes the live hero video, the new Founder pop-up, the Works-with-your-wearable page (replaces vs WHOOP), the 10/5 team-size correction and the nav fixes."
+logical_id = "e8683a75-dae2-4863-bc6e-45d13c5ed3ca"
+content_hash = "sha256:d43a78af593640ec738b3c5e32c8546f79d1a1c06f2196a90effa7ae85f4e098"
+size = 6693869
+mtime_ms = 1790860086632
+storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:52c3692b-e3ae-4f26-87b1-b5a765544cd7/e8683a75-dae2-4863-bc6e-45d13c5ed3ca/b5dbea37-a420-4001-8696-d960a2d707f8"
+storage_version_token = "1790860092287059"
+content_type = "application/octet-stream"

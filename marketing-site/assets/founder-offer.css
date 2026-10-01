@@ -1,0 +1,103 @@
+/* Founder offer pop-up — first-visit lead capture (email required, phone optional).
+   Markup is injected by /assets/founder-offer.js; this file only styles it.
+   Colours fall back to the site palette so the sheet looks the same on every page. */
+.fo-root { position: fixed; inset: 0; z-index: 5000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.fo-root[hidden] { display: none; }
+.fo-backdrop { position: absolute; inset: 0; background: rgba(10, 12, 15, 0.74); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.fo-card {
+  position: relative; width: 100%; max-width: 500px; max-height: calc(100vh - 40px); overflow: auto;
+  background: linear-gradient(180deg, var(--card, #20241A) 0%, var(--bg-soft, #1C2016) 100%);
+  border: 1px solid rgba(210, 145, 60, 0.42); border-radius: 22px;
+  padding: 34px 32px 28px; color: var(--text, #ECE6D6);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased;
+  box-shadow: 0 40px 90px rgba(0, 0, 0, 0.65), 0 0 60px rgba(210, 145, 60, 0.12);
+}
+.fo-card::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(circle at 50% 0%, rgba(210, 145, 60, 0.18) 0%, transparent 55%);
+}
+.fo-card > * { position: relative; }
+/* Rank stripe along the top edge — the only decoration, matches the hero eyebrow glow. */
+.fo-stripe { position: absolute; top: 0; left: 32px; right: 32px; height: 2px; border-radius: 2px;
+  background: linear-gradient(90deg, transparent, var(--green, #D2913C), transparent); opacity: .85; }
+.fo-close {
+  position: absolute; top: 14px; right: 14px; width: 36px; height: 36px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+  background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border, #2F3426); color: var(--text-2, #CEC8B7);
+  transition: border-color .15s, color .15s;
+}
+.fo-close:hover, .fo-close:focus-visible { border-color: var(--green, #D2913C); color: var(--green, #D2913C); outline: none; }
+.fo-close svg { width: 16px; height: 16px; }
+.fo-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; margin-bottom: 18px;
+  border: 1px solid rgba(210, 145, 60, 0.35); border-radius: 999px;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--green, #D2913C);
+}
+.fo-eyebrow .fo-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green, #D2913C); box-shadow: 0 0 10px var(--green, #D2913C); animation: fo-pulse 2s infinite; }
+@keyframes fo-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+.fo-head { display: flex; align-items: flex-start; gap: 14px; }
+.fo-mark { flex-shrink: 0; width: 44px; height: 44px; margin-top: 2px; }
+.fo-card h2 { font-size: clamp(24px, 4.6vw, 30px); font-weight: 900; letter-spacing: -0.03em; line-height: 1.08; margin: 0 0 12px; }
+.fo-card h2 .fo-accent { color: var(--green, #D2913C); }
+.fo-card p { margin: 0; color: var(--text-2, #CEC8B7); font-size: 15.5px; line-height: 1.6; }
+.fo-card p strong { color: var(--text, #ECE6D6); font-weight: 700; }
+.fo-perks { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 8px; }
+.fo-perks li { display: flex; align-items: center; gap: 10px; font-size: 14.5px; font-weight: 600; color: var(--text, #ECE6D6); }
+.fo-perks svg { width: 18px; height: 18px; flex-shrink: 0; color: var(--green, #D2913C); }
+.fo-form { margin-top: 22px; }
+.fo-field { margin-bottom: 14px; }
+.fo-field label { display: block; font-size: 12.5px; font-weight: 600; color: var(--text-2, #CEC8B7); margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.06em; }
+.fo-field label .fo-opt { text-transform: none; letter-spacing: 0; font-weight: 500; color: var(--text-3, #9AA088); }
+.fo-field input {
+  width: 100%; background: var(--bg-soft, #1C2016); color: var(--text, #ECE6D6);
+  border: 1px solid var(--border, #2F3426); border-radius: 10px;
+  padding: 13px 14px; font-size: 16px; font-family: inherit; -webkit-appearance: none; appearance: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.fo-field input::placeholder { color: var(--text-3, #9AA088); opacity: .8; }
+.fo-field input:focus { outline: none; border-color: var(--green, #D2913C); box-shadow: 0 0 0 3px rgba(210, 145, 60, 0.15); }
+.fo-field input[aria-invalid="true"] { border-color: #D26A3C; }
+.fo-err { display: none; margin-top: 6px; font-size: 13px; color: #E0865A; }
+.fo-err.show { display: block; }
+.fo-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%;
+  padding: 15px 22px; border-radius: 12px; border: none; cursor: pointer;
+  background: var(--green, #D2913C); color: #000; font-family: inherit; font-weight: 700; font-size: 15.5px;
+  transition: transform .15s, background .15s, box-shadow .15s;
+}
+.fo-btn:hover { background: var(--green-light, #E2A551); transform: translateY(-1px); box-shadow: 0 12px 30px -10px rgba(210, 145, 60, .6); }
+.fo-btn:focus-visible { outline: 2px solid var(--green-light, #E2A551); outline-offset: 2px; }
+.fo-btn[disabled] { opacity: .6; cursor: default; transform: none; box-shadow: none; }
+.fo-btn.fo-ghost { background: transparent; color: var(--text, #ECE6D6); border: 1px solid var(--border, #2F3426); }
+.fo-btn.fo-ghost:hover { border-color: var(--green, #D2913C); color: var(--green, #D2913C); box-shadow: none; }
+.fo-fine { margin-top: 12px; font-size: 12.5px; line-height: 1.55; color: var(--text-3, #9AA088); text-align: center; }
+.fo-fine a { color: var(--green, #D2913C); font-weight: 600; text-decoration: none; }
+.fo-fine a:hover { text-decoration: underline; }
+.fo-skip { display: block; width: 100%; margin-top: 12px; padding: 8px; background: none; border: none; cursor: pointer; font-family: inherit; font-size: 13px; color: var(--text-3, #9AA088); }
+.fo-skip:hover, .fo-skip:focus-visible { color: var(--text, #ECE6D6); outline: none; text-decoration: underline; }
+.fo-status { display: none; margin-top: 12px; font-size: 13.5px; color: #E0865A; }
+.fo-status.show { display: block; }
+/* Success state */
+.fo-done { display: none; text-align: center; padding-top: 6px; }
+.fo-done.show { display: block; }
+.fo-done .fo-check { width: 56px; height: 56px; margin: 0 auto 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: rgba(210, 145, 60, 0.12); border: 1px solid rgba(210, 145, 60, 0.45); color: var(--green, #D2913C); }
+.fo-done .fo-check svg { width: 26px; height: 26px; }
+.fo-done h2 { margin-bottom: 10px; }
+.fo-done .fo-ctas { display: grid; gap: 10px; margin-top: 20px; }
+/* Motion */
+@media (prefers-reduced-motion: no-preference) {
+  .fo-root.fo-in .fo-backdrop { animation: fo-fade .25s ease-out both; }
+  .fo-root.fo-in .fo-card { animation: fo-rise .32s cubic-bezier(.2, .8, .2, 1) both; }
+}
+@keyframes fo-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fo-rise { from { opacity: 0; transform: translateY(18px) scale(.98); } to { opacity: 1; transform: none; } }
+html.fo-lock, html.fo-lock body { overflow: hidden; }
+/* Phones: bottom sheet */
+@media (max-width: 560px) {
+  .fo-root { padding: 0; align-items: flex-end; }
+  .fo-card { max-width: none; max-height: 94vh; border-radius: 22px 22px 0 0; border-bottom: none; padding: 28px 20px calc(22px + env(safe-area-inset-bottom, 0px)); }
+  .fo-stripe { left: 20px; right: 20px; }
+  .fo-mark { width: 38px; height: 38px; }
+  @keyframes fo-rise { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: none; } }
+}

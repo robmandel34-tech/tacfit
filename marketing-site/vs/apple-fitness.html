@@ -4,20 +4,20 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Muster Up vs Apple Fitness+ — Team Competition vs Guided Classes</title>
-<meta name="description" content="Apple Fitness+ gives you coached classes for $9.99 a month. Muster Up puts you on a squad of 5 in a free two-week competition. An honest side-by-side, and how they fit together." />
+<meta name="description" content="Apple Fitness+ gives you coached classes for $9.99 a month. Muster Up puts you on a small squad in a free two-week competition. An honest side-by-side, and how they fit together." />
 <link rel="canonical" href="https://joinmuster.com/vs/apple-fitness" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Muster Up" />
 <meta property="og:url" content="https://joinmuster.com/vs/apple-fitness" />
 <meta property="og:title" content="Muster Up vs Apple Fitness+ — Team Competition vs Guided Classes" />
-<meta property="og:description" content="Apple Fitness+ gives you coached classes for $9.99 a month. Muster Up puts you on a squad of 5 in a free two-week competition. An honest side-by-side, and how they fit together." />
+<meta property="og:description" content="Apple Fitness+ gives you coached classes for $9.99 a month. Muster Up puts you on a small squad in a free two-week competition. An honest side-by-side, and how they fit together." />
 <meta property="og:image" content="https://joinmuster.com/marketing/og-image.jpg" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 <meta property="og:image:alt" content="Muster Up — Find your team." />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Muster Up vs Apple Fitness+ — Team Competition vs Guided Classes" />
-<meta name="twitter:description" content="Apple Fitness+ gives you coached classes for $9.99 a month. Muster Up puts you on a squad of 5 in a free two-week competition. An honest side-by-side, and how they fit together." />
+<meta name="twitter:description" content="Apple Fitness+ gives you coached classes for $9.99 a month. Muster Up puts you on a small squad in a free two-week competition. An honest side-by-side, and how they fit together." />
 <meta name="twitter:image" content="https://joinmuster.com/marketing/og-image.jpg" />
 <meta name="twitter:image:alt" content="Muster Up — Find your team." />
 <link rel="icon" type="image/x-icon" href="/favicons/favicon.ico" />
@@ -118,17 +118,27 @@
   /* NAV */
   nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(10,12,15,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.06); }
   .nav-row { display: flex; align-items: center; justify-content: space-between; height: 72px; }
-  .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 20px; letter-spacing: -0.02em; }
+  .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 20px; letter-spacing: -0.02em; white-space: nowrap; }
   .brand img { width: 36px; height: 36px; }
-  .nav-links { display: flex; gap: 32px; }
-  .nav-links a { color: var(--text-2); font-weight: 500; font-size: 15px; transition: color .15s; }
+  .nav-links { display: flex; gap: 24px; }
+  .nav-links a { color: var(--text-2); font-weight: 500; font-size: 15px; transition: color .15s; white-space: nowrap; }
+  @media (max-width: 1180px) { .nav-links { gap: 18px; } }
+  @media (max-width: 1060px) { .nav-links { gap: 14px; } .nav-links a { font-size: 14px; } }
   .nav-links a:hover, .nav-links a.active { color: var(--green); }
-  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 24px; border-radius: 10px; font-weight: 600; font-size: 15px; transition: transform .15s, background .15s, box-shadow .15s; cursor: pointer; border: none; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 24px; border-radius: 10px; font-weight: 600; font-size: 15px; transition: transform .15s, background .15s, box-shadow .15s; cursor: pointer; border: none; white-space: nowrap; }
   .btn-primary { background: var(--green); color: #000; }
   .btn-primary:hover { background: var(--green-light); transform: translateY(-1px); box-shadow: 0 10px 30px -10px rgba(210,145,60,.55); }
   .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
   .btn-ghost:hover { border-color: var(--green); color: var(--green); }
-  @media (max-width: 720px) { .nav-links { display: none; } }
+  /* Tablets (721–1000px): the inline menu no longer fits beside the brand and button,
+     so it drops to a compact centred second row. Under 720px it is hidden, as before;
+     the footer carries every link. */
+  @media (max-width: 1000px) {
+    .nav-row { flex-wrap: wrap; height: auto; padding-top: 12px; padding-bottom: 10px; }
+    .nav-links { order: 3; width: 100%; justify-content: center; flex-wrap: wrap; gap: 4px 18px; margin-top: 10px; }
+    .nav-links a { font-size: 14px; }
+  }
+  @media (max-width: 720px) { .nav-links { display: none; } .nav-row { height: 72px; padding-top: 0; padding-bottom: 0; } }
 
   /* PAGE HEADER */
   .page-head { position: relative; padding: 160px 0 50px; text-align: center; overflow: hidden; }
@@ -227,6 +237,7 @@
     requestBatching: false,
   });
 </script>
+<link rel="stylesheet" href="/assets/founder-offer.css">
 </head>
 <body>
 
@@ -241,7 +252,7 @@
       <a href="/#why">Why Muster Up</a>
       <a href="/#founder">Zero Day</a>
       <a href='/crew'>Bring your crew</a>
-      <a class='active' href='/vs/whoop'>Compare</a>
+      <a href='/fitness-trackers'>Wearables</a>
       <a href='/partners'>Partners</a>
       <a href='/contact-us'>Contact</a>
     </div>
@@ -253,7 +264,7 @@
   <div class="container">
     <span class="eyebrow"><span class="dot"></span> Compare · Muster Up vs Apple Fitness+</span>
     <h1>Fitness+ gives you the workout.<br/>Muster Up gives you <span class="accent">a team.</span></h1>
-    <p class="lede">Apple Fitness+ is a subscription library of guided workouts. Muster Up is a free team fitness competition — squads of up to 5, two weeks, a shared map. One supplies the class; the other supplies the people who expect you to show up for it.</p>
+    <p class="lede">Apple Fitness+ is a subscription library of guided workouts. Muster Up is a free team fitness competition — small squads, two weeks, a shared map. One supplies the class; the other supplies the people who expect you to show up for it.</p>
   </div>
 </header>
 
@@ -268,7 +279,7 @@
         <tr>
           <th scope="row">What it is</th>
           <td data-label="Apple Fitness+">A library of guided video workouts and meditations from Apple — HIIT, strength, yoga, cycling, and more.</td>
-          <td class="us" data-label="Muster Up">A team fitness competition app. Squads of up to 5 go head to head for two weeks.</td>
+          <td class="us" data-label="Muster Up">A team fitness competition app. Small squads — 5 in most competitions, 10 max — go head to head for two weeks.</td>
         </tr>
         <tr>
           <th scope="row">Price</th>
@@ -283,7 +294,7 @@
         <tr>
           <th scope="row">Who you compete with</th>
           <td data-label="Apple Fitness+">Yourself, mostly. Apple’s built-in Activity competition is one-on-one, seven days, and needs an Apple Watch. Group Workouts via SharePlay let friends take a class together.</td>
-          <td class="us" data-label="Muster Up">A squad of up to 5 against other squads. Everyone’s activity moves the same team up the map.</td>
+          <td class="us" data-label="Muster Up">A small squad — 5 in most competitions, 10 max — against other squads. Everyone’s activity moves the same team up the map.</td>
         </tr>
         <tr>
           <th scope="row">What keeps you going</th>
@@ -377,7 +388,7 @@
       <a href="/#founder" class="btn btn-primary">Join the next Zero Day →</a>
       <a href='/crew' class="btn btn-ghost">Bring your crew</a>
     </div>
-    <p class="updated">Updated <time datetime="2026-09-22">September 22, 2026</time></p>
+    <p class="updated">Updated <time datetime="2026-10-01">October 1, 2026</time></p>
   </div>
 </section>
 
@@ -390,7 +401,7 @@
     <div class="foot-links">
       <a href='/privacy'>Privacy</a>
       <a href='/crew'>Bring your crew</a>
-      <a href='/vs/whoop'>vs WHOOP</a>
+      <a href='/fitness-trackers'>Works with your wearable</a>
       <a href='/vs/apple-fitness'>vs Apple Fitness+</a>
       <a href='/partners'>Partners</a>
       <a href='/contact-us'>Contact</a>
@@ -399,5 +410,6 @@
   </div>
 </footer>
 
+<script src="/assets/founder-offer.js" defer></script>
 </body>
 </html>

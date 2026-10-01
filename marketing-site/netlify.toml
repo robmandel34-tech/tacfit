@@ -3,6 +3,12 @@
   to = "/"
   status = 301
 
+# The head-to-head WHOOP page was replaced by the complement-framed tracker page.
+[[redirects]]
+  from = "/vs/whoop"
+  to = "/fitness-trackers"
+  status = 301
+
 [[headers]]
   for = "/marketing/*"
   [headers.values]

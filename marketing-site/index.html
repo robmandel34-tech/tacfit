@@ -153,7 +153,7 @@
   "screenshot": "https://joinmuster.com/marketing/screen-map.png",
   "featureList": [
     "Two-week team fitness competitions",
-    "Squads of up to 5 so every member counts",
+    "Small squads — most competitions cap teams at 5 (10 max) — so every member counts",
     "Progress map, points and leaderboard",
     "Team chat, task board and video calls",
     "Apple Health sync for cardio",
@@ -191,7 +191,7 @@
     {
       "@type": "Question",
       "name": "How big is a team?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Squads are 5 people at most, so every member counts and nobody can hide. A bigger crew — a shift, a box, a run club — is split into squads that all climb the same map." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Small on purpose. A team can have up to 10 Musters, and most competitions cap it at 5 — so every member counts and nobody can hide. A bigger crew — a shift, a box, a run club — is split into squads that all climb the same map." }
     },
     {
       "@type": "Question",
@@ -246,18 +246,21 @@
   nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(10,12,15,0.4); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.06); transition: background .3s; }
   nav.scrolled { background: rgba(10,12,15,0.85); }
   .nav-row { display: flex; align-items: center; justify-content: space-between; height: 72px; }
-  .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 20px; letter-spacing: -0.02em; }
+  .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 20px; letter-spacing: -0.02em; white-space: nowrap; }
   .brand img { width: 36px; height: 36px; }
-  .nav-links { display: flex; gap: 32px; }
-  .nav-links a { color: var(--text-2); font-weight: 500; font-size: 15px; transition: color .15s; }
+  .nav-links { display: flex; gap: 24px; }
+  .nav-links a { color: var(--text-2); font-weight: 500; font-size: 15px; transition: color .15s; white-space: nowrap; }
+  /* Seven links plus the Sign In button: tighten before handing over to the hamburger. */
+  @media (max-width: 1180px) { .nav-links { gap: 18px; } }
+  @media (max-width: 1060px) { .nav-links { gap: 14px; } .nav-links a { font-size: 14px; } }
   .nav-links a:hover { color: var(--green); }
-  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 24px; border-radius: 10px; font-weight: 600; font-size: 15px; transition: transform .15s, background .15s, box-shadow .15s; cursor: pointer; border: none; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 24px; border-radius: 10px; font-weight: 600; font-size: 15px; transition: transform .15s, background .15s, box-shadow .15s; cursor: pointer; border: none; white-space: nowrap; }
   .btn-primary { background: var(--green); color: #000; }
   .btn-primary:hover { background: var(--green-light); transform: translateY(-1px); box-shadow: 0 10px 30px -10px rgba(210,145,60,.55); }
   .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
   .btn-ghost:hover { border-color: var(--green); color: var(--green); }
 
-  /* Mobile hamburger — hidden on desktop, shown under 720px */
+  /* Mobile hamburger — hidden on desktop, shown under 1000px (tablets included: the inline menu no longer fits) */
   .nav-toggle {
     display: none;
     background: transparent;
@@ -273,9 +276,9 @@
   .nav-toggle:hover { border-color: var(--green); }
   .nav-toggle:hover svg { stroke: var(--green); }
 
-  @media (max-width: 720px) {
+  @media (max-width: 1000px) {
     /* Hide the desktop inline menu and the standalone Sign In button — the
-       hamburger drawer carries those links on small screens. */
+       hamburger drawer carries those links on small screens and tablets. */
     .nav-links { display: none; }
     .nav-row > .btn-primary { display: none; }
     .nav-toggle { display: inline-flex; }
@@ -292,6 +295,10 @@
       flex-direction: column;
       gap: 4px;
       z-index: 99;
+      max-height: calc(100vh - 72px);
+      max-height: calc(100dvh - 72px);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
     .nav-drawer.open { display: flex; }
     .nav-drawer a {
@@ -312,7 +319,7 @@
       border-bottom: none;
     }
   }
-  @media (min-width: 721px) {
+  @media (min-width: 1001px) {
     .nav-drawer { display: none !important; }
   }
 
@@ -410,7 +417,7 @@
   @media (prefers-reduced-motion: reduce) {
     .hero-canvas, .hero-squad { display: none; }
   }
-  .hero-grid { position: relative; z-index: 2; display: grid; grid-template-columns: 1fr; gap: 80px; align-items: center; width: 100%; }
+  .hero-grid { position: relative; z-index: 2; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 72px; align-items: center; width: 100%; }
   @media (max-width: 920px) { .hero-grid { grid-template-columns: 1fr; gap: 48px; text-align: center; } }
   .hero-content { max-width: 680px; }
   @media (max-width: 920px) { .hero-content { margin: 0 auto; } .hero-ctas { justify-content: center; } }
@@ -422,9 +429,9 @@
   }
   .hero-video-frame {
     position: relative; z-index: 1;
-    width: 100%; max-width: 380px;
-    padding: 12px;
-    border-radius: 48px;
+    width: 100%; max-width: 440px;
+    padding: 10px;
+    border-radius: 36px;
     background:
       conic-gradient(from 220deg at 50% 50%,
         rgba(210,145,60,0.7) 0deg,
@@ -435,9 +442,13 @@
     box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 50px rgba(210,145,60,0.2);
   }
   .hero-video-frame video {
-    display: block; width: 100%; height: auto;
-    border-radius: 38px; background: #000;
+    display: block; width: 100%; height: auto; aspect-ratio: 720 / 840;
+    border-radius: 27px; background: #000; object-fit: cover;
   }
+  /* Stacked layout: video sits below the copy, a touch smaller so the page
+     keeps moving rather than being dominated by the loop. */
+  @media (max-width: 920px) { .hero-video-frame { max-width: 360px; } }
+  @media (max-width: 480px) { .hero-video-frame { max-width: 300px; padding: 8px; border-radius: 30px; } .hero-video-frame video { border-radius: 23px; } }
   .eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border: 1px solid rgba(210,145,60,0.35); border-radius: 999px; font-size: 13px; color: var(--green); font-weight: 600; background: rgba(10,12,15,0.5); backdrop-filter: blur(8px); }
   .eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 12px var(--green); animation: pulse 2s infinite; }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
@@ -997,6 +1008,7 @@
     requestBatching: false,
   });
 </script>
+<link rel="stylesheet" href="/assets/founder-offer.css">
 </head>
 <body>
 
@@ -1262,7 +1274,7 @@
       <a href="#why">Why Muster Up</a>
       <a href="#founder">Zero Day</a>
       <a href='/crew'>Bring your crew</a>
-      <a href='/vs/whoop'>Compare</a>
+      <a href='/fitness-trackers'>Wearables</a>
       <a href='/partners'>Partners</a>
       <a href='/contact-us'>Contact</a>
     </div>
@@ -1281,7 +1293,7 @@
     <a href="#founder">Zero Day</a>
     <a href='/crew'>Bring your crew</a>
     <a href="#faq">FAQ</a>
-    <a href='/vs/whoop'>Compare</a>
+    <a href='/fitness-trackers'>Wearables</a>
     <a href='/partners'>Partners</a>
     <a href='/contact-us'>Contact</a>
     <a href='/privacy'>Privacy</a>
@@ -1605,7 +1617,7 @@
   </div>
   <div class="container hero-grid">
     <div class="hero-content">
-      <span class="eyebrow"><span class="dot"></span> Team fitness competitions — for beginners, athletes and crew leads</span>
+      <span class="eyebrow"><span class="dot"></span> Team fitness competitions — for beginners, athletes and crew/squad/team leads</span>
       <h1>Find your team.<span class="h1-line2">Two-week team fitness competitions — weather the uphills, share the downhills, <span class="accent">together.</span></span></h1>
       <p class="sub">Muster Up makes getting in shape a team sport. Squads go head to head for two weeks, sized small enough that every single person counts — which taps the two best motivators there are: <strong style="color: var(--green); font-weight: 700;">camaraderie and competition</strong>.</p>
       <p class="sub sub-small">You don’t need to bring anyone. Most Musters join a team of strangers — that’s the normal way in. Already have a crew — a shift, a box, a run club? <a href='/crew'>Bring them</a>.</p>
@@ -1622,7 +1634,11 @@
       <p class="hero-thesis">If every time you quit, nobody seemed to notice or care — that’s not a character flaw. It’s a design flaw.</p>
       <p class="android-note">On Android? <a href="https://app.joinmuster.com">The web version</a> works today — Android app is in the works.</p>
     </div>
-    <!-- Hero video removed pending updated branded promo video. To restore: re-add the .hero-video-wrap block and set .hero-grid back to two columns (grid-template-columns: 1.1fr 0.9fr). -->
+    <div class="hero-video-wrap">
+      <div class="hero-video-frame">
+        <video id="heroVideo" src="/marketing/hero-loop.mp4" width="720" height="840" autoplay muted loop playsinline disablepictureinpicture preload="auto" aria-label="Muster Up app demo"></video>
+      </div>
+    </div>
 
   </div>
   <div class="hero-scroll">
@@ -1762,7 +1778,7 @@
         <span class="crew-leads-label">For crew leads</span>
         <ul>
           <li><strong>I handle the setup</strong> — your only job is getting your crew to download the app.</li>
-          <li><strong>Squads are 5 people max</strong> — every member counts, no one can hide. A bigger crew is split into squads that climb the same map.</li>
+          <li><strong>Squads are small — most competitions cap at 5, 10 max</strong> — every member counts, no one can hide. A bigger crew is split into squads that climb the same map.</li>
           <li><strong>Founding crews join before paid competitions launch and are permanently exempt</strong> — no catch.</li>
         </ul>
         <a href='/crew' class="crew-leads-link">Line up a matchup for your crew&nbsp;→</a>
@@ -2154,7 +2170,7 @@
       </details>
       <details class="faq-item">
         <summary>How big is a team?</summary>
-        <div class="faq-a"><p>Squads are 5 people at most, so every member counts and nobody can hide. A bigger crew — a shift, a box, a run club — is split into squads that all climb the same map.</p></div>
+        <div class="faq-a"><p>Small on purpose. A team can have up to 10 Musters, and most competitions cap it at 5 — so every member counts and nobody can hide. A bigger crew — a shift, a box, a run club — is split into squads that all climb the same map.</p></div>
       </details>
       <details class="faq-item">
         <summary>I lead a crew. How much work is it for me?</summary>
@@ -2200,7 +2216,7 @@
     <div class="foot-links">
       <a href='/privacy'>Privacy</a>
       <a href='/crew'>Bring your crew</a>
-    <a href='/vs/whoop'>vs WHOOP</a>
+    <a href='/fitness-trackers'>Works with your wearable</a>
       <a href='/vs/apple-fitness'>vs Apple Fitness+</a>
       <a href='/partners'>Partners</a>
       <a href="#founder">Zero Day</a>
@@ -2477,6 +2493,21 @@
     });
   })();
 
+</script>
+
+<script>
+/* ——— Hero demo loop: respect reduced-motion (show the first frame, no playback) ——— */
+(function () {
+  var v = document.getElementById('heroVideo');
+  if (!v || !window.matchMedia) return;
+  var mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+  function apply() {
+    if (mq.matches) { v.removeAttribute('autoplay'); v.pause(); }
+    else { var p = v.play(); if (p && p.catch) p.catch(function () {}); }
+  }
+  apply();
+  if (mq.addEventListener) mq.addEventListener('change', apply);
+})();
 </script>
 
 <script>
@@ -2801,5 +2832,17 @@
 
 <script src="/assets/zero-day.js"></script>
 
+<!-- Netlify Forms registration for the Founder offer pop-up. /assets/founder-offer.js posts
+     to this form name with AJAX; Netlify only accepts submissions for forms it found in the
+     deployed HTML, so keep the field names here in sync with the script. -->
+<form name="founder-offer" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" hidden aria-hidden="true">
+  <input type="hidden" name="form-name" value="founder-offer">
+  <input type="email" name="email">
+  <input type="tel" name="phone">
+  <input type="text" name="page">
+  <input type="text" name="source">
+  <input type="text" name="bot-field">
+</form>
+<script src="/assets/founder-offer.js" defer></script>
 </body>
 </html>

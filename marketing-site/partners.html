@@ -46,17 +46,27 @@
   /* NAV */
   nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(10,12,15,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.06); }
   .nav-row { display: flex; align-items: center; justify-content: space-between; height: 72px; }
-  .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 20px; letter-spacing: -0.02em; }
+  .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 20px; letter-spacing: -0.02em; white-space: nowrap; }
   .brand img { width: 36px; height: 36px; }
-  .nav-links { display: flex; gap: 32px; }
-  .nav-links a { color: var(--text-2); font-weight: 500; font-size: 15px; transition: color .15s; }
+  .nav-links { display: flex; gap: 24px; }
+  .nav-links a { color: var(--text-2); font-weight: 500; font-size: 15px; transition: color .15s; white-space: nowrap; }
+  @media (max-width: 1180px) { .nav-links { gap: 18px; } }
+  @media (max-width: 1060px) { .nav-links { gap: 14px; } .nav-links a { font-size: 14px; } }
   .nav-links a:hover, .nav-links a.active { color: var(--green); }
-  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 24px; border-radius: 10px; font-weight: 600; font-size: 15px; transition: transform .15s, background .15s, box-shadow .15s; cursor: pointer; border: none; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 24px; border-radius: 10px; font-weight: 600; font-size: 15px; transition: transform .15s, background .15s, box-shadow .15s; cursor: pointer; border: none; white-space: nowrap; }
   .btn-primary { background: var(--green); color: #000; }
   .btn-primary:hover { background: var(--green-light); transform: translateY(-1px); box-shadow: 0 10px 30px -10px rgba(210,145,60,.55); }
   .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
   .btn-ghost:hover { border-color: var(--green); color: var(--green); }
-  @media (max-width: 720px) { .nav-links { display: none; } }
+  /* Tablets (721–1000px): the inline menu no longer fits beside the brand and button,
+     so it drops to a compact centred second row. Under 720px it is hidden, as before;
+     the footer carries every link. */
+  @media (max-width: 1000px) {
+    .nav-row { flex-wrap: wrap; height: auto; padding-top: 12px; padding-bottom: 10px; }
+    .nav-links { order: 3; width: 100%; justify-content: center; flex-wrap: wrap; gap: 4px 18px; margin-top: 10px; }
+    .nav-links a { font-size: 14px; }
+  }
+  @media (max-width: 720px) { .nav-links { display: none; } .nav-row { height: 72px; padding-top: 0; padding-bottom: 0; } }
 
   /* PAGE HEADER */
   .page-head { position: relative; padding: 160px 0 50px; text-align: center; overflow: hidden; }
@@ -175,6 +185,7 @@
     requestBatching: false,
   });
 </script>
+<link rel="stylesheet" href="/assets/founder-offer.css">
 </head>
 <body>
 
@@ -189,7 +200,7 @@
       <a href="/#why">Why Muster Up</a>
       <a href='/founder'>Become a Founder</a>
       <a href='/crew'>Bring your crew</a>
-      <a href='/vs/whoop'>Compare</a>
+      <a href='/fitness-trackers'>Wearables</a>
       <a class='active' href='/partners'>Partners</a>
       <a href='/contact-us'>Contact</a>
     </div>
@@ -293,7 +304,7 @@
     <div class="foot-links">
       <a href='/privacy'>Privacy</a>
       <a href='/crew'>Bring your crew</a>
-    <a href='/vs/whoop'>vs WHOOP</a>
+    <a href='/fitness-trackers'>Works with your wearable</a>
       <a href='/vs/apple-fitness'>vs Apple Fitness+</a>
       <a href='/partners'>Partners</a>
       <a href='/founder'>Become a Founder</a>
@@ -339,5 +350,6 @@
 
 
 
+<script src="/assets/founder-offer.js" defer></script>
 </body>
 </html>

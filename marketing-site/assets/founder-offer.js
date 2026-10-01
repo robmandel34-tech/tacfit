@@ -1,7 +1,7 @@
 /* Founder offer pop-up.
  *
  * First-visit lead capture: "earn Founder status, merch and free-for-life access".
- * Email required, phone optional. Submits to Netlify Forms (form name "founder-offer";
+ * Email and phone both required. Submits to Netlify Forms (form name "founder-offer";
  * the matching static form lives in index.html so Netlify registers it at deploy time).
  *
  * Show rules (per browser, via localStorage):
@@ -89,13 +89,13 @@
               '<div class="fo-err" id="fo-email-err" role="alert">Enter a valid email so we know where to send it.</div>' +
             '</div>' +
             '<div class="fo-field">' +
-              '<label for="fo-phone">Phone <span class="fo-opt">(optional — for a text when your first competition starts)</span></label>' +
-              '<input id="fo-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="(555) 555-0123" aria-describedby="fo-phone-err">' +
-              '<div class="fo-err" id="fo-phone-err" role="alert">That doesn’t look like a phone number — or leave it blank.</div>' +
+              '<label for="fo-phone">Phone <span class="fo-opt">(for a text when your first competition starts)</span></label>' +
+              '<input id="fo-phone" name="phone" type="tel" required autocomplete="tel" inputmode="tel" placeholder="(555) 555-0123" aria-describedby="fo-phone-err">' +
+              '<div class="fo-err" id="fo-phone-err" role="alert">Enter a phone number so we can text you when your competition starts.</div>' +
             '</div>' +
             '<button type="submit" class="fo-btn">Claim my spot →</button>' +
             '<div class="fo-status" role="alert"></div>' +
-            '<p class="fo-fine">One email with the steps, then only competition updates. No spam, unsubscribe anytime. <a href="/founder">How Founder status works</a></p>' +
+            '<p class="fo-fine">One email with the steps, then only competition updates. No spam, no sales calls, unsubscribe anytime. <a href="/founder">How Founder status works</a></p>' +
           '</form>' +
           '<button type="button" class="fo-skip" data-fo-close>No thanks, I’ll pass on Founder status</button>' +
         '</div>' +
@@ -164,7 +164,7 @@
     emailErr.classList.toggle('show', !emailOk);
     if (!emailOk) { ok = false; email.focus(); }
     var digits = phone.value.replace(/\D/g, '');
-    var phoneOk = phone.value.trim() === '' || (digits.length >= 7 && digits.length <= 15);
+    var phoneOk = digits.length >= 7 && digits.length <= 15;
     phone.setAttribute('aria-invalid', phoneOk ? 'false' : 'true');
     phoneErr.classList.toggle('show', !phoneOk);
     if (!phoneOk && ok) { ok = false; phone.focus(); }
@@ -193,7 +193,7 @@
       if (!res.ok) throw new Error('HTTP ' + res.status);
       submittedNow = true;
       write({ state: 'submitted', at: Date.now() });
-      track('founder_offer_submitted', { page: location.pathname, phone: form.querySelector('#fo-phone').value.trim() !== '' });
+      track('founder_offer_submitted', { page: location.pathname });
       root.querySelector('.fo-ask').hidden = true;
       var done = root.querySelector('.fo-done');
       done.classList.add('show');

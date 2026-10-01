@@ -1,4 +1,4 @@
-/* Founder offer pop-up — first-visit lead capture (email required, phone optional).
+/* Founder offer pop-up — first-visit lead capture (email and phone required).
    Markup is injected by /assets/founder-offer.js; this file only styles it.
    Colours fall back to the site palette so the sheet looks the same on every page. */
 .fo-root { position: fixed; inset: 0; z-index: 5000; display: flex; align-items: center; justify-content: center; padding: 20px; }

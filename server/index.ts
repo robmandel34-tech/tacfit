@@ -3,7 +3,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { seedDatabase } from "./seed-data";
-import { startDigestScheduler } from "./digest-service";
+import { startDigestScheduler } from "./digest-scheduler";
 import { ObjectStorageService } from "./objectStorage";
 import { notifyIssue } from "./slack-service";
 import path from "path";
@@ -188,8 +188,15 @@ app.use((req, res, next) => {
     // Seed the database with initial data
     await seedDatabase();
 
-    // Start the per-competition Slack digest scheduler
-    startDigestScheduler();
+    // Start the Slack digest scheduler (catch-up; works on Autoscale).
+    // Production only by default: the dev server shares the real Slack
+    // connection, and a report built from dev data would land in the real
+    // channels. Set DIGEST_SCHEDULER=on to run it in development.
+    if (app.get("env") === "production" || process.env.DIGEST_SCHEDULER === "on") {
+      startDigestScheduler();
+    } else {
+      log("digest scheduler disabled in development (DIGEST_SCHEDULER=on to enable)");
+    }
   });
 
   // Graceful shutdown: without this, a restart can leave the old process

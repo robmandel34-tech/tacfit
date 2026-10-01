@@ -66,7 +66,7 @@ import fs from "fs";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { generateVerificationToken, sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail } from "./email-service";
-import { notifySlack } from "./slack-service";
+import { notifySlack, testSlackChannels } from "./slack-service";
 import {
   computeCompetitionRecap,
   saveCompetitionRecap,
@@ -75,7 +75,8 @@ import {
   competitionIdsWithRecap,
   listRecapsForViewer,
 } from "./competition-recap";
-import { runDigest, buildCompetitionDigest } from "./digest-service";
+import { runDigest, buildDigestMessages } from "./digest-service";
+import { getLastDigestRunAt, reportWindowStart, digestHeading } from "./digest-scheduler";
 import { webhookService } from "./webhook-service";
 import Stripe from "stripe";
 import bcrypt from "bcrypt";
@@ -1880,6 +1881,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         inviteCode,
         createdBy: user.id
       });
+      notifySlack(
+        `🆕 *Competition created* — "${competition.name}" by ${user.username} · ${new Date(competition.startDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })} → ${new Date(competition.endDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })} · ${competition.paymentType === "free" || !competition.entryFee ? "free" : `$${(competition.entryFee / 100).toFixed(0)}`}${competition.isPrivate ? " · invite-only" : ""}`,
+      );
       res.json(transformCompetition(competition));
     } catch (error) {
       console.error("Competition creation error:", error);
@@ -2369,6 +2373,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.updateUser(userId, {
         competitionsEntered: (user.competitionsEntered || 0) + 1
       });
+
+      notifySlack(`👥 *New team* — ${user.username} created "${newTeam.name}" in "${competition.name}"`);
 
       await heycatch.trackEvent(
         "team_joined",
@@ -6275,7 +6281,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin: run the competition digest now and post it to Slack.
+  // Admin: run the Slack digest now (app-wide report + live competitions).
+  // A manual run doesn't touch the schedule — the next scheduled slot still
+  // posts as usual.
   app.post("/api/admin/digest/run", async (req, res) => {
     try {
       const sessionUserId = req.session?.userId || req.session?.user?.id;
@@ -6283,8 +6291,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const currentUser = await storage.getUser(sessionUserId);
       if (!currentUser?.isAdmin) return res.sendStatus(403);
 
-      const result = await runDigest();
-      res.json({ message: `Digest posted for ${result.posted} competition(s).`, ...result });
+      const now = new Date();
+      const since = reportWindowStart(await getLastDigestRunAt(), now);
+      const result = await runDigest({ since, heading: `${digestHeading(now)} (manual run)` });
+      res.json({
+        message: `Posted ${result.posted} message(s)${result.failures ? `, ${result.failures} failed — check the Slack channel setup` : ""}.`,
+        ...result,
+      });
     } catch (error: any) {
       console.error('Run digest error:', error);
       res.status(500).json({ message: error.message || "Error running digest" });
@@ -6299,19 +6312,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const currentUser = await storage.getUser(sessionUserId);
       if (!currentUser?.isAdmin) return res.sendStatus(403);
 
-      const all = await storage.getCompetitions();
-      const now = Date.now();
-      const live = all.filter((c: any) => {
-        if (c.isActive === false || c.isCompleted) return false;
-        const start = c.startDate ? new Date(c.startDate).getTime() : 0;
-        const end = c.endDate ? new Date(c.endDate).getTime() : Infinity;
-        return start <= now && now <= end;
-      });
-      const digests = await Promise.all(live.map((c: any) => buildCompetitionDigest(c)));
+      const now = new Date();
+      const since = reportWindowStart(await getLastDigestRunAt(), now);
+      const digests = await buildDigestMessages({ since, heading: `${digestHeading(now)} (preview)` });
       res.json({ count: digests.length, digests });
     } catch (error: any) {
       console.error('Preview digest error:', error);
       res.status(500).json({ message: error.message || "Error building digest preview" });
+    }
+  });
+
+  // Admin: post a test message to every configured Slack channel and report
+  // which ones accepted it — the quick way to confirm channel IDs are right
+  // and the bot has been invited.
+  app.post("/api/admin/slack/test", async (req, res) => {
+    try {
+      const sessionUserId = req.session?.userId || req.session?.user?.id;
+      if (!sessionUserId) return res.sendStatus(401);
+      const currentUser = await storage.getUser(sessionUserId);
+      if (!currentUser?.isAdmin) return res.sendStatus(403);
+
+      const results = await testSlackChannels();
+      const failed = results.filter((r) => !r.ok);
+      res.json({
+        message: failed.length
+          ? `${failed.length} of ${results.length} channel(s) rejected the test message.`
+          : `All ${results.length} channel(s) accepted the test message.`,
+        results,
+      });
+    } catch (error: any) {
+      console.error('Slack test error:', error);
+      res.status(500).json({ message: error.message || "Error testing Slack channels" });
     }
   });
 
@@ -6752,6 +6783,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         paymentMethod: 'none',
         amountPaid: 0
       });
+
+      notifySlack(`🏁 *Competition entry* — ${user.username} joined "${competition.name}" (free)`);
 
       await heycatch.trackEvent(
         "competition_entered",

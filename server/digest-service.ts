@@ -1,24 +1,19 @@
-// Per-competition digest — builds a readable status report for each active
-// competition and posts it to Slack several times a day. Covers standings,
-// recent activity submissions, team activity (chat + tasks + activities), and
-// engagement-risk callouts so the admin can spot disengaging teams/members.
+// Slack digest — one run posts the app-wide report (app-digest.ts) and then,
+// for each live competition, a status report covering standings, recent
+// submissions, team activity (chat + tasks + activities) and engagement-risk
+// callouts so the admin can spot disengaging teams/members.
 //
-// Scheduling is handled by node-cron in startDigestScheduler(). Everything is
-// wrapped so a failure never crashes the server.
+// Scheduling lives in digest-scheduler.ts (catch-up scheduler that works on
+// Autoscale). Everything here is wrapped so a failure never crashes the server.
 
-import cron from "node-cron";
 import { storage } from "./storage";
-import { notifySlack } from "./slack-service";
+import { sendSlack } from "./slack-service";
+import { buildAppDigest } from "./app-digest";
 
 // How far back the "recent activity" metrics look. A team/member with nothing
 // in this window is treated as quiet / at risk.
 const WINDOW_HOURS = 24;
 const MEMBER_RISK_HOURS = 48;
-
-// When the digest runs. Comma-separated 24h hours, in DIGEST_TZ.
-// Defaults to 8am, 1pm, 8pm Eastern.
-const DIGEST_HOURS = process.env.DIGEST_HOURS || "8,13,20";
-const DIGEST_TZ = process.env.DIGEST_TZ || "America/New_York";
 
 function hoursAgo(h: number): Date {
   return new Date(Date.now() - h * 60 * 60 * 1000);
@@ -350,62 +345,68 @@ export async function buildNudgeMessage(comp: any): Promise<string | null> {
   return lines.join("\n");
 }
 
-// Build and post digests for every live competition.
-export async function runDigest(): Promise<{ posted: number }> {
-  let posted = 0;
+export interface DigestRunOptions {
+  // Start of the "since the last report" window for the app-wide report.
+  since: Date;
+  // Heading shown on the report, e.g. "Thu, Oct 1, 1:00 PM CDT".
+  heading: string;
+}
+
+export interface DigestRunResult {
+  posted: number; // Slack messages accepted
+  failures: number; // Slack messages rejected (details in server logs)
+  competitions: number; // live competitions covered
+}
+
+// Build every digest message (app-wide report first, then one per live
+// competition) without posting — shared by the run and the admin preview.
+export async function buildDigestMessages(opts: DigestRunOptions): Promise<string[]> {
+  const messages: string[] = [await buildAppDigest(opts)];
+  const comps = await getLiveCompetitions();
+  for (const comp of comps) {
+    try {
+      messages.push(await buildCompetitionDigest(comp));
+    } catch (err) {
+      console.error(`Digest failed for competition ${comp.id}:`, err);
+    }
+  }
+  return messages;
+}
+
+// Build and post the app-wide report, then a digest (and a "who needs a
+// nudge" list) for every live competition. Posts are awaited so a run
+// finishes before an Autoscale instance can be shut down mid-way.
+export async function runDigest(opts: DigestRunOptions): Promise<DigestRunResult> {
+  const result: DigestRunResult = { posted: 0, failures: 0, competitions: 0 };
+  const post = async (text: string, category: "summary" | "nudges") => {
+    const sent = await sendSlack(text, category);
+    if (sent.ok) result.posted += 1;
+    else result.failures += 1;
+  };
+
+  try {
+    await post(await buildAppDigest(opts), "summary");
+  } catch (err) {
+    result.failures += 1;
+    console.error("App digest failed:", err);
+  }
+
   try {
     const comps = await getLiveCompetitions();
-    if (comps.length === 0) {
-      return { posted: 0 };
-    }
+    result.competitions = comps.length;
     for (const comp of comps) {
       try {
-        const text = await buildCompetitionDigest(comp);
-        notifySlack(text);
-        posted += 1;
-
-        // Also post a focused "who needs a nudge" list to its own channel.
+        await post(await buildCompetitionDigest(comp), "summary");
         const nudge = await buildNudgeMessage(comp);
-        if (nudge) notifySlack(nudge, "nudges");
+        if (nudge) await post(nudge, "nudges");
       } catch (err) {
+        result.failures += 1;
         console.error(`Digest failed for competition ${comp.id}:`, err);
       }
     }
   } catch (err) {
+    result.failures += 1;
     console.error("Digest run failed:", err);
   }
-  return { posted };
-}
-
-// Schedule the digest to run at DIGEST_HOURS in DIGEST_TZ.
-export function startDigestScheduler(): void {
-  const hours = DIGEST_HOURS.split(",")
-    .map((h) => h.trim())
-    .filter((h) => h !== "")
-    .join(",");
-  const expr = `0 ${hours} * * *`;
-
-  if (!cron.validate(expr)) {
-    console.error(`Invalid digest cron expression "${expr}" — scheduler not started.`);
-    return;
-  }
-
-  // Validate the timezone separately — an invalid TZ would otherwise throw at
-  // schedule time and must never crash server startup.
-  let timezone: string | undefined = DIGEST_TZ;
-  try {
-    new Intl.DateTimeFormat("en-US", { timeZone: DIGEST_TZ });
-  } catch {
-    console.error(`Invalid digest timezone "${DIGEST_TZ}" — falling back to server time.`);
-    timezone = undefined;
-  }
-
-  try {
-    cron.schedule(expr, () => {
-      void runDigest();
-    }, timezone ? { timezone } : undefined);
-    console.log(`Competition digest scheduled at hours [${hours}] ${timezone || "(server time)"}.`);
-  } catch (err) {
-    console.error("Failed to start digest scheduler:", err);
-  }
+  return result;
 }

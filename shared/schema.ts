@@ -823,3 +823,25 @@ export type InsertHealthMetric = z.infer<typeof insertHealthMetricSchema>;
 export type ReadinessScore = typeof readinessScores.$inferSelect;
 export type InsertReadinessScore = z.infer<typeof insertReadinessScoreSchema>;
 
+// Last completed run of each background job (e.g. the Slack digest). The app
+// runs on Autoscale, where the server sleeps between requests, so a plain
+// in-process timer misses most scheduled times. The catch-up scheduler
+// instead records the schedule slot it last posted and claims the next due
+// slot atomically — so a missed slot is posted the first time the server is
+// awake after it, and two instances can never post the same slot twice.
+//
+// Claiming is a short lease (claimed_slot_key/claimed_at) that is only turned
+// into the completed watermark (last_slot_key/last_run_at) once something was
+// actually posted — so a crash or Slack outage after the claim is retried
+// when the lease expires instead of silently losing the report.
+export const scheduledJobRuns = pgTable("scheduled_job_runs", {
+  job: text("job").primaryKey(),
+  lastSlotKey: text("last_slot_key"), // last slot posted, "YYYY-MM-DD HH" in the job's timezone
+  lastRunAt: timestamp("last_run_at"), // when that slot was posted
+  claimedSlotKey: text("claimed_slot_key"), // slot currently being worked on (lease)
+  claimedAt: timestamp("claimed_at"),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type ScheduledJobRun = typeof scheduledJobRuns.$inferSelect;
+

@@ -18,13 +18,13 @@
 import { sql } from "drizzle-orm";
 import { db } from "./db";
 import { runDigest } from "./digest-service";
+import { APP_TZ } from "./app-timezone";
 
 const JOB = "slack_digest";
 
-// When the digest runs. Comma-separated 24h hours, in DIGEST_TZ.
-// Defaults to 8am, 1pm, 8pm Central.
+// When the digest runs. Comma-separated 24h hours, in the app timezone
+// (APP_TZ, configurable via DIGEST_TZ). Defaults to 8am, 1pm, 8pm Central.
 const DIGEST_HOURS = process.env.DIGEST_HOURS || "8,13,20";
-const DIGEST_TZ = process.env.DIGEST_TZ || "America/Chicago";
 
 const CHECK_INTERVAL_MS = 5 * 60 * 1000;
 const STARTUP_DELAY_MS = 15 * 1000;
@@ -43,18 +43,8 @@ function parseHours(raw: string): number[] {
   return [...new Set(hours)].sort((a, b) => a - b);
 }
 
-function resolveTimezone(tz: string): string {
-  try {
-    new Intl.DateTimeFormat("en-US", { timeZone: tz });
-    return tz;
-  } catch {
-    console.error(`Invalid digest timezone "${tz}" — falling back to UTC.`);
-    return "UTC";
-  }
-}
-
 const HOURS = parseHours(DIGEST_HOURS);
-const TZ = resolveTimezone(DIGEST_TZ);
+const TZ = APP_TZ;
 
 // Local calendar date + hour for an instant, in the digest timezone.
 function localParts(at: Date, tz: string): { y: number; m: number; d: number; hour: number } {

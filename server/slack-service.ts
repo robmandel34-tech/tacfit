@@ -19,6 +19,7 @@ const SLACK_CHANNEL_ID = process.env.SLACK_CHANNEL_ID || "C0B6ZLUAYRJ";
 export type SlackCategory =
   | "general"
   | "signups"
+  | "logins"
   | "activity"
   | "firstActivity"
   | "invites"
@@ -30,6 +31,7 @@ export type SlackCategory =
 export const SLACK_CATEGORIES: SlackCategory[] = [
   "general",
   "signups",
+  "logins",
   "activity",
   "firstActivity",
   "invites",
@@ -43,6 +45,10 @@ export function channelFor(category: SlackCategory): string {
   switch (category) {
     case "signups":
       return process.env.SLACK_CHANNEL_SIGNUPS || SLACK_CHANNEL_ID;
+    case "logins":
+      // Sign-ins and "back in the app" pings. A small-user-base aid that sits
+      // next to sign-ups unless given its own channel.
+      return process.env.SLACK_CHANNEL_LOGINS || channelFor("signups");
     case "activity":
       return process.env.SLACK_CHANNEL_ACTIVITY || SLACK_CHANNEL_ID;
     case "firstActivity":

@@ -67,6 +67,7 @@ import { exec } from "child_process";
 import { promisify } from "util";
 import { generateVerificationToken, sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail } from "./email-service";
 import { notifySlack, testSlackChannels } from "./slack-service";
+import { notifyLogin, touchAuthToken } from "./login-alerts";
 import {
   computeCompetitionRecap,
   saveCompetitionRecap,
@@ -388,11 +389,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
         (req.session as any).save = noopSave;
         (req.session as any).touch = () => req.session;
-        // Best-effort touch on the token row
-        db.update(authTokensTable)
-          .set({ lastUsedAt: new Date() })
-          .where(eq(authTokensTable.token, token))
-          .catch(() => {});
+        // Best-effort touch on the token row (also posts the "back in the
+        // app" Slack alert on the first use of a new day).
+        touchAuthToken(token);
       }
     } catch (e) {
       console.error("Bearer auth lookup failed:", e);
@@ -594,6 +593,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           
           console.log(`Login successful for user: ${email}, session ID: ${req.sessionID}`);
+          notifyLogin(user, "password");
 
           // Issue an opaque bearer token for native (Capacitor) clients.
           // Web clients will ignore this field and continue using cookies.
@@ -680,7 +680,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       provider === "apple"
         ? await storage.getUserByAppleId(identity.providerId)
         : await storage.getUserByGoogleId(identity.providerId);
-    if (user) return user;
+    if (user) {
+      notifyLogin(user, provider);
+      return user;
+    }
 
     const providerField = provider === "apple" ? "appleUserId" : "googleUserId";
 
@@ -699,6 +702,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           updates.isEmailVerified = true;
         }
         const updated = await storage.updateUser(existing.id, updates);
+        // An existing account signing in for the first time via SSO is still
+        // a login (not a sign-up).
+        notifyLogin(updated || existing, provider);
         return updated || existing;
       }
     }

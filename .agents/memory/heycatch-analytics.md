@@ -40,3 +40,19 @@ description: Non-obvious decisions behind the HeyCatch SDK setup (version pinnin
 - **Verifying locally:** headless chromium with `--enable-logging=stderr` shows
   the `[HeyCatch] SDK v… (prod) initialized` line; the source path contains
   `.vite/deps`, so don't grep-filter "vite" out of the console capture.
+- **Watching the real wire traffic (2026-10-03):** posthog-js drops events
+  client-side when `navigator.webdriver` is true or the UA says HeadlessChrome,
+  so a plain headless run shows NO requests. Launch chromium with
+  `--disable-blink-features=AutomationControlled` + `Network.setUserAgentOverride`
+  (normal Chrome UA) over CDP, then `Network.*` events show the POSTs to
+  `in.heycatch.ai/e/` (base64 body → JSON) with status codes and properties.
+  Live app verified clean this way: key, `$groups.project`, install metadata,
+  `(prod)`, HTTP 200 from both tacfit.replit.app and app.joinmuster.com. Any
+  "install not detected" after that is a HeyCatch-side classification question
+  (domain/platform of the project, bot/IP heuristics), not our code.
+- **Native origin caveat:** the iOS shell runs at `capacitor://localhost`, so
+  every App Store user reports `$host: localhost` and gets posthog's
+  `$internal_or_test_user` flag (2026 defaults regex). Fix = Capacitor
+  `server.hostname` (NOT `ios.scheme`, which is unused — the WebView scheme is
+  `server.iosScheme`); changing it changes the origin → localStorage resets →
+  auth hydration must become token-first or everyone is signed out once.

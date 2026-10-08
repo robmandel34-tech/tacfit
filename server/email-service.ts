@@ -271,7 +271,7 @@ export const sendWelcomeEmail = async (
       bulletList([
         { label: 'Join a Competition:', text: 'Find active competitions and form or join a team.' },
         { label: 'Submit Activities:', text: 'Track your cardio, strength, and mobility training.' },
-        { label: 'Earn Points:', text: '15 points per activity (1 image required), 30 with photo + video evidence.' },
+        { label: 'Earn Points:', text: 'Points scale with your effort (per minute or rep), plus a bonus for a photo or a bigger one for a video.' },
         { label: 'Daily Wellness:', text: 'Complete mood check-ins for 5 bonus points.' },
         { label: 'Connect with Buddies:', text: 'Build your tactical network.' },
       ]),

@@ -14,6 +14,7 @@
 - [Codemagic package proxy](codemagic-package-proxy.md) — Replit bakes package-firewall.replit.internal URLs into package-lock; a codemagic.yaml step now rewrites them to registry.npmjs.org before npm install.
 - [WAAPI partial keyframes](waapi-partial-keyframes.md) — animating a prop (e.g. opacity) on only early keyframes makes WAAPI fade it back to the element's underlying value at offset 1; set it on both ends or use a separate 2-keyframe track.
 - [/uploads serving & video](uploads-serving.md) — videos upload direct-to-GCS + local disk is ephemeral; /uploads MUST fall back to object storage or feed shows "Video preview unavailable".
+- [Video evidence uploads](video-upload-evidence.md) — "can't submit videos" = many upload-url, zero activities in logs (re-taps, no busy state); ref lock + progress + server object-existence check; video-only valid; no duration limit.
 - [Slack digest scheduler](slack-digest-scheduler.md) — Autoscale kills cron: DB slot-lease catch-up scheduler; unset SLACK_CHANNEL_* = default channel; login pings are TEMPORARY (per user); history readable, list not.
 - [Port 5000 orphans](port-5000-orphans.md) — "feature stopped working" after a restart often = backend down from EADDRINUSE; SIGTERM handler added; find orphans via `ps aux | grep "tsx server"`, not lsof.
 - [TestFlight upload rejections](testflight-upload-rejections.md) — build can sign fine but fail at upload: bump MARKETING_VERSION in pbxproj for each closed train (90186); never ship the REPLACE_WITH_REVERSED_GOOGLE placeholder URL scheme (90158).

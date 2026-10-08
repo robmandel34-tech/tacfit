@@ -25,6 +25,7 @@ import {
   reconcileWorkoutDurationSec,
 } from "@shared/healthkit";
 import { activityPoints, verifiedSessionPoints, parseQuantity } from "@shared/points";
+import { ALLOWED_VIDEO_EXTENSIONS, ALLOWED_IMAGE_EXTENSIONS } from "@shared/uploads";
 import { isAcceptedFitnessLevel, fitnessLevelLabel } from "@shared/onboarding";
 import { recomputeReadinessForUser, isReadinessTestAccount, sampleReadiness } from "./readiness-service";
 import { verifyGoogleIdToken, verifyAppleIdToken, isGoogleConfigured, isAppleConfigured, type SsoIdentity } from "./sso-auth";
@@ -3076,9 +3077,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Only allow signed PUT URLs for known media extensions — blocks anyone
   // trying to use the bucket as generic file hosting (.exe, .html, etc.).
-  const ALLOWED_UPLOAD_EXTENSIONS = new Set([
-    '.mp4', '.mov', '.m4v', '.webm',
-    '.jpg', '.jpeg', '.png', '.gif', '.heic', '.heif', '.webp',
+  // The lists live in shared/uploads.ts so the client validates against the
+  // exact same set before it ever asks for a URL.
+  const ALLOWED_UPLOAD_EXTENSIONS = new Set<string>([
+    ...ALLOWED_VIDEO_EXTENSIONS,
+    ...ALLOWED_IMAGE_EXTENSIONS,
   ]);
 
   app.post("/api/upload-url", async (req, res) => {
@@ -3106,7 +3109,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? extension.toLowerCase()
         : '';
       if (!candidate || !ALLOWED_UPLOAD_EXTENSIONS.has(candidate)) {
-        return res.status(400).json({ message: "Unsupported file type." });
+        return res.status(400).json({
+          message: `That file type isn't supported. Videos must be ${ALLOWED_VIDEO_EXTENSIONS.map((e) => e.slice(1).toUpperCase()).join(", ")}.`,
+        });
       }
 
       const svc = new ObjectStorageService();
@@ -3665,10 +3670,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const isAppleHealth = !!healthWorkout || !!passiveMetric;
 
-      // Evidence rule: at least one image, OR a valid (owned, unsubmitted) HealthKit
-      // workout, OR an unclaimed day of passive Apple Health activity.
-      if (imageFiles.length === 0 && !isAppleHealth) {
-        return res.status(400).json({ message: "Please add at least one photo, or import an Apple Health workout." });
+      // Direct-upload video: the client PUT the file to object storage via a
+      // signed URL and sends back only the /uploads/<uuid>.<ext> path. Before it
+      // counts as evidence, confirm the object is really there and is a video —
+      // otherwise a crafted body could claim the video bonus with no upload at
+      // all, and a client whose transfer silently failed would post an activity
+      // with a dead link instead of being told to retry.
+      const actObjStorage = new ObjectStorageService();
+      const preUploadedVideoUrl = typeof req.body.videoUrl === 'string' ? req.body.videoUrl.trim() : '';
+      let hasPreUploadedVideo = false;
+      if (preUploadedVideoUrl) {
+        const fileName = path.basename(preUploadedVideoUrl);
+        const extension = path.extname(fileName).toLowerCase();
+        const wellFormed =
+          preUploadedVideoUrl === `/uploads/${fileName}` &&
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.[a-z0-9]{1,8}$/i.test(fileName) &&
+          (ALLOWED_VIDEO_EXTENSIONS as readonly string[]).includes(extension);
+        const stored = wellFormed ? await actObjStorage.getUploadedFile(fileName) : null;
+        if (!stored) {
+          console.warn(`Rejected activity: pre-uploaded video not found in storage (${preUploadedVideoUrl})`);
+          return res.status(400).json({
+            message: "Your video didn't finish uploading. Please remove it, add it again and resubmit.",
+          });
+        }
+        hasPreUploadedVideo = true;
+      }
+      const hasVideoEvidence = videoFiles.length > 0 || hasPreUploadedVideo;
+
+      // Evidence rule: at least one photo or video, OR a valid (owned, unsubmitted)
+      // HealthKit workout, OR an unclaimed day of passive Apple Health activity.
+      if (imageFiles.length === 0 && !hasVideoEvidence && !isAppleHealth) {
+        return res.status(400).json({ message: "Please add at least one photo or video, or import an Apple Health workout." });
       }
 
       // When the submission counts toward an active competition, enforce the
@@ -3713,12 +3745,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Check if both video and image evidence are provided for the bonus.
-      // Video may either come through multer OR via a pre-signed direct upload (req.body.videoUrl).
-      const preUploadedVideoCheck = typeof req.body.videoUrl === 'string' && req.body.videoUrl.trim().startsWith('/uploads/');
-      const hasVideoEvidence = videoFiles.length > 0 || preUploadedVideoCheck;
+      // Video may either come through multer OR via the verified direct upload above.
       const hasImageEvidence = imageFiles.length > 0;
-      const hasBothEvidenceTypes = hasVideoEvidence && hasImageEvidence;
       
       // Set evidence type based on file uploads
       let description = req.body.description;
@@ -3764,13 +3792,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Handle video file (primary evidence) first
       let evidenceUrl = '';
       let thumbnailUrl = '';
-      const actObjStorage = new ObjectStorageService();
 
       // Direct-upload path: client uploaded video to GCS via signed URL
-      // and is sending us just the resulting /uploads/<file> path.
-      const preUploadedVideoUrl = typeof req.body.videoUrl === 'string' ? req.body.videoUrl.trim() : '';
-      const hasPreUploadedVideo = preUploadedVideoUrl.startsWith('/uploads/');
-
+      // and sent us the resulting /uploads/<file> path (verified above).
       if (hasPreUploadedVideo) {
         evidenceUrl = preUploadedVideoUrl;
         evidenceType = 'video';

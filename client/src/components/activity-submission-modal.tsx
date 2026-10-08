@@ -20,6 +20,14 @@ import {
   healthKitActivityLabel,
 } from "@shared/healthkit";
 import { activityPoints } from "@shared/points";
+import {
+  MAX_VIDEO_UPLOAD_BYTES,
+  MAX_IMAGE_UPLOAD_BYTES,
+  MAX_IMAGES_PER_ACTIVITY,
+  videoExtensionFor,
+  formatBytes,
+  formatDuration,
+} from "@shared/uploads";
 import { reconcileWorkoutDurationSec } from "@/lib/healthkit";
 import { celebrate } from "@/lib/celebrate";
 import { Capacitor } from "@capacitor/core";
@@ -30,6 +38,56 @@ import { ShieldCheck } from "lucide-react";
 // dialog where it collapses to a thin sliver and won't scroll. There we fall
 // back to the OS-native <select> picker (a full-screen wheel) which always works.
 const isNativeApp = Capacitor.isNativePlatform();
+
+// A direct-to-storage video upload is retried this many times when the
+// connection drops (phone switched networks, app briefly backgrounded). Each
+// attempt gets a fresh signed URL so an expired one can't poison the retry.
+const MAX_VIDEO_UPLOAD_ATTEMPTS = 3;
+
+// Thrown for upload failures that are worth retrying automatically (network
+// drop, timeout, storage 5xx) — as opposed to a rejected/expired URL (4xx).
+class RetryableUploadError extends Error {}
+
+// Read a picked video's length from its metadata (no full decode). Resolves
+// null when the browser can't read it, so callers fall back to size-only copy.
+const probeVideoDuration = (file: File): Promise<number | null> =>
+  new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const probe = document.createElement("video");
+    probe.preload = "metadata";
+    probe.muted = true;
+    let settled = false;
+    const finish = (seconds: number | null) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      probe.removeAttribute("src");
+      probe.load();
+      URL.revokeObjectURL(url);
+      resolve(seconds);
+    };
+    const timer = setTimeout(() => finish(null), 5000);
+    probe.onloadedmetadata = () =>
+      finish(Number.isFinite(probe.duration) && probe.duration > 0 ? probe.duration : null);
+    probe.onerror = () => finish(null);
+    probe.src = url;
+  });
+
+// Plain-language explanation for a video over the size limit, with a concrete
+// target length when we could read the clip's duration.
+const describeOversizedVideo = (file: File, durationSec: number | null): string => {
+  const size = formatBytes(file.size);
+  const limit = formatBytes(MAX_VIDEO_UPLOAD_BYTES);
+  if (durationSec) {
+    // Seconds that would fit under the limit at this clip's bitrate (5% headroom).
+    const fitsSec = Math.floor(durationSec * (MAX_VIDEO_UPLOAD_BYTES / file.size) * 0.95);
+    if (fitsSec >= 10) {
+      return `This video is ${formatDuration(durationSec)} long and ${size} — the limit is ${limit}. Trim it to about ${formatDuration(fitsSec)} or shorter (in Photos, open the video and tap Edit), then add it again.`;
+    }
+    return `This video is ${formatDuration(durationSec)} long but ${size} — the limit is ${limit}. It was recorded at a very high quality setting; record at 1080p/30 fps (Settings → Camera → Record Video) or trim it to a few seconds, then add it again.`;
+  }
+  return `This video is ${size} — the limit is ${limit} (roughly 1–2 minutes at 1080p, less at 4K). Trim it shorter, then add it again.`;
+};
 
 interface ActivitySubmissionModalProps {
   isOpen: boolean;
@@ -117,7 +175,27 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
   const [textInput, setTextInput] = useState("");
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoDurationSec, setVideoDurationSec] = useState<number | null>(null);
+  // Persistent, in-form explanation of why a photo/video was rejected or why
+  // an upload failed. Toasts disappear in seconds — this stays until the user
+  // changes the evidence, so the reason is never missed.
+  const [mediaError, setMediaError] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
+  // What the progress bar is currently doing ("Uploading video (62 MB)…").
+  const [uploadStatus, setUploadStatus] = useState<string>("");
+  // True from the moment Submit is pressed until the activity is saved or the
+  // attempt fails. The video is uploaded to storage BEFORE the mutation starts,
+  // so isPending alone leaves that (long) phase with no feedback and an active
+  // Submit button — which is how users end up starting several uploads at once.
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  // In-flight video PUT and a cancel flag, so closing the modal mid-upload
+  // aborts the transfer instead of silently finishing (and posting) later.
+  const activeUploadRef = useRef<XMLHttpRequest | null>(null);
+  const uploadCancelledRef = useRef(false);
+  // Synchronous re-entry lock for handleSubmit. State-based `isBusy` only
+  // updates after a render, so two submit events in the same tick (double-tap,
+  // Enter + click) could both pass it and create duplicate activities.
+  const submitLockRef = useRef(false);
   const [showGuidelines, setShowGuidelines] = useState(false);
   const [showTeamProgressInfo, setShowTeamProgressInfo] = useState(false);
   const [showUserPointsInfo, setShowUserPointsInfo] = useState(false);
@@ -192,7 +270,12 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
     setTextInput("");
     setImageFiles([]);
     setVideoFile(null);
+    setVideoDurationSec(null);
+    setMediaError(null);
     setUploadProgress(0);
+    setUploadStatus("");
+    setIsSubmitting(false);
+    submitLockRef.current = false;
     setSelectedWorkoutHkId(null);
     setPassiveMetricDate(null);
   };
@@ -420,58 +503,96 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
     navigate(`/verified-session?type=${encodeURIComponent(type)}`);
   };
 
+  // Ask the server for a signed PUT URL for one video upload attempt.
+  const requestVideoUploadUrl = async (extension: string): Promise<{ uploadUrl: string; uploadedPath: string }> => {
+    const urlRes = await fetch(`${API_BASE}/api/upload-url`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ extension }),
+    });
+    if (!urlRes.ok) {
+      let serverMessage = '';
+      try { serverMessage = (await urlRes.json())?.message || ''; } catch {}
+      if (urlRes.status === 401) {
+        throw new Error("You've been signed out. Sign in again, then submit your activity.");
+      }
+      // 400 (unsupported type) / 429 (too many attempts) carry a specific reason.
+      throw new Error(serverMessage || 'Could not prepare the video upload — please try again.');
+    }
+    return urlRes.json();
+  };
+
+  // One PUT of the file straight to cloud storage, with progress reporting.
+  // Always send `video/mp4` (even for iPhone .mov files) — iOS WKWebView
+  // refuses to play files labeled `video/quicktime`, but plays the same bytes
+  // labeled as `video/mp4` just fine.
+  const putVideoOnce = (file: File, uploadUrl: string): Promise<void> =>
+    new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      activeUploadRef.current = xhr;
+      const settle = (fn: () => void) => {
+        if (activeUploadRef.current === xhr) activeUploadRef.current = null;
+        fn();
+      };
+      xhr.open('PUT', uploadUrl);
+      xhr.setRequestHeader('Content-Type', 'video/mp4');
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+          // Reserve the last 10% for the activity submit step
+          setUploadProgress(Math.max(1, Math.round((e.loaded / e.total) * 90)));
+        }
+      });
+      xhr.addEventListener('load', () => settle(() => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve();
+        } else if (xhr.status >= 500) {
+          reject(new RetryableUploadError(`The storage server had a problem (HTTP ${xhr.status}).`));
+        } else {
+          reject(new Error(`The storage server rejected the video (HTTP ${xhr.status}). Please remove the video, add it again and resubmit.`));
+        }
+      }));
+      xhr.addEventListener('error', () => settle(() => reject(new RetryableUploadError('The connection dropped during the upload.'))));
+      xhr.addEventListener('timeout', () => settle(() => reject(new RetryableUploadError('The upload timed out.'))));
+      xhr.addEventListener('abort', () => settle(() => reject(new Error('The video upload was cancelled.'))));
+      xhr.timeout = 15 * 60 * 1000; // 15 min per attempt for large videos on slow links
+      xhr.send(file);
+    });
+
   // Step 1: upload a video file directly to Google Cloud Storage via a signed URL.
   // This bypasses the Replit deployment proxy (which has a small body-size limit).
-  // Returns the /uploads/<file> path the server should use as evidenceUrl.
-  const uploadVideoDirect = (file: File): Promise<string> =>
-    new Promise(async (resolve, reject) => {
+  // Retries transient failures automatically (fresh URL each time) and returns
+  // the /uploads/<file> path the server should use as evidenceUrl.
+  const uploadVideoDirect = async (file: File): Promise<string> => {
+    // Keep a recognizable suffix on the stored object; fall back to the MIME
+    // type when the picker handed us a nameless blob.
+    const extension = videoExtensionFor(file) ?? '.mp4';
+    const sizeLabel = formatBytes(file.size);
+    let lastError: Error | null = null;
+    for (let attempt = 1; attempt <= MAX_VIDEO_UPLOAD_ATTEMPTS; attempt++) {
+      if (uploadCancelledRef.current) throw new Error('The video upload was cancelled.');
+      setUploadStatus(
+        attempt === 1
+          ? `Uploading video (${sizeLabel})…`
+          : `Connection dropped — retrying upload (${attempt} of ${MAX_VIDEO_UPLOAD_ATTEMPTS})…`,
+      );
+      setUploadProgress(1);
+      const { uploadUrl, uploadedPath } = await requestVideoUploadUrl(extension);
       try {
-        // Pull the file extension so the resulting URL keeps a recognizable suffix
-        const dot = file.name.lastIndexOf('.');
-        const extension = dot >= 0 ? file.name.slice(dot) : '';
-
-        // Ask the server for a signed PUT URL
-        const urlRes = await fetch(`${API_BASE}/api/upload-url`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ extension }),
-        });
-        if (!urlRes.ok) {
-          throw new Error('Could not prepare video upload — please try again.');
-        }
-        const { uploadUrl, uploadedPath } = await urlRes.json();
-
-        // PUT the file straight to GCS with progress tracking.
-        // Always send `video/mp4` (even for iPhone .mov files) — iOS WKWebView
-        // refuses to play files labeled `video/quicktime`, but plays the same
-        // bytes labeled as `video/mp4` just fine.
-        const xhr = new XMLHttpRequest();
-        xhr.open('PUT', uploadUrl);
-        xhr.setRequestHeader('Content-Type', 'video/mp4');
-
-        xhr.upload.addEventListener('progress', (e) => {
-          if (e.lengthComputable) {
-            // Reserve the last 10% for the activity submit step
-            setUploadProgress(Math.round((e.loaded / e.total) * 90));
-          }
-        });
-        xhr.addEventListener('load', () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            resolve(uploadedPath);
-          } else {
-            reject(new Error(`Video upload failed (${xhr.status}). Please try again.`));
-          }
-        });
-        xhr.addEventListener('error', () => reject(new Error('Network error during video upload — check your connection and try again.')));
-        xhr.addEventListener('abort', () => reject(new Error('Video upload was cancelled.')));
-        xhr.addEventListener('timeout', () => reject(new Error('Video upload timed out. Try a shorter clip or a stronger connection.')));
-        xhr.timeout = 15 * 60 * 1000; // 15 min for very large videos
-        xhr.send(file);
+        await putVideoOnce(file, uploadUrl);
+        return uploadedPath;
       } catch (err: any) {
-        reject(err instanceof Error ? err : new Error(String(err)));
+        lastError = err instanceof Error ? err : new Error(String(err));
+        if (!(err instanceof RetryableUploadError) || uploadCancelledRef.current) throw lastError;
+        // Brief back-off before the next attempt so a flapping link can settle.
+        await new Promise((r) => setTimeout(r, 1500 * attempt));
       }
-    });
+    }
+    throw new Error(
+      `${lastError?.message ?? 'The upload failed.'} We tried ${MAX_VIDEO_UPLOAD_ATTEMPTS} times. ` +
+        'Keep the app open on this screen while the video uploads, check your signal (Wi‑Fi is best), then press Submit again.',
+    );
+  };
 
   const submitActivity = useMutation({
     mutationFn: async (data: FormData) => {
@@ -488,6 +609,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
 
         // Simulate progress since proxied environments don't fire reliable progress events
         let simulated = 90;
+        setUploadStatus(imageFiles.length > 0 ? "Uploading photos and saving your activity…" : "Saving your activity…");
         setUploadProgress(90);
         const ticker = setInterval(() => {
           simulated = Math.min(simulated + (Math.random() * 1), 98);
@@ -578,13 +700,33 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
     },
     onError: (error: any) => {
       console.error("Activity submission error:", error);
+      const message = error.message || "There was an error submitting your activity.";
+      // Keep the reason visible in the form, not just in a vanishing toast.
+      setMediaError(message);
       toast({
         title: "Submission failed",
-        description: error.message || "There was an error submitting your activity.",
+        description: message,
         variant: "destructive",
       });
     },
+    onSettled: () => {
+      submitLockRef.current = false;
+      setIsSubmitting(false);
+      setUploadStatus("");
+    },
   });
+
+  // Everything Submit is waiting on, in the user's words. Shown under the
+  // button so a greyed-out Submit is never a mystery.
+  const hasEvidence =
+    imageFiles.length > 0 || !!videoFile || !!selectedWorkoutHkId || !!passiveMetricDate;
+  const missingForSubmit = [
+    !type && "choose an activity",
+    !quantity && "enter the amount",
+    !description && "add a description",
+    !hasEvidence && "add a photo or video",
+  ].filter((item): item is string => Boolean(item));
+  const isBusy = isSubmitting || submitActivity.isPending;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -615,16 +757,24 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
       return;
     }
 
-    // Require at least one image — unless this is an Apple Health import,
+    // Require a photo or a video — unless this is an Apple Health import,
     // where the synced workout data is itself the evidence.
-    if (imageFiles.length === 0 && !selectedWorkoutHkId && !passiveMetricDate) {
+    if (!hasEvidence) {
       toast({
-        title: "Image required",
-        description: "Please add at least one photo to document your activity.",
+        title: "Evidence required",
+        description: "Please add at least one photo or a video of your activity.",
         variant: "destructive",
       });
       return;
     }
+
+    // A second tap while the video is still uploading must not start another
+    // upload (and another activity) — the button is disabled, but guard anyway.
+    if (isBusy || submitLockRef.current) return;
+    submitLockRef.current = true;
+    setIsSubmitting(true);
+    setMediaError(null);
+    uploadCancelledRef.current = false;
 
     const formData = new FormData();
     formData.append("type", type);
@@ -664,49 +814,91 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
         const videoPath = await uploadVideoDirect(videoFile);
         formData.append("videoUrl", videoPath);
       } catch (err: any) {
+        submitLockRef.current = false;
+        // Closed the modal mid-upload: the form is already reset, say nothing.
+        if (uploadCancelledRef.current) return;
+        const message = err?.message || "Could not upload your video. Please try again.";
+        // The video stays attached so one more tap on Submit retries it.
+        setMediaError(message);
         toast({
           title: "Video upload failed",
-          description: err?.message || "Could not upload your video. Please try again.",
+          description: message,
           variant: "destructive",
         });
         setUploadProgress(0);
+        setUploadStatus("");
+        setIsSubmitting(false);
         return;
       }
     }
 
+    if (uploadCancelledRef.current) {
+      submitLockRef.current = false;
+      return;
+    }
     submitActivity.mutate(formData);
+  };
+
+  // Closing the modal while a video is still transferring cancels the upload
+  // (nothing is posted); closing during the final save lets the save finish.
+  const handleDialogClose = () => {
+    if (isSubmitting && !submitActivity.isPending) {
+      uploadCancelledRef.current = true;
+      activeUploadRef.current?.abort();
+    }
+    onClose();
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
+    // Let the same file be picked again after a rejection or removal.
+    e.target.value = "";
+    const rejected: string[] = [];
     const validFiles = files.filter(file => {
-      if (file.size > 10 * 1024 * 1024) { // 10MB limit
-        toast({
-          title: "File too large",
-          description: `${file.name} is larger than 10MB. Please choose a smaller file.`,
-          variant: "destructive",
-        });
+      if (file.size > MAX_IMAGE_UPLOAD_BYTES) {
+        rejected.push(`${file.name} is ${formatBytes(file.size)}`);
         return false;
       }
       return true;
     });
-    
-    setImageFiles(prev => [...prev, ...validFiles].slice(0, 5)); // Max 5 images
+    if (rejected.length > 0) {
+      const message = `${rejected.join(", ")} — photos must be under ${formatBytes(MAX_IMAGE_UPLOAD_BYTES)} each. A screenshot or a regular (non-RAW) photo will work.`;
+      setMediaError(message);
+      toast({ title: "Photo too large", description: message, variant: "destructive" });
+    } else if (validFiles.length > 0) {
+      setMediaError(null);
+    }
+
+    setImageFiles(prev => [...prev, ...validFiles].slice(0, MAX_IMAGES_PER_ACTIVITY));
   };
 
-  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 100 * 1024 * 1024) { // 100MB limit
-        toast({
-          title: "Video too large",
-          description: "Video files must be smaller than 100MB.",
-          variant: "destructive",
-        });
-        return;
-      }
-      setVideoFile(file);
+    // Let the same file be picked again after a rejection or removal.
+    e.target.value = "";
+    if (!file) return;
+
+    if (!videoExtensionFor(file)) {
+      const message = `"${file.name}" isn't a video format we can play. Please use an MP4 or MOV file — videos recorded with your phone's camera work.`;
+      setMediaError(message);
+      toast({ title: "Unsupported video format", description: message, variant: "destructive" });
+      return;
     }
+
+    // Read the clip length up front: it drives the "trim to X" advice when the
+    // file is too big, and the size/length caption under the preview otherwise.
+    const durationSec = await probeVideoDuration(file);
+
+    if (file.size > MAX_VIDEO_UPLOAD_BYTES) {
+      const message = describeOversizedVideo(file, durationSec);
+      setMediaError(message);
+      toast({ title: "Video too large", description: message, variant: "destructive" });
+      return;
+    }
+
+    setMediaError(null);
+    setVideoDurationSec(durationSec);
+    setVideoFile(file);
   };
 
   const removeImage = (index: number) => {
@@ -715,12 +907,14 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
 
   const removeVideo = () => {
     setVideoFile(null);
+    setVideoDurationSec(null);
+    setMediaError(null);
   };
 
   if (!isOpen) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleDialogClose(); }}>
       <DialogContent
         className="max-w-2xl max-h-[90vh] overflow-y-auto bg-tactical-gray-dark border border-tactical-gray text-white"
         style={{ WebkitOverflowScrolling: "touch", overscrollBehavior: "contain", touchAction: "pan-y" }}
@@ -1067,7 +1261,7 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
               {!requiresVerifiedSession && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <Label className="text-gray-300 font-medium">Photo Evidence {(selectedWorkoutHkId || passiveMetricDate) ? <span className="text-gray-400">(optional — Apple Health is the evidence)</span> : <><span className="text-red-400">*</span> <span className="text-gray-400">(at least 1 image required)</span></>}</Label>
+                  <Label className="text-gray-300 font-medium">Evidence {(selectedWorkoutHkId || passiveMetricDate) ? <span className="text-gray-400">(optional — Apple Health is the evidence)</span> : <><span className="text-red-400">*</span> <span className="text-gray-400">(at least 1 photo or video)</span></>}</Label>
                   <button
                     type="button"
                     onClick={() => setShowGuidelines((v) => !v)}
@@ -1180,6 +1374,20 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
                     </Button>
                   </div>
                 </div>
+                <p className="text-[11px] leading-snug text-gray-400" data-testid="text-evidence-limits">
+                  Photos: up to {MAX_IMAGES_PER_ACTIVITY}, {formatBytes(MAX_IMAGE_UPLOAD_BYTES)} each. Video: one MP4 or MOV up to {formatBytes(MAX_VIDEO_UPLOAD_BYTES)} — about 1–2 minutes at 1080p, less at 4K. Keep the app open while it uploads.
+                </p>
+
+                {/* Why the last photo/video was rejected or failed to upload */}
+                {mediaError && (
+                  <div
+                    role="alert"
+                    className="rounded-lg border border-red-500/50 bg-red-500/10 p-3 text-xs leading-snug text-red-200"
+                    data-testid="text-media-error"
+                  >
+                    {mediaError}
+                  </div>
+                )}
 
                 {/* Image Previews */}
                 {imageFiles.length > 0 && (
@@ -1207,32 +1415,40 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
 
                 {/* Video Preview */}
                 {videoFile && (
-                  <div className="relative">
-                    <video
-                      src={URL.createObjectURL(videoFile)}
-                      className="w-full h-32 object-cover rounded-lg border border-tactical-gray"
-                      controls
-                    />
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="destructive"
-                      onClick={removeVideo}
-                      className="absolute top-2 right-2 w-6 h-6 p-0 rounded-full"
-                    >
-                      <X className="w-3 h-3" />
-                    </Button>
+                  <div className="space-y-1">
+                    <div className="relative">
+                      <video
+                        src={URL.createObjectURL(videoFile)}
+                        className="w-full h-32 object-cover rounded-lg border border-tactical-gray"
+                        controls
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="destructive"
+                        onClick={removeVideo}
+                        className="absolute top-2 right-2 w-6 h-6 p-0 rounded-full"
+                        disabled={isBusy}
+                        aria-label="Remove video"
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                    <p className="text-[11px] text-gray-400" data-testid="text-video-details">
+                      {videoDurationSec ? `${formatDuration(videoDurationSec)} · ` : ""}
+                      {formatBytes(videoFile.size)} — ready to upload when you submit
+                    </p>
                   </div>
                 )}
               </div>
               )}
 
-          {/* Upload progress bar */}
-          {submitActivity.isPending && (
-            <div className="space-y-1">
-              <div className="flex justify-between text-xs text-gray-400">
-                <span>Uploading — please keep this open...</span>
-                <span>{uploadProgress}%</span>
+          {/* Upload progress bar — covers the video upload AND the final save */}
+          {isBusy && (
+            <div className="space-y-1" data-testid="status-upload-progress">
+              <div className="flex justify-between gap-3 text-xs text-gray-400">
+                <span>{uploadStatus || "Uploading — please keep this open…"}</span>
+                <span className="shrink-0">{uploadProgress}%</span>
               </div>
               <div className="w-full bg-white/10 rounded-full h-2">
                 <div
@@ -1240,23 +1456,35 @@ export default function ActivitySubmissionModal({ isOpen, onClose, initialWorkou
                   style={{ width: `${uploadProgress || 5}%` }}
                 />
               </div>
-              {uploadProgress === 100 && (
+              {uploadProgress === 100 ? (
                 <p className="text-xs text-gray-400">Processing on server...</p>
-              )}
+              ) : videoFile ? (
+                <p className="text-xs text-gray-400">
+                  Stay on this screen until it reaches 100% — leaving the app pauses the upload.
+                </p>
+              ) : null}
             </div>
           )}
 
           {/* Submit Button — hidden when the type must go through a verified session */}
           {!requiresVerifiedSession && (
-          <Button
-            type="submit"
-            className="w-full bg-military-green hover:bg-military-green-dark text-forest-green font-medium py-3"
-            disabled={submitActivity.isPending || !type || !description || !quantity || (imageFiles.length === 0 && !selectedWorkoutHkId && !passiveMetricDate)}
-          >
-            {submitActivity.isPending
-              ? uploadProgress > 0 ? `Uploading ${uploadProgress}%` : "Preparing..."
-              : "Submit Activity"}
-          </Button>
+          <div className="space-y-2">
+            <Button
+              type="submit"
+              className="w-full bg-military-green hover:bg-military-green-dark text-forest-green font-medium py-3"
+              disabled={isBusy || missingForSubmit.length > 0}
+              data-testid="button-submit-activity"
+            >
+              {isBusy
+                ? uploadProgress > 0 ? `Uploading ${uploadProgress}%` : "Preparing..."
+                : "Submit Activity"}
+            </Button>
+            {!isBusy && missingForSubmit.length > 0 && (
+              <p className="text-xs text-center text-gray-400" data-testid="text-submit-requirements">
+                To submit: {missingForSubmit.join(", ")}.
+              </p>
+            )}
+          </div>
           )}
         </form>
       </DialogContent>

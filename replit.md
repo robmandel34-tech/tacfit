@@ -123,7 +123,12 @@ user. Tactical language throughout: "buddies," "Intel Feed," "Command Center."
   as server-side reconciliation (today the client confirms then calls
   `enter-with-payment`).
 - **Activity Tracking**: submissions with photo/video evidence, point scoring
-  with evidence bonuses, configurable text requirements. Apple HealthKit syncs
+  with evidence bonuses, configurable text requirements. Evidence rule (since
+  2026-10-08): at least one photo OR one video OR an Apple Health workout —
+  video-only is valid. Upload limits live in `shared/uploads.ts` (video 100 MB,
+  photos 10 MB × 5; there is NO duration limit) and are shown in the form.
+  Videos go direct-to-GCS from the client before the activity POST; the server
+  only accepts a `videoUrl` whose object actually exists in storage. Apple HealthKit syncs
   workouts (incl. GPS route maps via Google Maps Static API) and Mindful
   Minutes sessions (≥5 min, stored in the same `apple_health_workouts` table
   as raw type "Mindful Session", default type meditation/prayer, relabelable

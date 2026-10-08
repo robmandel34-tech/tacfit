@@ -168,7 +168,7 @@ profile" step, then archives. Manual Mac builds use `scripts/cap-build.sh`.
 4. `App.entitlements` contains ONLY `com.apple.developer.healthkit = true` —
    adding the `.access` key breaks signing (needs special Apple approval).
 5. Bump `MARKETING_VERSION` in `project.pbxproj` for each new App Store
-   submission (currently 1.0.4).
+   submission (currently 1.0.6; 1.0.5 shipped 2026-10-01).
 6. `VITE_`-prefixed env vars used by the frontend must ALSO be set in Codemagic
    for native builds (e.g. `VITE_API_URL`, SSO client ids).
 7. The HealthKit plugin is patched at build time by `scripts/patch-healthkit-hrv.sh`

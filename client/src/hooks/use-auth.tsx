@@ -11,6 +11,13 @@ async function buildAuthHeaders(): Promise<Record<string, string>> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+// Present (non-null) while an admin is acting as a ghost account: the admin's
+// real identity, so the UI can offer a way back.
+export interface ActingAs {
+  actorId: number;
+  actorUsername: string;
+}
+
 interface User {
   id: number;
   username: string;
@@ -19,6 +26,8 @@ interface User {
   avatar?: string;
   coverPhoto?: string;
   isAdmin?: boolean;
+  isGhost?: boolean;
+  actingAs?: ActingAs | null;
   createdAt?: string | null;
 }
 
@@ -32,6 +41,10 @@ interface AuthContextType {
   updateUser: (updatedUser: Partial<User>) => void;
   refreshUser: () => Promise<void>;
   forceRefresh: () => void;
+  /** Admin only: start acting as a ghost account (reloads the app as that user). */
+  actAsGhost: (ghostId: number) => Promise<void>;
+  /** Stop acting as a ghost and reload as the admin's own account. */
+  returnToSelf: () => Promise<void>;
   isLoading: boolean;
 }
 
@@ -246,7 +259,10 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
           headers: await buildAuthHeaders(),
         });
         if (response.ok) {
-          const currentUser = await response.json();
+          const fetched = await response.json();
+          // /api/users/:id doesn't know about ghost acting; keep that flag so the
+          // "posting as a ghost" bar doesn't flicker away until the next /me.
+          const currentUser = { ...fetched, actingAs: user.actingAs ?? null };
           setUser(currentUser);
           localStorage.setItem("user", JSON.stringify(currentUser));
         }
@@ -255,6 +271,30 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
       }
     }
   };
+
+  // Ghost accounts: the server swaps the effective identity (per device
+  // token / cookie session) and returns the user we are now. Everything in the
+  // app is keyed on the current user, so a full reload is the safest reset.
+  const switchIdentity = async (path: string) => {
+    const response = await fetch(`${API_BASE}${path}`, {
+      method: "POST",
+      credentials: "include",
+      headers: await buildAuthHeaders(),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "Could not switch accounts");
+    }
+    const nextUser = await response.json();
+    queryClient.clear();
+    setUser(nextUser);
+    identifyUser(nextUser);
+    localStorage.setItem("user", JSON.stringify(nextUser));
+    window.location.replace("/");
+  };
+
+  const actAsGhost = (ghostId: number) => switchIdentity(`/api/ghosts/${ghostId}/act-as`);
+  const returnToSelf = () => switchIdentity("/api/ghosts/return");
 
   const contextValue: AuthContextType = {
     user,
@@ -266,6 +306,8 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
     updateUser,
     refreshUser,
     forceRefresh,
+    actAsGhost,
+    returnToSelf,
     isLoading
   };
 

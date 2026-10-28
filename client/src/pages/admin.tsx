@@ -12,10 +12,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { Plus, Edit2, Trash2, Users, Trophy, Calendar, Settings, X, Activity, AlertTriangle, MessageSquare, BarChart3, Target, Flag, RefreshCw, Check, Copy, Lock } from "lucide-react";
+import { Plus, Edit2, Trash2, Users, Trophy, Calendar, Settings, X, Activity, AlertTriangle, MessageSquare, BarChart3, Target, Flag, RefreshCw, Check, Copy, Lock, Ghost } from "lucide-react";
 import { apiRequest, API_BASE } from "@/lib/queryClient";
 import { AdminReportsPanel } from "@/components/admin-reports-panel";
 import { AdminFlaggedActivitiesPanel } from "@/components/admin-flagged-activities-panel";
+import { AdminGhostAccountsPanel } from "@/components/admin-ghost-accounts-panel";
+import { useGhostAccounts } from "@/components/ghost-switcher";
 import { UserParticipationModal } from "@/components/user-participation-modal";
 import { format } from "date-fns";
 import { isVerifiedSessionMode, isRepsUnit, defaultVerifiedSessionMode, resolveRepExercise, SUPPORTED_REP_EXERCISES, SUPPORTED_REP_EXERCISE_LIST, type VerifiedSessionMode } from "@shared/verified-session-mode";
@@ -120,7 +122,7 @@ export default function AdminPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
-  const [activeTab, setActiveTab] = useState<'competitions' | 'users' | 'activity-types' | 'posts' | 'advertisements' | 'reports' | 'flagged' | 'settings'>('competitions');
+  const [activeTab, setActiveTab] = useState<'competitions' | 'users' | 'activity-types' | 'posts' | 'advertisements' | 'reports' | 'flagged' | 'ghosts' | 'settings'>('competitions');
   const [isCreateCompetitionOpen, setIsCreateCompetitionOpen] = useState(false);
   const [editingCompetition, setEditingCompetition] = useState<Competition | null>(null);
   const [pointsAdjustmentUser, setPointsAdjustmentUser] = useState<User | null>(null);
@@ -175,6 +177,9 @@ export default function AdminPage() {
     queryKey: ["/api/users"],
     select: (data: User[]) => data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
   });
+  // Ghost accounts are admin-only knowledge; badge them in the Users table.
+  const { data: ghostAccounts = [] } = useGhostAccounts(!!user?.isAdmin);
+  const ghostIds = new Set(ghostAccounts.map((g) => g.id));
 
   // Fetch activity types
   const { data: activityTypes = [], isLoading: activityTypesLoading } = useQuery({
@@ -1078,6 +1083,15 @@ export default function AdminPage() {
             <span>Flagged</span>
           </Button>
           <Button
+            variant={activeTab === 'ghosts' ? 'default' : 'ghost'}
+            onClick={() => setActiveTab('ghosts')}
+            className="flex items-center space-x-2 flex-shrink-0"
+            data-testid="tab-ghosts"
+          >
+            <Ghost className="h-4 w-4" />
+            <span>Ghosts</span>
+          </Button>
+          <Button
             variant={activeTab === 'settings' ? 'default' : 'ghost'}
             onClick={() => setActiveTab('settings')}
             className="flex items-center space-x-2 flex-shrink-0"
@@ -1089,6 +1103,7 @@ export default function AdminPage() {
 
         {activeTab === 'reports' && <AdminReportsPanel />}
         {activeTab === 'flagged' && <AdminFlaggedActivitiesPanel />}
+        {activeTab === 'ghosts' && <AdminGhostAccountsPanel />}
 
         {/* Competitions Tab */}
         {activeTab === 'competitions' && (
@@ -1595,7 +1610,16 @@ export default function AdminPage() {
                   <TableBody>
                     {users.map((u) => (
                       <TableRow key={u.id} className="border-tactical-gray">
-                        <TableCell className="text-white font-medium">{u.username}</TableCell>
+                        <TableCell className="text-white font-medium">
+                          <span className="inline-flex items-center gap-2">
+                            {u.username}
+                            {ghostIds.has(u.id) && (
+                              <Badge variant="outline" className="border-amber-400/50 text-amber-300 text-[10px] px-1.5 py-0 gap-1">
+                                <Ghost className="h-3 w-3" /> Ghost
+                              </Badge>
+                            )}
+                          </span>
+                        </TableCell>
                         <TableCell className="text-gray-300">{u.email}</TableCell>
                         <TableCell className="text-gray-300">{u.points}</TableCell>
                         <TableCell className="text-gray-300">{u.competitionsEntered}</TableCell>

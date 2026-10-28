@@ -102,6 +102,7 @@ import CompetitionCardPage from "@/pages/competition-card";
 import Settings from "@/pages/settings";
 import BottomNavigation from "@/components/bottom-navigation";
 import FloatingActionButton from "@/components/floating-action-button";
+import { ActingAsBar } from "@/components/ghost-switcher";
 
 
 function Router() {
@@ -157,6 +158,9 @@ function AppContent() {
       </SilentErrorBoundary>
       <SilentErrorBoundary>
         <FloatingActionButton />
+      </SilentErrorBoundary>
+      <SilentErrorBoundary>
+        <ActingAsBar />
       </SilentErrorBoundary>
     </MoodTracker>
   );

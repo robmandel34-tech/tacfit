@@ -86,6 +86,7 @@ import rateLimit from "express-rate-limit";
 import os from "os";
 import { heycatch, heycatchUserId, identifyUserOnServer, analyticsActor } from "./heycatch";
 import { isVerificationExemptEmail } from "./verificationExempt";
+import { registerGhostRoutes, getActingInfo, getActingActorId } from "./ghost-accounts";
 
 const execAsync = promisify(exec);
 
@@ -194,6 +195,9 @@ declare module 'express-session' {
   interface SessionData {
     user?: User;
     userId?: number;
+    // Set only while an admin is acting as a ghost account on a cookie
+    // session: the admin's own id (userId holds the ghost). See ghost-accounts.ts.
+    actorUserId?: number;
   }
 }
 
@@ -375,12 +379,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const token = header.slice(7).trim();
       if (!token) return next();
       const [row] = await db
-        .select({ userId: authTokensTable.userId })
+        .select({ userId: authTokensTable.userId, actingAsUserId: authTokensTable.actingAsUserId })
         .from(authTokensTable)
         .where(eq(authTokensTable.token, token))
         .limit(1);
       if (row) {
-        (req.session as any).userId = row.userId;
+        (req as any).bearerToken = token;
+        if (row.actingAsUserId) {
+          // Admin acting as a ghost on this device: the ghost is the effective
+          // user for every route; the real admin is kept for return/switch.
+          (req.session as any).userId = row.actingAsUserId;
+          (req as any).actorUserId = row.userId;
+        } else {
+          (req.session as any).userId = row.userId;
+        }
         // Bearer requests should NOT persist a server-side session row.
         // Override save/touch on this session instance so express-session's
         // automatic save-on-response is a no-op for native calls.
@@ -399,6 +411,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     next();
   });
+
+  // Ghost accounts (admin personas) — list/create/act-as/return.
+  registerGhostRoutes(app);
 
   // Auth routes
   app.post("/api/auth/register", authRateLimit, async (req, res) => {
@@ -530,7 +545,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { email, password } = req.body;
       
       const user = await storage.getUserByEmail(email);
-      if (!user) {
+      // Ghost accounts are only reachable via an admin acting as them.
+      if (!user || user.isGhost) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
@@ -989,8 +1005,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`Password reset request for email: ${email}`);
       
       const user = await storage.getUserByEmail(email);
-      if (!user) {
-        // Don't reveal if email exists or not for security
+      if (!user || user.isGhost) {
+        // Don't reveal if email exists or not for security (ghost accounts
+        // have no password to reset and an undeliverable address).
         return res.json({ message: "If an account with that email exists, a password reset link has been sent." });
       }
       
@@ -1063,7 +1080,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.session?.userId) {
         return res.status(401).json({ message: "Not logged in" });
       }
-      const user = await storage.getUser(req.session.userId);
+      let user = await storage.getUser(req.session.userId);
+      if (!user && req.session.actorUserId) {
+        // The ghost this cookie session was acting as no longer exists —
+        // fall back to the admin instead of logging them out.
+        user = await storage.getUser(req.session.actorUserId);
+        if (user) {
+          req.session.userId = user.id;
+          delete req.session.actorUserId;
+        }
+      }
       if (!user) {
         req.session.destroy(() => {});
         return res.status(401).json({ message: "User not found" });
@@ -1071,7 +1097,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Refresh session user data
       req.session.user = user;
       const { password: _, ...userWithoutPassword } = user;
-      res.json(userWithoutPassword);
+      // `actingAs` tells the client to show the "you're posting as a ghost" bar.
+      res.json({ ...userWithoutPassword, actingAs: await getActingInfo(req) });
     } catch (error) {
       res.status(500).json({ message: "Failed to check session" });
     }
@@ -1194,15 +1221,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
       
-      const { password, healthyHabitGoal, fitnessActivities, fitnessArchetype, ...publicUser } = user;
-      // Onboarding survey answers are personal; only the user (or an admin) sees them.
+      const { password, healthyHabitGoal, fitnessActivities, fitnessArchetype, isGhost, ...publicUser } = user;
+      // Onboarding survey answers are personal, and whether an account is an
+      // admin-operated ghost is admin-only knowledge (ghosts must look like any
+      // other member); only the user themself or an admin sees these fields.
       const viewerId = req.session?.userId;
-      let includeSurvey = viewerId === user.id;
-      if (!includeSurvey && viewerId) {
+      let includePrivate = viewerId === user.id;
+      if (!includePrivate && viewerId) {
         const viewer = await storage.getUser(viewerId);
-        includeSurvey = !!viewer?.isAdmin;
+        includePrivate = !!viewer?.isAdmin;
       }
-      res.json(includeSurvey ? { ...publicUser, healthyHabitGoal, fitnessActivities, fitnessArchetype } : publicUser);
+      res.json(includePrivate ? { ...publicUser, healthyHabitGoal, fitnessActivities, fitnessArchetype, isGhost } : publicUser);
     } catch (error) {
       res.status(500).json({ message: "Error fetching user" });
     }
@@ -1214,7 +1243,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // flags have dedicated endpoints with their own authorization.
   const PROTECTED_USER_UPDATE_FIELDS = new Set([
     'points', 'isAdmin', 'isSuspended', 'suspendedAt', 'suspensionReason',
-    'isEmailVerified', 'password',
+    'isEmailVerified', 'password', 'isGhost',
     'emailVerificationToken', 'emailVerificationTokenExpiresAt',
     'passwordResetToken', 'passwordResetTokenExpiresAt',
     'stripeCustomerId', 'stripeSubscriptionId',
@@ -1726,14 +1755,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/users/:id", async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
-      const adminUserId = req.body.adminUserId; // Pass admin user ID for verification
-      
-      // Verify admin status of requesting user
-      if (adminUserId) {
-        const adminUser = await storage.getUser(adminUserId);
-        if (!adminUser?.isAdmin) {
-          return res.status(403).json({ message: "Admin privileges required" });
-        }
+      // Admin-only, verified against the logged-in session (the old body
+      // `adminUserId` check was skipped entirely when the field was omitted).
+      const adminUserId = req.session?.userId;
+      if (!adminUserId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      const adminUser = await storage.getUser(adminUserId);
+      if (!adminUser?.isAdmin) {
+        return res.status(403).json({ message: "Admin privileges required" });
       }
       
       const user = await storage.getUser(userId);
@@ -1742,7 +1772,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Prevent admins from deleting themselves (safety measure)
-      if (adminUserId && Number(adminUserId) === Number(userId)) {
+      if (Number(adminUserId) === Number(userId)) {
         return res.status(400).json({ message: "You cannot delete your own account" });
       }
       
@@ -3133,6 +3163,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return uid;
   };
 
+  // Apple Health data comes from the admin's own phone; while they are acting
+  // as a ghost it must never be written into the ghost's account.
+  const requireOwnHealthUserId = (req: any, res: any): number | null => {
+    const uid = requireUserId(req, res);
+    if (!uid) return null;
+    if (getActingActorId(req)) {
+      res.status(403).json({ message: "Apple Health can't be connected or synced while acting as a ghost account. Return to your own account first." });
+      return null;
+    }
+    return uid;
+  };
+
   app.get("/api/apple-health/status", async (req, res) => {
     try {
       const userId = requireUserId(req, res);
@@ -3151,7 +3193,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/apple-health/connect", async (req, res) => {
     try {
-      const userId = requireUserId(req, res);
+      const userId = requireOwnHealthUserId(req, res);
       if (!userId) return;
       const scopes = Array.isArray(req.body?.scopes)
         ? req.body.scopes.filter((s: any) => typeof s === "string")
@@ -3204,7 +3246,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/apple-health/sync", async (req, res) => {
     try {
-      const userId = requireUserId(req, res);
+      const userId = requireOwnHealthUserId(req, res);
       if (!userId) return;
       const parsed = syncBodySchema.safeParse(req.body);
       if (!parsed.success) {
@@ -3436,7 +3478,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Device pushes recent daily health metrics; we store them and recompute readiness.
   app.post("/api/apple-health/metrics/sync", async (req, res) => {
     try {
-      const userId = requireUserId(req, res);
+      const userId = requireOwnHealthUserId(req, res);
       if (!userId) return;
       const parsed = metricsSyncSchema.safeParse(req.body);
       if (!parsed.success) {

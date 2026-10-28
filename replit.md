@@ -139,6 +139,15 @@ user. Tactical language throughout: "buddies," "Intel Feed," "Command Center."
 - **Wellness**: daily mood assessments (5 bonus pts).
 - **Admin Tools**: portal for competitions, users, activity types, Intel Feed
   announcements.
+- **Ghost accounts** (2026-10-28, `server/ghost-accounts.ts`): admin-operated
+  personas that look like any other member (`users.isGhost`, no password,
+  `@ghost.invalid` email, can never log in directly; `isGhost` is only shown to
+  admins/self). An admin "acts as" one from Admin Panel → Ghosts or the menu;
+  the effective identity swaps per device (`auth_tokens.acting_as_user_id`, or
+  `session.actorUserId` for cookie-only sessions) so every route sees a plain
+  user — admin rights are OFF while acting; Apple Health connect/sync is
+  refused while acting (the phone's workouts belong to the admin). An amber
+  "Posting as X" bar with Switch/Back stays visible while acting.
 
 ### Database
 - PostgreSQL + Drizzle ORM; schema in `shared/`, managed with Drizzle Kit.

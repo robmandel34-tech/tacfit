@@ -9,16 +9,22 @@ import {
   Shield, 
   HelpCircle, 
   LogOut,
-  ChevronRight 
+  ChevronRight,
+  Ghost,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { HelpPopupModal } from '@/components/help-popup-modal';
+import { GhostSwitcherDialog } from '@/components/ghost-switcher';
 
 export function HamburgerMenu() {
   const { user, logout } = useAuth();
   const [location] = useLocation();
   const [open, setOpen] = useState(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+  const [isGhostSwitcherOpen, setIsGhostSwitcherOpen] = useState(false);
+  // Admins see the switcher; while acting as a ghost `isAdmin` is false, so
+  // also show it whenever we're acting (the real account behind it is admin).
+  const canSwitchGhosts = !!(user?.isAdmin || user?.actingAs);
 
   const handleLogout = () => {
     setOpen(false);
@@ -32,6 +38,11 @@ export function HamburgerMenu() {
   const handleHelpClick = () => {
     setOpen(false);
     setTimeout(() => setIsHelpModalOpen(true), 150);
+  };
+
+  const handleGhostClick = () => {
+    setOpen(false);
+    setTimeout(() => setIsGhostSwitcherOpen(true), 150);
   };
 
   return (
@@ -93,6 +104,21 @@ export function HamburgerMenu() {
                 </Link>
               )}
 
+              {/* Ghost accounts - admins only (or while acting as one) */}
+              {canSwitchGhosts && (
+                <button
+                  onClick={handleGhostClick}
+                  className="flex items-center justify-between w-full px-3 py-3 rounded-lg cursor-pointer transition-colors text-white hover:bg-white/10"
+                  data-testid="button-menu-ghosts"
+                >
+                  <div className="flex items-center gap-3">
+                    <Ghost className="h-5 w-5" />
+                    <span>{user?.actingAs ? 'Switch account' : 'Ghost accounts'}</span>
+                  </div>
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              )}
+
               {/* Help Portal */}
               <button
                 onClick={handleHelpClick}
@@ -124,6 +150,9 @@ export function HamburgerMenu() {
         isOpen={isHelpModalOpen}
         onClose={() => setIsHelpModalOpen(false)}
       />
+      {canSwitchGhosts && (
+        <GhostSwitcherDialog open={isGhostSwitcherOpen} onOpenChange={setIsGhostSwitcherOpen} />
+      )}
     </>
   );
 }

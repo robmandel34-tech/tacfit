@@ -1,4 +1,5 @@
 - [Verified sessions](verified-sessions.md) — anti-abuse design for camera-verified sessions: timed (face + noise) and reps mode (pose-counted push-ups); coverage math must be server-derived.
+- [Ghost accounts](ghost-accounts.md) — admin personas: act-as swaps effective identity per bearer token (web sends bearer too), admin rights off while acting, HealthKit refused; beware "if (bodyField) verify" auth pattern.
 - [Marketing site](marketing-site.md) — joinmuster.com is a Netlify static site in `marketing-site/`; LIVE site is the baseline (repo drifts), deliver folder+zip; deep-link/forms/splash traps inside.
 - [HealthKit Mindful Minutes](healthkit-mindful-sessions.md) — mindfulSession = category sample (needs plugin patch); length = start→end only, 5-min min on both sides; scopes-version re-auth in context; relabel within mindfulness only.
 - [HealthKit Readiness](healthkit-readiness.md) — Readiness scoring + states (ready/calibrating/insufficient); "not showing" = backend not Published OR UI hid non-ready states (now all states render via getReadinessDisplay).

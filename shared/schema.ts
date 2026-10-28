@@ -57,6 +57,11 @@ export const users = pgTable("users", {
   // Guards against duplicate Slack posts of the survey (one post per user).
   onboardingSurveyNotified: boolean("onboarding_survey_notified").default(false),
 
+  // Ghost accounts: admin-operated personas that look and behave like any
+  // other member. They have no password and cannot log in directly — an admin
+  // "acts as" one from their own session (see server/ghost-accounts.ts).
+  isGhost: boolean("is_ghost").default(false),
+
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -81,6 +86,9 @@ export const authTokens = pgTable("auth_tokens", {
   userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   createdAt: timestamp("created_at").defaultNow(),
   lastUsedAt: timestamp("last_used_at").defaultNow(),
+  // When an admin is acting as a ghost account on this device, requests made
+  // with this token resolve to the ghost; `userId` stays the real admin.
+  actingAsUserId: integer("acting_as_user_id").references(() => users.id, { onDelete: 'set null' }),
 });
 
 export const pointsTransactions = pgTable("points_transactions", {
